@@ -11,12 +11,16 @@ class Product extends Model
         'code',
         'name',
         'description',
+        'brand',
+        'box_spec',
+        'carton_spec',
         'unit',
         'price',
         'min_stock',
         'category_id',
         'type',
         'status',
+        'location',
     ];
 
     public function category()

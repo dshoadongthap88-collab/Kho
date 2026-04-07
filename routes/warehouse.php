@@ -7,6 +7,14 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return redirect()->route('warehouse.inventory');
     });
 
+    Route::get('/product-catalog', function () {
+        return view('warehouse.product-catalog');
+    })->name('product-catalog');
+
+    Route::get('/contacts', function () {
+        return view('warehouse.contact-manager');
+    })->name('contacts');
+
     Route::get('/inventory', function () {
         return view('warehouse.inventory');
     })->name('inventory');

@@ -12,6 +12,8 @@
         <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-6">
                 <span class="text-xl font-bold">📦 ERP Kho</span>
+                <a href="{{ route('warehouse.product-catalog') }}" class="hover:text-indigo-300 transition text-sm {{ request()->routeIs('warehouse.product-catalog') ? 'text-indigo-300 font-semibold' : '' }}">Tên sản phẩm</a>
+                <a href="{{ route('warehouse.contacts') }}" class="hover:text-amber-300 transition text-sm {{ request()->routeIs('warehouse.contacts') ? 'text-amber-300 font-semibold' : '' }}">Khách hàng/NCC</a>
                 <a href="{{ route('warehouse.inventory') }}" class="hover:text-indigo-300 transition text-sm {{ request()->routeIs('warehouse.inventory') ? 'text-indigo-300 font-semibold' : '' }}">Tồn kho</a>
                 <a href="{{ route('warehouse.stock-in') }}" class="hover:text-green-300 transition text-sm {{ request()->routeIs('warehouse.stock-in') ? 'text-green-300 font-semibold' : '' }}">Nhập kho</a>
                 <a href="{{ route('warehouse.stock-out') }}" class="hover:text-orange-300 transition text-sm {{ request()->routeIs('warehouse.stock-out') ? 'text-orange-300 font-semibold' : '' }}">Xuất kho</a>

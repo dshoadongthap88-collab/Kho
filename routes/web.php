@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('warehouse.inventory');
 });
 
 require __DIR__.'/warehouse.php';

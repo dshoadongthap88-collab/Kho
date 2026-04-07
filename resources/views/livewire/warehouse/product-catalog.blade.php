@@ -3,14 +3,25 @@
         <div class="flex-1 max-w-sm">
             <input wire:model.live="search" type="text" placeholder="Tìm theo tên, mã, hãng..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
         </div>
-        <button wire:click="openModal" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-            <span>➕</span> Thêm sản phẩm
-        </button>
+        <div class="flex gap-2">
+            <button wire:click="$set('showImportModal', true)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                <span>📊</span> Nhập Excel
+            </button>
+            <button wire:click="openModal" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                <span>➕</span> Thêm sản phẩm
+            </button>
+        </div>
     </div>
 
     @if (session()->has('message'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
             {{ session('message') }}
+        </div>
+    @endif
+    
+    @if (session()->has('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {{ session('error') }}
         </div>
     @endif
 
@@ -23,6 +34,8 @@
                     <th class="px-4 py-3">Hãng sản xuất</th>
                     <th class="px-4 py-3">QC Hộp</th>
                     <th class="px-4 py-3">QC Thùng</th>
+                    <th class="px-4 py-3">Số lô</th>
+                    <th class="px-4 py-3">Hạn dùng</th>
                     <th class="px-4 py-3 text-center">Số lượng</th>
                     <th class="px-4 py-3">Vị trí</th>
                     <th class="px-4 py-3">Tình trạng</th>
@@ -31,12 +44,16 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($products as $product)
-                    <tr class="hover:bg-gray-50 transition">
+                    <tr class="hover:bg-gray-50 transition border-b {{ $product->is_expiring_soon ? 'bg-red-50' : '' }}">
                         <td class="px-4 py-3 font-mono text-sm text-blue-600">{{ $product->code }}</td>
                         <td class="px-4 py-3 font-medium text-gray-800">{{ $product->name }}</td>
                         <td class="px-4 py-3 text-gray-600">{{ $product->brand }}</td>
                         <td class="px-4 py-3 text-gray-600 italic">{{ $product->box_spec }}</td>
                         <td class="px-4 py-3 text-gray-600">{{ $product->carton_spec }}</td>
+                        <td class="px-4 py-3 text-sm font-semibold text-purple-700">{{ $product->batch_number }}</td>
+                        <td class="px-4 py-3 text-sm {{ $product->is_expiring_soon ? 'text-red-600 font-bold' : 'text-gray-600' }}">
+                            {{ $product->expiry_date ? $product->expiry_date->format('d/m/Y') : '-' }}
+                        </td>
                         <td class="px-4 py-3 text-center">
                             <span class="px-2 py-1 rounded-full text-xs font-bold {{ ($product->inventory?->quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500' }}">
                                 {{ number_format($product->inventory?->quantity ?? 0) }}
@@ -56,8 +73,8 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">Không tìm thấy sản phẩm nào.</td>
+                     <tr>
+                        <td colspan="11" class="px-4 py-8 text-center text-gray-500">Không tìm thấy sản phẩm nào.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -107,10 +124,20 @@
                                 <input type="text" wire:model="carton_spec" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="VD: 24 chai/thùng">
                                 @error('carton_spec') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
-                            <div class="col-span-1">
+                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Vị trí</label>
                                 <input type="text" wire:model="location" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('location') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Số lô <span class="text-red-500">*</span></label>
+                                <input type="text" wire:model="batch_number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('batch_number') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Hạn sử dụng</label>
+                                <input type="date" wire:model="expiry_date" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('expiry_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Tình trạng</label>
@@ -127,6 +154,43 @@
                             Lưu lại
                         </button>
                         <button type="button" wire:click="$set('showModal', false)" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Huỷ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Import Modal -->
+    @if($showImportModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
+                <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Nhập dữ liệu từ Excel</h3>
+                        
+                        <div class="mb-4">
+                            <p class="text-sm text-gray-500 mb-2">Tải tệp Excel (.xlsx, .xls) hoặc CSV để nhập hàng loạt sản phẩm.</p>
+                            <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium underline">Tải tệp mẫu (.xlsx) tại đây</a>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Chọn tệp của bạn</label>
+                            <input type="file" wire:model="excelFile" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            @error('excelFile') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div wire:loading wire:target="excelFile" class="mt-2 text-sm text-blue-600">
+                            Đang tải tệp lên...
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" wire:click="importExcel" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                            Bắt đầu nhập
+                        </button>
+                        <button type="button" wire:click="$set('showImportModal', false)" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                             Huỷ
                         </button>
                     </div>

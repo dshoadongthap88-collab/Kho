@@ -24,31 +24,50 @@
 
         <table class="w-full mb-4">
             <thead>
-                <tr class="bg-gray-50">
-                    <th class="px-3 py-2 text-left text-sm">Sản phẩm</th>
-                    <th class="px-3 py-2 text-center text-sm w-32">Số lượng</th>
-                    <th class="px-3 py-2 text-center text-sm w-20"></th>
+                <tr class="bg-gray-50 border-b">
+                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Sản phẩm</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider w-32">Số lô</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider w-40">Hạn dùng</th>
+                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider w-40">Vị trí</th>
+                    <th class="px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider w-24">SL</th>
+                    <th class="px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider w-10"></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($items as $index => $item)
-                <tr class="border-b">
-                    <td class="px-3 py-2">
-                        <select wire:model="items.{{ $index }}.product_id" class="w-full rounded-lg border-gray-300 shadow-sm text-sm">
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-3 py-3">
+                        <select wire:model.live="items.{{ $index }}.product_id" class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">-- Chọn sản phẩm --</option>
                             @foreach($products as $product)
-                                <option value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }}</option>
+                                <option value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }} ({{ $product->brand }})</option>
                             @endforeach
                         </select>
                         @error("items.{$index}.product_id") <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </td>
-                    <td class="px-3 py-2">
-                        <input type="number" wire:model="items.{{ $index }}.quantity" min="1"
-                               class="w-full text-center rounded-lg border-gray-300 shadow-sm text-sm">
+                    <td class="px-3 py-3">
+                        <input type="text" wire:model="items.{{ $index }}.batch_number" 
+                               class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Số lô...">
+                        @error("items.{$index}.batch_number") <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </td>
-                    <td class="px-3 py-2 text-center">
+                    <td class="px-3 py-3">
+                        <input type="date" wire:model="items.{{ $index }}.expiry_date" 
+                               class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    </td>
+                    <td class="px-3 py-3">
+                        <input type="text" wire:model="items.{{ $index }}.warehouse_location" 
+                               class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Vị trí...">
+                    </td>
+                    <td class="px-3 py-3">
+                        <input type="number" wire:model="items.{{ $index }}.quantity" step="0.0001" min="0"
+                               class="w-full text-center rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        @error("items.{$index}.quantity") <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </td>
+                    <td class="px-3 py-3 text-center">
                         @if(count($items) > 1)
-                            <button wire:click="removeItem({{ $index }})" class="text-red-500 hover:text-red-700">✕</button>
+                            <button wire:click="removeItem({{ $index }})" class="text-red-400 hover:text-red-600 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
                         @endif
                     </td>
                 </tr>

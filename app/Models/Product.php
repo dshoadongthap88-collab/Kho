@@ -21,7 +21,22 @@ class Product extends Model
         'type',
         'status',
         'location',
+        'batch_number',
+        'expiry_date',
     ];
+
+    protected $casts = [
+        'expiry_date' => 'date',
+    ];
+
+    public function getIsExpiringSoonAttribute()
+    {
+        if (!$this->expiry_date) {
+            return false;
+        }
+
+        return now()->addMonths(6)->greaterThanOrEqualTo($this->expiry_date);
+    }
 
     public function category()
     {

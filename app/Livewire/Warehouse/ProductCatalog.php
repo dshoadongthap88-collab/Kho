@@ -6,14 +6,19 @@ use App\Models\Product;
 use App\Models\Inventory;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\ProductsImport;
 use Illuminate\Validation\Rule;
 
 class ProductCatalog extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     public $search = '';
     public $showModal = false;
+    public $showImportModal = false;
     public $isEdit = false;
     public $productId;
 
@@ -25,7 +30,11 @@ class ProductCatalog extends Component
     public $carton_spec;
     public $status = 'active';
     public $location;
+    public $batch_number;
+    public $expiry_date;
     public $quantity = 0;
+
+    public $excelFile;
 
     protected $queryString = ['search'];
 
@@ -39,6 +48,8 @@ class ProductCatalog extends Component
             'carton_spec' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive',
             'location' => 'nullable|string|max:255',
+            'batch_number' => 'required|string|max:255',
+            'expiry_date' => 'nullable|date',
             'quantity' => 'required|numeric|min:0',
         ];
     }
@@ -64,6 +75,8 @@ class ProductCatalog extends Component
             $this->carton_spec = $product->carton_spec;
             $this->status = $product->status;
             $this->location = $product->location;
+            $this->batch_number = $product->batch_number;
+            $this->expiry_date = $product->expiry_date?->format('Y-m-d');
             $this->quantity = $product->inventory?->quantity ?? 0;
         } else {
             $this->isEdit = false;
@@ -86,6 +99,8 @@ class ProductCatalog extends Component
                 'carton_spec' => $this->carton_spec,
                 'status' => $this->status,
                 'location' => $this->location,
+                'batch_number' => $this->batch_number,
+                'expiry_date' => $this->expiry_date ?: null,
             ]);
             
             // Sync location and quantity with inventory if exists
@@ -106,6 +121,8 @@ class ProductCatalog extends Component
                 'carton_spec' => $this->carton_spec,
                 'status' => $this->status,
                 'location' => $this->location,
+                'batch_number' => $this->batch_number,
+                'expiry_date' => $this->expiry_date ?: null,
                 'type' => 'product',
             ]);
 
@@ -129,6 +146,22 @@ class ProductCatalog extends Component
         session()->flash('message', 'Đã xoá sản phẩm.');
     }
 
+    public function importExcel()
+    {
+        $this->validate([
+            'excelFile' => 'required|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        try {
+            Excel::import(new ProductsImport, $this->excelFile);
+            
+            $this->reset(['excelFile', 'showImportModal']);
+            session()->flash('message', 'Nhập dữ liệu từ Excel thành công!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
+    }
+
     public function render()
     {
         $products = Product::query()
@@ -136,7 +169,8 @@ class ProductCatalog extends Component
             ->where(function($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
                   ->orWhere('code', 'like', '%' . $this->search . '%')
-                  ->orWhere('brand', 'like', '%' . $this->search . '%');
+                  ->orWhere('brand', 'like', '%' . $this->search . '%')
+                  ->orWhere('batch_number', 'like', '%' . $this->search . '%');
             })
             ->latest()
             ->paginate(15);

@@ -12,9 +12,9 @@ class InventoryService
     /**
      * Nhập kho sản phẩm
      */
-    public function import(int $productId, int $quantity, string $referenceType = null, int $referenceId = null, string $note = null)
+    public function import(int $productId, float $quantity, string $referenceType = null, int $referenceId = null, string $note = null, string $batchNumber = null, $expiryDate = null)
     {
-        return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId, $note) {
+        return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId, $note, $batchNumber, $expiryDate) {
             $inventory = Inventory::firstOrCreate(
                 ['product_id' => $productId],
                 ['quantity' => 0, 'reserved_quantity' => 0]
@@ -26,6 +26,8 @@ class InventoryService
                 'product_id' => $productId,
                 'type' => 'import',
                 'quantity' => $quantity,
+                'batch_number' => $batchNumber,
+                'expiry_date' => $expiryDate,
                 'reference_type' => $referenceType,
                 'reference_id' => $referenceId,
                 'note' => $note,

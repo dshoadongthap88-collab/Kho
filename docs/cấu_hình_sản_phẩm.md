@@ -26,9 +26,18 @@ Theo yêu cầu nghiệp vụ, một Sản phẩm cần lưu trữ các thông t
   - Nguồn gốc thương hiệu hoặc tên nhà cung ứng, nhà sản xuất ra sản phẩm.
   - *Mục đích*: Hỗ trợ lọc danh sách, kiểm kê theo hãng, hỗ trợ lên báo cáo phân bổ.
 
-- **Vị trí kho (Bin / Rack Location)**:
+- **Vị trí kho (Bin / Rack Location)**: 
   - Vị trí cụ thể của sản phẩm nằm ở dãy nào, kệ nào, tầng nào trong kho vật lý (Ví dụ: `Kệ A-Tầng 2-Ngăn 5`).
   - *Mục đích*: Điều phối viên và thủ kho có thể tìm kiếm và lấy hàng nhanh chóng dựa trên hướng dẫn vị trí, rút ngắn thời gian xếp và dỡ hàng hoá.
+
+- **Số lô (Batch Number / Lot)**:
+  - Mã định danh cho lô hàng sản xuất.
+  - *Đặc tính*: Bắt buộc nhập. Giúp truy suất nguồn gốc và quản lý theo lô hàng.
+
+- **Hạn sử dụng (Expiry Date)**:
+  - Ngày hết hạn của sản phẩm/lô hàng.
+  - *Đặc tính*: Không bắt buộc nhưng khuyến khích.
+  - *Cảnh báo*: Hệ thống tự động hiển thị cảnh báo đỏ trên toàn bộ dòng sản phẩm trong danh sách nếu hạn sử dụng còn dưới 6 tháng tính từ ngày hiện tại.
 
 - **Tình trạng (Status)**:
   - Theo dõi vòng đời lưu thông của hàng hóa trong hệ thống:
@@ -37,10 +46,11 @@ Theo yêu cầu nghiệp vụ, một Sản phẩm cần lưu trữ các thông t
 
 ## 2. Giao diện chức năng ưu tiên (CRUD)
 
-- **Create (Thêm mới)**: Form nhập liệu bao gồm 7 trường cấu hình ở trên (Mã, Tên, ĐVT, Quy cách, Hãng, Vị trí kho, Tình trạng), trong đó mặc định trạng thái ban đầu là *Đang kinh doanh*.
+- **Create (Thêm mới)**: Form nhập liệu bao gồm các trường cấu hình ở trên (Mã, Tên, ĐVT, Quy cách, Hãng, Vị trí kho, Số lô, Hạn sử dụng, Tình trạng), trong đó mặc định trạng thái ban đầu là *Đang kinh doanh*.
 - **Read (Danh sách)**: Bảng dữ liệu sản phẩm.
-  - Cho phép tìm kiếm bằng Mã sản phẩm, Tên sản phẩm.
+  - Cho phép tìm kiếm bằng Mã sản phẩm, Tên sản phẩm, Số lô.
   - Cho phép lọc dữ liệu theo bộ lọc: *Hãng sản xuất* và *Tình trạng*.
-  - Hiển thị *Vị trí kho* ngay trên danh sách tổng quan.
+  - Hiển thị *Số lô* và *Hạn sử dụng* ngay trên danh sách tổng quan.
+  - Hiển thị nền đỏ cho các dòng sản phẩm có hạn sử dụng < 6 tháng.
 - **Update (Chỉnh sửa)**: Cập nhật mọi trường trừ dữ liệu "Mã sản phẩm" trong trường hợp mã cũ đã có giao dịch. Chuyển đổi trạng thái Đang kinh doanh sang Ngừng kinh doanh tại form này.
 - **Delete (Xóa/Ẩn)**: Kiểm tra ràng buộc chặt chẽ. Nếu mặt hàng chưa có Thẻ kho/phiếu nào -> Xóa vĩnh viễn (Hard delete). Nếu đã có -> Chuyển trạng thái sang *Ngừng kinh doanh*.

@@ -32,7 +32,10 @@ class ProductCatalog extends Component
     public $location;
     public $batch_number;
     public $expiry_date;
-    public $quantity = 0;
+    public $quantity;
+    public $min_stock = 0;
+    public $selectedProducts = [];
+    public $filterMode = 'all';
 
     public $excelFile;
 
@@ -51,7 +54,42 @@ class ProductCatalog extends Component
             'batch_number' => 'required|string|max:255',
             'expiry_date' => 'nullable|date',
             'quantity' => 'required|numeric|min:0',
+            'min_stock' => 'required|numeric|min:0',
         ];
+    }
+
+    public function updatedFilterMode()
+    {
+        $this->resetPage();
+    }
+
+    public function selectExpiring()
+    {
+        $this->selectedProducts = Product::whereNotNull('expiry_date')
+            ->where('expiry_date', '<=', now()->addMonths(6))
+            ->pluck('id')
+            ->map(fn($id) => (string)$id)
+            ->toArray();
+    }
+
+    public function selectLowStock()
+    {
+        $this->selectedProducts = Product::whereHas('inventory', function($q) {
+                $q->whereColumn('quantity', '<=', 'products.min_stock');
+            })
+            ->where('min_stock', '>', 0)
+            ->pluck('id')
+            ->map(fn($id) => (string)$id)
+            ->toArray();
+    }
+
+    public function toggleSelectAll($productIds)
+    {
+        if (count($this->selectedProducts) === count($productIds)) {
+            $this->selectedProducts = [];
+        } else {
+            $this->selectedProducts = collect($productIds)->map(fn($id) => (string)$id)->toArray();
+        }
     }
 
     public function updatedSearch()
@@ -78,8 +116,10 @@ class ProductCatalog extends Component
             $this->batch_number = $product->batch_number;
             $this->expiry_date = $product->expiry_date?->format('Y-m-d');
             $this->quantity = $product->inventory?->quantity ?? 0;
+            $this->min_stock = $product->min_stock;
         } else {
             $this->isEdit = false;
+            $this->min_stock = 0;
         }
 
         $this->showModal = true;
@@ -101,6 +141,7 @@ class ProductCatalog extends Component
                 'location' => $this->location,
                 'batch_number' => $this->batch_number,
                 'expiry_date' => $this->expiry_date ?: null,
+                'min_stock' => $this->min_stock,
             ]);
             
             // Sync location and quantity with inventory if exists
@@ -123,6 +164,7 @@ class ProductCatalog extends Component
                 'location' => $this->location,
                 'batch_number' => $this->batch_number,
                 'expiry_date' => $this->expiry_date ?: null,
+                'min_stock' => $this->min_stock,
                 'type' => 'product',
             ]);
 
@@ -172,11 +214,21 @@ class ProductCatalog extends Component
                   ->orWhere('brand', 'like', '%' . $this->search . '%')
                   ->orWhere('batch_number', 'like', '%' . $this->search . '%');
             })
+            ->when($this->filterMode === 'expiring', function($q) {
+                $q->whereNotNull('expiry_date')
+                  ->where('expiry_date', '<=', now()->addMonths(6));
+            })
+            ->when($this->filterMode === 'low_stock', function($q) {
+                $q->whereHas('inventory', function($iq) {
+                    $iq->whereColumn('quantity', '<=', 'products.min_stock');
+                })->where('min_stock', '>', 0);
+            })
             ->latest()
             ->paginate(15);
 
         return view('livewire.warehouse.product-catalog', [
-            'products' => $products
+            'products' => $products,
+            'allProductIdsOnPage' => $products->pluck('id')->toArray()
         ]);
     }
 }

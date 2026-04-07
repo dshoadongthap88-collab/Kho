@@ -3,6 +3,7 @@
 namespace App\Livewire\Warehouse;
 
 use App\Models\Product;
+use App\Models\Supplier;
 use App\Services\InventoryService;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -21,11 +22,31 @@ class StockInForm extends Component
 
     public function mount()
     {
-        $this->addItem();
+        if (empty($this->items)) {
+            $this->addItem();
+        }
+    }
+
+    public function canAddItem()
+    {
+        if (empty($this->items)) {
+            return true;
+        }
+
+        $lastItem = end($this->items);
+
+        return !empty($lastItem['product_id']) && 
+               !empty($lastItem['batch_number']) && 
+               !empty($lastItem['quantity']) && 
+               $lastItem['quantity'] > 0;
     }
 
     public function addItem()
     {
+        if (!$this->canAddItem()) {
+            return;
+        }
+
         $this->items[] = [
             'product_id' => '',
             'batch_number' => '',
@@ -116,6 +137,7 @@ class StockInForm extends Component
     {
         return view('livewire.warehouse.stock-in-form', [
             'products' => Product::where('status', 'active')->orderBy('name')->get(),
+            'suppliers' => Supplier::orderBy('name')->get(),
         ]);
     }
 }

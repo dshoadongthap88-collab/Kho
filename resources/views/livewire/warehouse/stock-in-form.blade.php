@@ -9,7 +9,12 @@
         <div class="grid grid-cols-2 gap-4 mb-6">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nhà cung cấp</label>
-                <input type="text" wire:model="supplier_name" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <input type="text" wire:model="supplier_name" list="suppliers_list" class="w-full rounded-lg border-gray-300 shadow-sm" placeholder="Chọn hoặc nhập tên...">
+                <datalist id="suppliers_list">
+                    @foreach($suppliers as $supplier)
+                        <option value="{{ $supplier->name }}">
+                    @endforeach
+                </datalist>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Loại nhập</label>
@@ -46,7 +51,7 @@
                         @error("items.{$index}.product_id") <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </td>
                     <td class="px-3 py-3">
-                        <input type="text" wire:model="items.{{ $index }}.batch_number" 
+                        <input type="text" wire:model.live="items.{{ $index }}.batch_number" 
                                class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Số lô...">
                         @error("items.{$index}.batch_number") <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </td>
@@ -59,7 +64,7 @@
                                class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Vị trí...">
                     </td>
                     <td class="px-3 py-3">
-                        <input type="number" wire:model="items.{{ $index }}.quantity" step="0.0001" min="0"
+                        <input type="number" wire:model.live="items.{{ $index }}.quantity" step="0.0001" min="0"
                                class="w-full text-center rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
                         @error("items.{$index}.quantity") <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </td>
@@ -75,7 +80,19 @@
             </tbody>
         </table>
 
-        <button wire:click="addItem" class="text-indigo-600 hover:text-indigo-800 text-sm mb-4">+ Thêm dòng</button>
+        <div class="mb-4">
+            @if($this->canAddItem())
+                <button wire:click="addItem" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center gap-1 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="12 4v16m8-8H4"></path></svg>
+                    Thêm dòng
+                </button>
+            @else
+                <button disabled class="text-gray-400 cursor-not-allowed text-sm flex items-center gap-1" title="Vui lòng nhập đủ thông tin dòng hiện tại trước khi thêm dòng mới">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="12 4v16m8-8H4"></path></svg>
+                    Thêm dòng (Chưa hoàn tất dòng trên)
+                </button>
+            @endif
+        </div>
 
         <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>

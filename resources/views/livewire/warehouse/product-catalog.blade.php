@@ -4,12 +4,36 @@
             <input wire:model.live="search" type="text" placeholder="Tìm theo tên, mã, hãng..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
         </div>
         <div class="flex gap-2">
-            <button wire:click="$set('showImportModal', true)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                <span>📊</span> Nhập Excel
-            </button>
+            @if(count($selectedProducts) > 0)
+                <button onclick="window.print()" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                    <span>🖨️</span> In {{ count($selectedProducts) }} mục đã chọn
+                </button>
+            @endif
             <button wire:click="openModal" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
                 <span>➕</span> Thêm sản phẩm
             </button>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-4 mb-4 bg-gray-50 p-3 rounded-lg border">
+        <span class="text-sm font-medium text-gray-600">Phân loại nhanh:</span>
+        <div class="flex gap-2">
+            <button wire:click="$set('filterMode', 'all')" class="px-3 py-1 text-sm rounded-full {{ $filterMode === 'all' ? 'bg-blue-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100' }}">
+                Tất cả
+            </button>
+            <button wire:click="$set('filterMode', 'expiring')" class="px-3 py-1 text-sm rounded-full {{ $filterMode === 'expiring' ? 'bg-red-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100' }}">
+                Sắp hết hạn
+            </button>
+            <button wire:click="$set('filterMode', 'low_stock')" class="px-3 py-1 text-sm rounded-full {{ $filterMode === 'low_stock' ? 'bg-orange-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100' }}">
+                Sắp hết tồn
+            </button>
+        </div>
+        
+        <div class="h-6 w-px bg-gray-300 mx-2"></div>
+        
+        <div class="flex gap-2">
+            <button wire:click="selectExpiring" class="text-xs text-red-600 hover:underline">Chọn mục hết hạn</button>
+            <button wire:click="selectLowStock" class="text-xs text-orange-600 hover:underline">Chọn mục hết tồn</button>
         </div>
     </div>
 
@@ -29,6 +53,11 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-gray-50 border-b text-gray-600 uppercase text-xs font-semibold">
+                    <th class="px-4 py-3 w-10 no-print">
+                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
+                               {{ count($selectedProducts) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
+                               class="rounded border-gray-300">
+                    </th>
                     <th class="px-4 py-3">Mã sản phẩm</th>
                     <th class="px-4 py-3">Tên sản phẩm</th>
                     <th class="px-4 py-3">Hãng sản xuất</th>
@@ -39,12 +68,18 @@
                     <th class="px-4 py-3 text-center">Số lượng</th>
                     <th class="px-4 py-3">Vị trí</th>
                     <th class="px-4 py-3">Tình trạng</th>
-                    <th class="px-4 py-3 text-right">Thao tác</th>
+                    <th class="px-4 py-3">Tồn tối thiểu</th>
+                    <th class="px-4 py-3 text-right no-print">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($products as $product)
-                    <tr class="hover:bg-gray-50 transition border-b {{ $product->is_expiring_soon ? 'bg-red-50' : '' }}">
+                    <tr class="hover:bg-gray-50 transition border-b 
+                        {{ $product->is_expiring_soon ? 'bg-red-50' : ($product->is_low_stock ? 'bg-orange-50' : '') }}
+                        {{ in_array($product->id, $selectedProducts) ? 'ring-2 ring-blue-400' : '' }}">
+                        <td class="px-4 py-3 no-print">
+                            <input type="checkbox" wire:model.live="selectedProducts" value="{{ $product->id }}" class="rounded border-gray-300">
+                        </td>
                         <td class="px-4 py-3 font-mono text-sm text-blue-600">{{ $product->code }}</td>
                         <td class="px-4 py-3 font-medium text-gray-800">{{ $product->name }}</td>
                         <td class="px-4 py-3 text-gray-600">{{ $product->brand }}</td>
@@ -55,8 +90,10 @@
                             {{ $product->expiry_date ? $product->expiry_date->format('d/m/Y') : '-' }}
                         </td>
                         <td class="px-4 py-3 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold {{ ($product->inventory?->quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500' }}">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold 
+                                {{ $product->is_low_stock ? 'bg-orange-600 text-white' : (($product->inventory?->quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500') }}">
                                 {{ number_format($product->inventory?->quantity ?? 0) }}
+                                @if($product->is_low_stock) ⚠️ @endif
                             </span>
                         </td>
                         <td class="px-4 py-3 text-gray-600">{{ $product->location }}</td>
@@ -67,7 +104,10 @@
                                 <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Ngừng kinh doanh</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-right">
+                        <td class="px-4 py-3 font-semibold text-gray-700">
+                            {{ $product->min_stock > 0 ? number_format($product->min_stock) : '-' }}
+                        </td>
+                        <td class="px-4 py-3 text-right no-print">
                             <button wire:click="openModal({{ $product->id }})" class="text-blue-500 hover:text-blue-700 mr-2" title="Sửa">📝</button>
                             <button onclick="confirm('Xoá sản phẩm này?') || event.stopImmediatePropagation()" wire:click="delete({{ $product->id }})" class="text-red-500 hover:text-red-700" title="Xoá">🗑️</button>
                         </td>
@@ -140,12 +180,12 @@
                                 @error('expiry_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Tình trạng</label>
-                                <select wire:model="status" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                    <option value="active">Đang kinh doanh</option>
-                                    <option value="inactive">Ngừng kinh doanh</option>
-                                </select>
                                 @error('status') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Tồn tối thiểu</label>
+                                <input type="number" wire:model="min_stock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('min_stock') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </div>
@@ -198,4 +238,27 @@
             </div>
         </div>
     @endif
+
+    <style>
+        @media print {
+            .no-print, 
+            header, 
+            nav, 
+            aside, 
+            .sidebar, 
+            .flex.justify-between.items-center.mb-4,
+            .flex.items-center.gap-4.mb-4,
+            .px-4.py-3.bg-gray-50.border-t {
+                display: none !important;
+            }
+            .bg-white { background-color: transparent !important; }
+            .shadow-sm { box-shadow: none !important; }
+            .border { border: 1px solid #ddd !important; }
+            table { width: 100% !important; border-collapse: collapse !important; }
+            th, td { border: 1px solid #ddd !important; padding: 8px !important; }
+            tr:not(.ring-2) { display: none !important; }
+            tr.ring-2 { display: table-row !important; }
+            @page { size: landscape; margin: 1cm; }
+        }
+    </style>
 </div>

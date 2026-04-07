@@ -38,6 +38,16 @@ class Product extends Model
         return now()->addMonths(6)->greaterThanOrEqualTo($this->expiry_date);
     }
 
+    public function getIsLowStockAttribute()
+    {
+        if ($this->min_stock <= 0) {
+            return false;
+        }
+        
+        $quantity = $this->inventory?->quantity ?? 0;
+        return $quantity <= $this->min_stock;
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class);

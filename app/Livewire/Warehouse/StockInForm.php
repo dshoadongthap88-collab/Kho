@@ -12,8 +12,15 @@ class StockInForm extends Component
 {
     public $items = [];
     public $supplier_name = '';
+    public $manufacturer = '';
     public $note = '';
     public $type = 'manual';
+
+    // Modal tạo nhanh sản phẩm
+    public $showProductModal = false;
+    public $newPCode = '';
+    public $newPName = '';
+    public $newPUnit = 'Cái';
 
     protected $rules = [
         'items.*.product_id' => 'required|exists:products,id',
@@ -78,6 +85,58 @@ class StockInForm extends Component
         $this->items = array_values($this->items);
     }
 
+    public function openProductModal()
+    {
+        $this->newPCode = 'P' . str_pad(Product::count() + 1, 4, '0', STR_PAD_LEFT);
+        $this->newPName = '';
+        $this->newPUnit = 'Cái';
+        $this->showProductModal = true;
+    }
+
+    public function createProduct()
+    {
+        $this->validate([
+            'newPCode' => 'required|unique:products,code',
+            'newPName' => 'required|string',
+            'newPUnit' => 'required|string',
+        ]);
+
+        $product = Product::create([
+            'code' => $this->newPCode,
+            'name' => $this->newPName,
+            'unit' => $this->newPUnit,
+            'brand' => $this->manufacturer, // Đồng bộ hãng từ header
+            'status' => 'active',
+        ]);
+
+        $this->showProductModal = false;
+        
+        // Tự động thêm dòng mới với sản phẩm vừa tạo
+        $this->addItemWithProduct($product->id);
+        
+        session()->flash('modal_success', 'Đã tạo sản phẩm mới và thêm vào phiếu!');
+    }
+
+    public function addItemWithProduct($productId)
+    {
+        // Chèn vào dòng trống cuối cùng nếu có, hoặc thêm dòng mới
+        $lastIndex = count($this->items) - 1;
+        if ($lastIndex >= 0 && empty($this->items[$lastIndex]['product_id'])) {
+            $this->items[$lastIndex]['product_id'] = $productId;
+            $this->updatedItems($productId, "items.{$lastIndex}.product_id");
+        } else {
+            $this->items[] = [
+                'product_id' => $productId,
+                'batch_number' => '',
+                'expiry_date' => '',
+                'warehouse_location' => '',
+                'quantity' => 1
+            ];
+            $index = count($this->items) - 1;
+            $this->updatedItems($productId, "items.{$index}.product_id");
+        }
+    }
+
     public function save()
     {
         $this->validate([
@@ -93,6 +152,7 @@ class StockInForm extends Component
             $stockIn = \App\Models\StockIn::create([
                 'code' => 'SI-' . date('Ymd') . '-' . str_pad(\App\Models\StockIn::count() + 1, 4, '0', STR_PAD_LEFT),
                 'supplier_name' => $this->supplier_name,
+                'manufacturer' => $this->manufacturer,
                 'type' => $this->type,
                 'status' => 'completed',
                 'note' => $this->note,
@@ -128,7 +188,7 @@ class StockInForm extends Component
             }
 
             session()->flash('success', 'Nhập kho thành công!');
-            $this->reset(['items', 'supplier_name', 'note']);
+            $this->reset(['items', 'supplier_name', 'manufacturer', 'note']);
             $this->addItem();
         });
     }
@@ -138,6 +198,7 @@ class StockInForm extends Component
         return view('livewire.warehouse.stock-in-form', [
             'products' => Product::where('status', 'active')->orderBy('name')->get(),
             'suppliers' => Supplier::orderBy('name')->get(),
+            'brands' => Product::whereNotNull('brand')->distinct()->pluck('brand'),
         ]);
     }
 }

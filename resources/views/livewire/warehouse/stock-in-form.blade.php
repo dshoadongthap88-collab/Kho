@@ -6,13 +6,22 @@
     <div class="bg-white rounded-xl shadow p-6">
         <h2 class="text-xl font-bold mb-4">📥 Phiếu nhập kho</h2>
 
-        <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-3 gap-4 mb-6">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nhà cung cấp</label>
                 <input type="text" wire:model="supplier_name" list="suppliers_list" class="w-full rounded-lg border-gray-300 shadow-sm" placeholder="Chọn hoặc nhập tên...">
                 <datalist id="suppliers_list">
                     @foreach($suppliers as $supplier)
                         <option value="{{ $supplier->name }}">
+                    @endforeach
+                </datalist>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Hãng sản xuất</label>
+                <input type="text" wire:model="manufacturer" list="brands_list" class="w-full rounded-lg border-gray-300 shadow-sm" placeholder="Nhập hãng SX...">
+                <datalist id="brands_list">
+                    @foreach($brands as $brand)
+                        <option value="{{ $brand }}">
                     @endforeach
                 </datalist>
             </div>
@@ -80,7 +89,7 @@
             </tbody>
         </table>
 
-        <div class="mb-4">
+        <div class="flex items-center gap-4 mb-4">
             @if($this->canAddItem())
                 <button wire:click="addItem" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center gap-1 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="12 4v16m8-8H4"></path></svg>
@@ -92,6 +101,11 @@
                     Thêm dòng (Chưa hoàn tất dòng trên)
                 </button>
             @endif
+
+            <button wire:click="openProductModal" class="text-green-600 hover:text-green-800 font-medium text-sm flex items-center gap-1 transition ml-4">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                ➕ Thêm sản phẩm mới
+            </button>
         </div>
 
         <div class="mb-4">
@@ -106,4 +120,40 @@
             </button>
         </div>
     </div>
+
+    <!-- Quick Product Modal -->
+    @if($showProductModal)
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+            <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                <h3 class="text-lg font-bold mb-4">Tạo nhanh sản phẩm mới</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Mã sản phẩm</label>
+                        <input type="text" wire:model="newPCode" class="w-full rounded-lg border-gray-300 focus:ring-blue-500">
+                        @error('newPCode') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tên sản phẩm</label>
+                        <input type="text" wire:model="newPName" class="w-full rounded-lg border-gray-300 focus:ring-blue-500">
+                        @error('newPName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Đơn vị tính</label>
+                        <input type="text" wire:model="newPUnit" class="w-full rounded-lg border-gray-300 focus:ring-blue-500">
+                        @error('newPUnit') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Hãng sản xuất (Kế thừa từ header)</label>
+                        <input type="text" disabled value="{{ $manufacturer }}" class="w-full rounded-lg border-gray-300 bg-gray-50 text-gray-500">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button wire:click="$set('showProductModal', false)" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Hủy</button>
+                    <button wire:click="createProduct" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Lưu & Thêm dòng</button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

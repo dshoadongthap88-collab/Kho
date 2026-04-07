@@ -11,6 +11,7 @@ class StockIn extends Model
         'code',
         'supplier_name',
         'type',
+        'manufacturer',
         'status',
         'note',
         'created_by',

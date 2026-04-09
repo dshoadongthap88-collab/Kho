@@ -25,4 +25,9 @@ class StockOut extends Model
     {
         return $this->morphMany(InventoryTransaction::class, 'reference');
     }
+
+    public function items()
+    {
+        return $this->hasMany(StockOutItem::class);
+    }
 }

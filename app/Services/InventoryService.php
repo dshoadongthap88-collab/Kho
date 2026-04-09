@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Inventory;
 use App\Models\InventoryTransaction;
-use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 
 class InventoryService
@@ -12,15 +11,17 @@ class InventoryService
     /**
      * Nhập kho sản phẩm
      */
-    public function import(int $productId, float $quantity, string $referenceType = null, int $referenceId = null, string $note = null, string $batchNumber = null, $expiryDate = null)
+    public function import(int $productId, float $quantity, string $referenceType = null, int $referenceId = null, string $note = null, string $batchNumber = null, $expiryDate = null, string $location = null)
     {
-        return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId, $note, $batchNumber, $expiryDate) {
-            $inventory = Inventory::firstOrCreate(
-                ['product_id' => $productId],
-                ['quantity' => 0, 'reserved_quantity' => 0]
-            );
-
+        return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId, $note, $batchNumber, $expiryDate, $location) {
+            $inventory = Inventory::firstOrCreate(['product_id' => $productId]);
             $inventory->increment('quantity', $quantity);
+            
+            // Nếu có vị trí mới, cập nhật luôn vị trí chính trong bảng tồn kho
+            if ($location) {
+                $inventory->warehouse_location = $location;
+                $inventory->save();
+            }
 
             return InventoryTransaction::create([
                 'product_id' => $productId,
@@ -28,6 +29,7 @@ class InventoryService
                 'quantity' => $quantity,
                 'batch_number' => $batchNumber,
                 'expiry_date' => $expiryDate,
+                'warehouse_location' => $location,
                 'reference_type' => $referenceType,
                 'reference_id' => $referenceId,
                 'note' => $note,
@@ -39,9 +41,9 @@ class InventoryService
     /**
      * Xuất kho sản phẩm
      */
-    public function export(int $productId, int $quantity, string $referenceType = null, int $referenceId = null, string $note = null)
+    public function export(int $productId, float $quantity, string $referenceType = null, int $referenceId = null, string $note = null, string $batchNumber = null, $expiryDate = null, string $location = null)
     {
-        return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId, $note) {
+        return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId, $note, $batchNumber, $expiryDate, $location) {
             $inventory = Inventory::where('product_id', $productId)->firstOrFail();
 
             if ($inventory->quantity < $quantity) {
@@ -54,6 +56,9 @@ class InventoryService
                 'product_id' => $productId,
                 'type' => 'export',
                 'quantity' => -$quantity,
+                'batch_number' => $batchNumber,
+                'expiry_date' => $expiryDate,
+                'warehouse_location' => $location,
                 'reference_type' => $referenceType,
                 'reference_id' => $referenceId,
                 'note' => $note,
@@ -63,56 +68,9 @@ class InventoryService
     }
 
     /**
-     * Giữ hàng (Reserve) cho đơn hàng
+     * Điều chỉnh tồn kho
      */
-    public function reserve(int $productId, int $quantity, string $referenceType = null, int $referenceId = null)
-    {
-        return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId) {
-            $inventory = Inventory::where('product_id', $productId)->firstOrFail();
-
-            $available = $inventory->quantity - $inventory->reserved_quantity;
-            if ($available < $quantity) {
-                throw new \Exception("Không đủ hàng khả dụng để giữ chỗ.");
-            }
-
-            $inventory->increment('reserved_quantity', $quantity);
-
-            return InventoryTransaction::create([
-                'product_id' => $productId,
-                'type' => 'reserve',
-                'quantity' => $quantity,
-                'reference_type' => $referenceType,
-                'reference_id' => $referenceId,
-                'created_by' => auth()->id(),
-            ]);
-        });
-    }
-
-    /**
-     * Giải phóng hàng giữ chỗ (Release)
-     */
-    public function release(int $productId, int $quantity, string $referenceType = null, int $referenceId = null)
-    {
-        return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId) {
-            $inventory = Inventory::where('product_id', $productId)->firstOrFail();
-
-            $inventory->decrement('reserved_quantity', $quantity);
-
-            return InventoryTransaction::create([
-                'product_id' => $productId,
-                'type' => 'release',
-                'quantity' => -$quantity,
-                'reference_type' => $referenceType,
-                'reference_id' => $referenceId,
-                'created_by' => auth()->id(),
-            ]);
-        });
-    }
-
-    /**
-     * Điều chỉnh kho (Adjust) sau kiểm kê
-     */
-    public function adjust(int $productId, int $newQuantity, string $note = null)
+    public function adjustQuantity(int $productId, int $newQuantity, string $note = null)
     {
         return DB::transaction(function () use ($productId, $newQuantity, $note) {
             $inventory = Inventory::where('product_id', $productId)->firstOrFail();
@@ -129,5 +87,17 @@ class InventoryService
                 'created_by' => auth()->id(),
             ]);
         });
+    }
+
+    /**
+     * Lấy danh sách các lô hàng có sẵn của một sản phẩm
+     */
+    public function getAvailableBatches(int $productId)
+    {
+        return InventoryTransaction::where('product_id', $productId)
+            ->select('batch_number', 'expiry_date', 'warehouse_location', DB::raw('SUM(quantity) as stock'))
+            ->groupBy('batch_number', 'expiry_date', 'warehouse_location')
+            ->having('stock', '>', 0)
+            ->get();
     }
 }

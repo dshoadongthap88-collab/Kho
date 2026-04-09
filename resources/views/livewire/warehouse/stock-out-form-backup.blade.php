@@ -1,10 +1,6 @@
 <div>
     <style>
         @media print {
-            @page {
-                size: A4;
-                margin: 0; /* Xóa margin mặc định để ẩn URL/Date của trình duyệt */
-            }
             nav, .sidebar-toolbar, button, a, .no-print {
                 display: none !important;
             }
@@ -17,8 +13,6 @@
             }
             body {
                 background: white !important;
-                font-size: 12pt;
-                -webkit-print-color-adjust: exact;
             }
             .print-only {
                 display: block !important;
@@ -67,7 +61,7 @@
                 </div>
             @endif
 
-            <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden printable-area no-print">
+            <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden printable-area">
                 <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
                     <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <span class="text-2xl">📤</span> Phiếu xuất kho
@@ -108,19 +102,17 @@
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr class="bg-slate-50">
-                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-12 no-print">In</th>
-                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Sản phẩm</th>
-                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-16">ĐVT</th>
-                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-28">Số lô</th>
-                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-32">Vị trí</th>
-                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">SL</th>
-                                    <th class="px-2 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-28">Đơn giá</th>
-                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-16">VAT (%)</th>
-                                    <th class="px-2 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-32">Thành tiền</th>
-                                    <th class="px-2 py-3 border-b border-slate-200 w-10 no-print"></th>
+                                    <th class="px-3 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-12 no-print">In</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Sản phẩm</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">ĐVT</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Số lô (Batch)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Hạn dùng</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Vị trí kho</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-28">Số lượng</th>
+                                    <th class="px-4 py-3 border-b border-slate-200 w-12 no-print"></th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-100 no-print">
+                            <tbody class="divide-y divide-slate-100">
                                 @foreach($items as $index => $item)
                                 <tr wire:key="item-{{ $index }}" class="hover:bg-slate-50/50 transition duration-150 {{ !$item['is_printed'] ? 'no-print' : '' }}">
                                     <td class="px-3 py-4 text-center no-print">
@@ -146,35 +138,24 @@
                                             {{ $items[$index]['unit'] ?: '-' }}
                                         </span>
                                     </td>
-                                    <td class="px-2 py-4">
+                                    <td class="px-4 py-4">
                                         <input type="text" wire:model.live="items.{{ $index }}.batch_number" 
-                                               class="w-full rounded-lg text-xs border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Số lô...">
+                                               class="w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Số lô...">
                                     </td>
-                                    <td class="px-2 py-4">
+                                    <td class="px-4 py-4">
                                         <input type="date" wire:model="items.{{ $index }}.expiry_date" 
                                                class="w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0">
                                     </td>
-                                    <td class="px-2 py-4">
+                                    <td class="px-4 py-4">
                                         <input type="text" wire:model="items.{{ $index }}.warehouse_location" list="location_list_{{ $index }}"
-                                               class="w-full text-xs rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Vị trí...">
+                                               class="w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Vị trí lấy hàng...">
                                     </td>
-                                    <td class="px-2 py-4">
+                                    <td class="px-4 py-4">
                                         <input type="number" wire:model.live="items.{{ $index }}.quantity" step="0.0001" min="0"
-                                               class="w-full text-center text-xs rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0">
-                                        @error("items.{$index}.quantity") <p class="text-red-500 text-[10px] mt-1 no-print">{{ $message }}</p> @enderror
+                                               class="w-full text-center rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0">
+                                        @error("items.{$index}.quantity") <p class="text-red-500 text-xs mt-1 no-print">{{ $message }}</p> @enderror
                                     </td>
-                                    <td class="px-2 py-4">
-                                        <input type="number" wire:model.live="items.{{ $index }}.unit_price" step="0.01" min="0"
-                                               class="w-full text-right text-xs rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                                    </td>
-                                    <td class="px-2 py-4">
-                                        <input type="number" wire:model.live="items.{{ $index }}.vat_rate" step="0.1" min="0"
-                                               class="w-full text-center text-xs rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                                    </td>
-                                    <td class="px-2 py-4 text-right font-bold text-indigo-700">
-                                        {{ number_format($items[$index]['total_amount'] ?? 0) }} đ
-                                    </td>
-                                    <td class="px-2 py-4 text-center no-print">
+                                    <td class="px-4 py-4 text-center no-print">
                                         @if(count($items) > 1)
                                             <button wire:click="removeItem({{ $index }})" class="text-slate-400 hover:text-red-500 transition p-1 rounded-full hover:bg-red-50" title="Xóa dòng">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -214,141 +195,14 @@
                         </button>
                     </div>
 
-                </div>
-            </div>
-
-            <!-- PHẦN IN PDF BỊ ẨN KHI XEM THƯỜNG -->
-            <div class="hidden print-only print-container inset-0 bg-white w-full text-black" style="font-family: 'Times New Roman', serif; padding: 15mm;">
-                <!-- 1/5 Header: Company Info -->
-                <div class="mb-2">
-                    <h1 class="text-xl font-bold uppercase">CÔNG TY TNHH ABC</h1>
-                    <p class="text-[13px]">Địa chỉ: 123 Long An</p>
-                    <p class="text-[13px]">Điện thoại: 0708091050</p>
-                </div>
-                
-                <div class="text-center mb-4 mt-2">
-                    <h2 class="text-3xl font-bold uppercase tracking-widest text-slate-900">PHIẾU XUẤT KHO</h2>
-                    <p class="italic text-[13px] mt-1">Ngày {{ date('d') }} tháng {{ date('m') }} năm {{ date('Y') }}</p>
-                    <p class="text-[13px] font-bold">Số: SO-{{ date('Ymd') }}-XX</p>
-                </div>
-                <div style="border-bottom: 2px solid #000; margin-bottom: 12px;"></div>
-
-                <!-- 1/5 Customer Info -->
-                <div style="margin-bottom: 20px;">
-                    <table class="w-full text-sm">
-                        <tr>
-                            <td class="font-bold w-48">Khách hàng / Đơn vị nhận:</td>
-                            <td>{{ $customer_name ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Địa chỉ:</td>
-                            <td>{{ $customer_details['address'] ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Điện thoại:</td>
-                            <td>{{ $customer_details['phone'] ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Email:</td>
-                            <td>{{ $customer_details['email'] ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Người liên hệ:</td>
-                            <td>{{ $customer_details['contact_person'] ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Lý do xuất:</td>
-                            <td>{{ $note ?: '..........................................................' }}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <!-- 3/5 Items Table -->
-                <div>
-                    <table class="w-full border-collapse border border-slate-800 text-[12px] mb-2 page-break-inside-avoid">
-                        <thead>
-                            <tr class="bg-gray-100">
-                                <th class="border border-slate-800 px-1 py-1.5">STT</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-left">Mã & Tên SP</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-center">ĐVT</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-center">Số lô</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-center">Hạn dùng</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-center">Số lượng</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-right">Đơn giá</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-center">VAT(%)</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-right">Thành tiền</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php $grandTotal = 0; $validCount = 0; @endphp
-                            @foreach($items as $index => $item)
-                                @if($item['product_id'] && $item['is_printed'])
-                                    @php 
-                                        $itemTotal = floatval($item['total_amount'] ?? 0);
-                                        $grandTotal += $itemTotal; 
-                                        $validCount++;
-                                    @endphp
-                                    <tr>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ $validCount }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 font-bold uppercase">{{ $item['product_search'] }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ $item['unit'] }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ $item['batch_number'] }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ $item['expiry_date'] ? date('d/m/Y', strtotime($item['expiry_date'])) : '' }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ number_format(floatval($item['quantity']), 2) }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-right">{{ number_format(floatval($item['unit_price'])) }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ floatval($item['vat_rate']) }}%</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-right font-bold">{{ number_format($itemTotal) }}</td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                            @for($i = $validCount; $i < 10; $i++)
-                                <tr>
-                                    <td class="border border-slate-800 px-1 py-1.5 text-center text-transparent">_</td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                </tr>
-                            @endfor
-                            <tr>
-                                <td colspan="8" class="border border-slate-800 px-1 py-1.5 text-right font-bold uppercase">Tổng cộng:</td>
-                                <td class="border border-slate-800 px-1 py-1.5 text-right font-bold text-[14px]">{{ number_format($grandTotal) }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <div class="mb-2 mt-2">
-                        <p class="italic text-sm">Số tiền viết bằng chữ: <strong>{{ app(\App\Livewire\Warehouse\StockOutForm::class)->numberToWords($grandTotal) }}</strong></p>
-                    </div>
-
-                    <div class="grid grid-cols-4 gap-4 text-center mt-4">
+                    <div class="hidden print-only mt-12 grid grid-cols-2 gap-8 text-center">
                         <div>
-                            <p class="font-bold text-sm">Khách hàng nhận</p>
-                            <p class="text-xs italic">(Ký, ghi rõ họ tên)</p>
-                            <div style="height: 80px;"></div>
-                            <p class="font-bold uppercase text-xs">{{ current((array)($customer_details['contact_person'] ?? '..........')) ?: '........................' }}</p>
+                            <p class="font-bold">Người lập phiếu</p>
+                            <p class="text-xs text-slate-400 mt-12">(Ký và ghi rõ họ tên)</p>
                         </div>
                         <div>
-                            <p class="font-bold text-sm">Nhân viên giao hàng</p>
-                            <p class="text-xs italic">(Ký, ghi rõ họ tên)</p>
-                            <div style="height: 80px;"></div>
-                            <p class="font-bold uppercase text-xs">........................</p>
-                        </div>
-                        <div>
-                            <p class="font-bold text-sm">Kế toán</p>
-                            <p class="text-xs italic">(Ký, ghi rõ họ tên)</p>
-                            <div style="height: 80px;"></div>
-                            <p class="font-bold uppercase text-xs">........................</p>
-                        </div>
-                        <div>
-                            <p class="font-bold text-sm">Quản lý</p>
-                            <p class="text-xs italic">(Ký, ghi rõ họ tên)</p>
-                            <div style="height: 80px;"></div>
-                            <p class="font-bold uppercase text-xs">........................</p>
+                            <p class="font-bold">Người nhận hàng</p>
+                            <p class="text-xs text-slate-400 mt-12">(Ký và ghi rõ họ tên)</p>
                         </div>
                     </div>
                 </div>

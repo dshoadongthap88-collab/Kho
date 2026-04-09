@@ -12,7 +12,7 @@
                 <input type="text" wire:model="supplier_name" list="suppliers_list" class="w-full rounded-lg border-gray-300 shadow-sm" placeholder="Chọn hoặc nhập tên...">
                 <datalist id="suppliers_list">
                     @foreach($suppliers as $supplier)
-                        <option value="{{ $supplier->name }}">
+                        <option value="{{ $supplier->name }}"></option>
                     @endforeach
                 </datalist>
             </div>
@@ -21,7 +21,7 @@
                 <input type="text" wire:model="manufacturer" list="brands_list" class="w-full rounded-lg border-gray-300 shadow-sm" placeholder="Nhập hãng SX...">
                 <datalist id="brands_list">
                     @foreach($brands as $brand)
-                        <option value="{{ $brand }}">
+                        <option value="{{ $brand }}"></option>
                     @endforeach
                 </datalist>
             </div>
@@ -51,12 +51,14 @@
                 @foreach($items as $index => $item)
                 <tr class="border-b hover:bg-gray-50">
                     <td class="px-3 py-3">
-                        <select wire:model.live="items.{{ $index }}.product_id" class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">-- Chọn sản phẩm --</option>
+                        <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}" 
+                               class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="Gõ mã hoặc tên SP...">
+                        <datalist id="product_list_{{ $index }}">
                             @foreach($products as $product)
-                                <option value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }} ({{ $product->brand }})</option>
+                                <option value="{{ $product->code }} - {{ $product->name }}"></option>
                             @endforeach
-                        </select>
+                        </datalist>
                         @error("items.{$index}.product_id") <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </td>
                     <td class="px-3 py-3">

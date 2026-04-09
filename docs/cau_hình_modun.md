@@ -10,9 +10,13 @@ Hệ thống được cấu trúc thành 5 module chính để tối ưu hóa qu
   - Cập nhật thông tin đối tác.
 
 ## 2. Module: Kho
-Quản lý các hoạt động trực tiếp tại kho hàng.
-- **Nhập kho**: Quản lý phiếu nhập (chọn NCC, vật tư, số lượng, vị trí lưu kho).
-- **Xuất kho**: Quản lý phiếu xuất (chọn KH/Bộ phận, vật tư, số lượng).
+Quản lý các hoạt động trực tiếp tại kho hàng với cơ chế **Tự động hóa (Autofill)**:
+- **Nhập kho**: Quản lý phiếu nhập. [Chi tiết cấu hình](file:///c:/Project/docs/cau_hinh_nhap_kho.md)
+  - Tìm kiếm thông minh (không phân biệt hoa/thường).
+  - Tự động điền thông tin mặc định (Lô, Hạn dùng, Vị trí) từ danh mục.
+- **Xuất kho**: Quản lý phiếu xuất. [Chi tiết cấu hình](file:///c:/Project/docs/cau_hinh_xuat_kho.md)
+  - Chọn lô hàng thực tế (Batch Selection): Tự động hiển thị bảng chọn nếu có nhiều lô trong kho.
+  - Tự động điền dữ liệu tồn kho thực tế.
 - **Tồn kho**: Theo dõi số lượng thực tế theo thời gian thực và vị trí.
 - **Kiểm kê kho**: Tạo phiếu kiểm kê, đối soát thực tế và máy, cân bằng kho tự động.
 

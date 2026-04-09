@@ -8,18 +8,76 @@
     @livewireStyles
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <nav class="bg-slate-800 text-white shadow-lg">
+    <nav class="bg-indigo-900 text-white shadow-xl sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-6">
-                <span class="text-xl font-bold">📦 ERP Kho</span>
-                <a href="{{ route('warehouse.product-catalog') }}" class="hover:text-indigo-300 transition text-sm {{ request()->routeIs('warehouse.product-catalog') ? 'text-indigo-300 font-semibold' : '' }}">Tên sản phẩm</a>
-                <a href="{{ route('warehouse.contacts') }}" class="hover:text-amber-300 transition text-sm {{ request()->routeIs('warehouse.contacts') ? 'text-amber-300 font-semibold' : '' }}">Khách hàng/NCC</a>
-                <a href="{{ route('warehouse.inventory') }}" class="hover:text-indigo-300 transition text-sm {{ request()->routeIs('warehouse.inventory') ? 'text-indigo-300 font-semibold' : '' }}">Tồn kho</a>
-                <a href="{{ route('warehouse.stock-in') }}" class="hover:text-green-300 transition text-sm {{ request()->routeIs('warehouse.stock-in') ? 'text-green-300 font-semibold' : '' }}">Nhập kho</a>
-                <a href="{{ route('warehouse.stock-out') }}" class="hover:text-orange-300 transition text-sm {{ request()->routeIs('warehouse.stock-out') ? 'text-orange-300 font-semibold' : '' }}">Xuất kho</a>
-                <a href="{{ route('warehouse.stock-count') }}" class="hover:text-yellow-300 transition text-sm {{ request()->routeIs('warehouse.stock-count') ? 'text-yellow-300 font-semibold' : '' }}">Kiểm kê</a>
-                <a href="{{ route('warehouse.bom') }}" class="hover:text-purple-300 transition text-sm {{ request()->routeIs('warehouse.bom') ? 'text-purple-300 font-semibold' : '' }}">BOM / NVL</a>
-                <a href="{{ route('warehouse.reports') }}" class="hover:text-cyan-300 transition text-sm {{ request()->routeIs('warehouse.reports') ? 'text-cyan-300 font-semibold' : '' }}">Báo cáo</a>
+            <div class="flex items-center gap-8">
+                <a href="{{ route('warehouse.inventory') }}" class="flex items-center gap-2 text-xl font-extrabold tracking-tight">
+                    <span class="bg-white text-indigo-900 p-1 rounded-lg">📦</span>
+                    <span>ERP KHO</span>
+                </a>
+                
+                <div class="hidden md:flex items-center gap-1">
+                    <!-- Module 1: Thông tin NCC/KH -->
+                    <a href="{{ route('warehouse.contacts') }}" class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 hover:bg-indigo-800 {{ request()->routeIs('warehouse.contacts') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                        1. Thông tin NCC/KH
+                    </a>
+
+                    <!-- Module 2: Kho -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 group-hover:bg-indigo-800 flex items-center gap-1 {{ request()->routeIs('warehouse.stock-*') || request()->routeIs('warehouse.inventory') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                            2. Kho
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0">
+                            <a href="{{ route('warehouse.stock-in') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Nhập kho</a>
+                            <a href="{{ route('warehouse.stock-out') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Xuất kho</a>
+                            <a href="{{ route('warehouse.inventory') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Tồn kho</a>
+                            <a href="{{ route('warehouse.stock-count') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Kiểm kê kho</a>
+                        </div>
+                    </div>
+
+                    <!-- Module 3: Sản Phẩm, BOM/NVL -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 group-hover:bg-indigo-800 flex items-center gap-1 {{ request()->routeIs('warehouse.product-*') || request()->routeIs('warehouse.bom') || request()->routeIs('warehouse.material-*') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                            3. Sản phẩm & BOM
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="{{ route('warehouse.product-catalog') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Danh mục sản phẩm</a>
+                            <a href="{{ route('warehouse.material-names') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Tên NVL</a>
+                            <a href="{{ route('warehouse.bom') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">BOM/NVL</a>
+                        </div>
+                    </div>
+
+                    <!-- Module 4: Tổng hợp -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 group-hover:bg-indigo-800 flex items-center gap-1 {{ request()->routeIs('warehouse.purchase-*') || request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                            4. Tổng hợp
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="{{ route('warehouse.purchase-request') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Phiếu đề xuất mua hàng</a>
+                            <a href="{{ route('warehouse.delivery-note') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Biên bản giao nhận</a>
+                            <a href="{{ route('warehouse.reports') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Báo cáo tổng hợp</a>
+                        </div>
+                    </div>
+
+                    <!-- Module 5: Giao hàng -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 group-hover:bg-indigo-800 flex items-center gap-1 {{ request()->routeIs('warehouse.customer-*') || request()->routeIs('warehouse.delivery-report') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                            5. Giao hàng
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="{{ route('warehouse.customer-debt') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Công nợ khách hàng</a>
+                            <a href="{{ route('warehouse.delivery-report') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Báo cáo giao hàng</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <span class="text-xs text-indigo-300">v1.1</span>
             </div>
         </div>
     </nav>

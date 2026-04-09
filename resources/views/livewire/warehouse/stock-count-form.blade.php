@@ -3,11 +3,22 @@
         @media print {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
-            body { background: white !important; margin: 0; padding: 0; }
+            body { background: white !important; margin: 0; padding: 0; color: black !important; }
             .bg-white { box-shadow: none !important; border: none !important; }
-            table { width: 100% !important; border-collapse: collapse !important; }
-            th, td { border: 1px solid #ddd !important; padding: 8px !important; }
+            table { width: 100% !important; border-collapse: collapse !important; margin-top: 10px; }
+            th, td { border: 1px solid black !important; padding: 6px 4px !important; color: black !important; }
             
+            /* Khu vực 1/3 trên */
+            .print-header {
+                height: 30vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                border-bottom: 2px solid black;
+                margin-bottom: 20px;
+            }
+
             /* Print-specific layout switching */
             body.printing-check-sheet .screen-layout { display: none !important; }
             body:not(.printing-check-sheet) .check-sheet-layout { display: none !important; }
@@ -89,76 +100,70 @@
     </div>
 
     <!-- Layout in phiếu kiểm kê (Ẩn trên màn hình) -->
-    <div class="print-only check-sheet-layout mb-6">
-        <div class="flex justify-between items-start mb-6">
-            <div>
-                <h2 class="text-lg font-bold">CÔNG TY TNHH PHÁT TRIỂN CÔNG NGHỆ</h2>
-                <p class="text-xs">Bộ phận: Kho vận</p>
-            </div>
-            <div class="text-right">
-                <p class="text-xs italic">Mẫu số: 01-KK/KHO</p>
-                <p class="text-xs">Ngày lập: {{ now()->format('d/m/Y') }}</p>
+    <div class="print-only check-sheet-layout px-8">
+        <!-- 1/3 TRÊN -->
+        <div class="print-header text-center">
+            <h1 class="text-4xl font-black mb-4 tracking-tighter">KIỂM KÊ KHO</h1>
+            <p class="text-lg">Ngày ...... tháng ...... năm 20......</p>
+            <div class="mt-4 text-sm italic">
+                (Kèm theo Chứng từ số: .................... / Ngày: ...../...../20.....)
             </div>
         </div>
 
-        <div class="text-center mb-8">
-            <h1 class="text-2xl font-extrabold uppercase tracking-widest">Phiếu kiểm kê kho</h1>
-            <p class="text-sm italic">Thời điểm kiểm kê: ..... giờ ..... ngày ..... tháng ..... năm 202...</p>
-        </div>
-
-        <table class="w-full border-collapse border border-gray-400 mb-8">
-            <thead>
-                <tr class="bg-gray-100 italic">
-                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-8">STT</th>
-                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-24">Mã SP</th>
-                    <th class="border border-gray-400 px-2 py-1 text-[10px]">Tên SP / Quy cách</th>
-                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-20">Số lô</th>
-                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-16">Hạn dùng</th>
-                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-12">ĐVT</th>
-                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-16">Vị trí</th>
-                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-16">Tồn sổ</th>
-                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-16">Thực tế</th>
-                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-24">Ghi chú</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $count = 1; @endphp
-                @foreach($countItems as $index => $item)
-                    @if(in_array($index, $selectedItems))
-                    <tr>
-                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center">{{ $count++ }}</td>
-                        <td class="border border-gray-400 px-2 py-2 text-[10px] font-mono">{{ $item['product_code'] }}</td>
-                        <td class="border border-gray-400 px-2 py-2 text-[10px]">{{ $item['product_name'] }}</td>
-                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center">{{ $item['batch_number'] ?? '-' }}</td>
-                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center">{{ $item['expiry_date'] ? \Carbon\Carbon::parse($item['expiry_date'])->format('d/m/y') : '-' }}</td>
-                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center">{{ $item['unit'] }}</td>
-                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center">{{ $item['location'] ?? '-' }}</td>
-                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center font-bold text-gray-400 italic">({{ number_format($item['system_quantity']) }})</td>
-                        <td class="border border-gray-400 px-2 py-2 text-[10px]"></td>
-                        <td class="border border-gray-400 px-2 py-2 text-[10px]"></td>
+        <!-- 2/3 DƯỚI (Dữ liệu) -->
+        <div class="min-h-[50vh]">
+            <table class="w-full border-collapse border-2 border-black">
+                <thead>
+                    <tr class="bg-gray-100 font-bold uppercase text-xs">
+                        <th class="border-2 border-black w-8">STT</th>
+                        <th class="border-2 border-black">Tên sản phẩm</th>
+                        <th class="border-2 border-black w-24">Mã SP</th>
+                        <th class="border-2 border-black w-20">SL Hệ thống</th>
+                        <th class="border-2 border-black w-20">SL Thực tế</th>
+                        <th class="border-2 border-black w-20">Chênh lệch</th>
+                        <th class="border-2 border-black w-24">Vị trí kho</th>
                     </tr>
-                    @endif
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @php $count = 1; @endphp
+                    @foreach($countItems as $index => $item)
+                        @if(in_array($index, $selectedItems))
+                        <tr class="text-sm">
+                            <td class="text-center font-bold">{{ $count++ }}</td>
+                            <td class="px-2 leading-tight">
+                                <div class="font-bold">{{ $item['product_name'] }}</div>
+                                <div class="text-[10px] italic">ĐVT: {{ $item['unit'] }} | Lô: {{ $item['batch_number'] ?? '...' }} - HSD: {{ $item['expiry_date'] ? \Carbon\Carbon::parse($item['expiry_date'])->format('d/m/y') : '...' }}</div>
+                            </td>
+                            <td class="text-center font-mono">{{ $item['product_code'] }}</td>
+                            <td class="text-center font-bold">{{ number_format($item['system_quantity']) }}</td>
+                            <td class="text-center"></td>
+                            <td class="text-center"></td>
+                            <td class="text-center">{{ $item['location'] ?? '.....' }}</td>
+                        </tr>
+                        @endif
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
-        <div class="grid grid-cols-3 gap-4 mt-12 text-center text-xs">
+        <!-- CHỮ KÝ -->
+        <div class="grid grid-cols-3 gap-4 mt-16 text-center text-sm font-bold uppercase">
             <div>
-                <p class="font-bold">NGƯỜI LẬP PHIẾU</p>
-                <p class="italic text-[10px] mb-12">(Ký, họ tên)</p>
-                <p class="mt-12">................................</p>
+                <p>NHÂN VIÊN KIỂM KHO</p>
+                <p class="text-[10px] font-normal italic lowercase mt-1">(Ký, ghi rõ họ tên)</p>
             </div>
             <div>
-                <p class="font-bold">THỦ KHO</p>
-                <p class="italic text-[10px] mb-12">(Ký, họ tên)</p>
-                <p class="mt-12">................................</p>
+                <p>KẾ TOÁN KHO</p>
+                <p class="text-[10px] font-normal italic lowercase mt-1">(Ký, ghi rõ họ tên)</p>
             </div>
             <div>
-                <p class="font-bold">BAN KIỂM KÊ</p>
-                <p class="italic text-[10px] mb-12">(Ký, họ tên)</p>
-                <p class="mt-12">................................</p>
+                <p>QUẢN LÝ KHO</p>
+                <p class="text-[10px] font-normal italic lowercase mt-1">(Ký, ghi rõ họ tên)</p>
             </div>
         </div>
+    </div>
+
+
     </div>
 
     <script>

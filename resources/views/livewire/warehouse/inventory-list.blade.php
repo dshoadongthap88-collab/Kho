@@ -174,16 +174,15 @@
                                {{ count($selectedItems) > 0 && count($selectedItems) === count($inventories->pluck('id')) ? 'checked' : '' }}
                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                     </th>
-                    <th wire:click="sortBy('products.code')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">Mã SP</th>
+                    <th wire:click="sortBy('products.code')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 italic">Mã SP</th>
                     <th wire:click="sortBy('products.name')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">Tên sản phẩm</th>
                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hãng SX</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Số lô</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hạn dùng</th>
                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">ĐVT</th>
                     <th wire:click="sortBy('inventories.quantity')" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">Tồn kho</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Đã giữ</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Khả dụng</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Nhập tối thiểu</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Vị trí</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -210,20 +209,19 @@
                             <input type="checkbox" wire:model.live="selectedItems" value="{{ $inv->id }}"
                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                         </td>
-                        <td class="px-4 py-3 text-sm font-mono">{{ $inv->product_code }}</td>
+                        <td class="px-4 py-3 text-sm font-mono text-indigo-600">{{ $inv->product_code }}</td>
                         <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $inv->product_name }}</td>
                         <td class="px-4 py-3 text-sm text-center text-gray-500">{{ $inv->brand ?? '-' }}</td>
+                        <td class="px-4 py-3 text-sm text-center font-mono text-gray-600">{{ $inv->batch_number ?? '-' }}</td>
+                        <td class="px-4 py-3 text-sm text-center text-gray-500 italic">{{ $inv->expiry_date ? \Carbon\Carbon::parse($inv->expiry_date)->format('d/m/y') : '-' }}</td>
                         <td class="px-4 py-3 text-sm text-center text-gray-500">{{ $inv->unit }}</td>
-                        <td class="px-4 py-3 text-sm text-center font-semibold">{{ number_format($inv->quantity) }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-orange-600">{{ number_format($inv->reserved_quantity) }}</td>
-                        <td class="px-4 py-3 text-sm text-center font-bold {{ $available < $inv->min_stock ? 'text-red-600' : 'text-green-600' }}">{{ number_format($available) }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-500">{{ number_format($inv->min_stock) }}</td>
+                        <td class="px-4 py-3 text-sm text-center font-bold text-indigo-700">{{ number_format($inv->quantity) }}</td>
+                        <td class="px-4 py-3 text-sm text-center text-gray-500">{{ $inv->warehouse_location ?? '-' }}</td>
                         <td class="px-4 py-3 text-center">
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium status-badge {{ $statusColor }}">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium status-badge {{ $statusColor }}">
                                 {{ $statusIcon }} {{ $statusText }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-500">{{ $inv->warehouse_location ?? '-' }}</td>
                     </tr>
                 @empty
                     <tr><td colspan="11" class="px-4 py-8 text-center text-gray-400">Chưa có dữ liệu tồn kho</td></tr>

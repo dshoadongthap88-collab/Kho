@@ -36,60 +36,87 @@
             </div>
         </div>
 
-        <table class="w-full mb-4">
-            <thead>
-                <tr class="bg-gray-50 border-b">
-                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Sản phẩm</th>
-                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider w-32">Số lô</th>
-                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider w-40">Hạn dùng</th>
-                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider w-40">Vị trí</th>
-                    <th class="px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider w-24">SL</th>
-                    <th class="px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider w-10"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($items as $index => $item)
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="px-3 py-3">
-                        <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}" 
-                               class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                               placeholder="Gõ mã hoặc tên SP...">
-                        <datalist id="product_list_{{ $index }}">
-                            @foreach($products as $product)
-                                <option value="{{ $product->code }} - {{ $product->name }}"></option>
-                            @endforeach
-                        </datalist>
-                        @error("items.{$index}.product_id") <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </td>
-                    <td class="px-3 py-3">
-                        <input type="text" wire:model.live="items.{{ $index }}.batch_number" 
-                               class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Số lô...">
-                        @error("items.{$index}.batch_number") <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </td>
-                    <td class="px-3 py-3">
-                        <input type="date" wire:model="items.{{ $index }}.expiry_date" 
-                               class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                    </td>
-                    <td class="px-3 py-3">
-                        <input type="text" wire:model="items.{{ $index }}.warehouse_location" 
-                               class="w-full rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Vị trí...">
-                    </td>
-                    <td class="px-3 py-3">
-                        <input type="number" wire:model.live="items.{{ $index }}.quantity" step="0.0001" min="0"
-                               class="w-full text-center rounded-md border-gray-300 shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        @error("items.{$index}.quantity") <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                    </td>
-                    <td class="px-3 py-3 text-center">
-                        @if(count($items) > 1)
-                            <button wire:click="removeItem({{ $index }})" class="text-red-400 hover:text-red-600 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <div class="overflow-x-auto mb-4">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 min-w-[200px]">Sản phẩm</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-24">Số lô</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-32">Hạn dùng</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-24">Vị trí</th>
+                                    <th class="px-2 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-20">SL</th>
+                                    <th class="px-2 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-24">Đơn giá</th>
+                                    <th class="px-2 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-14">VAT</th>
+                                    <th class="px-2 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-32">Thành tiền</th>
+                                    <th class="px-2 py-3 border-b border-gray-200 w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @foreach($items as $index => $item)
+                                <tr class="hover:bg-gray-50/50 transition">
+                                    <td class="px-2 py-4">
+                                        <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}" 
+                                               class="w-full rounded-lg border-gray-300 text-xs font-semibold focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                               placeholder="Mã hoặc tên SP...">
+                                        <datalist id="product_list_{{ $index }}">
+                                            @foreach($products as $product)
+                                                <option value="{{ $product->code }} - {{ $product->name }}"></option>
+                                            @endforeach
+                                        </datalist>
+                                        @error("items.{$index}.product_id") <p class="text-red-500 text-[10px] mt-1">{{ $message }}</p> @enderror
+                                    </td>
+                                    <td class="px-2 py-4">
+                                        <input type="text" wire:model.live="items.{{ $index }}.batch_number" 
+                                               class="w-full rounded-lg border-gray-300 text-xs focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Số lô...">
+                                        @error("items.{$index}.batch_number") <p class="text-red-500 text-[10px] mt-1">{{ $message }}</p> @enderror
+                                    </td>
+                                    <td class="px-2 py-4">
+                                        <input type="date" wire:model="items.{{ $index }}.expiry_date" 
+                                               class="w-full rounded-lg border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                    </td>
+                                    <td class="px-2 py-4">
+                                        <input type="text" wire:model="items.{{ $index }}.warehouse_location" 
+                                               class="w-full text-xs rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Vị trí...">
+                                    </td>
+                                    <td class="px-2 py-4">
+                                        <input type="number" wire:model.live="items.{{ $index }}.quantity" step="0.0001" min="0"
+                                               class="w-full text-center text-xs rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                        @error("items.{$index}.quantity") <p class="text-red-500 text-[10px] mt-1">{{ $message }}</p> @enderror
+                                    </td>
+                                    <td class="px-2 py-4">
+                                        <input type="number" wire:model.live="items.{{ $index }}.unit_price" step="0.01" min="0"
+                                               class="w-full text-right text-xs rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                    </td>
+                                    <td class="px-2 py-4">
+                                        <input type="number" wire:model.live="items.{{ $index }}.vat_rate" step="0.1" min="0"
+                                               class="w-full text-center text-xs rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                                    </td>
+                                    <td class="px-2 py-4 text-right font-bold text-indigo-700">
+                                        {{ number_format($items[$index]['total_amount'] ?? 0) }} đ
+                                    </td>
+                                    <td class="px-2 py-4 text-center">
+                                        @if(count($items) > 1)
+                                            <button wire:click="removeItem({{ $index }})" class="text-gray-400 hover:text-red-500 transition p-1 rounded-full hover:bg-red-50">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                            @if(count($items) > 0)
+                            <tfoot>
+                                <tr class="bg-indigo-50/30">
+                                    <td colspan="7" class="px-2 py-3 text-right font-bold text-gray-700 uppercase tracking-wider text-xs">Tổng cộng:</td>
+                                    <td class="px-2 py-3 text-right font-extrabold text-indigo-800 text-sm">
+                                        {{ number_format(collect($items)->sum('total_amount')) }} đ
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                            @endif
+                        </table>
+                    </div>
 
         <div class="flex items-center gap-4 mb-4">
             @if($this->canAddItem())

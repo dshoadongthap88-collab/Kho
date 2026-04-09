@@ -16,6 +16,9 @@ class StockInItem extends Model
         'expiry_date',
         'warehouse_location',
         'quantity',
+        'unit_price',
+        'vat_rate',
+        'total_amount',
     ];
 
     public function stockIn()

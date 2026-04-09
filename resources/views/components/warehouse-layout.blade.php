@@ -88,5 +88,25 @@
     </main>
 
     @livewireScripts
+    <script>
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                // Không chuyển ô nếu đang ở trong textarea (để xuống dòng) hoặc button (để thực hiện lệnh)
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+                
+                const focusables = Array.from(document.querySelectorAll('input:not([type="hidden"]), select, button:not([disabled])'))
+                    .filter(el => {
+                        const style = window.getComputedStyle(el);
+                        return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;
+                    });
+                
+                const index = focusables.indexOf(e.target);
+                if (index > -1 && index < focusables.length - 1) {
+                    e.preventDefault();
+                    focusables[index + 1].focus();
+                }
+            }
+        });
+    </script>
 </body>
 </html>

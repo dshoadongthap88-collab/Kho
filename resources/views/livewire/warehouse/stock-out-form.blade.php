@@ -108,14 +108,15 @@
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr class="bg-slate-50">
-                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-12 no-print">In</th>
-                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Sản phẩm</th>
-                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-16">ĐVT</th>
-                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-28">Số lô</th>
-                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-32">Vị trí</th>
-                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">SL</th>
-                                    <th class="px-2 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-28">Đơn giá</th>
-                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-16">VAT (%)</th>
+                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-10 no-print">In</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 min-w-[250px]">Sản phẩm</th>
+                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-14">ĐVT</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">Số lô</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-32">Hạn dùng</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">Vị trí</th>
+                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-20">SL</th>
+                                    <th class="px-2 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">Đơn giá</th>
+                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-14">VAT</th>
                                     <th class="px-2 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-32">Thành tiền</th>
                                     <th class="px-2 py-3 border-b border-slate-200 w-10 no-print"></th>
                                 </tr>
@@ -126,10 +127,10 @@
                                     <td class="px-3 py-4 text-center no-print">
                                         <input type="checkbox" wire:model="items.{{ $index }}.is_printed" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
                                     </td>
-                                    <td class="px-4 py-4">
+                                    <td class="px-2 py-4">
                                         <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}" 
-                                               class="w-full rounded-lg border-slate-300 text-sm font-semibold focus:ring-indigo-500 focus:border-indigo-500 transition placeholder:font-normal"
-                                               placeholder="Gõ mã hoặc tên SP...">
+                                               class="w-full rounded-lg border-slate-300 text-xs font-semibold focus:ring-indigo-500 focus:border-indigo-500 transition placeholder:font-normal"
+                                               placeholder="Mã hoặc tên SP...">
                                         <datalist id="product_list_{{ $index }}">
                                             @foreach($products as $product)
                                                 <option value="{{ $product->code }} - {{ $product->name }}"></option>
@@ -137,12 +138,12 @@
                                         </datalist>
 
                                         @if(isset($items[$index]['brand']) && $items[$index]['brand'])
-                                            <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight px-1 no-print">Hiệu: {{ $items[$index]['brand'] }}</p>
+                                            <p class="text-[9px] text-slate-400 mt-0.5 uppercase font-bold tracking-tight px-1 no-print">Hãng: {{ $items[$index]['brand'] }}</p>
                                         @endif
-                                        @error("items.{$index}.product_id") <p class="text-red-500 text-xs mt-1 no-print">{{ $message }}</p> @enderror
+                                        @error("items.{$index}.product_id") <p class="text-red-500 text-[10px] mt-1 no-print">{{ $message }}</p> @enderror
                                     </td>
-                                    <td class="px-4 py-4 text-center">
-                                        <span class="inline-block px-2 py-1 bg-slate-100 rounded text-xs font-bold text-slate-600 border border-slate-200 min-w-[40px]">
+                                    <td class="px-1 py-4 text-center">
+                                        <span class="inline-block px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 border border-slate-200 min-w-[35px]">
                                             {{ $items[$index]['unit'] ?: '-' }}
                                         </span>
                                     </td>
@@ -294,7 +295,7 @@
                                         <td class="border border-slate-800 px-1 py-1.5 text-center">{{ $item['unit'] }}</td>
                                         <td class="border border-slate-800 px-1 py-1.5 text-center">{{ $item['batch_number'] }}</td>
                                         <td class="border border-slate-800 px-1 py-1.5 text-center">{{ $item['expiry_date'] ? date('d/m/Y', strtotime($item['expiry_date'])) : '' }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ number_format(floatval($item['quantity']), 2) }}</td>
+                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ (float)$item['quantity'] }}</td>
                                         <td class="border border-slate-800 px-1 py-1.5 text-right">{{ number_format(floatval($item['unit_price'])) }}</td>
                                         <td class="border border-slate-800 px-1 py-1.5 text-center">{{ floatval($item['vat_rate']) }}%</td>
                                         <td class="border border-slate-800 px-1 py-1.5 text-right font-bold">{{ number_format($itemTotal) }}</td>

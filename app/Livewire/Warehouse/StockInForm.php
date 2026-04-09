@@ -60,7 +60,10 @@ class StockInForm extends Component
             'batch_number' => '',
             'expiry_date' => '',
             'warehouse_location' => '',
-            'quantity' => 1
+            'quantity' => 1,
+            'unit_price' => 0,
+            'vat_rate' => 0,
+            'total_amount' => 0
         ];
     }
 
@@ -107,7 +110,27 @@ class StockInForm extends Component
             $this->items[$index]['warehouse_location'] = $product->location ?: '';
             $this->items[$index]['batch_number'] = $product->batch_number ?: '';
             $this->items[$index]['expiry_date'] = $product->expiry_date ? $product->expiry_date->format('Y-m-d') : '';
+            $this->items[$index]['unit_price'] = $product->price ?? 0;
+            $this->items[$index]['vat_rate'] = 0;
+            $this->calculateTotal($index);
         }
+
+        // Khi thay đổi giá hoặc số lượng thì tính lại thành tiền
+        if (str_contains($name, 'items') && (str_ends_with($name, '.quantity') || str_ends_with($name, '.unit_price') || str_ends_with($name, '.vat_rate'))) {
+            $parts = explode('.', $name);
+            $index = $parts[1];
+            $this->calculateTotal($index);
+        }
+    }
+
+    public function calculateTotal($index)
+    {
+        $qty = floatval($this->items[$index]['quantity'] ?? 0);
+        $price = floatval($this->items[$index]['unit_price'] ?? 0);
+        $vat = floatval($this->items[$index]['vat_rate'] ?? 0);
+
+        $subtotal = $qty * $price;
+        $this->items[$index]['total_amount'] = $subtotal + ($subtotal * $vat / 100);
     }
 
     public function removeItem($index)
@@ -169,7 +192,10 @@ class StockInForm extends Component
                 'batch_number' => '',
                 'expiry_date' => '',
                 'warehouse_location' => $product?->location ?: '',
-                'quantity' => 1
+                'quantity' => 1,
+                'unit_price' => $product?->price ?: 0,
+                'vat_rate' => 0,
+                'total_amount' => $product?->price ?: 0
             ];
         }
     }
@@ -205,6 +231,9 @@ class StockInForm extends Component
                     'expiry_date' => $item['expiry_date'] ?: null,
                     'warehouse_location' => $item['warehouse_location'],
                     'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'] ?? 0,
+                    'vat_rate' => $item['vat_rate'] ?? 0,
+                    'total_amount' => $item['total_amount'] ?? 0,
                 ]);
 
                 // Gọi Service để thực hiện nhập kho và tạo giao dịch

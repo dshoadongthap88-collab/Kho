@@ -51,9 +51,23 @@ class InventoryList extends Component
 
     public function render()
     {
-        $query = Inventory::query()
-            ->join('products', 'inventories.product_id', '=', 'products.id')
-            ->select('inventories.*', 'products.name as product_name', 'products.code as product_code', 'products.unit', 'products.brand', 'products.min_stock');
+        $query = Product::query()
+            ->leftJoin('inventories', 'products.id', '=', 'inventories.product_id')
+            ->where('products.status', 'active')
+            ->select(
+                'products.id', // Giữ nguyên 'id' là ID sản phẩm để không hỏng loop Blade
+                'inventories.id as inventory_id',
+                \Illuminate\Support\Facades\DB::raw('COALESCE(inventories.quantity, 0) as quantity'),
+                \Illuminate\Support\Facades\DB::raw('COALESCE(inventories.reserved_quantity, 0) as reserved_quantity'),
+                'inventories.warehouse_location',
+                'products.name as product_name',
+                'products.code as product_code',
+                'products.unit',
+                'products.brand',
+                'products.min_stock',
+                'products.batch_number',
+                'products.expiry_date'
+            );
 
         if ($this->search) {
             $query->where(function ($q) {

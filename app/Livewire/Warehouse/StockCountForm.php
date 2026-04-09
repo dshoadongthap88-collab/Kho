@@ -46,7 +46,7 @@ class StockCountForm extends Component
 
         foreach ($this->countItems as $item) {
             if ($item['difference'] != 0) {
-                $service->adjust(
+                $service->adjustQuantity(
                     $item['product_id'],
                     $item['actual_quantity'],
                     "Kiểm kê #{$stockCount->code}: Chênh lệch {$item['difference']}"

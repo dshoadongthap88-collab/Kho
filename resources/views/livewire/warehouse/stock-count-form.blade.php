@@ -142,8 +142,10 @@
                             <td class="text-center">{{ $item['batch_number'] ?? '-' }}</td>
                             <td class="text-center">{{ $item['expiry_date'] ? \Carbon\Carbon::parse($item['expiry_date'])->format('d/m/y') : '-' }}</td>
                             <td class="text-center font-bold">{{ number_format($item['system_quantity']) }}</td>
-                            <td class="text-center"></td>
-                            <td class="text-center"></td>
+                            <td class="text-center font-bold">{{ number_format($item['actual_quantity']) }}</td>
+                            <td class="text-center font-bold {{ $item['difference'] != 0 ? 'text-red-600' : '' }}">
+                                {{ $item['difference'] > 0 ? '+' : '' }}{{ $item['difference'] }}
+                            </td>
                             <td class="text-center text-[9px]">{{ $item['location'] ?? '-' }}</td>
                         </tr>
                         @endif

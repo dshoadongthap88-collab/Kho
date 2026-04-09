@@ -56,6 +56,7 @@ class StockInForm extends Component
 
         $this->items[] = [
             'product_id' => '',
+            'product_search' => '',
             'batch_number' => '',
             'expiry_date' => '',
             'warehouse_location' => '',
@@ -63,19 +64,49 @@ class StockInForm extends Component
         ];
     }
 
-    public function updatedItems($value, $key)
+    public function updated($name, $value)
     {
-        // Khi chọn sản phẩm, tự động gợi ý vị trí kho cũ
-        if (str_ends_with($key, '.product_id')) {
-            $index = explode('.', $key)[1];
-            $productId = $value;
+        // Khi người dùng chọn sản phẩm từ ô tìm kiếm (items.0.product_search)
+        if (str_contains($name, 'items') && str_ends_with($name, '.product_search')) {
+            $parts = explode('.', $name);
+            $index = $parts[1];
             
-            if ($productId) {
-                $product = Product::find($productId);
-                if ($product && $product->location) {
-                    $this->items[$index]['warehouse_location'] = $product->location;
-                }
+            if (!$value) {
+                $this->items[$index]['product_id'] = '';
+                $this->items[$index]['warehouse_location'] = '';
+                $this->items[$index]['batch_number'] = '';
+                $this->items[$index]['expiry_date'] = '';
+                return;
             }
+
+            // Tìm sản phẩm (không phân biệt hoa thường)
+            $product = null;
+            $searchValue = trim($value);
+            
+            if (str_contains($searchValue, ' - ')) {
+                $code = trim(explode(' - ', $searchValue)[0]);
+                $product = Product::whereRaw('LOWER(code) = ?', [strtolower($code)])->first();
+            }
+            
+            if (!$product) {
+                $product = Product::whereRaw('LOWER(code) = ?', [strtolower($searchValue)])->first();
+            }
+            
+            if (!$product) {
+                $product = Product::whereRaw('LOWER(name) = ?', [strtolower($searchValue)])->first();
+            }
+            
+            if (!$product) return;
+
+            // === ĐÃ TÌM THẤY SẢN PHẨM ===
+            $this->items[$index]['product_id'] = $product->id;
+            
+            // Tự động điền dữ liệu từ danh mục sản phẩm
+            // Lấy UNIT thông minh: Thử Unit -> Box Spec -> Carton Spec
+            $this->items[$index]['unit'] = $product->unit ?: ($product->box_spec ?: ($product->carton_spec ?: '-'));
+            $this->items[$index]['warehouse_location'] = $product->location ?: '';
+            $this->items[$index]['batch_number'] = $product->batch_number ?: '';
+            $this->items[$index]['expiry_date'] = $product->expiry_date ? $product->expiry_date->format('Y-m-d') : '';
         }
     }
 
@@ -123,17 +154,23 @@ class StockInForm extends Component
         $lastIndex = count($this->items) - 1;
         if ($lastIndex >= 0 && empty($this->items[$lastIndex]['product_id'])) {
             $this->items[$lastIndex]['product_id'] = $productId;
-            $this->updatedItems($productId, "items.{$lastIndex}.product_id");
+            $product = Product::find($productId);
+            if ($product) {
+                $this->items[$lastIndex]['product_search'] = $product->code . ' - ' . $product->name;
+                if ($product->location) {
+                    $this->items[$lastIndex]['warehouse_location'] = $product->location;
+                }
+            }
         } else {
+            $product = Product::find($productId);
             $this->items[] = [
                 'product_id' => $productId,
+                'product_search' => $product ? ($product->code . ' - ' . $product->name) : '',
                 'batch_number' => '',
                 'expiry_date' => '',
-                'warehouse_location' => '',
+                'warehouse_location' => $product?->location ?: '',
                 'quantity' => 1
             ];
-            $index = count($this->items) - 1;
-            $this->updatedItems($productId, "items.{$index}.product_id");
         }
     }
 
@@ -170,7 +207,7 @@ class StockInForm extends Component
                     'quantity' => $item['quantity'],
                 ]);
 
-                // Gọi Service để cập nhật tồn kho và tạo giao dịch
+                // Gọi Service để thực hiện nhập kho và tạo giao dịch
                 $service->import(
                     $item['product_id'],
                     $item['quantity'],
@@ -178,7 +215,8 @@ class StockInForm extends Component
                     $stockIn->id,
                     $this->note,
                     $item['batch_number'],
-                    $item['expiry_date'] ?: null
+                    $item['expiry_date'] ?: null,
+                    $item['warehouse_location']
                 );
                 
                 // Cập nhật vị trí mặc định của sản phẩm nếu có

@@ -1,11 +1,49 @@
 <div>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; margin: 0; padding: 0; }
+            .bg-white { box-shadow: none !important; border: none !important; }
+            table { width: 100% !important; border-collapse: collapse !important; }
+            th, td { border: 1px solid #ddd !important; padding: 8px !important; }
+            
+            /* Print-specific layout switching */
+            body.printing-check-sheet .screen-layout { display: none !important; }
+            body:not(.printing-check-sheet) .check-sheet-layout { display: none !important; }
+        }
+        .print-only { display: none; }
+        .check-sheet-layout { display: none; }
+    </style>
+
+    <div class="screen-layout">
     <div class="bg-white rounded-xl shadow p-6">
-        <h2 class="text-xl font-bold mb-4">📋 Kiểm kê kho</h2>
-        <p class="text-gray-500 mb-6 text-sm">Nhập số lượng thực tế đếm được. Hệ thống sẽ tự động tính chênh lệch và điều chỉnh tồn kho.</p>
+        <div class="flex justify-between items-center mb-4 no-print">
+            <h2 class="text-xl font-bold">📋 Kiểm kê kho</h2>
+            <div class="flex gap-2">
+                @if(count($selectedItems) > 0)
+                    <button onclick="printInventoryCheck()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2 text-sm shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        In phiếu kiểm kê ({{ count($selectedItems) }})
+                    </button>
+                @else
+                    <button disabled title="Vui lòng chọn sản phẩm để in" class="bg-gray-100 text-gray-400 cursor-not-allowed px-4 py-2 rounded-lg flex items-center gap-2 text-sm border border-gray-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        In phiếu kiểm kê
+                    </button>
+                @endif
+            </div>
+        </div>
+        <p class="text-gray-500 mb-6 text-sm no-print">Nhập số lượng thực tế đếm được. Hệ thống sẽ tự động tính chênh lệch và điều chỉnh tồn kho.</p>
 
         <table class="w-full mb-4">
             <thead>
                 <tr class="bg-gray-50">
+                    <th class="px-3 py-2 text-center no-print">
+                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', array_keys($countItems)) }}])" 
+                               {{ count($selectedItems) > 0 && count($selectedItems) === count($countItems) ? 'checked' : '' }}
+                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                    </th>
                     <th class="px-3 py-2 text-left text-sm">Mã SP</th>
                     <th class="px-3 py-2 text-left text-sm">Tên sản phẩm</th>
                     <th class="px-3 py-2 text-center text-sm">Tồn hệ thống</th>
@@ -15,7 +53,11 @@
             </thead>
             <tbody>
                 @foreach($countItems as $index => $item)
-                <tr class="border-b {{ $item['difference'] != 0 ? 'bg-yellow-50' : '' }}">
+                <tr class="border-b {{ $item['difference'] != 0 ? 'bg-yellow-50' : '' }} {{ in_array($index, $selectedItems) ? 'bg-indigo-50/50' : '' }}">
+                    <td class="px-3 py-2 text-center no-print">
+                        <input type="checkbox" wire:model.live="selectedItems" value="{{ $index }}"
+                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                    </td>
                     <td class="px-3 py-2 text-sm font-mono">{{ $item['product_code'] }}</td>
                     <td class="px-3 py-2 text-sm">{{ $item['product_name'] }}</td>
                     <td class="px-3 py-2 text-center text-sm text-gray-500">{{ number_format($item['system_quantity']) }}</td>
@@ -45,4 +87,90 @@
             </button>
         </div>
     </div>
+
+    <!-- Layout in phiếu kiểm kê (Ẩn trên màn hình) -->
+    <div class="print-only check-sheet-layout mb-6">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h2 class="text-lg font-bold">CÔNG TY TNHH PHÁT TRIỂN CÔNG NGHỆ</h2>
+                <p class="text-xs">Bộ phận: Kho vận</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs italic">Mẫu số: 01-KK/KHO</p>
+                <p class="text-xs">Ngày lập: {{ now()->format('d/m/Y') }}</p>
+            </div>
+        </div>
+
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-extrabold uppercase tracking-widest">Phiếu kiểm kê kho</h1>
+            <p class="text-sm italic">Thời điểm kiểm kê: ..... giờ ..... ngày ..... tháng ..... năm 202...</p>
+        </div>
+
+        <table class="w-full border-collapse border border-gray-400 mb-8">
+            <thead>
+                <tr class="bg-gray-100 italic">
+                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-8">STT</th>
+                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-24">Mã SP</th>
+                    <th class="border border-gray-400 px-2 py-1 text-[10px]">Tên SP / Quy cách</th>
+                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-20">Số lô</th>
+                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-16">Hạn dùng</th>
+                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-12">ĐVT</th>
+                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-16">Vị trí</th>
+                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-16">Tồn sổ</th>
+                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-16">Thực tế</th>
+                    <th class="border border-gray-400 px-2 py-1 text-[10px] w-24">Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php $count = 1; @endphp
+                @foreach($countItems as $index => $item)
+                    @if(in_array($index, $selectedItems))
+                    <tr>
+                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center">{{ $count++ }}</td>
+                        <td class="border border-gray-400 px-2 py-2 text-[10px] font-mono">{{ $item['product_code'] }}</td>
+                        <td class="border border-gray-400 px-2 py-2 text-[10px]">{{ $item['product_name'] }}</td>
+                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center">{{ $item['batch_number'] ?? '-' }}</td>
+                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center">{{ $item['expiry_date'] ? \Carbon\Carbon::parse($item['expiry_date'])->format('d/m/y') : '-' }}</td>
+                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center">{{ $item['unit'] }}</td>
+                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center">{{ $item['location'] ?? '-' }}</td>
+                        <td class="border border-gray-400 px-2 py-2 text-[10px] text-center font-bold text-gray-400 italic">({{ number_format($item['system_quantity']) }})</td>
+                        <td class="border border-gray-400 px-2 py-2 text-[10px]"></td>
+                        <td class="border border-gray-400 px-2 py-2 text-[10px]"></td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+
+        <div class="grid grid-cols-3 gap-4 mt-12 text-center text-xs">
+            <div>
+                <p class="font-bold">NGƯỜI LẬP PHIẾU</p>
+                <p class="italic text-[10px] mb-12">(Ký, họ tên)</p>
+                <p class="mt-12">................................</p>
+            </div>
+            <div>
+                <p class="font-bold">THỦ KHO</p>
+                <p class="italic text-[10px] mb-12">(Ký, họ tên)</p>
+                <p class="mt-12">................................</p>
+            </div>
+            <div>
+                <p class="font-bold">BAN KIỂM KÊ</p>
+                <p class="italic text-[10px] mb-12">(Ký, họ tên)</p>
+                <p class="mt-12">................................</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function printInventoryCheck() {
+            document.body.classList.add('printing-check-sheet');
+            window.print();
+            window.onafterprint = function() {
+                document.body.classList.remove('printing-check-sheet');
+            };
+            setTimeout(() => {
+                document.body.classList.remove('printing-check-sheet');
+            }, 500);
+        }
+    </script>
 </div>

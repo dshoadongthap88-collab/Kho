@@ -10,6 +10,7 @@ use Livewire\Component;
 class StockCountForm extends Component
 {
     public $countItems = [];
+    public $selectedItems = []; // Array of indices or product IDs
     public $note = '';
 
     public function mount()
@@ -17,13 +18,27 @@ class StockCountForm extends Component
         $inventories = Inventory::with('product')->get();
         foreach ($inventories as $inv) {
             $this->countItems[] = [
+                'id' => $inv->id,
                 'product_id' => $inv->product_id,
                 'product_name' => $inv->product->name,
                 'product_code' => $inv->product->code,
+                'batch_number' => $inv->product->batch_number,
+                'expiry_date' => $inv->product->expiry_date,
+                'location' => $inv->warehouse_location,
+                'unit' => $inv->product->unit,
                 'system_quantity' => $inv->quantity,
                 'actual_quantity' => $inv->quantity,
                 'difference' => 0,
             ];
+        }
+    }
+
+    public function toggleSelectAll($allIndices)
+    {
+        if (count($this->selectedItems) === count($allIndices)) {
+            $this->selectedItems = [];
+        } else {
+            $this->selectedItems = $allIndices;
         }
     }
 

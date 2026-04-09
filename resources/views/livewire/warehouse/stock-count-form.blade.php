@@ -99,6 +99,8 @@
         </div>
     </div>
 
+    </div>
+
     <!-- Layout in phiếu kiểm kê (Ẩn trên màn hình) -->
     <div class="print-only check-sheet-layout px-8">
         <!-- 1/3 TRÊN -->
@@ -165,9 +167,6 @@
                 <p class="text-[10px] font-normal italic lowercase mt-1">(Ký, ghi rõ họ tên)</p>
             </div>
         </div>
-    </div>
-
-
     </div>
 
     <script>

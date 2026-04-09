@@ -114,31 +114,35 @@
         <div class="min-h-[50vh]">
             <table class="w-full border-collapse border-2 border-black">
                 <thead>
-                    <tr class="bg-gray-100 font-bold uppercase text-xs">
-                        <th class="border-2 border-black w-8">STT</th>
+                    <tr class="bg-gray-100 font-bold uppercase text-[10px]">
+                        <th class="border-2 border-black w-6">STT</th>
                         <th class="border-2 border-black">Tên sản phẩm</th>
-                        <th class="border-2 border-black w-24">Mã SP</th>
-                        <th class="border-2 border-black w-20">SL Hệ thống</th>
-                        <th class="border-2 border-black w-20">SL Thực tế</th>
-                        <th class="border-2 border-black w-20">Chênh lệch</th>
-                        <th class="border-2 border-black w-24">Vị trí kho</th>
+                        <th class="border-2 border-black w-20">Mã SP</th>
+                        <th class="border-2 border-black w-16">Số lô</th>
+                        <th class="border-2 border-black w-16">Hạn dùng</th>
+                        <th class="border-2 border-black w-14">SL Hệ thống</th>
+                        <th class="border-2 border-black w-14">SL Thực tế</th>
+                        <th class="border-2 border-black w-14">Chênh lệch</th>
+                        <th class="border-2 border-black w-16">Vị trí</th>
                     </tr>
                 </thead>
                 <tbody>
                     @php $count = 1; @endphp
                     @foreach($countItems as $index => $item)
                         @if(in_array($index, $selectedItems))
-                        <tr class="text-sm">
+                        <tr class="text-[10px]">
                             <td class="text-center font-bold">{{ $count++ }}</td>
-                            <td class="px-2 leading-tight">
+                            <td class="px-1 leading-tight">
                                 <div class="font-bold">{{ $item['product_name'] }}</div>
-                                <div class="text-[10px] italic">ĐVT: {{ $item['unit'] }} | Lô: {{ $item['batch_number'] ?? '...' }} - HSD: {{ $item['expiry_date'] ? \Carbon\Carbon::parse($item['expiry_date'])->format('d/m/y') : '...' }}</div>
+                                <div class="text-[9px] italic">ĐVT: {{ $item['unit'] }}</div>
                             </td>
                             <td class="text-center font-mono">{{ $item['product_code'] }}</td>
+                            <td class="text-center">{{ $item['batch_number'] ?? '-' }}</td>
+                            <td class="text-center">{{ $item['expiry_date'] ? \Carbon\Carbon::parse($item['expiry_date'])->format('d/m/y') : '-' }}</td>
                             <td class="text-center font-bold">{{ number_format($item['system_quantity']) }}</td>
                             <td class="text-center"></td>
                             <td class="text-center"></td>
-                            <td class="text-center">{{ $item['location'] ?? '.....' }}</td>
+                            <td class="text-center text-[9px]">{{ $item['location'] ?? '-' }}</td>
                         </tr>
                         @endif
                     @endforeach

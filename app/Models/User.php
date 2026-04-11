@@ -18,9 +18,16 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'code',
         'name',
         'email',
+        'phone',
         'password',
+        'role',
+        'department',
+        'status',
+        'avatar',
+        'hire_date',
     ];
 
     /**
@@ -42,4 +49,12 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Relationship: Một user có nhiều đơn đặt hàng
+     */
+    public function purchaseOrders()
+    {
+        return $this->hasMany(\App\Models\PurchaseOrder::class);
+    }
 }

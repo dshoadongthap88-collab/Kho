@@ -12,7 +12,7 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
     })->name('product-catalog');
 
     Route::get('/contacts', function () {
-        return view('warehouse.contact-manager');
+        return view('warehouse.customer-management');
     })->name('contacts');
 
     Route::get('/inventory', function () {

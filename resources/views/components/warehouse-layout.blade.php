@@ -77,6 +77,53 @@
             </div>
             
             <div class="flex items-center gap-4">
+                <!-- User Menu -->
+                @auth
+                    <div class="relative group">
+                        <button class="flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-800 hover:bg-indigo-700 transition duration-150 text-sm font-medium text-white">
+                            <span>👤</span>
+                            <span>{{ Auth::user()->name }}</span>
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="absolute right-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right -translate-y-2 group-hover:translate-y-0 z-50">
+                            <div class="px-4 py-3 border-b border-gray-100 text-sm text-gray-600">
+                                <div class="font-semibold text-gray-800">{{ Auth::user()->name }}</div>
+                                <div class="text-xs text-gray-500">
+                                    @if(Auth::user()->phone)
+                                        {{ Auth::user()->phone }}
+                                    @endif
+                                    @if(Auth::user()->email)
+                                        <br>{{ Auth::user()->email }}
+                                    @endif
+                                </div>
+                                <div class="text-xs text-indigo-600 font-semibold mt-1">
+                                    @switch(Auth::user()->role)
+                                        @case('admin')
+                                            👨‍💼 Quản trị viên
+                                            @break
+                                        @case('staff')
+                                            👨‍💼 Nhân viên
+                                            @break
+                                        @default
+                                            {{ Auth::user()->role }}
+                                    @endswitch
+                                </div>
+                            </div>
+                            <a href="{{ route('password.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">🔐 Đổi mật khẩu</a>
+                            @if(Auth::user()->role === 'admin')
+                                <a href="{{ route('warehouse.contacts') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">👥 Quản lý nhân viên</a>
+                            @endif
+                            <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">🚪 Đăng xuất</button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <a href="{{ route('login') }}" class="px-3 py-2 rounded-md bg-indigo-800 hover:bg-indigo-700 transition duration-150 text-sm font-medium text-white">
+                        Đăng nhập
+                    </a>
+                @endauth
                 <span class="text-xs text-indigo-300">v1.1</span>
             </div>
         </div>

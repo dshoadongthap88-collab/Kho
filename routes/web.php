@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\PasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,8 +15,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return redirect()->route('warehouse.inventory');
-});
+// Login Routes (no auth required)
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
+Route::post('/login', [LoginController::class, 'login'])->middleware('guest');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
-require __DIR__.'/warehouse.php';
+// Protected Routes (require auth)
+Route::middleware('auth')->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('warehouse.inventory');
+    });
+
+    // Password Routes
+    Route::get('/password/edit', [PasswordController::class, 'edit'])->name('password.edit');
+    Route::put('/password/update', [PasswordController::class, 'update'])->name('password.update');
+    Route::post('/admin/password/reset/{user}', [PasswordController::class, 'resetUserPassword'])->name('password.reset')->middleware('admin');
+
+    require __DIR__.'/warehouse.php';
+});

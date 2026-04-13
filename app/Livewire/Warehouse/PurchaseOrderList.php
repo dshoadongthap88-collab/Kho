@@ -20,6 +20,9 @@ class PurchaseOrderList extends Component
     public $isEdit = false;
     public $orderId;
 
+    // Checkboxes cho việc in
+    public $selectedOrders = [];
+
     // Form fields
     public $po_number;
     public $supplier_id;
@@ -36,6 +39,31 @@ class PurchaseOrderList extends Component
     public $newItemUnitPrice;
 
     protected $queryString = ['search', 'filterStatus'];
+
+    public function mount()
+    {
+        if (session()->has('mrp_missing_items')) {
+            $missingItems = session('mrp_missing_items');
+            $this->openModal(); // Tự động mở form
+            
+            foreach ($missingItems as $item) {
+                $product = Product::find($item['product_id']);
+                if ($product) {
+                    $this->items[] = [
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $product->price ?? 0,
+                        'line_total' => $item['quantity'] * ($product->price ?? 0),
+                    ];
+                }
+            }
+            $this->calculateTotal();
+            $this->notes = 'Chuyển tự động từ phân tích Kế hoạch Nhu cầu NVL (MRP).';
+            
+            // Xoá session để nếu user mở form khác nó ko tự điền lại
+            session()->forget('mrp_missing_items');
+        }
+    }
 
     public function rules()
     {
@@ -237,6 +265,17 @@ class PurchaseOrderList extends Component
         session()->flash('message', 'Đã xoá đơn hàng.');
     }
 
+    public function printSelected()
+    {
+        if (empty($this->selectedOrders)) {
+            session()->flash('error', 'Vui lòng đánh dấu chọn (tick) ít nhất một phiếu đề xuất để in.');
+            return;
+        }
+
+        // Tạm mượn chức năng window.print của trình duyệt (có thể mở rộng thành trang view in ấn riêng)
+        $this->dispatch('trigger-print');
+    }
+
     public function render()
     {
         $orders = PurchaseOrder::query()->with(['supplier', 'user']);
@@ -254,11 +293,18 @@ class PurchaseOrderList extends Component
         }
 
         $orders = $orders->latest()->paginate(15);
+        $products = Product::with('inventory')->where('status', 'active')->get();
+
+        // Lọc ra các sản phẩm sắp hết hàng hoặc đã hết (tồn kho <= min_stock)
+        $lowStockProducts = $products->filter(function($p) {
+            return $p->is_low_stock || ($p->inventory?->quantity ?? 0) <= 0;
+        });
 
         return view('livewire.warehouse.purchase-order-list', [
             'orders' => $orders,
             'suppliers' => Supplier::where('status', 'active')->where('type', '!=', 'customer')->get(),
-            'products' => Product::with('inventory')->where('status', 'active')->get(),
+            'products' => $products,
+            'lowStockProducts' => $lowStockProducts,
         ]);
     }
 }

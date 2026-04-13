@@ -28,10 +28,10 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Loại nhập</label>
                 <select wire:model="type" class="w-full rounded-lg border-gray-300 shadow-sm">
-                    <option value="manual">Nhập thủ công</option>
-                    <option value="purchase">Mua hàng</option>
-                    <option value="return">Trả hàng</option>
-                    <option value="production">Từ sản xuất</option>
+                    <option value="purchase_produced">Nhập mua hàng TP</option>
+                    <option value="return_produced">Nhập trả hàng TP</option>
+                    <option value="production">Nhập từ sản xuất</option>
+                    <option value="import_material">Nhập nguyên vật liệu</option>
                 </select>
             </div>
         </div>
@@ -45,6 +45,7 @@
                                     <th class="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-32">Hạn dùng</th>
                                     <th class="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-24">Vị trí</th>
                                     <th class="px-2 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-20">SL</th>
+                                    <th class="px-2 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-16">ĐVT</th>
                                     <th class="px-2 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-24">Đơn giá</th>
                                     <th class="px-2 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-14">VAT</th>
                                     <th class="px-2 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 w-32">Thành tiền</th>
@@ -84,6 +85,10 @@
                                         @error("items.{$index}.quantity") <p class="text-red-500 text-[10px] mt-1">{{ $message }}</p> @enderror
                                     </td>
                                     <td class="px-2 py-4">
+                                        <input type="text" wire:model="items.{{ $index }}.unit" 
+                                               class="w-full text-center text-xs rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="...">
+                                    </td>
+                                    <td class="px-2 py-4">
                                         <input type="number" wire:model.live="items.{{ $index }}.unit_price" step="0.01" min="0"
                                                class="w-full text-right text-xs rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 transition">
                                     </td>
@@ -107,7 +112,7 @@
                             @if(count($items) > 0)
                             <tfoot>
                                 <tr class="bg-indigo-50/30">
-                                    <td colspan="7" class="px-2 py-3 text-right font-bold text-gray-700 uppercase tracking-wider text-xs">Tổng cộng:</td>
+                                    <td colspan="8" class="px-2 py-3 text-right font-bold text-gray-700 uppercase tracking-wider text-xs">Tổng cộng:</td>
                                     <td class="px-2 py-3 text-right font-extrabold text-indigo-800 text-sm">
                                         {{ number_format(collect($items)->sum('total_amount')) }} đ
                                     </td>

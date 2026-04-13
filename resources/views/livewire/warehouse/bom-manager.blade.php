@@ -18,7 +18,17 @@
 
         @if($selectedProductId)
         <div class="mb-6">
-            <h3 class="text-lg font-semibold mb-3">Danh sách NVL</h3>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-semibold">Danh sách NVL</h3>
+                <div class="flex gap-2 no-print">
+                    <button onclick="window.print()" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 transition text-sm">
+                        🖨️ In BOM NVL
+                    </button>
+                    <button wire:click="saveBom" class="bg-blue-600 border border-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition text-sm">
+                        💾 Lưu cấu hình
+                    </button>
+                </div>
+            </div>
             @if(count($bomItems) > 0)
             <table class="w-full mb-4">
                 <thead>
@@ -37,7 +47,7 @@
                     @foreach($bomItems as $index => $item)
                     <tr class="border-b">
                         <td class="px-3 py-2 text-sm">{{ $item['material_name'] }}</td>
-                        <td class="px-3 py-2 text-center text-sm">{{ $item['quantity'] }}</td>
+                        <td class="px-3 py-2 text-center text-sm">{{ floatval($item['quantity']) }}</td>
                         <td class="px-3 py-2 text-center text-sm text-gray-500">{{ $item['unit'] }}</td>
                         @if($availability && isset($availability['details'][$index]))
                         <td class="px-3 py-2 text-center text-sm">{{ number_format($availability['details'][$index]['available']) }}</td>
@@ -86,4 +96,11 @@
         </div>
         @endif
     </div>
+    <style>
+        @media print {
+            .no-print, header, nav, aside.sidebar, .mb-6:first-child, .bg-gray-50.p-4 { display: none !important; }
+            .bg-white { box-shadow: none !important; }
+            body { font-size: 12pt; }
+        }
+    </style>
 </div>

@@ -104,6 +104,24 @@
                         </div>
                     </div>
 
+                    @if($type === 'production')
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-xl no-print">
+                        <div>
+                            <label class="block text-sm font-semibold text-indigo-900 mb-2">Thành phẩm cần sản xuất</label>
+                            <select wire:model.live="production_product_id" class="w-full rounded-lg border-indigo-200 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition">
+                                <option value="">-- Chọn thành phẩm --</option>
+                                @foreach($productionProducts as $prod)
+                                    <option value="{{ $prod->id }}">{{ $prod->code }} - {{ $prod->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-indigo-900 mb-2">Số lượng sản xuất</label>
+                            <input type="number" wire:model.live="production_quantity" step="0.01" min="0.01" class="w-full rounded-lg border-indigo-200 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition">
+                        </div>
+                    </div>
+                    @endif
+
                     <div class="overflow-x-auto mb-6">
                         <table class="w-full border-collapse">
                             <thead>
@@ -129,8 +147,8 @@
                                     </td>
                                     <td class="px-2 py-4">
                                         <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}" 
-                                               class="w-full rounded-lg border-slate-300 text-xs font-semibold focus:ring-indigo-500 focus:border-indigo-500 transition placeholder:font-normal"
-                                               placeholder="Mã hoặc tên SP...">
+                                               class="w-full rounded-lg border-slate-300 text-xs font-semibold focus:ring-indigo-500 focus:border-indigo-500 transition placeholder:font-normal {{ $type === 'production' ? 'bg-slate-100 cursor-not-allowed' : '' }}"
+                                               placeholder="Mã hoặc tên SP..." {{ $type === 'production' ? 'readonly' : '' }}>
                                         <datalist id="product_list_{{ $index }}">
                                             @foreach($products as $product)
                                                 <option value="{{ $product->code }} - {{ $product->name }}"></option>
@@ -160,8 +178,18 @@
                                                class="w-full text-xs rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Vị trí...">
                                     </td>
                                     <td class="px-2 py-4">
-                                        <input type="number" wire:model.live="items.{{ $index }}.quantity" step="0.0001" min="0"
-                                               class="w-full text-center text-xs rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0">
+                                        <input type="number" wire:model.live="items.{{ $index }}.quantity" step="0.0001" min="0" {{ $type === 'production' ? 'readonly' : '' }}
+                                               class="w-full text-center text-xs rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0 {{ $type === 'production' ? 'bg-slate-100 cursor-not-allowed' : '' }}">
+                                        @if($type === 'production' && isset($items[$index]['available_qty']))
+                                            <div class="text-[10px] mt-1 text-center no-print whitespace-nowrap leading-tight">
+                                                Tồn: {{ floatval($items[$index]['available_qty']) }} 
+                                                @if($items[$index]['is_sufficient'])
+                                                    <span class="text-green-600 font-bold block">🟢 Đủ</span>
+                                                @else
+                                                    <span class="text-red-500 font-bold block">🔴 Thiếu</span>
+                                                @endif
+                                            </div>
+                                        @endif
                                         @error("items.{$index}.quantity") <p class="text-red-500 text-[10px] mt-1 no-print">{{ $message }}</p> @enderror
                                     </td>
                                     <td class="px-2 py-4">
@@ -189,7 +217,7 @@
                     </div>
 
                     <div class="flex items-center justify-between mb-8 no-print">
-                        @if($this->canAddItem())
+                        @if($this->canAddItem() && $type !== 'production')
                             <button wire:click="addItem" class="text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition border border-indigo-200 shadow-sm">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                 Thêm dòng sản phẩm

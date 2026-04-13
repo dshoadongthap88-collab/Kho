@@ -167,16 +167,33 @@
                                 <h4 class="font-semibold mb-3 text-gray-800">Mục hàng đặt</h4>
                                 
                                 <div class="space-y-3 mb-4">
-                                    <div class="grid grid-cols-12 gap-2">
-                                        <select wire:model.live="newItemProductId" class="col-span-5 border border-gray-300 rounded-md shadow-sm p-2 text-sm">
-                                            <option value="">-- Chọn sản phẩm --</option>
-                                            @foreach($products as $product)
-                                                <option value="{{ $product->id }}">{{ $product->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <input type="number" step="0.01" wire:model="newItemQuantity" placeholder="SL" class="col-span-2 border border-gray-300 rounded-md shadow-sm p-2 text-sm">
-                                        <input type="number" step="0.01" wire:model="newItemUnitPrice" placeholder="Đơn giá" class="col-span-3 border border-gray-300 rounded-md shadow-sm p-2 text-sm bg-blue-50">
-                                        <button wire:click="addItem" type="button" class="col-span-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm">Thêm</button>
+                                    <div class="grid grid-cols-12 gap-2 pb-2">
+                                        <div class="col-span-4">
+                                            <select wire:model.live="newItemProductId" class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                                <option value="">-- Chọn SP/NVL --</option>
+                                                @foreach($products as $product)
+                                                    <option value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <input type="number" step="0.01" wire:model="newItemQuantity" placeholder="SL Mua" class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                        </div>
+                                        <div class="col-span-2 no-print">
+                                            @php
+                                                $selectedProd = $newItemProductId ? $products->firstWhere('id', $newItemProductId) : null;
+                                                $invQty = $selectedProd ? ($selectedProd->inventory->quantity ?? 0) : 0;
+                                            @endphp
+                                            <div class="w-full border border-gray-200 bg-gray-100 rounded-md shadow-sm p-2 text-sm text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis shadow-inner" title="Tồn kho hiện tại: {{ floatval($invQty) }}">
+                                                Tồn: {{ floatval($invQty) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <input type="number" step="0.01" wire:model="newItemUnitPrice" placeholder="Đơn giá" class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm bg-blue-50">
+                                        </div>
+                                        <div class="col-span-2">
+                                            <button wire:click="addItem" type="button" class="w-full bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm font-semibold transition">Thêm</button>
+                                        </div>
                                     </div>
                                     <small class="text-blue-600">💡 Đơn giá tự động lấy từ danh mục sản phẩm (có thể chỉnh sửa)</small>
                                 </div>

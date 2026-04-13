@@ -29,7 +29,7 @@
 
     <div class="screen-layout">
     <div class="bg-white rounded-xl shadow p-6">
-        <div class="flex justify-between items-center mb-4 no-print">
+        <div class="flex justify-between items-center mb-6 no-print">
             <h2 class="text-xl font-bold">📋 Kiểm kê kho</h2>
             <div class="flex gap-2">
                 @if(count($selectedItems) > 0)
@@ -45,7 +45,37 @@
                 @endif
             </div>
         </div>
-        <p class="text-gray-500 mb-6 text-sm no-print">Nhập số lượng thực tế đếm được. Hệ thống sẽ tự động tính chênh lệch và điều chỉnh tồn kho.</p>
+
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-200 mb-6 no-print">
+            <button wire:click="setType('daily')" class="{{ $type === 'daily' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} w-1/2 py-4 px-1 text-center border-b-2 font-bold text-sm transition-colors uppercase tracking-wider">
+                Kiểm kê hàng ngày (10 SP/vị trí)
+            </button>
+            <button wire:click="setType('monthly')" class="{{ $type === 'monthly' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} w-1/2 py-4 px-1 text-center border-b-2 font-bold text-sm transition-colors uppercase tracking-wider">
+                Kiểm kê hàng tháng (Toàn bộ)
+            </button>
+        </div>
+
+        <div class="flex flex-wrap justify-between items-end mb-4 gap-4 no-print">
+            <div class="flex-1">
+                @if($type === 'monthly')
+                <div class="relative w-full max-w-md">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </span>
+                    <input type="text" wire:model.live="search" class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="Tìm tên hoặc mã SP...">
+                </div>
+                @else
+                <p class="text-gray-500 text-sm">Hệ thống lấy ngẫu nhiên 10 sản phẩm ưu tiên cùng một vị trí kho để thuận tiện kiểm đếm.</p>
+                <button wire:click="loadItems" class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-semibold flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Tải danh sách khác
+                </button>
+                @endif
+            </div>
+            
+            <div class="text-xs text-gray-500 font-medium">Nhập số lượng thực tế đếm được.</div>
+        </div>
 
         <table class="w-full mb-4">
             <thead>

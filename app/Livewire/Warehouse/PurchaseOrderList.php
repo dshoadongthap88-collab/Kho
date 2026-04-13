@@ -258,7 +258,7 @@ class PurchaseOrderList extends Component
         return view('livewire.warehouse.purchase-order-list', [
             'orders' => $orders,
             'suppliers' => Supplier::where('status', 'active')->where('type', '!=', 'customer')->get(),
-            'products' => Product::where('status', 'active')->get(),
+            'products' => Product::with('inventory')->where('status', 'active')->get(),
         ]);
     }
 }

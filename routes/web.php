@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\Admin\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/password/edit', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('/password/update', [PasswordController::class, 'update'])->name('password.update');
     Route::post('/admin/password/reset/{user}', [PasswordController::class, 'resetUserPassword'])->name('password.reset')->middleware('admin');
+
+    // Admin Routes
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
+    });
 
     require __DIR__.'/warehouse.php';
 });

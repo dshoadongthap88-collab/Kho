@@ -24,6 +24,10 @@ class StockOutForm extends Component
     public $note = '';
     public $type = 'production';
 
+    // Biến cho quy trình "Xuất cho sản xuất"
+    public $production_product_id = '';
+    public $production_quantity = 1;
+
     // Các biến cho tính năng chọn lô hàng (Batch Selection)
     public $showBatchModal = false;
     public $availableBatches = [];
@@ -38,7 +42,9 @@ class StockOutForm extends Component
     public function mount()
     {
         if (empty($this->items)) {
-            $this->addItem();
+            if ($this->type !== 'production') {
+                $this->addItem();
+            }
         }
     }
 
@@ -46,6 +52,11 @@ class StockOutForm extends Component
     {
         if (empty($this->items)) {
             return true;
+        }
+
+        if ($this->type === 'production') {
+            // Không cho phép thêm thủ công nếu đang ở mode production
+            return false;
         }
 
         $lastItem = end($this->items);
@@ -174,6 +185,23 @@ class StockOutForm extends Component
             }
         }
 
+        // Thay đổi loại xuất
+        if ($name === 'type') {
+            $this->items = [];
+            if ($value !== 'production') {
+                $this->addItem();
+            } else {
+                $this->loadBomMaterials();
+            }
+        }
+
+        // Thay đổi thành phẩm trong sản xuất
+        if ($name === 'production_product_id' || $name === 'production_quantity') {
+            if ($this->type === 'production') {
+                $this->loadBomMaterials();
+            }
+        }
+
         // Tính toán lại thành tiền nếu thay đổi số lượng, đơn giá, hoặc VAT
         if (str_contains($name, 'items') && (str_ends_with($name, '.quantity') || str_ends_with($name, '.unit_price') || str_ends_with($name, '.vat_rate'))) {
             $parts = explode('.', $name);
@@ -219,6 +247,57 @@ class StockOutForm extends Component
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
+    }
+
+    private function loadBomMaterials()
+    {
+        $this->items = [];
+        if (!$this->production_product_id || $this->production_quantity <= 0) {
+            return;
+        }
+
+        $service = app(\App\Services\BOMService::class);
+        $availability = $service->checkMaterialAvailability($this->production_product_id, $this->production_quantity);
+
+        foreach ($availability['details'] as $detail) {
+            $product = \App\Models\Product::find($detail['material_id']);
+            if (!$product) continue;
+            
+            $batch_number = '';
+            $expiry_date = '';
+            $warehouse_location = $product->location ?: '';
+
+            $invService = app(\App\Services\InventoryService::class);
+            $batches = $invService->getAvailableBatches($product->id);
+            if ($batches->count() == 1) {
+                $batch = $batches->first();
+                $batch_number = $batch->batch_number;
+                $expiry_date = $batch->expiry_date;
+                $warehouse_location = $batch->warehouse_location;
+            }
+            
+            $reqQty = floatval($detail['required']);
+            $price = floatval($product->price ?: 0);
+            
+            $this->items[] = [
+                'product_id' => $product->id,
+                'product_search' => $product->code . ' - ' . $product->name,
+                'unit' => $product->unit ?: ($product->box_spec ?: ($product->carton_spec ?: '-')),
+                'brand' => $product->brand ?: '',
+                'batch_number' => $batch_number,
+                'expiry_date' => $expiry_date,
+                'warehouse_location' => $warehouse_location,
+                'quantity' => $reqQty,
+                'unit_price' => $price,
+                'vat_rate' => 0,
+                'total_amount' => $reqQty * $price,
+                'is_printed' => true,
+                
+                // Extra fields for rendering BOM UI
+                'available_qty' => $detail['available'],
+                'is_sufficient' => $detail['is_sufficient']
+            ];
+        }
     }
 
     public function save()
@@ -280,8 +359,16 @@ class StockOutForm extends Component
 
     public function render()
     {
+        $productionProducts = Product::where('status', 'active')
+            ->where(function($q) {
+                $q->where('type', 'product')
+                  ->orWhere('type', 'product_produced')
+                  ->orWhere('type', 'Thành phẩm');
+            })->orderBy('name')->get();
+
         return view('livewire.warehouse.stock-out-form', [
             'products' => Product::where('status', 'active')->orderBy('name')->get(),
+            'productionProducts' => $productionProducts,
             'locations' => Product::whereNotNull('location')->distinct()->pluck('location'),
             'customers' => Supplier::whereIn('type', ['customer', 'Both', 'both', 'KH'])->orderBy('name')->get(),
         ]);

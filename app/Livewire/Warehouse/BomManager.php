@@ -63,6 +63,13 @@ class BomManager extends Component
         session()->flash('success', 'Đã xóa NVL!');
     }
 
+    public function saveBom()
+    {
+        // BOM items are already saved individually via add/remove. 
+        // This button acts as a confirmation for the user context.
+        session()->flash('success', 'Đã lưu cấu hình định mức BOM!');
+    }
+
     public function render()
     {
         $products = Product::where('type', 'product')->where('status', 'active')->orderBy('name')->get();

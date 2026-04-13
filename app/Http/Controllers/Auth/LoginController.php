@@ -24,25 +24,26 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'identifier' => 'required|string', // Phone hoặc Email
+            'identifier' => 'required|string', // Phone, Email hoặc Username
             'password' => 'required|string',
         ], [
-            'identifier.required' => 'Vui lòng nhập số điện thoại hoặc email',
+            'identifier.required' => 'Vui lòng nhập tên đăng nhập, số điện thoại hoặc email',
             'password.required' => 'Vui lòng nhập mật khẩu',
         ]);
 
         $identifier = $request->input('identifier');
         $password = $request->input('password');
 
-        // Tìm user bằng phone hoặc email
+        // Tìm user bằng phone, email hoặc username
         $user = User::where('phone', $identifier)
                     ->orWhere('email', $identifier)
+                    ->orWhere('username', $identifier)
                     ->first();
 
         // Kiểm tra user tồn tại và mật khẩu đúng
         if (!$user || !Hash::check($password, $user->password)) {
             return back()->withErrors([
-                'login_error' => 'Số điện thoại/Email hoặc mật khẩu không đúng',
+                'login_error' => 'Tên đăng nhập, số điện thoại/Email hoặc mật khẩu không đúng',
             ])->withInput($request->only('identifier'));
         }
 

@@ -10,7 +10,7 @@
                 </button>
             @endif
             <button wire:click="openModal" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                <span>➕</span> Thêm sản phẩm
+                <span>➕</span> Thêm NVL
             </button>
         </div>
     </div>
@@ -58,19 +58,15 @@
                                {{ count($selectedProducts) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
                                class="rounded border-gray-300">
                     </th>
-                    <th class="px-4 py-3">Mã sản phẩm</th>
+                    <th class="px-4 py-3">Mã NVL</th>
                     <th class="px-4 py-3 w-16 text-center">Hình ảnh</th>
-                    <th class="px-4 py-3">Tên sản phẩm</th>
-                    <th class="px-4 py-3">Phân loại</th>
+                    <th class="px-4 py-3">Tên Nguyên Vật Liệu</th>
                     <th class="px-4 py-3">Hãng sản xuất</th>
                     <th class="px-4 py-3">QC Hộp</th>
-                    <th class="px-4 py-3">QC Thùng</th>
+                    <th class="px-4 py-3">ĐV tính (g/kg/ml/L)</th>
                     <th class="px-4 py-3">Số lô</th>
-                    <th class="px-4 py-3">Hạn dùng</th>
                     <th class="px-4 py-3 text-center">Số lượng</th>
-                    <th class="px-4 py-3">Vị trí</th>
                     <th class="px-4 py-3">Tình trạng</th>
-                    <th class="px-4 py-3">Tồn tối thiểu</th>
                     <th class="px-4 py-3 text-right no-print">Thao tác</th>
                 </tr>
             </thead>
@@ -91,20 +87,10 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 font-medium text-gray-800">{{ $product->name }}</td>
-                        <td class="px-4 py-3">
-                            @if($product->type === 'product_produced')
-                                <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs">SX</span>
-                            @elseif($product->type === 'product_purchased')
-                                <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">Mua</span>
-                            @endif
-                        </td>
                         <td class="px-4 py-3 text-gray-600">{{ $product->brand }}</td>
                         <td class="px-4 py-3 text-gray-600 italic">{{ $product->box_spec }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ $product->carton_spec }}</td>
+                        <td class="px-4 py-3 text-gray-600">{{ $product->unit }}</td>
                         <td class="px-4 py-3 text-sm font-semibold text-purple-700">{{ $product->batch_number }}</td>
-                        <td class="px-4 py-3 text-sm {{ $product->is_expiring_soon ? 'text-red-600 font-bold' : 'text-gray-600' }}">
-                            {{ $product->expiry_date ? $product->expiry_date->format('d/m/Y') : '-' }}
-                        </td>
                         <td class="px-4 py-3 text-center">
                             <span class="px-2 py-1 rounded-full text-xs font-bold 
                                 {{ $product->is_low_stock ? 'bg-orange-600 text-white' : (($product->inventory?->quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500') }}">
@@ -112,16 +98,12 @@
                                 @if($product->is_low_stock) ⚠️ @endif
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-gray-600">{{ $product->location }}</td>
                         <td class="px-4 py-3">
                             @if($product->status === 'active')
                                 <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Đang kinh doanh</span>
                             @else
                                 <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Ngừng kinh doanh</span>
                             @endif
-                        </td>
-                        <td class="px-4 py-3 font-semibold text-gray-700">
-                            {{ $product->min_stock > 0 ? number_format($product->min_stock) : '-' }}
                         </td>
                         <td class="px-4 py-3 text-right no-print">
                             <button wire:click="openModal({{ $product->id }})" class="text-blue-500 hover:text-blue-700 mr-2" title="Sửa">📝</button>
@@ -148,28 +130,20 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $isEdit ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới' }}</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $isEdit ? 'Chỉnh sửa NVL' : 'Thêm NVL mới' }}</h3>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Mã sản phẩm</label>
+                                <label class="block text-sm font-medium text-gray-700">Mã NVL</label>
                                 <input type="text" wire:model="code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('code') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Tên sản phẩm</label>
+                                <label class="block text-sm font-medium text-gray-700">Tên NVL</label>
                                 <input type="text" wire:model="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
-                            <div class="col-span-2 flex gap-4 my-2">
-                                <label class="block text-sm font-medium text-gray-700 items-center flex">Phân loại gốc:</label>
-                                <label class="inline-flex items-center">
-                                    <input type="radio" wire:model="type" value="product_produced" class="text-blue-600">
-                                    <span class="ml-2 text-sm text-gray-700">Thành phẩm (SX)</span>
-                                </label>
-                                <label class="inline-flex items-center">
-                                    <input type="radio" wire:model="type" value="product_purchased" class="text-blue-600">
-                                    <span class="ml-2 text-sm text-gray-700">Thành phẩm (Mua)</span>
-                                </label>
+                            <div class="col-span-2 hidden">
+                                <input type="hidden" wire:model="type" value="material">
                             </div>
                             <div class="col-span-2">
                                 <label class="block text-sm font-medium text-gray-700">Hình ảnh</label>
@@ -192,9 +166,9 @@
                                 @error('box_spec') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">QC Thùng (ghi tay)</label>
-                                <input type="text" wire:model="carton_spec" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="VD: 24 chai/thùng">
-                                @error('carton_spec') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <label class="block text-sm font-medium text-gray-700">ĐV tính (g/kg/ml/L)</label>
+                                <input type="text" wire:model="unit" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="VD: kg, g, ml, L...">
+                                @error('unit') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                              <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Vị trí</label>

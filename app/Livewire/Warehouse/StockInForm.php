@@ -14,7 +14,7 @@ class StockInForm extends Component
     public $supplier_name = '';
     public $manufacturer = '';
     public $note = '';
-    public $type = 'manual';
+    public $type = 'purchase_produced';
 
     // Modal tạo nhanh sản phẩm
     public $showProductModal = false;
@@ -155,12 +155,20 @@ class StockInForm extends Component
             'newPUnit' => 'required|string',
         ]);
 
+        $productType = 'product_purchased'; // default
+        if ($this->type === 'import_material') {
+            $productType = 'material';
+        } elseif ($this->type === 'production') {
+            $productType = 'product_produced';
+        }
+
         $product = Product::create([
             'code' => $this->newPCode,
             'name' => $this->newPName,
             'unit' => $this->newPUnit,
             'brand' => $this->manufacturer, // Đồng bộ hãng từ header
             'status' => 'active',
+            'type' => $productType,
         ]);
 
         $this->showProductModal = false;
@@ -248,9 +256,17 @@ class StockInForm extends Component
                     $item['warehouse_location']
                 );
                 
-                // Cập nhật vị trí mặc định của sản phẩm nếu có
+                // Cập nhật vị trí mặc định và phân loại của sản phẩm
+                $productUpdates = [];
                 if ($item['warehouse_location']) {
-                    Product::where('id', $item['product_id'])->update(['location' => $item['warehouse_location']]);
+                    $productUpdates['location'] = $item['warehouse_location'];
+                }
+                if ($this->type === 'import_material') {
+                    $productUpdates['type'] = 'material';
+                }
+                
+                if (!empty($productUpdates)) {
+                    Product::where('id', $item['product_id'])->update($productUpdates);
                 }
             }
 

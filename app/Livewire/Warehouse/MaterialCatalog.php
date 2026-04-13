@@ -11,7 +11,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ProductsImport;
 use Illuminate\Validation\Rule;
 
-class ProductCatalog extends Component
+class MaterialCatalog extends Component
 {
     use WithPagination;
     use WithFileUploads;
@@ -30,13 +30,14 @@ class ProductCatalog extends Component
     public $brand;
     public $box_spec;
     public $carton_spec;
+    public $unit;
     public $status = 'active';
     public $location;
     public $batch_number;
     public $expiry_date;
     public $quantity;
     public $min_stock = 0;
-    public $type = 'product_produced';
+    public $type = 'material';
     public $selectedProducts = [];
     public $filterMode = 'all';
 
@@ -52,13 +53,14 @@ class ProductCatalog extends Component
             'brand' => 'nullable|string|max:255',
             'box_spec' => 'nullable|string|max:255',
             'carton_spec' => 'nullable|string|max:255',
+            'unit' => 'required|string|max:255',
             'status' => 'required|in:active,inactive',
             'location' => 'nullable|string|max:255',
             'batch_number' => 'required|string|max:255',
             'expiry_date' => 'nullable|date',
             'quantity' => 'required|numeric|min:0',
             'min_stock' => 'required|numeric|min:0',
-            'type' => 'required|in:product,product_produced,product_purchased',
+            'type' => 'required|in:material',
             'image' => 'nullable|image|max:2048',
         ];
     }
@@ -105,7 +107,7 @@ class ProductCatalog extends Component
     public function openModal($id = null)
     {
         $this->resetValidation();
-        $this->reset(['code', 'name', 'brand', 'box_spec', 'carton_spec', 'status', 'location', 'quantity', 'productId', 'image', 'type']);
+        $this->reset(['code', 'name', 'brand', 'box_spec', 'carton_spec', 'unit', 'status', 'location', 'quantity', 'productId', 'image', 'type']);
         
         if ($id) {
             $this->isEdit = true;
@@ -116,13 +118,14 @@ class ProductCatalog extends Component
             $this->brand = $product->brand;
             $this->box_spec = $product->box_spec;
             $this->carton_spec = $product->carton_spec;
+            $this->unit = $product->unit;
             $this->status = $product->status;
             $this->location = $product->location;
             $this->batch_number = $product->batch_number;
             $this->expiry_date = $product->expiry_date?->format('Y-m-d');
             $this->quantity = $product->inventory?->quantity ?? 0;
             $this->min_stock = $product->min_stock;
-            $this->type = in_array($product->type, ['product_produced', 'product_purchased']) ? $product->type : 'product_produced';
+            $this->type = $product->type ?? 'material';
         } else {
             $this->isEdit = false;
             $this->min_stock = 0;
@@ -148,6 +151,7 @@ class ProductCatalog extends Component
                 'brand' => $this->brand,
                 'box_spec' => $this->box_spec,
                 'carton_spec' => $this->carton_spec,
+                'unit' => $this->unit,
                 'status' => $this->status,
                 'location' => $this->location,
                 'batch_number' => $this->batch_number,
@@ -176,6 +180,7 @@ class ProductCatalog extends Component
                 'brand' => $this->brand,
                 'box_spec' => $this->box_spec,
                 'carton_spec' => $this->carton_spec,
+                'unit' => $this->unit,
                 'status' => $this->status,
                 'location' => $this->location,
                 'batch_number' => $this->batch_number,
@@ -225,10 +230,7 @@ class ProductCatalog extends Component
     {
         $products = Product::query()
             ->with('inventory')
-            ->where(function($q) {
-                $q->where('type', '!=', 'material')
-                  ->orWhereNull('type');
-            })
+            ->where('type', 'material')
             ->where(function($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
                   ->orWhere('code', 'like', '%' . $this->search . '%')
@@ -247,7 +249,7 @@ class ProductCatalog extends Component
             ->latest()
             ->paginate(15);
 
-        return view('livewire.warehouse.product-catalog', [
+        return view('livewire.warehouse.material-catalog', [
             'products' => $products,
             'allProductIdsOnPage' => $products->pluck('id')->toArray()
         ]);

@@ -111,7 +111,7 @@
                             </div>
                             <a href="{{ route('password.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">🔐 Đổi mật khẩu</a>
                             @if(Auth::user()->role === 'admin')
-                                <a href="{{ route('warehouse.contacts') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">👥 Quản lý nhân viên</a>
+                                <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">👥 Quản lý nhân viên</a>
                             @endif
                             <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100">
                                 @csrf

@@ -2,9 +2,11 @@
     <style>
         @media print {
             .no-print { display: none !important; }
-            .print-hide-unselected:not(.is-selected) { display: none !important; }
             body { padding: 0 !important; background: white !important; }
-            .bg-white { box-shadow: none !important; border: none !important; }
+            .print-only { display: block !important; }
+            /* Hide global layout elements when printing */
+            nav, h1 { display: none !important; }
+            main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
         }
     </style>
     <div class="flex justify-between items-center mb-4 no-print">
@@ -42,7 +44,7 @@
         </div>
     @endif
 
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden border">
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border no-print">
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-gray-50 border-b text-gray-600 uppercase text-xs font-semibold">
@@ -275,4 +277,112 @@
             </div>
         </div>
     @endif
+
+    <!-- PHẦN IN PDF BỊ ẨN KHI XEM THƯỜNG -->
+    <div class="hidden print-only w-full bg-white text-black">
+        @foreach($orders->whereIn('id', $selectedOrders) as $printOrder)
+        <div style="font-family: 'Times New Roman', serif; padding: 15mm; page-break-after: always; width: 100%;">
+            <!-- Header -->
+            <div class="mb-4 text-left">
+                <h1 class="text-xl font-bold uppercase">CÔNG TY TNHH ABC</h1>
+                <p class="text-[14px]">Địa chỉ: 123 Tỉnh Lộ 10 - Long An - SĐT: 0708091050</p>
+            </div>
+            <div style="border-bottom: 2px solid #000; margin-bottom: 20px;"></div>
+
+            <!-- Title -->
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold uppercase tracking-widest text-black">PHIẾU ĐỀ XUẤT MUA HÀNG</h2>
+                <p class="italic text-[13px] mt-1">
+                    Ngày {{ \Carbon\Carbon::parse($printOrder->order_date)->format('d') }} 
+                    tháng {{ \Carbon\Carbon::parse($printOrder->order_date)->format('m') }} 
+                    năm {{ \Carbon\Carbon::parse($printOrder->order_date)->format('Y') }}
+                </p>
+            </div>
+
+            <!-- Info -->
+            <div style="margin-bottom: 20px;" class="text-[14px]">
+                <table class="w-full">
+                    <tr>
+                        <td class="font-bold w-32 pb-1">Số PO:</td>
+                        <td class="pb-1 uppercase font-semibold">{{ $printOrder->po_number }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold pb-1">Tên nhà CC:</td>
+                        <td class="pb-1 uppercase font-bold">{{ $printOrder->supplier->name ?? '............................................' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold pb-1">SĐT:</td>
+                        <td class="pb-1">{{ $printOrder->supplier->phone ?? '............................................' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold pb-1">Địa chỉ:</td>
+                        <td class="pb-1">{{ $printOrder->supplier->address ?? '............................................' }}</td>
+                    </tr>
+                    @if($printOrder->notes)
+                    <tr>
+                        <td class="font-bold pb-1">Ghi chú:</td>
+                        <td class="pb-1">{{ $printOrder->notes }}</td>
+                    </tr>
+                    @endif
+                </table>
+            </div>
+
+            <!-- Table -->
+            <table class="w-full border-collapse border border-black text-[13px] mb-8">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border border-black px-2 py-2 w-10 text-center font-bold">STT</th>
+                        <th class="border border-black px-2 py-2 text-left w-24 font-bold">Mã SP</th>
+                        <th class="border border-black px-2 py-2 text-left font-bold">Tên SP (Nguyên vật liệu)</th>
+                        <th class="border border-black px-2 py-2 text-center w-24 font-bold">S.Lượng</th>
+                        <th class="border border-black px-2 py-2 text-center w-20 font-bold">ĐVT</th>
+                        <th class="border border-black px-2 py-2 text-left w-24 font-bold">Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($printOrder->items as $idx => $item)
+                    <tr>
+                        <td class="border border-black px-2 py-2 text-center">{{ $idx + 1 }}</td>
+                        <td class="border border-black px-2 py-2 font-mono uppercase">{{ $item->product->code ?? '' }}</td>
+                        <td class="border border-black px-2 py-2 font-semibold">{{ $item->product->name ?? '' }}</td>
+                        <td class="border border-black px-2 py-2 text-center font-bold">{{ floatval($item->quantity) }}</td>
+                        <td class="border border-black px-2 py-2 text-center">{{ $item->product->unit ?? '' }}</td>
+                        <td class="border border-black px-2 py-2 text-center"></td>
+                    </tr>
+                    @endforeach
+                    @for($i = count($printOrder->items); $i < max(8, count($printOrder->items)); $i++)
+                    <tr>
+                        <td class="border border-black px-2 py-2 text-center text-transparent">_</td>
+                        <td class="border border-black px-2 py-2"></td>
+                        <td class="border border-black px-2 py-2"></td>
+                        <td class="border border-black px-2 py-2"></td>
+                        <td class="border border-black px-2 py-2"></td>
+                        <td class="border border-black px-2 py-2"></td>
+                    </tr>
+                    @endfor
+                </tbody>
+            </table>
+
+            <!-- Footer / Signatures -->
+            <div class="grid grid-cols-2 gap-4 text-center mt-8 mb-8">
+                <div>
+                    <p class="font-bold text-[14px]">Người đặt hàng</p>
+                    <p class="text-[12px] italic">(Ký, ghi rõ họ tên)</p>
+                    <div style="height: 100px;"></div>
+                    <p class="font-bold uppercase text-[14px]">{{ $printOrder->user->name ?? '........................' }}</p>
+                </div>
+                <div>
+                    <p class="font-bold text-[14px]">Người xét duyệt</p>
+                    <p class="text-[12px] italic">(Ký, ghi rõ họ tên)</p>
+                    <div style="height: 100px;"></div>
+                    <p class="font-bold uppercase text-[14px]">........................</p>
+                </div>
+            </div>
+            
+            <div class="text-right mt-12 mb-4 text-[11px] italic text-gray-500">
+                In lúc: {{ date('d/m/Y H:i') }}
+            </div>
+        </div>
+        @endforeach
+    </div>
 </div>

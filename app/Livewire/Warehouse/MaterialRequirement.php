@@ -28,7 +28,8 @@ class MaterialRequirement extends Component
             'product_id' => $this->newProductId,
             'name' => $product->name,
             'code' => $product->code,
-            'quantity' => $this->newQuantity
+            'quantity' => $this->newQuantity,
+            'is_selected' => true
         ];
 
         $this->newProductId = '';
@@ -40,6 +41,11 @@ class MaterialRequirement extends Component
     public function removeTarget($id)
     {
         $this->targetProducts = array_filter($this->targetProducts, fn($t) => $t['id'] !== $id);
+        $this->calculateNeeds();
+    }
+
+    public function updatedTargetProducts()
+    {
         $this->calculateNeeds();
     }
 
@@ -55,6 +61,8 @@ class MaterialRequirement extends Component
         $needs = [];
 
         foreach ($this->targetProducts as $target) {
+            if (!isset($target['is_selected']) || !$target['is_selected']) continue;
+
             $product = Product::with('boms.material.inventory')->find($target['product_id']);
             if (!$product || $product->boms->isEmpty()) continue;
 

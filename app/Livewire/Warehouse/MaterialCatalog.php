@@ -230,7 +230,7 @@ class MaterialCatalog extends Component
     {
         $products = Product::query()
             ->with('inventory')
-            ->where('type', 'material')
+            ->where('code', 'like', 'NVL%')
             ->where(function($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
                   ->orWhere('code', 'like', '%' . $this->search . '%')

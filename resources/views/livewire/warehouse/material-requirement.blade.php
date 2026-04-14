@@ -51,13 +51,15 @@
                 <div class="mt-6 pt-4 border-t">
                     <h4 class="font-semibold text-sm text-gray-700 mb-2">Đang lên kế hoạch cho:</h4>
                     <ul class="space-y-2">
-                        @foreach($targetProducts as $tgt)
-                            <li class="flex justify-between items-center bg-indigo-50 px-3 py-2 rounded border border-indigo-100">
-                                <div>
-                                    <span class="block text-xs font-bold text-indigo-800">{{ $tgt['name'] }}</span>
-                                    <span class="text-[10px] text-gray-500">SL: {{ $tgt['quantity'] }}</span>
+                        @foreach($targetProducts as $index => $tgt)
+                            <li class="flex justify-between items-center bg-indigo-50 px-3 py-2 rounded border border-indigo-100 {{ isset($tgt['is_selected']) && !$tgt['is_selected'] ? 'opacity-50 grayscale' : '' }}">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" wire:model.live="targetProducts.{{ $index }}.is_selected" class="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shadow-sm">
+                                    <div>
+                                        <span class="block text-xs font-bold {{ isset($tgt['is_selected']) && !$tgt['is_selected'] ? 'text-gray-500 line-through' : 'text-indigo-800' }}">{{ $tgt['name'] }}</span>
+                                        <span class="text-[10px] text-gray-500">SL: {{ $tgt['quantity'] }}</span>
+                                    </div>
                                 </div>
-                                <button wire:click="removeTarget('{{ $tgt['id'] }}')" class="text-red-500 hover:text-red-700 p-1">✕</button>
                             </li>
                         @endforeach
                     </ul>

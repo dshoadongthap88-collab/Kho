@@ -225,10 +225,7 @@ class ProductCatalog extends Component
     {
         $products = Product::query()
             ->with('inventory')
-            ->where(function($q) {
-                $q->where('type', '!=', 'material')
-                  ->orWhereNull('type');
-            })
+            ->where('code', 'like', 'SP%')
             ->where(function($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
                   ->orWhere('code', 'like', '%' . $this->search . '%')

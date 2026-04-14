@@ -127,15 +127,19 @@
                             <thead>
                                 <tr class="bg-slate-50">
                                     <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-10 no-print">In</th>
-                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 min-w-[250px]">Sản phẩm</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 min-w-[250px]">Sản phẩm {{ $type === 'production' ? '(Nguyên liệu)' : '' }}</th>
+                                    @if($type === 'production')
+                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-20">Hãng SX</th>
+                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">Tồn kho HT</th>
+                                    @endif
                                     <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-14">ĐVT</th>
-                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">Số lô</th>
-                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-32">Hạn dùng</th>
-                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">Vị trí</th>
-                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-20">SL</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-20">Số lô</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">Hạn dùng</th>
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-20">Vị trí</th>
+                                    <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-20">SL Xuất</th>
                                     <th class="px-2 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">Đơn giá</th>
                                     <th class="px-2 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-14">VAT</th>
-                                    <th class="px-2 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-32">Thành tiền</th>
+                                    <th class="px-2 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-28">Thành tiền</th>
                                     <th class="px-2 py-3 border-b border-slate-200 w-10 no-print"></th>
                                 </tr>
                             </thead>
@@ -154,12 +158,30 @@
                                                 <option value="{{ $product->code }} - {{ $product->name }}"></option>
                                             @endforeach
                                         </datalist>
-
-                                        @if(isset($items[$index]['brand']) && $items[$index]['brand'])
+                                        @if($type !== 'production' && isset($items[$index]['brand']) && $items[$index]['brand'])
                                             <p class="text-[9px] text-slate-400 mt-0.5 uppercase font-bold tracking-tight px-1 no-print">Hãng: {{ $items[$index]['brand'] }}</p>
                                         @endif
                                         @error("items.{$index}.product_id") <p class="text-red-500 text-[10px] mt-1 no-print">{{ $message }}</p> @enderror
                                     </td>
+                                    @if($type === 'production')
+                                    <td class="px-2 py-4 text-center">
+                                        <span class="text-xs font-semibold text-slate-600 uppercase">{{ $items[$index]['brand'] ?? '-' }}</span>
+                                    </td>
+                                    <td class="px-2 py-4 text-center">
+                                        @if(isset($items[$index]['available_qty']))
+                                            <div class="text-xs no-print whitespace-nowrap">
+                                                <span class="font-bold">{{ floatval($items[$index]['available_qty']) }}</span>
+                                                @if($items[$index]['is_sufficient'])
+                                                    <span class="text-green-600 font-bold block text-[10px] mt-0.5">🟢 Đủ</span>
+                                                @else
+                                                    <span class="text-red-500 font-bold block text-[10px] mt-0.5">🔴 Thiếu</span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    @endif
                                     <td class="px-1 py-4 text-center">
                                         <span class="inline-block px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 border border-slate-200 min-w-[35px]">
                                             {{ $items[$index]['unit'] ?: '-' }}
@@ -180,16 +202,6 @@
                                     <td class="px-2 py-4">
                                         <input type="number" wire:model.live="items.{{ $index }}.quantity" step="0.0001" min="0" {{ $type === 'production' ? 'readonly' : '' }}
                                                class="w-full text-center text-xs rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0 {{ $type === 'production' ? 'bg-slate-100 cursor-not-allowed' : '' }}">
-                                        @if($type === 'production' && isset($items[$index]['available_qty']))
-                                            <div class="text-[10px] mt-1 text-center no-print whitespace-nowrap leading-tight">
-                                                Tồn: {{ floatval($items[$index]['available_qty']) }} 
-                                                @if($items[$index]['is_sufficient'])
-                                                    <span class="text-green-600 font-bold block">🟢 Đủ</span>
-                                                @else
-                                                    <span class="text-red-500 font-bold block">🔴 Thiếu</span>
-                                                @endif
-                                            </div>
-                                        @endif
                                         @error("items.{$index}.quantity") <p class="text-red-500 text-[10px] mt-1 no-print">{{ $message }}</p> @enderror
                                     </td>
                                     <td class="px-2 py-4">

@@ -72,8 +72,17 @@ class BomManager extends Component
 
     public function render()
     {
-        $products = Product::where('type', 'product')->where('status', 'active')->orderBy('name')->get();
-        $materials = Product::where('type', 'material')->where('status', 'active')->orderBy('name')->get();
+        // Thành phẩm: Các mã không bắt đầu bằng NVL (có thể là SP, TP...)
+        $products = Product::where('code', 'not like', 'NVL%')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+            
+        // Nguyên vật liệu: Các mã bắt đầu bằng NVL
+        $materials = Product::where('code', 'like', 'NVL%')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
 
         $availability = null;
         if ($this->selectedProductId && count($this->bomItems) > 0) {

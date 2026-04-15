@@ -114,10 +114,9 @@ class MaterialRequirement extends Component
 
         // Tạo 1 nhà cung cấp nháp nếu chưa có để pass qua ràng buộc database
         $supplier = \App\Models\Supplier::firstOrCreate(
-            ['code' => 'NCC-PENDING'],
+            ['email' => 'none@temp.local'],
             [
                 'name' => 'Chờ bổ sung Danh tính NCC',
-                'email' => 'none@temp.local',
                 'phone' => '000000000',
                 'address' => 'Chưa xác định',
                 'type' => 'supplier',

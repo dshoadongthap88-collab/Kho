@@ -67,6 +67,13 @@ class StockInForm extends Component
         ];
     }
 
+    public function updatedType($value)
+    {
+        // Khi người dùng thay đổi Loại nhập, reset lại các dòng trắng hoàn toàn
+        $this->items = [];
+        $this->addItem();
+    }
+
     public function updated($name, $value)
     {
         // Khi người dùng chọn sản phẩm từ ô tìm kiếm (items.0.product_search)
@@ -278,8 +285,17 @@ class StockInForm extends Component
 
     public function render()
     {
+        $productQuery = Product::where('status', 'active');
+
+        if ($this->type === 'import_material') {
+            $productQuery->where('type', 'material');
+        } else {
+            // Các loại nhập khác (thành phẩm, v.v...)
+            $productQuery->where('type', '!=', 'material');
+        }
+
         return view('livewire.warehouse.stock-in-form', [
-            'products' => Product::where('status', 'active')->orderBy('name')->get(),
+            'products' => $productQuery->orderBy('name')->get(),
             'suppliers' => Supplier::orderBy('name')->get(),
             'brands' => Product::whereNotNull('brand')->distinct()->pluck('brand'),
         ]);

@@ -38,6 +38,13 @@ class PurchaseOrderList extends Component
     public $newItemQuantity;
     public $newItemUnitPrice;
 
+    // Office purchase modal
+    public $showOfficeModal = false;
+    public $officeItems = [];
+    public $officeItemName = '';
+    public $officeItemQuantity = '';
+    public $officeItemPrice = '';
+
     protected $queryString = ['search', 'filterStatus'];
 
     public function mount()
@@ -274,6 +281,99 @@ class PurchaseOrderList extends Component
 
         // Tạm mượn chức năng window.print của trình duyệt (có thể mở rộng thành trang view in ấn riêng)
         $this->dispatch('trigger-print');
+    }
+
+    public function openOfficeModal()
+    {
+        $this->resetValidation();
+        $this->reset([
+            'po_number', 'supplier_id', 'order_date', 'expected_delivery_date', 
+            'total_amount', 'status', 'notes', 'orderId', 'officeItems', 
+            'officeItemName', 'officeItemQuantity', 'officeItemPrice'
+        ]);
+        $this->isEdit = false;
+        $this->po_number = $this->generatePONumber();
+        $this->order_date = now()->format('Y-m-d');
+        $this->expected_delivery_date = now()->addDays(3)->format('Y-m-d');
+        $this->status = 'pending';
+        $this->showOfficeModal = true;
+    }
+
+    public function addOfficeItem()
+    {
+        if (empty($this->officeItemName) || empty($this->officeItemQuantity)) {
+            $this->addError('officeItem', 'Vui lòng nhập tên vật tư và số lượng.');
+            return;
+        }
+
+        $price = $this->officeItemPrice ? $this->officeItemPrice : 0;
+        $lineTotal = $this->officeItemQuantity * $price;
+
+        $this->officeItems[] = [
+            'name' => trim($this->officeItemName),
+            'quantity' => $this->officeItemQuantity,
+            'unit_price' => $price,
+            'line_total' => $lineTotal,
+        ];
+
+        $this->total_amount = collect($this->officeItems)->sum('line_total');
+        $this->reset(['officeItemName', 'officeItemQuantity', 'officeItemPrice']);
+        $this->resetValidation('officeItem');
+    }
+
+    public function removeOfficeItem($index)
+    {
+        unset($this->officeItems[$index]);
+        $this->officeItems = array_values($this->officeItems);
+        $this->total_amount = collect($this->officeItems)->sum('line_total');
+    }
+
+    public function saveOfficePurchase()
+    {
+        $this->validate([
+            'po_number' => 'required|string|max:50',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'order_date' => 'required|date',
+            'expected_delivery_date' => 'required|date|after_or_equal:order_date',
+        ]);
+
+        if (empty($this->officeItems)) {
+            session()->flash('error', 'Vui lòng thêm ít nhất một vật tư.');
+            return;
+        }
+
+        $order = PurchaseOrder::create([
+            'po_number' => $this->po_number,
+            'supplier_id' => $this->supplier_id,
+            'order_date' => $this->order_date,
+            'expected_delivery_date' => $this->expected_delivery_date,
+            'total_amount' => $this->total_amount,
+            'status' => $this->status,
+            'notes' => 'Mua văn phòng phẩm. ' . $this->notes,
+            'user_id' => auth()->id(),
+        ]);
+
+        foreach ($this->officeItems as $item) {
+            // Tự động tạo sản phẩm ẩn
+            $product = Product::create([
+                'code' => 'VP-' . date('YmdHis') . rand(10, 99),
+                'name' => $item['name'],
+                'unit' => 'Cái', // mặc định
+                'type' => 'office_supply',
+                'status' => 'active',
+                'price' => $item['unit_price']
+            ]);
+
+            $order->items()->create([
+                'product_id' => $product->id,
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['unit_price'],
+                'line_total' => $item['line_total'],
+            ]);
+        }
+
+        session()->flash('message', 'Tạo đơn mua hàng văn phòng thành công.');
+        $this->showOfficeModal = false;
     }
 
     public function render()

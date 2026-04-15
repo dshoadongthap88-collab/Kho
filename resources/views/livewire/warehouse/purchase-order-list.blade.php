@@ -23,6 +23,21 @@
             </select>
         </div>
         <div class="flex gap-3">
+            <div x-data="{ open: false }" class="relative inline-block text-left">
+                <button @click="open = !open" @click.away="open = false" type="button" class="bg-indigo-600 font-semibold hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
+                    <span>📋</span> Trình mua hàng
+                    <svg class="-mr-1 ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+
+                <div x-cloak x-show="open" class="origin-top-right absolute z-50 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div class="py-1" role="menu" aria-orientation="vertical">
+                        <a href="{{ route('warehouse.delivery-note') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">🏭 Mua hàng cho sản xuất</a>
+                        <button wire:click="openOfficeModal" type="button" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">🏢 Mua hàng cho Văn phòng</button>
+                    </div>
+                </div>
+            </div>
             <button wire:click="printSelected" class="bg-gray-100 font-semibold hover:bg-gray-200 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
                 <span>🖨️</span> In phiếu
             </button>
@@ -270,6 +285,103 @@
                             </button>
                         @endif
                         <button type="button" wire:click="$set('showModal', false)" class="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:w-auto sm:text-sm">
+                            Huỷ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Modal Office Purchase -->
+    @if($showOfficeModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showOfficeModal', false)"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full max-h-[90vh] overflow-y-auto">
+                    <div class="bg-blue-50 border-b border-blue-100 px-4 py-3 sm:px-6">
+                        <h3 class="text-lg leading-6 font-semibold text-blue-900 flex items-center gap-2">
+                            <span>🏢</span> Tạo đề xuất Mua hàng Văn phòng
+                        </h3>
+                    </div>
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="space-y-4">
+                            <!-- Basic Info -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Số phiếu (PO)</label>
+                                    <input type="text" wire:model="po_number" readOnly class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nhà cung cấp/Nới báo giá <span class="text-red-500">*</span></label>
+                                    <select wire:model="supplier_id" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                        <option value="">-- Chọn --</option>
+                                        @foreach($suppliers as $supplier)
+                                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('supplier_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <!-- Items Section -->
+                            <div class="border-t pt-4">
+                                <h4 class="font-semibold mb-3 text-gray-800">Danh sách vật tư văn phòng</h4>
+                                <div class="flex gap-2 mb-4 items-end bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Tên vật tư/VPP</label>
+                                        <input type="text" wire:model="officeItemName" placeholder="Ví dụ: Giấy A4, Bút bi..." class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                    </div>
+                                    <div class="w-20">
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Số lượng</label>
+                                        <input type="number" wire:model="officeItemQuantity" class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm text-center">
+                                    </div>
+                                    <div class="w-28">
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Dự kiến giá</label>
+                                        <input type="number" wire:model="officeItemPrice" placeholder="Giá" class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm text-right">
+                                    </div>
+                                    <div>
+                                        <button wire:click="addOfficeItem" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold transition h-[38px]">Thêm</button>
+                                    </div>
+                                </div>
+                                @error('officeItem') <p class="text-red-500 text-xs mb-2">{{ $message }}</p> @enderror
+
+                                @if(!empty($officeItems))
+                                    <div class="bg-gray-50 rounded border overflow-hidden">
+                                        <table class="w-full text-sm">
+                                            <thead>
+                                                <tr class="bg-gray-100 border-b">
+                                                    <th class="px-3 py-2 text-left">Tên vật tư/VPP</th>
+                                                    <th class="px-3 py-2 text-center w-16">SL</th>
+                                                    <th class="px-3 py-2 text-right w-24">Đơn giá</th>
+                                                    <th class="px-3 py-2 text-right w-28">Thành tiền</th>
+                                                    <th class="px-3 py-2 text-center w-12">Xoá</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y">
+                                                @foreach($officeItems as $index => $item)
+                                                    <tr>
+                                                        <td class="px-3 py-2 font-medium">{{ $item['name'] }}</td>
+                                                        <td class="px-3 py-2 text-center font-bold text-blue-700">{{ $item['quantity'] }}</td>
+                                                        <td class="px-3 py-2 text-right">{{ number_format($item['unit_price'], 0, ',', '.') }}</td>
+                                                        <td class="px-3 py-2 text-right font-semibold text-amber-700">{{ number_format($item['line_total'], 0, ',', '.') }}</td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <button wire:click="removeOfficeItem({{ $index }})" type="button" class="text-red-500 hover:text-red-700 font-bold">✕</button>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+                        <button type="button" wire:click="saveOfficePurchase" class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:w-auto sm:text-sm">
+                            💾 Lưu Đề Xuất
+                        </button>
+                        <button type="button" wire:click="$set('showOfficeModal', false)" class="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:w-auto sm:text-sm">
                             Huỷ
                         </button>
                     </div>

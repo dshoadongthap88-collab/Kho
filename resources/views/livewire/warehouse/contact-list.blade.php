@@ -32,6 +32,7 @@
                     <th class="px-4 py-3">Số điện thoại</th>
                     <th class="px-4 py-3">Người liên hệ</th>
                     <th class="px-4 py-3">Email</th>
+                    <th class="px-4 py-3 text-right">Công nợ (đ)</th>
                     <th class="px-4 py-3">Tình trạng</th>
                     <th class="px-4 py-3 text-right">Thao tác</th>
                 </tr>
@@ -53,6 +54,9 @@
                         <td class="px-4 py-3 text-gray-600 font-mono">{{ $contact->phone }}</td>
                         <td class="px-4 py-3 text-gray-800 font-medium">{{ $contact->contact_person }}</td>
                         <td class="px-4 py-3 text-blue-600 text-sm italic underline">{{ $contact->email }}</td>
+                        <td class="px-4 py-3 text-right font-bold {{ $contact->total_debt > 0 ? 'text-red-500' : 'text-slate-400' }}">
+                            {{ $contact->total_debt > 0 ? number_format($contact->total_debt) : '0' }}
+                        </td>
                         <td class="px-4 py-3">
                             @if($contact->status === 'active')
                                 <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Hoạt động</span>

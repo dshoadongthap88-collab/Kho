@@ -347,6 +347,20 @@ class StockOutForm extends Component
                     );
                 }
 
+                // Tự động chuyển qua module Báo cáo Giao Hàng nếu loại xuất là 'delivery'
+                if ($this->type === 'delivery') {
+                    $totalInvoice = collect($this->items)->sum('total_amount');
+
+                    \App\Models\DeliveryReport::create([
+                        'stock_out_id' => $stockOut->id,
+                        'customer_name' => $this->customer_name . ($this->receiver_department ? " ({$this->receiver_department})" : ""),
+                        'status' => 'pending',
+                        'payment_status' => 'unpaid',
+                        'total_amount' => $totalInvoice,
+                        'paid_amount' => 0,
+                    ]);
+                }
+
                 session()->flash('success', 'Xuất kho thành công!');
                 $this->reset(['items', 'customer_name', 'receiver_department', 'note']);
                 $this->addItem();

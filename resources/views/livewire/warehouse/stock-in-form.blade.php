@@ -27,7 +27,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Loại nhập</label>
-                <select wire:model="type" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <select wire:model.live="type" class="w-full rounded-lg border-gray-300 shadow-sm">
                     <option value="purchase_produced">Nhập mua hàng TP</option>
                     <option value="return_produced">Nhập trả hàng TP</option>
                     <option value="production">Nhập từ sản xuất</option>

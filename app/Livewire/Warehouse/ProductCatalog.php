@@ -41,8 +41,11 @@ class ProductCatalog extends Component
     public $filterMode = 'all';
 
     public $excelFile;
+    public $dateFrom = '';
+    public $dateTo = '';
+    public $selectedIds = []; // Dùng đồng nhất selectedIds thay cho selectedProducts
 
-    protected $queryString = ['search'];
+    protected $queryString = ['search', 'dateFrom', 'dateTo'];
 
     public function rules()
     {
@@ -88,12 +91,12 @@ class ProductCatalog extends Component
             ->toArray();
     }
 
-    public function toggleSelectAll($productIds)
+    public function toggleSelectAll($idsOnPage)
     {
-        if (count($this->selectedProducts) === count($productIds)) {
-            $this->selectedProducts = [];
+        if (count($this->selectedIds) >= count($idsOnPage)) {
+            $this->selectedIds = [];
         } else {
-            $this->selectedProducts = collect($productIds)->map(fn($id) => (string)$id)->toArray();
+            $this->selectedIds = collect($idsOnPage)->map(fn($id) => (string)$id)->toArray();
         }
     }
 
@@ -205,6 +208,27 @@ class ProductCatalog extends Component
         session()->flash('message', 'Đã xoá sản phẩm.');
     }
 
+    public function deleteSelected()
+    {
+        if (empty($this->selectedIds)) return;
+        Product::whereIn('id', $this->selectedIds)->delete();
+        session()->flash('message', 'Đã xóa ' . count($this->selectedIds) . ' sản phẩm.');
+        $this->selectedIds = [];
+    }
+
+    public function exportExcel()
+    {
+        // Tôi sẽ tạo class ProductExport sau
+        session()->flash('info', 'Tính năng Xuất Excel danh mục đang được chuẩn bị.');
+    }
+
+    public function printLabels()
+    {
+        if (empty($this->selectedIds)) return;
+        // Logic in nhãn mã vạch/QR
+        $this->dispatch('trigger-print');
+    }
+
     public function importExcel()
     {
         $this->validate([
@@ -232,14 +256,11 @@ class ProductCatalog extends Component
                   ->orWhere('brand', 'like', '%' . $this->search . '%')
                   ->orWhere('batch_number', 'like', '%' . $this->search . '%');
             })
-            ->when($this->filterMode === 'expiring', function($q) {
-                $q->whereNotNull('expiry_date')
-                  ->where('expiry_date', '<=', now()->addMonths(6));
+            ->when($this->dateFrom, function($q) {
+                $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
             })
-            ->when($this->filterMode === 'low_stock', function($q) {
-                $q->whereHas('inventory', function($iq) {
-                    $iq->whereColumn('quantity', '<=', 'products.min_stock');
-                })->where('min_stock', '>', 0);
+            ->when($this->dateTo, function($q) {
+                $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
             })
             ->latest()
             ->paginate(15);

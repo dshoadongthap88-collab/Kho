@@ -1,39 +1,51 @@
-<div>
-    <div class="flex justify-between items-center mb-4">
-        <div class="flex-1 max-w-sm">
-            <input wire:model.live="search" type="text" placeholder="Tìm theo tên, mã, hãng..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-        </div>
-        <div class="flex gap-2">
-            @if(count($selectedProducts) > 0)
-                <button onclick="window.print()" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 transition">
-                    <span>🖨️</span> In {{ count($selectedProducts) }} mục đã chọn
-                </button>
-            @endif
-            <button wire:click="openModal" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                <span>➕</span> Thêm sản phẩm
-            </button>
-        </div>
-    </div>
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Date Filter Standard -->
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm transition-all focus-within:ring-2 focus-within:ring-indigo-100">
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Từ ngày</label>
+                    <input type="date" wire:model.live="dateFrom" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
+                </div>
+                <div class="w-px h-4 bg-slate-200 mx-1"></div>
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Đến ngày</label>
+                    <input type="date" wire:model.live="dateTo" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
+                </div>
+            </div>
 
-    <div class="flex items-center gap-4 mb-4 bg-gray-50 p-3 rounded-lg border">
-        <span class="text-sm font-medium text-gray-600">Phân loại nhanh:</span>
-        <div class="flex gap-2">
-            <button wire:click="$set('filterMode', 'all')" class="px-3 py-1 text-sm rounded-full {{ $filterMode === 'all' ? 'bg-blue-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100' }}">
-                Tất cả
-            </button>
-            <button wire:click="$set('filterMode', 'expiring')" class="px-3 py-1 text-sm rounded-full {{ $filterMode === 'expiring' ? 'bg-red-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100' }}">
-                Sắp hết hạn
-            </button>
-            <button wire:click="$set('filterMode', 'low_stock')" class="px-3 py-1 text-sm rounded-full {{ $filterMode === 'low_stock' ? 'bg-orange-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100' }}">
-                Sắp hết tồn
-            </button>
+            <!-- Search Standard -->
+            <div class="relative w-64">
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm tên, mã, hãng..." class="w-full pl-9 pr-4 py-2 text-xs font-bold rounded-xl border-slate-200 focus:ring-indigo-500 shadow-sm transition-all">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <div class="flex gap-1 bg-slate-100 p-1 rounded-xl">
+                <button wire:click="$set('filterMode', 'all')" class="px-4 py-1.5 text-[11px] font-black uppercase rounded-lg transition-all {{ $filterMode === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Tất cả</button>
+                <button wire:click="$set('filterMode', 'low_stock')" class="px-4 py-1.5 text-[11px] font-black uppercase rounded-lg transition-all {{ $filterMode === 'low_stock' ? 'bg-orange-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Sắp hết tồn</button>
+            </div>
         </div>
-        
-        <div class="h-6 w-px bg-gray-300 mx-2"></div>
-        
-        <div class="flex gap-2">
-            <button wire:click="selectExpiring" class="text-xs text-red-600 hover:underline">Chọn mục hết hạn</button>
-            <button wire:click="selectLowStock" class="text-xs text-orange-600 hover:underline">Chọn mục hết tồn</button>
+
+        <div class="flex items-center gap-2">
+            @if(count($selectedIds) > 0)
+                <div class="flex items-center gap-2 pr-3 border-r border-slate-300 mr-2 animate-in slide-in-from-right-4 duration-300">
+                    <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Chọn: {{ count($selectedIds) }}</span>
+                    <button wire:click="deleteSelected" wire:confirm="Xóa {{ count($selectedIds) }} sản phẩm đã chọn?" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition">
+                        <span>🗑️</span> XÓA
+                    </button>
+                    <button wire:click="printLabels" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg text-xs font-black transition">
+                        <span>🏷️</span> IN NHÃN
+                    </button>
+                </div>
+            @endif
+
+            <button wire:click="openModal" class="bg-indigo-600 font-black hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-xs flex items-center gap-2 transition shadow-md shadow-indigo-100">
+                <span>➕</span> THÊM SẢN PHẨM
+            </button>
+            <button wire:click="$set('showImportModal', true)" class="bg-emerald-600 font-black hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs transition shadow-md shadow-emerald-100">
+                📥 IMPORT EXCEL
+            </button>
         </div>
     </div>
 
@@ -52,11 +64,11 @@
     <div class="bg-white rounded-xl shadow-sm overflow-hidden border">
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="bg-gray-50 border-b text-gray-600 uppercase text-xs font-semibold">
-                    <th class="px-4 py-3 w-10 no-print">
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
+                    <th class="px-6 py-4 w-10 text-center no-print bg-slate-100/30">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
-                               {{ count($selectedProducts) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
-                               class="rounded border-gray-300">
+                               {{ count($selectedIds) >= count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
+                               class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
                     <th class="px-4 py-3">Mã sản phẩm</th>
                     <th class="px-4 py-3 w-16 text-center">Hình ảnh</th>
@@ -76,11 +88,9 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($products as $product)
-                    <tr class="hover:bg-gray-50 transition border-b 
-                        {{ $product->is_expiring_soon ? 'bg-red-50' : ($product->is_low_stock ? 'bg-orange-50' : '') }}
-                        {{ in_array($product->id, $selectedProducts) ? 'ring-2 ring-blue-400' : '' }}">
-                        <td class="px-4 py-3 no-print">
-                            <input type="checkbox" wire:model.live="selectedProducts" value="{{ $product->id }}" class="rounded border-gray-300">
+                    <tr class="hover:bg-slate-50/80 transition group {{ $product->is_low_stock ? 'bg-orange-50/30' : '' }} {{ in_array($product->id, $selectedIds) ? 'bg-indigo-50/30 ring-inset ring-1 ring-indigo-200' : '' }}">
+                        <td class="px-6 py-4 text-center no-print">
+                            <input type="checkbox" wire:model.live="selectedIds" value="{{ $product->id }}" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
                         <td class="px-4 py-3 font-mono text-sm text-blue-600">{{ $product->code }}</td>
                         <td class="px-4 py-3 text-center">
@@ -273,24 +283,17 @@
 
     <style>
         @media print {
-            .no-print, 
-            header, 
-            nav, 
-            aside, 
-            .sidebar, 
-            .flex.justify-between.items-center.mb-4,
-            .flex.items-center.gap-4.mb-4,
-            .px-4.py-3.bg-gray-50.border-t {
+            .no-print, header, nav, aside, .sidebar, .px-4.py-3.bg-gray-50.border-t {
                 display: none !important;
             }
             .bg-white { background-color: transparent !important; }
             .shadow-sm { box-shadow: none !important; }
-            .border { border: 1px solid #ddd !important; }
+            .border { border: 1px solid #000 !important; }
             table { width: 100% !important; border-collapse: collapse !important; }
-            th, td { border: 1px solid #ddd !important; padding: 8px !important; }
-            tr:not(.ring-2) { display: none !important; }
-            tr.ring-2 { display: table-row !important; }
-            @page { size: landscape; margin: 1cm; }
+            th, td { border: 1px solid #000 !important; padding: 4px !important; font-size: 10px !important; }
+            tr:not(.bg-indigo-50) { display: none !important; } /* In các mục đã chọn */
+            tr.bg-indigo-50 { display: table-row !important; }
+            @page { size: portrait; margin: 1cm; }
         }
     </style>
 </div>

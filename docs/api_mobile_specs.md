@@ -1,7 +1,10 @@
 # Tài liệu Đặc tả API cho Mobile App (Cơ bản)
 
 Tài liệu này mô tả danh sách các API cơ bản cần thiết để kết nối hệ thống Backend (Laravel) với ứng dụng Mobile cho các chức năng: Đăng nhập, Dashboard, Quản lý Tồn kho, Nhập kho và Xuất kho.
+đó cho nhân viên.
+Hiện tại toàn bộ cơ sở hạ tầng đã đầy đủ "vũ khí". Team làm Mobile đã có thể gắn link vào app và bắt đầu test việc "quét mã xuất nhập kho bằng điện thoại" để xem số liệu trên màn hình trình duyệt Web nhảy theo thời gian thực được rồi ạ.
 
+Anh có cần em hỗ trợ 
 ## Thiết lập chung (General Settings)
 
 *   **Base URL:** `https://your-domain.com/api/v1`

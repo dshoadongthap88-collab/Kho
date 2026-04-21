@@ -4,13 +4,25 @@ namespace App\Livewire\Warehouse;
 
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Models\StockIn;
 use App\Services\InventoryService;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
+use Livewire\WithPagination;
+use App\Exports\StockInListExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockInForm extends Component
 {
+    use WithPagination;
+
     public $items = [];
+    public $activeTab = 'form'; // 'form' hoặc 'list'
+    public $listDateFrom = '';
+    public $listDateTo = '';
+    public $listSearch = '';
+    public $selectedIds = [];
+    public $printItems = []; // Danh sách các phiếu nhập để in hàng loạt
     public $supplier_name = '';
     public $manufacturer = '';
     public $note = '';
@@ -29,6 +41,9 @@ class StockInForm extends Component
 
     public function mount()
     {
+        $this->listDateFrom = now()->startOfMonth()->format('Y-m-d');
+        $this->listDateTo = now()->format('Y-m-d');
+
         if (empty($this->items)) {
             $this->addItem();
         }
@@ -281,6 +296,76 @@ class StockInForm extends Component
             $this->reset(['items', 'supplier_name', 'manufacturer', 'note']);
             $this->addItem();
         });
+    }
+
+    public function exportExcel()
+    {
+        $query = StockIn::with(['items', 'creator'])
+            ->whereBetween('created_at', [$this->listDateFrom . ' 00:00:00', $this->listDateTo . ' 23:59:59'])
+            ->where(function($q) {
+                $q->where('code', 'like', '%' . $this->listSearch . '%')
+                  ->orWhere('supplier_name', 'like', '%' . $this->listSearch . '%');
+            });
+
+        $data = $query->latest()->get();
+        return Excel::download(new \App\Exports\StockInListExport($data), 'danh_sach_phieu_nhap_kho_' . now()->format('Ymd_His') . '.xlsx');
+    }
+
+    public function printSelected()
+    {
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'Vui lòng chọn ít nhất một phiếu để in.');
+            return;
+        }
+
+        $this->printItems = StockIn::whereIn('id', $this->selectedIds)
+            ->with(['items.product', 'creator'])
+            ->get();
+
+        $this->dispatch('trigger-print');
+    }
+
+    public function deleteSelected()
+    {
+        if (empty($this->selectedIds)) {
+            return;
+        }
+
+        DB::transaction(function () {
+            $invService = app(InventoryService::class);
+            $stockIns = StockIn::whereIn('id', $this->selectedIds)->with('items')->get();
+
+            foreach ($stockIns as $si) {
+                foreach ($si->items as $item) {
+                    // Khi xóa phiếu nhập -> Giảm trừ số lượng trong kho
+                    // Kiểm tra tồn kho trước khi giảm trừ (tùy chọn nhưng an toàn)
+                    $invService->export(
+                        $item->product_id,
+                        $item->quantity,
+                        'reversal',
+                        $si->id,
+                        "Giảm trừ do xóa phiếu nhập {$si->code}",
+                        $item->batch_number,
+                        $item->expiry_date,
+                        $item->warehouse_location
+                    );
+                }
+                $si->items()->delete();
+                $si->delete();
+            }
+        });
+
+        session()->flash('success', 'Đã xóa ' . count($this->selectedIds) . ' phiếu và giảm trừ tồn kho tương ứng.');
+        $this->selectedIds = [];
+    }
+
+    public function toggleSelectAll($idsOnPage)
+    {
+        if (count($this->selectedIds) >= count($idsOnPage)) {
+            $this->selectedIds = [];
+        } else {
+            $this->selectedIds = $idsOnPage;
+        }
     }
 
     public function render()

@@ -1,30 +1,52 @@
-<div class="space-y-4 w-full" x-data="{ selectedIds: [] }">
-    <!-- Thanh công cụ (Header nằm ngang) -->
-    <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 print:hidden">
-        <div class="flex items-center gap-3">
-            <h2 class="text-xl font-bold text-slate-800">Công nợ hóa đơn</h2>
-        </div>
-        
-        <div class="flex items-center gap-3 flex-1 justify-end">
-            <!-- Tìm kiếm -->
-            <div class="relative w-72">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Date Filter Standard -->
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-100">
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Giao từ</label>
+                    <input type="date" wire:model.live="dateFrom" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
                 </div>
-                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm tên khách, số phiếu..." class="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <div class="w-px h-4 bg-slate-200 mx-1"></div>
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Đến</label>
+                    <input type="date" wire:model.live="dateTo" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
+                </div>
             </div>
 
-            <!-- Lọc -->
-            <select wire:model.live="filterPayment" class="border border-slate-300 rounded-lg text-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500">
-                <option value="">Tất cả hóa đơn</option>
-                <option value="unpaid_or_debt">Đang nợ</option>
-                <option value="paid">Đã thanh toán</option>
-            </select>
+            <!-- Search Standard -->
+            <div class="relative w-64">
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm tên khách, số phiếu..." class="w-full pl-9 pr-4 py-2 text-xs font-bold rounded-xl border-slate-200 focus:ring-blue-500 shadow-sm transition-all">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
 
-            <!-- In báo cáo -->
-            <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center gap-2 shadow-sm transition text-sm font-semibold whitespace-nowrap">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                <span>In báo cáo</span>
+            <!-- Filter Payment -->
+            <select wire:model.live="filterPayment" class="border-slate-200 rounded-xl px-4 py-2 text-xs font-bold focus:ring-blue-500 shadow-sm">
+                <option value="">Tất cả hóa đơn</option>
+                <option value="unpaid_or_debt">🔴 Đang nợ</option>
+                <option value="paid">🟢 Đã thanh toán</option>
+            </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+            @if(count($selectedIds) > 0)
+                <div class="flex items-center gap-2 pr-3 border-r border-slate-300 mr-2 animate-in slide-in-from-right-4 duration-300">
+                    <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded">Chọn: {{ count($selectedIds) }}</span>
+                    <button wire:click="deleteSelected" wire:confirm="Xóa {{ count($selectedIds) }} bản ghi nợ đã chọn?" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition">
+                        <span>🗑️</span> XÓA
+                    </button>
+                    <button wire:click="printSelected" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-black transition">
+                        <span>🖨️</span> IN GHÉP
+                    </button>
+                </div>
+            @endif
+
+            <button wire:click="exportExcel" class="bg-emerald-600 font-black hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs flex items-center gap-2 transition shadow-md shadow-emerald-100">
+                <span>📊</span> EXCEL
+            </button>
+            <button onclick="window.print()" class="bg-slate-800 font-black hover:bg-slate-900 text-white px-5 py-2 rounded-xl text-xs flex items-center gap-2 transition shadow-md">
+                <span>📄</span> PDF
             </button>
         </div>
     </div>
@@ -50,15 +72,10 @@
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 w-full overflow-x-auto print:shadow-none print:border-none print:rounded-none">
         <table class="w-full text-left whitespace-nowrap table-auto border-collapse print-table">
             <thead class="bg-slate-100 text-slate-700 text-sm font-bold border-b border-slate-200 print:bg-white">
-                <tr>
-                    <th class="px-3 py-3 text-center print:hidden" style="width: 40px;">
-                        <input type="checkbox" class="rounded" x-on:change="
-                            if ($event.target.checked) {
-                                selectedIds = @js($debts->pluck('id'));
-                            } else {
-                                selectedIds = [];
-                            }
-                        ">
+                    <th class="px-6 py-4 w-10 text-center no-print bg-slate-100/30">
+                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $debts->pluck('id')->toArray()) }}])" 
+                               {{ count($selectedIds) >= count($debts->pluck('id')->toArray()) && count($debts) > 0 ? 'checked' : '' }}
+                               class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
                     </th>
                     <th class="px-4 py-3">Số phiếu</th>
                     <th class="px-4 py-3">Tên khách hàng</th>
@@ -83,13 +100,9 @@
                         $isOverdue = $remaining > 0 && $dueDate && $dueDate->lt(now());
                         $daysOverdueCount = $isOverdue ? $dueDate->diffInDays(now()) : 0;
                     @endphp
-                    <tr class="hover:bg-blue-50/50 transition-colors {{ $isOverdue ? 'bg-red-50/50' : '' }} print-row"
-                        x-show="selectedIds.length === 0 || selectedIds.includes({{ $report->id }})"
-                        x-bind:class="{ 'print-row-hidden': selectedIds.length > 0 && !selectedIds.includes({{ $report->id }}) }">
-                        <!-- Checkbox chọn in -->
-                        <td class="px-3 py-3 text-center print:hidden">
-                            <input type="checkbox" class="rounded" :value="{{ $report->id }}"
-                                x-model.number="selectedIds">
+                    <tr class="hover:bg-slate-50/80 transition group {{ $isOverdue ? 'bg-red-50/30' : '' }} {{ in_array($report->id, $selectedIds) ? 'bg-blue-50/30 is-selected' : '' }} print-row">
+                        <td class="px-6 py-4 text-center no-print">
+                            <input type="checkbox" wire:model.live="selectedIds" value="{{ $report->id }}" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
                         </td>
                         <!-- Số phiếu -->
                         <td class="px-4 py-3">
@@ -136,6 +149,7 @@
                         <td class="px-4 py-3 text-center print:hidden">
                             @if($remaining > 0)
                                 <div class="flex items-center justify-center gap-2">
+                                    <button wire:click="toggleSelectAll([{{ $report->id }}])" class="text-slate-400 hover:text-blue-600 p-1" title="In phiếu nợ">🖨️</button>
                                     <button wire:click="openPayModal({{ $report->id }})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 flex items-center justify-center rounded transition" title="Thu tiền">
                                         💰
                                     </button>
@@ -334,77 +348,113 @@
     @endif
 </div>
 
-{{-- ===== CSS In ấn A4 ===== --}}
+    <!-- PHẦN IN CHI TIẾT CÔNG NỢ (Sổ nợ chi tiết) -->
+    @if(count($printItems) > 0)
+    <div class="hidden print:block fixed inset-0 bg-white z-[9999]">
+        @foreach($printItems as $pItem)
+        <div class="print-page p-8 bg-white" style="font-family: 'Times New Roman', serif; min-height: 297mm; page-break-after: always;">
+            <div class="flex justify-between items-start mb-6 border-b-2 border-slate-900 pb-4">
+                <div>
+                    <h1 class="text-xl font-black uppercase">CÔNG TY TNHH SANE</h1>
+                    <p class="text-[11px] font-bold text-slate-500">Long An - SĐT: 0708091050</p>
+                </div>
+                <div class="text-right">
+                    <h2 class="text-2xl font-black text-slate-900 uppercase tracking-tighter">BIÊN BẢN ĐỐI SOÁT CÔNG NỢ</h2>
+                    <p class="text-xs font-bold text-slate-500 mt-1 italic">Phiếu xuất: <span class="text-indigo-700 NOT-italic">{{ $pItem->stockOut->code ?? 'N/A' }}</span></p>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-lg border-2 border-slate-900 mb-6 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Khách hàng</p>
+                    <p class="font-black text-slate-800 text-lg uppercase">{{ $pItem->customer_name }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hạn thanh toán</p>
+                    <p class="font-black {{ \Carbon\Carbon::parse($pItem->due_date)->lt(now()) ? 'text-red-700' : 'text-slate-800' }}">
+                        {{ $pItem->due_date ? \Carbon\Carbon::parse($pItem->due_date)->format('d/m/Y') : 'Chưa xác định' }}
+                    </p>
+                </div>
+            </div>
+
+            <p class="font-black text-[11px] uppercase mb-2 text-slate-800 italic">Chi tiết hàng hóa bàn giao & Nợ đọng:</p>
+            <table class="w-full border-collapse border-2 border-slate-900 mb-8">
+                <thead>
+                    <tr class="bg-slate-100 uppercase text-[10px] font-black">
+                        <th class="border border-slate-900 px-2 py-2 text-center w-10">STT</th>
+                        <th class="border border-slate-900 px-2 py-2 text-left">Tên sản phẩm / Quy cách</th>
+                        <th class="border border-slate-900 px-2 py-2 text-center w-14">ĐVT</th>
+                        <th class="border border-slate-900 px-2 py-2 text-right w-20">Lượng</th>
+                        <th class="border border-slate-900 px-2 py-2 text-right w-24">Đơn giá</th>
+                        <th class="border border-slate-900 px-2 py-2 text-right w-28">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody class="text-[12px]">
+                    @if($pItem->stockOut)
+                        @foreach($pItem->stockOut->items as $idx => $ii)
+                        <tr>
+                            <td class="border border-slate-900 px-2 py-2 text-center">{{ $idx + 1 }}</td>
+                            <td class="border border-slate-900 px-2 py-2 font-bold">{{ $ii->product->name }} ({{ $ii->product->code }})</td>
+                            <td class="border border-slate-900 px-2 py-2 text-center italic">{{ $ii->product->unit }}</td>
+                            <td class="border border-slate-900 px-2 py-2 text-right font-bold">{{ number_format($ii->quantity, 1) }}</td>
+                            <td class="border border-slate-900 px-2 py-2 text-right italic text-slate-500">{{ number_format($ii->unit_price) }}</td>
+                            <td class="border border-slate-900 px-2 py-2 text-right font-black">{{ number_format($ii->total_amount) }}</td>
+                        </tr>
+                        @endforeach
+                    @endif
+                </tbody>
+                <tfoot>
+                    <tr class="bg-slate-50 font-black text-slate-900">
+                        <td colspan="5" class="border border-slate-900 px-2 py-2 text-right uppercase text-xs">Tổng giá trị đơn hàng:</td>
+                        <td class="border border-slate-900 px-2 py-2 text-right text-[13px] font-black underline">{{ number_format($pItem->total_amount) }} đ</td>
+                    </tr>
+                    <tr class="font-bold text-emerald-700 bg-emerald-50/30">
+                        <td colspan="5" class="border border-slate-900 px-2 py-2 text-right uppercase text-xs">Số tiền đã trả:</td>
+                        <td class="border border-slate-900 px-2 py-2 text-right text-[13px]">{{ number_format($pItem->paid_amount) }} đ</td>
+                    </tr>
+                    <tr class="bg-rose-50 font-black text-red-700">
+                        <td colspan="5" class="border border-slate-900 px-2 py-2 text-right uppercase text-xs">DƯ NỢ CÒN LẠI:</td>
+                        <td class="border border-slate-900 px-2 py-2 text-right text-lg underline decoration-double">{{ number_format($pItem->total_amount - $pItem->paid_amount) }} đ</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="grid grid-cols-2 gap-4 text-center mt-12 mb-8">
+                <div>
+                    <p class="font-bold text-sm uppercase">Đại diện khách hàng</p>
+                    <p class="text-[10px] italic">(Ký, ghi rõ họ tên)</p>
+                    <div style="height: 100px;"></div>
+                    <p class="font-black uppercase tracking-tighter">{{ $pItem->customer_name }}</p>
+                </div>
+                <div>
+                    <p class="font-bold text-sm uppercase">Kế toán công ty</p>
+                    <p class="text-[10px] italic">(Ký, ghi rõ họ tên)</p>
+                    <div style="height: 100px;"></div>
+                    <p class="font-black">............................................</p>
+                </div>
+            </div>
+
+            <div class="text-right mt-12 text-[9px] text-slate-400 italic">
+                Hệ thống tự động xuất lúc: {{ now()->format('d/m/Y H:i:s') }}
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
+    @script
+    <script>
+        $wire.on('trigger-print', () => {
+            setTimeout(() => { window.print(); }, 500);
+        });
+    </script>
+    @endscript
+</div>
+
 <style>
 @media print {
-    @page {
-        size: A4 landscape;
-        margin: 10mm 12mm;
-    }
-    body * {
-        visibility: hidden;
-    }
-    /* Hiển thị phần chính */
-    .space-y-4,
-    .space-y-4 * {
-        visibility: visible;
-    }
-    .space-y-4 {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-    }
-    /* Ẩn phần không cần in */
-    .print\\:hidden,
-    nav, .sidebar, header, footer, aside,
-    [wire\\:loading], .fixed {
-        display: none !important;
-    }
-    /* Hiện phần chỉ dành cho in */
-    .print-header {
-        display: block !important;
-        visibility: visible !important;
-    }
-    /* Bảng in */
-    .print-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 11px;
-    }
-    .print-table th,
-    .print-table td {
-        border: 1px solid #333;
-        padding: 4px 6px;
-        white-space: normal;
-        word-break: break-word;
-    }
-    .print-table thead {
-        background: #eee !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    /* Ẩn dòng không tick khi có check */
-    .print-row-hidden {
-        display: none !important;
-    }
-    /* Đảm bảo bảng và footer không bị cắt */
-    .print-table tr {
-        page-break-inside: avoid;
-    }
-    /* Reset style cho in */
-    button {
-        color: #000 !important;
-        text-decoration: none !important;
-    }
-    .bg-white, .bg-slate-100 {
-        background: white !important;
-    }
-    .rounded-xl {
-        border-radius: 0 !important;
-    }
-    .shadow-sm {
-        box-shadow: none !important;
-    }
+    @page { size: A4 portrait; margin: 0; }
+    nav, .no-print, [wire\\:loading], .fixed, button, select, input, .print-header, .print-table, .print-row { display: none !important; }
+    body { background: white !important; margin: 0 !important; padding: 0 !important; }
 }
 </style>

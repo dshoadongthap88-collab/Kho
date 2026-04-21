@@ -1,6 +1,16 @@
 <div>
     <!-- ApexCharts CDN -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        @media print {
+            @page { size: A4 landscape; margin: 10mm; }
+            nav, .sidebar-toolbar, button, a, .no-print, input, select { display: none !important; }
+            .bg-white { box-shadow: none !important; border: none !important; }
+            body { background: white !important; font-size: 10pt; }
+            .grid-cols-3, .grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            .chart-container { page-break-inside: avoid; }
+        }
+    </style>
 
     <div class="grid grid-cols-3 gap-4 mb-6">
         <div class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
@@ -40,6 +50,16 @@
                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tìm sản phẩm</label>
                 <input type="text" wire:model.live.debounce.300ms="filterProduct" placeholder="Nhập mã hoặc tên sản phẩm..."
                        class="w-full rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
+            </div>
+            
+            <!-- Export Buttons -->
+            <div class="flex gap-2 mb-0.5">
+                <button wire:click="exportExcel" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-sm" title="Xuất báo cáo Excel">
+                    <span class="text-sm">📊</span> Excel
+                </button>
+                <button onclick="window.print()" class="flex items-center gap-1.5 px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition shadow-sm" title="Xuất báo cáo PDF/In">
+                    <span class="text-sm">📄</span> PDF
+                </button>
             </div>
         </div>
     </div>

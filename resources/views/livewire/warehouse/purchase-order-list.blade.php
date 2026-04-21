@@ -9,40 +9,63 @@
             main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
         }
     </style>
-    <div class="flex justify-between items-center mb-4 no-print">
-        <div class="flex gap-4 flex-1 max-w-2xl">
-            <div class="flex-1">
-                <input wire:model.live="search" type="text" placeholder="Tìm theo số PO, tên nhà cung cấp..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500">
-            </div>
-            <select wire:model.live="filterStatus" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500">
-                <option value="">Tất cả trạng thái</option>
-                <option value="pending">Đã trình</option>
-                <option value="confirmed">Đã duyệt</option>
-                <option value="received">Đã nhận hàng</option>
-                <option value="cancelled">Đã hủy</option>
-            </select>
-        </div>
-        <div class="flex gap-3">
-            <div x-data="{ open: false }" class="relative inline-block text-left">
-                <button @click="open = !open" @click.away="open = false" type="button" class="bg-indigo-600 font-semibold hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
-                    <span>📋</span> Trình mua hàng
-                    <svg class="-mr-1 ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-
-                <div x-cloak x-show="open" class="origin-top-right absolute z-50 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <div class="py-1" role="menu" aria-orientation="vertical">
-                        <a href="{{ route('warehouse.delivery-note') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">🏭 Mua hàng cho sản xuất</a>
-                        <button wire:click="openOfficeModal" type="button" class="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem">🏢 Mua hàng cho Văn phòng</button>
-                    </div>
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Date Filter Standard -->
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm transition-all focus-within:ring-2 focus-within:ring-amber-100">
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Từ ngày</label>
+                    <input type="date" wire:model.live="dateFrom" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
+                </div>
+                <div class="w-px h-4 bg-slate-200 mx-1"></div>
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Đến ngày</label>
+                    <input type="date" wire:model.live="dateTo" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
                 </div>
             </div>
-            <button wire:click="printSelected" class="bg-gray-100 font-semibold hover:bg-gray-200 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
-                <span>🖨️</span> In phiếu
+
+            <!-- Search Standard -->
+            <div class="relative w-64">
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm số PO, nhà cung cấp..." class="w-full pl-9 pr-4 py-2 text-xs font-bold rounded-xl border-slate-200 focus:ring-amber-500 shadow-sm transition-all">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <!-- Filter Status -->
+            <select wire:model.live="filterStatus" class="border-slate-200 rounded-xl px-4 py-2 text-xs font-bold focus:ring-amber-500 shadow-sm">
+                <option value="">Tất cả trạng thái</option>
+                <option value="pending">📊 Đã trình</option>
+                <option value="confirmed">✅ Đã duyệt</option>
+                <option value="received">📦 Đã nhận</option>
+                <option value="cancelled">❌ Đã hủy</option>
+            </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+            @if(count($selectedIds) > 0)
+                <div class="flex items-center gap-2 pr-3 border-r border-slate-300 mr-2 animate-in slide-in-from-right-4 duration-300">
+                    <span class="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded">Chọn: {{ count($selectedIds) }}</span>
+                    <button wire:click="deleteSelected" wire:confirm="Xóa {{ count($selectedIds) }} đơn hàng đã chọn?" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition">
+                        <span>🗑️</span> XÓA
+                    </button>
+                    <button wire:click="printSelected" class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg text-xs font-black transition">
+                        <span>🖨️</span> IN GỘP
+                    </button>
+                </div>
+            @endif
+
+            <button wire:click="exportExcel" class="bg-emerald-600 font-black hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs flex items-center gap-2 transition shadow-md shadow-emerald-100">
+                <span>📊</span> EXCEL
             </button>
-            <button wire:click="openModal" class="bg-amber-600 font-semibold hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
-                <span>➕</span> Tạo đề xuất
+            <button onclick="window.print()" class="bg-slate-800 font-black hover:bg-slate-900 text-white px-5 py-2 rounded-xl text-xs flex items-center gap-2 transition shadow-md">
+                <span>📄</span> IN PDF
+            </button>
+            <button wire:click="openModal" class="bg-amber-600 font-black hover:bg-amber-700 text-white px-5 py-2 rounded-xl text-xs flex items-center gap-2 transition shadow-md shadow-amber-100">
+                <span>➕</span> TẠO ĐỀ XUẤT
+            </button>
+            <button wire:click="openOfficeModal" class="bg-indigo-600 font-black hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-xs transition shadow-md shadow-indigo-100">
+                🏢 MUA VĂN PHÒNG
             </button>
         </div>
     </div>
@@ -62,8 +85,13 @@
     <div class="bg-white rounded-xl shadow-sm overflow-hidden border no-print">
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="bg-gray-50 border-b text-gray-600 uppercase text-xs font-semibold">
-                    <th class="px-4 py-3 w-10 text-center no-print">✔️</th>
+                @php
+                    $idsOnPage = $orders->pluck('id')->toArray();
+                @endphp
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
+                    <th class="px-6 py-4 w-10 text-center no-print bg-slate-100/30">
+                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $idsOnPage) }}])" {{ count($selectedIds) >= count($idsOnPage) && count($idsOnPage) > 0 ? 'checked' : '' }} class="rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
+                    </th>
                     <th class="px-4 py-3">Số PO</th>
                     <th class="px-4 py-3">Nhà cung cấp</th>
                     <th class="px-4 py-3">Người đặt</th>
@@ -76,11 +104,11 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($orders as $order)
-                    <tr class="hover:bg-gray-50 transition print-hide-unselected {{ in_array($order->id, $selectedOrders) ? 'bg-amber-50 is-selected' : '' }}">
-                        <td class="px-4 py-3 text-center no-print bg-gray-50/50">
-                            <input type="checkbox" wire:model.live="selectedOrders" value="{{ $order->id }}" class="w-4 h-4 rounded border-gray-300 text-amber-600 shadow-sm focus:ring-amber-500 cursor-pointer">
+                    <tr class="hover:bg-slate-50/80 transition group {{ in_array($order->id, $selectedIds) ? 'bg-amber-50 is-selected' : '' }}">
+                        <td class="px-6 py-4 text-center no-print">
+                            <input type="checkbox" wire:model.live="selectedIds" value="{{ $order->id }}" class="w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
                         </td>
-                        <td class="px-4 py-3 font-mono font-medium">{{ $order->po_number }}</td>
+                        <td class="px-4 py-3 font-mono font-black text-indigo-700">{{ $order->po_number }}</td>
                         <td class="px-4 py-3 text-gray-800">{{ $order->supplier->name ?? 'N/A' }}</td>
                         <td class="px-4 py-3 text-gray-700 text-sm">
                             <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs">👤 {{ $order->user?->name ?? 'Chưa ghi' }}</span>
@@ -104,12 +132,13 @@
                                     @break
                             @endswitch
                         </td>
-                        <td class="px-4 py-3 text-right flex gap-2 justify-end no-print">
+                        <td class="px-4 py-3 text-right flex gap-1 justify-end no-print">
+                            <button wire:click="toggleSelectAll([{{ $order->id }}])" class="text-slate-400 hover:text-amber-600 p-1" title="In phiếu">🖨️</button>
                             @if($order->status === 'pending')
-                                <button wire:click="confirmOrder({{ $order->id }})" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs" title="Xác nhận">✓ Duyệt phiếu</button>
+                                <button wire:click="confirmOrder({{ $order->id }})" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold transition" title="Xác nhận">DUYỆT</button>
                             @endif
-                            <button wire:click="openModal({{ $order->id }})" class="text-blue-500 hover:text-blue-700" title="Sửa">📝</button>
-                            <button onclick="confirm('Xoá đơn hàng này?') || event.stopImmediatePropagation()" wire:click="delete({{ $order->id }})" class="text-red-500 hover:text-red-700" title="Xoá">🗑️</button>
+                            <button wire:click="openModal({{ $order->id }})" class="text-blue-500 hover:text-blue-700 p-1" title="Sửa">📝</button>
+                            <button onclick="confirm('Xoá đơn hàng này?') || event.stopImmediatePropagation()" wire:click="delete({{ $order->id }})" class="text-red-500 hover:text-red-700 p-1" title="Xoá">🗑️</button>
                         </td>
                     </tr>
                 @empty
@@ -391,8 +420,8 @@
     @endif
 
     <!-- PHẦN IN PDF BỊ ẨN KHI XEM THƯỜNG -->
-    <div class="hidden print-only w-full bg-white text-black">
-        @foreach($orders->whereIn('id', $selectedOrders) as $printOrder)
+    <div class="hidden print:block fixed inset-0 bg-white z-[9999] w-full">
+        @foreach($printItems as $printOrder)
         <div style="font-family: 'Times New Roman', serif; padding: 15mm; page-break-after: always; width: 100%;">
             <!-- Header -->
             <div class="mb-4 text-left">

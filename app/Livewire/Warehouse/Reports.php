@@ -5,6 +5,8 @@ namespace App\Livewire\Warehouse;
 use App\Models\InventoryTransaction;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Exports\TransactionExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Reports extends Component
 {
@@ -176,6 +178,26 @@ class Reports extends Component
         }
 
         return $series;
+    }
+
+    public function exportExcel()
+    {
+        $query = InventoryTransaction::with(['product', 'creator'])
+            ->whereBetween('created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59']);
+
+        if ($this->filterType) {
+            $query->where('type', $this->filterType);
+        }
+
+        if ($this->filterProduct) {
+            $query->whereHas('product', function ($q) {
+                $q->where('name', 'like', "%{$this->filterProduct}%")
+                  ->orWhere('code', 'like', "%{$this->filterProduct}%");
+            });
+        }
+
+        $data = $query->orderBy('created_at', 'desc')->get();
+        return Excel::download(new TransactionExport($data), 'bao_cao_giao_dich_kho_' . now()->format('Ymd_His') . '.xlsx');
     }
 
     public function render()

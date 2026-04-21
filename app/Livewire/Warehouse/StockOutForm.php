@@ -9,9 +9,14 @@ use App\Models\Supplier;
 use App\Services\InventoryService;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
+use App\Exports\StockOutListExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Livewire\WithPagination;
 
 class StockOutForm extends Component
 {
+    use WithPagination;
+
     public $items = [];
     public $customer_name = '';
     public $customer_details = [
@@ -28,6 +33,14 @@ class StockOutForm extends Component
     public $production_product_id = '';
     public $production_quantity = 1;
 
+    // Biến quản lý Tab và Danh sách
+    public $activeTab = 'form'; // 'form' hoặc 'list'
+    public $listDateFrom = '';
+    public $listDateTo = '';
+    public $listSearch = '';
+    public $selectedIds = [];
+    public $printItems = []; // Danh sách các phiếu xuất để in hàng loạt
+
     // Các biến cho tính năng chọn lô hàng (Batch Selection)
     public $showBatchModal = false;
     public $availableBatches = [];
@@ -41,11 +54,19 @@ class StockOutForm extends Component
 
     public function mount()
     {
+        $this->listDateFrom = now()->startOfMonth()->format('Y-m-d');
+        $this->listDateTo = now()->format('Y-m-d');
+
         if (empty($this->items)) {
             if ($this->type !== 'production') {
                 $this->addItem();
             }
         }
+    }
+
+    public function switchTab($tab)
+    {
+        $this->activeTab = $tab;
     }
 
     public function canAddItem()
@@ -84,7 +105,8 @@ class StockOutForm extends Component
             'unit_price' => 0,
             'vat_rate' => 0,
             'total_amount' => 0,
-            'is_printed' => true
+            'is_printed' => true,
+            'available_qty' => 0 // Tồn kho thực tế
         ];
     }
 
@@ -161,10 +183,12 @@ class StockOutForm extends Component
             $this->items[$index]['unit_price'] = $product->price ?: 0;
             $this->calculateTotal($index);
 
-            // 2. Kiểm tra tồn kho thực tế theo lô
+            // 2. Kiểm tra tồn kho thực tế (Tổng từ tất cả các lô)
             $service = app(InventoryService::class);
             $batches = $service->getAvailableBatches($productId);
+            $this->items[$index]['available_qty'] = $batches->sum('stock');
 
+            // 3. Xử lý thông minh việc chọn lô
             if ($batches->count() > 1) {
                 // Có nhiều lô → Mở cửa sổ cho người dùng chọn
                 $this->activeItemIndex = $index;
@@ -269,10 +293,13 @@ class StockOutForm extends Component
 
             $invService = app(\App\Services\InventoryService::class);
             $batches = $invService->getAvailableBatches($product->id);
-            if ($batches->count() == 1) {
+            
+            // Tự động phân bổ lô (ưu tiên lô cũ nhất - FEFO)
+            if ($batches->count() > 0) {
+                // Lấy lô đầu tiên có hàng
                 $batch = $batches->first();
                 $batch_number = $batch->batch_number;
-                $expiry_date = $batch->expiry_date;
+                $expiry_date = $batch->expiry_date ? \Carbon\Carbon::parse($batch->expiry_date)->format('Y-m-d') : '';
                 $warehouse_location = $batch->warehouse_location;
             }
             
@@ -292,11 +319,81 @@ class StockOutForm extends Component
                 'vat_rate' => 0,
                 'total_amount' => $reqQty * $price,
                 'is_printed' => true,
-                
-                // Extra fields for rendering BOM UI
                 'available_qty' => $detail['available'],
                 'is_sufficient' => $detail['is_sufficient']
             ];
+        }
+    }
+
+    public function exportExcel()
+    {
+        $query = StockOut::with(['items', 'creator'])
+            ->whereBetween('created_at', [$this->listDateFrom . ' 00:00:00', $this->listDateTo . ' 23:59:59'])
+            ->where(function($q) {
+                $q->where('code', 'like', '%' . $this->listSearch . '%')
+                  ->orWhere('customer_name', 'like', '%' . $this->listSearch . '%');
+            });
+
+        $data = $query->latest()->get();
+        return Excel::download(new \App\Exports\StockOutListExport($data), 'danh_sach_phieu_xuat_kho_' . now()->format('Ymd_His') . '.xlsx');
+    }
+
+    public function printSelected()
+    {
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'Vui lòng chọn ít nhất một phiếu để in.');
+            return;
+        }
+
+        $this->printItems = StockOut::whereIn('id', $this->selectedIds)
+            ->with(['items.product', 'creator'])
+            ->get();
+
+        $this->dispatch('trigger-print');
+    }
+
+    public function deleteSelected()
+    {
+        if (empty($this->selectedIds)) {
+            return;
+        }
+
+        DB::transaction(function () {
+            $invService = app(InventoryService::class);
+            $stockOuts = StockOut::whereIn('id', $this->selectedIds)->with('items')->get();
+
+            foreach ($stockOuts as $so) {
+                foreach ($so->items as $item) {
+                    // Hoàn trả vào kho: Nhập lại số lượng đã xuất
+                    $invService->import(
+                        $item->product_id,
+                        $item->quantity,
+                        'reversal',
+                        $so->id,
+                        "Hoàn trả do xóa phiếu {$so->code}",
+                        $item->batch_number,
+                        $item->expiry_date,
+                        $item->warehouse_location
+                    );
+                }
+                
+                // Xóa các bản ghi liên quan
+                \App\Models\DeliveryReport::where('stock_out_id', $so->id)->delete();
+                $so->items()->delete();
+                $so->delete();
+            }
+        });
+
+        session()->flash('success', 'Đã xóa ' . count($this->selectedIds) . ' phiếu và hoàn trả tồn kho.');
+        $this->selectedIds = [];
+    }
+
+    public function toggleSelectAll($idsOnPage)
+    {
+        if (count($this->selectedIds) >= count($idsOnPage)) {
+            $this->selectedIds = [];
+        } else {
+            $this->selectedIds = $idsOnPage;
         }
     }
 

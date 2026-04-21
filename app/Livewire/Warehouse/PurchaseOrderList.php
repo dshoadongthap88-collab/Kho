@@ -20,8 +20,10 @@ class PurchaseOrderList extends Component
     public $isEdit = false;
     public $orderId;
 
-    // Checkboxes cho việc in
-    public $selectedOrders = [];
+    public $selectedIds = [];
+    public $dateFrom = '';
+    public $dateTo = '';
+    public $printItems = []; // Danh sách các PO để in hàng loạt
 
     // Form fields
     public $po_number;
@@ -49,6 +51,9 @@ class PurchaseOrderList extends Component
 
     public function mount()
     {
+        $this->dateFrom = now()->startOfMonth()->format('Y-m-d');
+        $this->dateTo = now()->format('Y-m-d');
+
         if (session()->has('mrp_missing_items')) {
             $missingItems = session('mrp_missing_items');
             $this->openModal(); // Tự động mở form
@@ -272,6 +277,66 @@ class PurchaseOrderList extends Component
         session()->flash('message', 'Đã xoá đơn hàng.');
     }
 
+    public function exportExcel()
+    {
+        $query = PurchaseOrder::query()->with(['supplier', 'items.product']);
+
+        if (!empty($this->search)) {
+            $query->where(function($q) {
+                $q->where('po_number', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('supplier', fn($query) => $query->where('name', 'like', '%' . $this->search . '%'));
+            });
+        }
+
+        if ($this->filterStatus) {
+            $query->where('status', $this->filterStatus);
+        }
+
+        if ($this->dateFrom) {
+            $query->where('order_date', '>=', $this->dateFrom);
+        }
+        if ($this->dateTo) {
+            $query->where('order_date', '<=', $this->dateTo);
+        }
+
+        $data = $query->latest()->get();
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PurchaseOrderExport($data), 'danh_sach_don_mua_hang_' . now()->format('Ymd_His') . '.xlsx');
+    }
+
+    public function printSelected()
+    {
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'Vui lòng chọn ít nhất một đơn hàng để in.');
+            return;
+        }
+
+        $this->printItems = PurchaseOrder::whereIn('id', $this->selectedIds)
+            ->with(['supplier', 'items.product'])
+            ->get();
+
+        $this->dispatch('trigger-print');
+    }
+
+    public function deleteSelected()
+    {
+        if (empty($this->selectedIds)) return;
+
+        \App\Models\PurchaseOrderItem::whereIn('purchase_order_id', $this->selectedIds)->delete();
+        PurchaseOrder::whereIn('id', $this->selectedIds)->delete();
+        
+        session()->flash('message', 'Đã xóa ' . count($this->selectedIds) . ' đơn mua hàng.');
+        $this->selectedIds = [];
+    }
+
+    public function toggleSelectAll($idsOnPage)
+    {
+        if (count($this->selectedIds) >= count($idsOnPage)) {
+            $this->selectedIds = [];
+        } else {
+            $this->selectedIds = $idsOnPage;
+        }
+    }
+
     public function printSelected()
     {
         if (empty($this->selectedOrders)) {
@@ -390,6 +455,13 @@ class PurchaseOrderList extends Component
 
         if ($this->filterStatus) {
             $orders->where('status', $this->filterStatus);
+        }
+
+        if ($this->dateFrom) {
+            $orders->where('order_date', '>=', $this->dateFrom);
+        }
+        if ($this->dateTo) {
+            $orders->where('order_date', '<=', $this->dateTo);
         }
 
         $orders = $orders->latest()->paginate(15);

@@ -6,6 +6,8 @@ use App\Models\DeliveryReport;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use App\Exports\DeliveryExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DeliveryReportList extends Component
 {
@@ -14,6 +16,8 @@ class DeliveryReportList extends Component
 
     public $search = '';
     public $filterStatus = '';
+    public $dateFrom = '';
+    public $dateTo = '';
 
     // Modal state
     public $showConfirmModal = false;
@@ -21,8 +25,16 @@ class DeliveryReportList extends Component
     public $paymentStatus = 'paid';
     public $photo;
     public $notes = '';
+    public $selectedIds = [];
+    public $printItems = []; // Danh sách các báo cáo giao hàng để in hàng loạt
 
-    protected $queryString = ['search', 'filterStatus'];
+    protected $queryString = ['search', 'filterStatus', 'dateFrom', 'dateTo'];
+
+    public function mount()
+    {
+        $this->dateFrom = now()->startOfMonth()->format('Y-m-d');
+        $this->dateTo = now()->format('Y-m-d');
+    }
 
     protected $rules = [
         'paymentStatus' => 'required|in:unpaid,debt,paid,bank_transfer',
@@ -106,9 +118,79 @@ class DeliveryReportList extends Component
         $this->showConfirmModal = false;
     }
 
+    public function exportExcel()
+    {
+        $query = DeliveryReport::with(['stockOut', 'stockOut.items']);
+        
+        if ($this->dateFrom) {
+            $query->whereHas('stockOut', function($q) {
+                $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
+            });
+        }
+        if ($this->dateTo) {
+            $query->whereHas('stockOut', function($q) {
+                $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
+            });
+        }
+        if (!empty($this->search)) {
+            $query->where('customer_name', 'like', '%' . $this->search . '%');
+        }
+        if ($this->filterStatus) {
+            $query->where('status', $this->filterStatus);
+        }
+
+        $data = $query->latest()->get();
+        return Excel::download(new DeliveryExport($data), 'bao_cao_giao_hang_' . now()->format('Ymd_His') . '.xlsx');
+    }
+
+    public function printSelected()
+    {
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'Vui lòng chọn ít nhất một báo cáo để in.');
+            return;
+        }
+
+        $this->printItems = DeliveryReport::whereIn('id', $this->selectedIds)
+            ->with(['stockOut.items.product'])
+            ->get();
+
+        $this->dispatch('trigger-print');
+    }
+
+    public function deleteSelected()
+    {
+        if (empty($this->selectedIds)) return;
+
+        DeliveryReport::whereIn('id', $this->selectedIds)->delete();
+        
+        session()->flash('message', 'Đã xóa ' . count($this->selectedIds) . ' báo cáo giao hàng.');
+        $this->selectedIds = [];
+    }
+
+    public function toggleSelectAll($idsOnPage)
+    {
+        if (count($this->selectedIds) >= count($idsOnPage)) {
+            $this->selectedIds = [];
+        } else {
+            $this->selectedIds = $idsOnPage;
+        }
+    }
+
     public function render()
     {
-        $query = DeliveryReport::with('stockOut');
+        $query = DeliveryReport::with(['stockOut', 'stockOut.items']);
+
+        if ($this->dateFrom) {
+            $query->whereHas('stockOut', function($q) {
+                $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
+            });
+        }
+
+        if ($this->dateTo) {
+            $query->whereHas('stockOut', function($q) {
+                $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
+            });
+        }
 
         if (!empty($this->search)) {
             $query->where(function($q) {

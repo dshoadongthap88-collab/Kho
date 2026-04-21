@@ -98,6 +98,7 @@ class InventoryService
             ->select('batch_number', 'expiry_date', 'warehouse_location', DB::raw('SUM(quantity) as stock'))
             ->groupBy('batch_number', 'expiry_date', 'warehouse_location')
             ->having('stock', '>', 0)
+            ->orderBy('expiry_date', 'asc')
             ->get();
     }
 }

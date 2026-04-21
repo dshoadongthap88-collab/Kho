@@ -23,8 +23,13 @@ class CustomerDebtList extends Component
 
     public $showStockOutModal = false;
     public $selectedStockOut = null;
+    
+    public $dateFrom = '';
+    public $dateTo = '';
+    public $selectedIds = [];
+    public $printItems = []; // Danh sách các hóa đơn công nợ để in hàng loạt
 
-    protected $queryString = ['search', 'filterPayment'];
+    protected $queryString = ['search', 'filterPayment', 'dateFrom', 'dateTo'];
 
     public function updatedSearch()
     {
@@ -107,6 +112,64 @@ class CustomerDebtList extends Component
         $this->showPayModal = false;
     }
 
+    public function exportExcel()
+    {
+        $query = DeliveryReport::with('stockOut')
+                    ->whereIn('payment_status', ['debt', 'unpaid', 'paid', 'bank_transfer'])
+                    ->where('status', 'delivered');
+
+        if (!empty($this->search)) {
+            $query->where(function($q) {
+                $q->where('customer_name', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('stockOut', function($subQ) {
+                      $subQ->where('code', 'like', '%' . $this->search . '%');
+                  });
+            });
+        }
+
+        if ($this->dateFrom) {
+            $query->where('delivered_at', '>=', $this->dateFrom . ' 00:00:00');
+        }
+        if ($this->dateTo) {
+            $query->where('delivered_at', '<=', $this->dateTo . ' 23:59:59');
+        }
+
+        $data = $query->latest('delivered_at')->get();
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\CustomerDebtExport($data), 'so_no_khach_hang_' . now()->format('Ymd_His') . '.xlsx');
+    }
+
+    public function printSelected()
+    {
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'Vui lòng chọn ít nhất một hóa đơn để in.');
+            return;
+        }
+
+        $this->printItems = DeliveryReport::whereIn('id', $this->selectedIds)
+            ->with(['stockOut.items.product'])
+            ->get();
+
+        $this->dispatch('trigger-print');
+    }
+
+    public function deleteSelected()
+    {
+        if (empty($this->selectedIds)) return;
+        // Xóa báo cáo giao hàng (con nợ)
+        DeliveryReport::whereIn('id', $this->selectedIds)->delete();
+        session()->flash('message', 'Đã xóa ' . count($this->selectedIds) . ' bản ghi nợ.');
+        $this->selectedIds = [];
+    }
+
+    public function toggleSelectAll($idsOnPage)
+    {
+        if (count($this->selectedIds) >= count($idsOnPage)) {
+            $this->selectedIds = [];
+        } else {
+            $this->selectedIds = collect($idsOnPage)->map(fn($id) => (string)$id)->toArray();
+        }
+    }
+
     public function render()
     {
         // Lấy các hóa đơn ĐÃ GIAO (hoặc đang quản lý thanh toán)
@@ -121,6 +184,13 @@ class CustomerDebtList extends Component
                       $subQ->where('code', 'like', '%' . $this->search . '%');
                   });
             });
+        }
+
+        if ($this->dateFrom) {
+            $query->where('delivered_at', '>=', $this->dateFrom . ' 00:00:00');
+        }
+        if ($this->dateTo) {
+            $query->where('delivered_at', '<=', $this->dateTo . ' 23:59:59');
         }
 
         if ($this->filterPayment === 'unpaid_or_debt') {

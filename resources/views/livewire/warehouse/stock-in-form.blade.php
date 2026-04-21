@@ -340,6 +340,8 @@
                 </div>
             </div>
         </div>
+    @endif
+
     <!-- PHẦN IN CHI TIẾT HÀNG LOẠT (Nhập kho) -->
     @if(count($printItems) > 0)
     <div class="hidden print:block fixed inset-0 bg-white z-[9999]">

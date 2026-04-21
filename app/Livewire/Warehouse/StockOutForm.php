@@ -390,10 +390,15 @@ class StockOutForm extends Component
 
     public function toggleSelectAll($idsOnPage)
     {
-        if (count($this->selectedIds) >= count($idsOnPage)) {
-            $this->selectedIds = [];
+        $idsOnPage = collect($idsOnPage)->map(fn($id) => (string)$id)->toArray();
+        $isAllSelectedOnPage = count(array_intersect($idsOnPage, $this->selectedIds)) === count($idsOnPage);
+
+        if ($isAllSelectedOnPage) {
+            // Nếu đã chọn hết trang này thì bỏ chọn trang này
+            $this->selectedIds = array_diff($this->selectedIds, $idsOnPage);
         } else {
-            $this->selectedIds = $idsOnPage;
+            // Nếu chưa chọn hết thì thêm những cái chưa có vào
+            $this->selectedIds = array_unique(array_merge($this->selectedIds, $idsOnPage));
         }
     }
 
@@ -477,11 +482,21 @@ class StockOutForm extends Component
                   ->orWhere('type', 'Thành phẩm');
             })->orderBy('name')->get();
 
+        $stockOuts = StockOut::with(['items', 'creator'])
+            ->whereBetween('created_at', [$this->listDateFrom . ' 00:00:00', $this->listDateTo . ' 23:59:59'])
+            ->where(function($q) {
+                $q->where('code', 'like', '%' . $this->listSearch . '%')
+                  ->orWhere('customer_name', 'like', '%' . $this->listSearch . '%');
+            })
+            ->latest()
+            ->paginate(15);
+
         return view('livewire.warehouse.stock-out-form', [
             'products' => Product::where('status', 'active')->orderBy('name')->get(),
             'productionProducts' => $productionProducts,
             'locations' => Product::whereNotNull('location')->distinct()->pluck('location'),
             'customers' => Supplier::whereIn('type', ['customer', 'Both', 'both', 'KH'])->orderBy('name')->get(),
+            'stockOuts' => $stockOuts
         ]);
     }
 

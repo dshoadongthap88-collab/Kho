@@ -405,7 +405,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            @elseif($activeTab === 'list')
                 <!-- Stock Out List Section -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[600px] main-content">
                     <!-- Print Title (Only visible when printing) -->
@@ -469,15 +469,7 @@
                         <table class="w-full text-sm text-left">
                             <thead class="text-[11px] font-black text-slate-500 uppercase tracking-widest bg-slate-50/50 border-b border-slate-100">
                                 @php
-                                    $allOnPage = \App\Models\StockOut::whereBetween('created_at', [$listDateFrom . ' 00:00:00', $listDateTo . ' 23:59:59'])
-                                        ->where(function($q) {
-                                            $q->where('code', 'like', '%' . $this->listSearch . '%')
-                                              ->orWhere('customer_name', 'like', '%' . $this->listSearch . '%');
-                                        })
-                                        ->latest()
-                                        ->paginate(15);
-                                    $idsOnPage = $allOnPage->pluck('id')->toArray();
-                                    $stockOuts = $allOnPage;
+                                    $idsOnPage = $stockOuts->pluck('id')->toArray();
                                 @endphp
                                 <tr>
                                     <th class="px-6 py-4 w-10 no-print">
@@ -647,4 +639,12 @@
         @endforeach
     </div>
     @endif
+
+    @script
+    <script>
+        $wire.on('trigger-print', () => {
+            setTimeout(() => { window.print(); }, 500);
+        });
+    </script>
+    @endscript
 </div>

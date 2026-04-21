@@ -163,10 +163,13 @@ class CustomerDebtList extends Component
 
     public function toggleSelectAll($idsOnPage)
     {
-        if (count($this->selectedIds) >= count($idsOnPage)) {
-            $this->selectedIds = [];
+        $idsOnPage = collect($idsOnPage)->map(fn($id) => (string)$id)->toArray();
+        $isAllSelectedOnPage = count(array_intersect($idsOnPage, $this->selectedIds)) === count($idsOnPage);
+
+        if ($isAllSelectedOnPage) {
+            $this->selectedIds = array_diff($this->selectedIds, $idsOnPage);
         } else {
-            $this->selectedIds = collect($idsOnPage)->map(fn($id) => (string)$id)->toArray();
+            $this->selectedIds = array_unique(array_merge($this->selectedIds, $idsOnPage));
         }
     }
 

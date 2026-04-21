@@ -155,10 +155,10 @@ class CustomerDebtList extends Component
     public function deleteSelected()
     {
         if (empty($this->selectedIds)) return;
-        // Xóa báo cáo giao hàng (con nợ)
+        $count = count($this->selectedIds);
         DeliveryReport::whereIn('id', $this->selectedIds)->delete();
-        session()->flash('message', 'Đã xóa ' . count($this->selectedIds) . ' bản ghi nợ.');
         $this->selectedIds = [];
+        session()->flash('message', 'Đã xóa ' . $count . ' bản ghi nợ.');
     }
 
     public function toggleSelectAll($idsOnPage)
@@ -167,9 +167,9 @@ class CustomerDebtList extends Component
         $isAllSelectedOnPage = count(array_intersect($idsOnPage, $this->selectedIds)) === count($idsOnPage);
 
         if ($isAllSelectedOnPage) {
-            $this->selectedIds = array_diff($this->selectedIds, $idsOnPage);
+            $this->selectedIds = array_values(array_diff($this->selectedIds, $idsOnPage));
         } else {
-            $this->selectedIds = array_unique(array_merge($this->selectedIds, $idsOnPage));
+            $this->selectedIds = array_values(array_unique(array_merge($this->selectedIds, $idsOnPage)));
         }
     }
 

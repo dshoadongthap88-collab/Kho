@@ -395,10 +395,10 @@ class StockOutForm extends Component
 
         if ($isAllSelectedOnPage) {
             // Nếu đã chọn hết trang này thì bỏ chọn trang này
-            $this->selectedIds = array_diff($this->selectedIds, $idsOnPage);
+            $this->selectedIds = array_values(array_diff($this->selectedIds, $idsOnPage));
         } else {
             // Nếu chưa chọn hết thì thêm những cái chưa có vào
-            $this->selectedIds = array_unique(array_merge($this->selectedIds, $idsOnPage));
+            $this->selectedIds = array_values(array_unique(array_merge($this->selectedIds, $idsOnPage)));
         }
     }
 

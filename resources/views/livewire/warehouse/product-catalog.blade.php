@@ -1,3 +1,4 @@
+<div>
     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
         <div class="flex flex-wrap items-center gap-3">
             <!-- Date Filter Standard -->

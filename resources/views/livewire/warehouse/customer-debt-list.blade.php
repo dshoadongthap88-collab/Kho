@@ -1,3 +1,5 @@
+<div>
+
     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
         <div class="flex flex-wrap items-center gap-3">
             <!-- Date Filter Standard -->
@@ -72,6 +74,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 w-full overflow-x-auto print:shadow-none print:border-none print:rounded-none">
         <table class="w-full text-left whitespace-nowrap table-auto border-collapse print-table">
             <thead class="bg-slate-100 text-slate-700 text-sm font-bold border-b border-slate-200 print:bg-white">
+                <tr>
                     <th class="px-6 py-4 w-10 text-center no-print bg-slate-100/30">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $debts->pluck('id')->toArray()) }}])" 
                                {{ count($selectedIds) >= count($debts->pluck('id')->toArray()) && count($debts) > 0 ? 'checked' : '' }}
@@ -346,7 +349,7 @@
             </div>
         </div>
     @endif
-</div>
+
 
     <!-- PHẦN IN CHI TIẾT CÔNG NỢ (Sổ nợ chi tiết) -->
     @if(count($printItems) > 0)
@@ -449,12 +452,11 @@
         });
     </script>
     @endscript
+    <style>
+    @media print {
+        @page { size: A4 portrait; margin: 0; }
+        nav, .no-print, [wire\\:loading], button, select, input { display: none !important; }
+        body { background: white !important; margin: 0 !important; padding: 0 !important; }
+    }
+    </style>
 </div>
-
-<style>
-@media print {
-    @page { size: A4 portrait; margin: 0; }
-    nav, .no-print, [wire\\:loading], .fixed, button, select, input, .print-header, .print-table, .print-row { display: none !important; }
-    body { background: white !important; margin: 0 !important; padding: 0 !important; }
-}
-</style>

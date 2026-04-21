@@ -35,10 +35,10 @@
             @if(count($selectedIds) > 0)
                 <div class="flex items-center gap-2 pr-3 border-r border-slate-300 mr-2 animate-in slide-in-from-right-4 duration-300">
                     <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded">Chọn: {{ count($selectedIds) }}</span>
-                    <button wire:click="deleteSelected" wire:confirm="Xóa {{ count($selectedIds) }} bản ghi nợ đã chọn?" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition">
+                    <button type="button" onclick="confirm('Xóa {{ count($selectedIds) }} bản ghi nợ đã chọn?') || event.stopImmediatePropagation()" wire:click="deleteSelected" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition">
                         <span>🗑️</span> XÓA
                     </button>
-                    <button wire:click="printSelected" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-black transition">
+                    <button type="button" wire:click="printSelected" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-black transition">
                         <span>🖨️</span> IN GHÉP
                     </button>
                 </div>

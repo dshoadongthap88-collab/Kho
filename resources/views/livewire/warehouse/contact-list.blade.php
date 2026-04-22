@@ -66,7 +66,7 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             <button wire:click="openModal({{ $contact->id }})" class="text-blue-500 hover:text-blue-700 mr-2" title="Sửa">📝</button>
-                            <button onclick="confirm('Xoá đối tác này?') || event.stopImmediatePropagation()" wire:click="delete({{ $contact->id }})" class="text-red-500 hover:text-red-700" title="Xoá">🗑️</button>
+                            <button wire:confirm="Xác nhận xoá đối tác {{ $contact->name }}?" wire:click="delete({{ $contact->id }})" class="text-red-500 hover:text-red-700" title="Xoá">🗑️</button>
                         </td>
                     </tr>
                 @empty

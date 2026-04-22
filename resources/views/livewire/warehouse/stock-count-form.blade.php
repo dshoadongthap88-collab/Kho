@@ -103,9 +103,10 @@
                     <td class="px-3 py-2 text-sm">{{ $item['product_name'] }}</td>
                     <td class="px-3 py-2 text-center text-sm text-gray-500">{{ number_format($item['system_quantity']) }}</td>
                     <td class="px-3 py-2 text-center">
-                        <input type="number" wire:model.lazy="countItems.{{ $index }}.actual_quantity"
+                        <input type="text" inputmode="numeric" wire:model.lazy="countItems.{{ $index }}.actual_quantity"
                                wire:change="updateDifference({{ $index }})"
-                               class="w-24 text-center rounded border-gray-300 shadow-sm text-sm">
+                               class="w-24 text-center rounded border-gray-300 shadow-sm text-sm"
+                               placeholder="0">
                     </td>
                     <td class="px-3 py-2 text-center text-sm font-bold
                         {{ $item['difference'] > 0 ? 'text-green-600' : ($item['difference'] < 0 ? 'text-red-600' : 'text-gray-400') }}">

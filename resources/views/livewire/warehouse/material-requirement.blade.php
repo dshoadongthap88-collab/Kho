@@ -110,12 +110,12 @@
                                         <td class="px-3 py-2 font-mono text-xs text-gray-500">{{ $mat['code'] }}</td>
                                         <td class="px-3 py-2 font-semibold text-slate-800">{{ $mat['name'] }}</td>
                                         <td class="px-3 py-2 text-center text-xs bg-slate-50">{{ $mat['unit'] }}</td>
-                                        <td class="px-3 py-2 text-right font-bold text-indigo-600">{{ number_format($mat['required'], 2) }}</td>
-                                        <td class="px-3 py-2 text-right">{{ number_format($mat['in_stock'], 2) }}</td>
+                                        <td class="px-3 py-2 text-right font-bold text-indigo-600">{{ number_format($mat['required']) }}</td>
+                                        <td class="px-3 py-2 text-right">{{ number_format($mat['in_stock']) }}</td>
                                         <td class="px-3 py-2 text-center">
                                             @if($mat['shortage'] > 0)
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold leading-4 bg-red-100 text-red-700 print:bg-transparent print:text-red-700">
-                                                    THIẾU {{ number_format($mat['shortage'], 2) }}
+                                                    THIẾU {{ number_format($mat['shortage']) }}
                                                 </span>
                                             @else
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold leading-4 bg-green-100 text-green-700 print:bg-transparent print:text-green-700">

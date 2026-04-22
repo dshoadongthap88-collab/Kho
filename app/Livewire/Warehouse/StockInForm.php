@@ -311,6 +311,18 @@ class StockInForm extends Component
         return Excel::download(new \App\Exports\StockInListExport($data), 'danh_sach_phieu_nhap_kho_' . now()->format('Ymd_His') . '.xlsx');
     }
 
+    public function printSingle($id)
+    {
+        $this->selectedIds = [(string)$id];
+        $this->printSelected();
+    }
+
+    public function delete($id)
+    {
+        $this->selectedIds = [(string)$id];
+        $this->deleteSelected();
+    }
+
     public function printSelected()
     {
         if (empty($this->selectedIds)) {

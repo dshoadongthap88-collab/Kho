@@ -205,11 +205,37 @@ class MaterialCatalog extends Component
 
     public function delete($id)
     {
-        $product = Product::findOrFail($id);
-        $product->delete();
-        session()->flash('message', 'Đã xoá sản phẩm.');
+        try {
+            $product = Product::findOrFail($id);
+            $product->delete();
+            session()->flash('message', 'Đã xoá nguyên vật liệu thành công.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Không thể xóa nguyên vật liệu này vì đã có dữ liệu liên quan (phiếu nhập/xuất, tồn kho...).');
+        }
     }
 
+    public function deleteSelected()
+    {
+        if (empty($this->selectedProducts)) return;
+
+        try {
+            $count = 0;
+            foreach ($this->selectedProducts as $id) {
+                $product = Product::find($id);
+                if ($product) {
+                    $product->delete();
+                    $count++;
+                }
+            }
+            
+            if ($count > 0) {
+                session()->flash('message', "Đã xóa thành công {$count} nguyên vật liệu.");
+            }
+            $this->selectedProducts = [];
+        } catch (\Exception $e) {
+            session()->flash('error', 'Một số nguyên vật liệu không thể xóa do có dữ liệu liên quan (phiếu nhập/xuất, tồn kho...).');
+        }
+    }
     public function importExcel()
     {
         $this->validate([

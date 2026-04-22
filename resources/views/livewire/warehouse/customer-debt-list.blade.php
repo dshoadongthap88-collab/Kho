@@ -1,25 +1,24 @@
-<div>
-
-    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
-        <div class="flex flex-wrap items-center gap-3">
-            <!-- Date Filter Standard -->
-            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-100">
+<div style="font-family: 'Times New Roman', Times, serif;">
+    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-8 no-print">
+        <div class="flex flex-wrap items-center gap-4">
+            <!-- Date Filter Premium -->
+            <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-inner focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
                 <div class="flex items-center gap-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Giao từ</label>
-                    <input type="date" wire:model.live="dateFrom" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Giao từ</label>
+                    <input type="date" wire:model.live="dateFrom" class="text-[12px] border-none focus:ring-0 p-0 font-black text-slate-700 bg-transparent">
                 </div>
-                <div class="w-px h-4 bg-slate-200 mx-1"></div>
+                <div class="w-px h-5 bg-slate-200 mx-2"></div>
                 <div class="flex items-center gap-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Đến</label>
-                    <input type="date" wire:model.live="dateTo" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Đến</label>
+                    <input type="date" wire:model.live="dateTo" class="text-[12px] border-none focus:ring-0 p-0 font-black text-slate-700 bg-transparent">
                 </div>
             </div>
 
-            <!-- Search Standard -->
-            <div class="relative w-64">
-                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm tên khách, số phiếu..." class="w-full pl-9 pr-4 py-2 text-xs font-bold rounded-xl border-slate-200 focus:ring-blue-500 shadow-sm transition-all">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <!-- Search Premium -->
+            <div class="relative w-72">
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="TÌM TÊN KHÁCH, SỐ PHIẾU..." class="w-full pl-11 pr-4 py-2.5 text-[12px] font-black rounded-2xl border-slate-200 focus:ring-4 focus:ring-indigo-100 shadow-inner transition-all bg-white placeholder:text-slate-300">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
             </div>
 
@@ -35,7 +34,7 @@
             @if(count($selectedIds) > 0)
                 <div class="flex items-center gap-2 pr-3 border-r border-slate-300 mr-2 animate-in slide-in-from-right-4 duration-300">
                     <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded">Chọn: {{ count($selectedIds) }}</span>
-                    <button type="button" onclick="confirm('Xóa {{ count($selectedIds) }} bản ghi nợ đã chọn?') || event.stopImmediatePropagation()" wire:click="deleteSelected" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition">
+                    <button type="button" wire:click="deleteSelected" wire:confirm="Xóa {{ count($selectedIds) }} bản ghi nợ đã chọn?" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition">
                         <span>🗑️</span> XÓA
                     </button>
                     <button type="button" wire:click="printSelected" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-black transition">
@@ -71,22 +70,22 @@
     </div>
 
     <!-- Bảng dữ liệu hướng ngang -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 w-full overflow-x-auto print:shadow-none print:border-none print:rounded-none">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full overflow-x-auto print:shadow-none print:border-none print:rounded-none">
         <table class="w-full text-left whitespace-nowrap table-auto border-collapse print-table">
-            <thead class="bg-slate-100 text-slate-700 text-sm font-bold border-b border-slate-200 print:bg-white">
+            <thead class="bg-slate-800 text-white text-[11px] font-black uppercase tracking-widest border-b border-slate-700 print:bg-white">
                 <tr>
-                    <th class="px-6 py-4 w-10 text-center no-print bg-slate-100/30">
+                    <th class="px-6 py-5 w-10 text-center no-print">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $debts->pluck('id')->toArray()) }}])" 
-                               {{ count($selectedIds) >= count($debts->pluck('id')->toArray()) && count($debts) > 0 ? 'checked' : '' }}
-                               class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                               {{ count(array_intersect(array_map('strval', $debts->pluck('id')->toArray()), $selectedIds)) === count($debts->pluck('id')->toArray()) && count($debts) > 0 ? 'checked' : '' }}
+                               class="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500 cursor-pointer">
                     </th>
-                    <th class="px-4 py-3">Số phiếu</th>
-                    <th class="px-4 py-3">Tên khách hàng</th>
-                    <th class="px-4 py-3 text-right">Số tiền nợ (Tổng)</th>
-                    <th class="px-4 py-3 text-right">Đã thanh toán</th>
-                    <th class="px-4 py-3 text-right">Số tiền còn lại</th>
-                    <th class="px-4 py-3 text-center">Hạn thanh toán</th>
-                    <th class="px-4 py-3 text-center print:hidden">Tùy chỉnh</th>
+                    <th class="px-4 py-5">SỐ PHIẾU</th>
+                    <th class="px-4 py-5">TÊN KHÁCH HÀNG</th>
+                    <th class="px-4 py-5 text-right">SỐ TIỀN NỢ (TỔNG)</th>
+                    <th class="px-4 py-5 text-right">ĐÃ THANH TOÁN</th>
+                    <th class="px-4 py-5 text-right">SỐ TIỀN CÒN LẠI</th>
+                    <th class="px-4 py-5 text-center">HẠN THANH TOÁN</th>
+                    <th class="px-4 py-5 text-center print:hidden">TÙY CHỈNH</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-sm">
@@ -103,7 +102,7 @@
                         $isOverdue = $remaining > 0 && $dueDate && $dueDate->lt(now());
                         $daysOverdueCount = $isOverdue ? $dueDate->diffInDays(now()) : 0;
                     @endphp
-                    <tr class="hover:bg-slate-50/80 transition group {{ $isOverdue ? 'bg-red-50/30' : '' }} {{ in_array($report->id, $selectedIds) ? 'bg-blue-50/30 is-selected' : '' }} print-row">
+                    <tr wire:key="debt-{{ $report->id }}" class="hover:bg-slate-50/80 transition group {{ $isOverdue ? 'bg-red-50/30' : '' }} {{ in_array((string)$report->id, $selectedIds) ? 'bg-blue-50/30 is-selected' : '' }} print-row">
                         <td class="px-6 py-4 text-center no-print">
                             <input type="checkbox" wire:model.live="selectedIds" value="{{ $report->id }}" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
                         </td>
@@ -152,15 +151,18 @@
                         <td class="px-4 py-3 text-center print:hidden">
                             @if($remaining > 0)
                                 <div class="flex items-center justify-center gap-2">
-                                    <button wire:click="toggleSelectAll([{{ $report->id }}])" class="text-slate-400 hover:text-blue-600 p-1" title="In phiếu nợ">🖨️</button>
+                                    <button wire:click="printSingle({{ $report->id }})" class="text-slate-400 hover:text-blue-600 p-1" title="In phiếu nợ">🖨️</button>
                                     <button wire:click="openPayModal({{ $report->id }})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 flex items-center justify-center rounded transition" title="Thu tiền">
                                         💰
                                     </button>
-                                    <button onclick="confirm('Khách hàng đã trả hết nợ hóa đơn này?') || event.stopImmediatePropagation()" wire:click="markAsFullyPaid({{ $report->id }})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 flex items-center justify-center rounded transition" title="Xong nợ">
+                                    <button wire:confirm="Khách hàng đã trả hết nợ hóa đơn này?" wire:click="markAsFullyPaid({{ $report->id }})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 flex items-center justify-center rounded transition" title="Xong nợ">
                                         ✅
                                     </button>
                                     <button wire:click="openEditModal({{ $report->id }})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 flex items-center justify-center rounded transition" title="Chỉnh sửa">
                                         📝
+                                    </button>
+                                    <button wire:confirm="Xác nhận xóa bản ghi công nợ này?" wire:click="delete({{ $report->id }})" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-2 py-1 flex items-center justify-center rounded transition" title="Xóa">
+                                        🗑️
                                     </button>
                                 </div>
                             @else
@@ -399,7 +401,7 @@
                             <td class="border border-slate-900 px-2 py-2 text-center">{{ $idx + 1 }}</td>
                             <td class="border border-slate-900 px-2 py-2 font-bold">{{ $ii->product->name }} ({{ $ii->product->code }})</td>
                             <td class="border border-slate-900 px-2 py-2 text-center italic">{{ $ii->product->unit }}</td>
-                            <td class="border border-slate-900 px-2 py-2 text-right font-bold">{{ number_format($ii->quantity, 1) }}</td>
+                            <td class="border border-slate-900 px-2 py-2 text-right font-bold">{{ number_format($ii->quantity) }}</td>
                             <td class="border border-slate-900 px-2 py-2 text-right italic text-slate-500">{{ number_format($ii->unit_price) }}</td>
                             <td class="border border-slate-900 px-2 py-2 text-right font-black">{{ number_format($ii->total_amount) }}</td>
                         </tr>

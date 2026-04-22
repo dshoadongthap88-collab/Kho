@@ -138,6 +138,12 @@ class CustomerDebtList extends Component
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\CustomerDebtExport($data), 'so_no_khach_hang_' . now()->format('Ymd_His') . '.xlsx');
     }
 
+    public function printSingle($id)
+    {
+        $this->selectedIds = [(string)$id];
+        $this->printSelected();
+    }
+
     public function printSelected()
     {
         if (empty($this->selectedIds)) {
@@ -150,6 +156,12 @@ class CustomerDebtList extends Component
             ->get();
 
         $this->dispatch('trigger-print');
+    }
+
+    public function delete($id)
+    {
+        $this->selectedIds = [(string)$id];
+        $this->deleteSelected();
     }
 
     public function deleteSelected()

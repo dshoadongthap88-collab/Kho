@@ -37,13 +37,13 @@ class ProductCatalog extends Component
     public $quantity;
     public $min_stock = 0;
     public $type = 'product_produced';
-    public $selectedProducts = [];
     public $filterMode = 'all';
 
     public $excelFile;
     public $dateFrom = '';
     public $dateTo = '';
-    public $selectedIds = []; // Dùng đồng nhất selectedIds thay cho selectedProducts
+    public $selectedIds = []; 
+    public $printItems = []; // Thêm mảng chứa dữ liệu để in
 
     protected $queryString = ['search', 'dateFrom', 'dateTo'];
 
@@ -93,10 +93,13 @@ class ProductCatalog extends Component
 
     public function toggleSelectAll($idsOnPage)
     {
-        if (count($this->selectedIds) >= count($idsOnPage)) {
-            $this->selectedIds = [];
+        $idsOnPage = collect($idsOnPage)->map(fn($id) => (string)$id)->toArray();
+        $isAllSelectedOnPage = count(array_intersect($idsOnPage, $this->selectedIds)) === count($idsOnPage);
+
+        if ($isAllSelectedOnPage) {
+            $this->selectedIds = array_values(array_diff($this->selectedIds, $idsOnPage));
         } else {
-            $this->selectedIds = collect($idsOnPage)->map(fn($id) => (string)$id)->toArray();
+            $this->selectedIds = array_values(array_unique(array_merge($this->selectedIds, $idsOnPage)));
         }
     }
 
@@ -203,17 +206,36 @@ class ProductCatalog extends Component
 
     public function delete($id)
     {
-        $product = Product::findOrFail($id);
-        $product->delete();
-        session()->flash('message', 'Đã xoá sản phẩm.');
+        try {
+            $product = Product::findOrFail($id);
+            $product->delete();
+            session()->flash('message', 'Đã xoá sản phẩm thành công.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Không thể xóa sản phẩm này vì đã có dữ liệu liên quan (phiếu nhập/xuất, định mức BOM...).');
+        }
     }
 
     public function deleteSelected()
     {
         if (empty($this->selectedIds)) return;
-        Product::whereIn('id', $this->selectedIds)->delete();
-        session()->flash('message', 'Đã xóa ' . count($this->selectedIds) . ' sản phẩm.');
-        $this->selectedIds = [];
+
+        try {
+            $count = 0;
+            foreach ($this->selectedIds as $id) {
+                $product = Product::find($id);
+                if ($product) {
+                    $product->delete();
+                    $count++;
+                }
+            }
+            
+            if ($count > 0) {
+                session()->flash('message', "Đã xóa thành công {$count} sản phẩm.");
+            }
+            $this->selectedIds = [];
+        } catch (\Exception $e) {
+            session()->flash('error', 'Một số sản phẩm không thể xóa do có dữ liệu liên quan (như phiếu nhập, phiếu xuất hoặc định mức BOM).');
+        }
     }
 
     public function exportExcel()
@@ -224,8 +246,15 @@ class ProductCatalog extends Component
 
     public function printLabels()
     {
-        if (empty($this->selectedIds)) return;
-        // Logic in nhãn mã vạch/QR
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'Vui lòng chọn ít nhất một sản phẩm để in.');
+            return;
+        }
+
+        $this->printItems = Product::whereIn('id', $this->selectedIds)
+            ->with('inventory')
+            ->get();
+
         $this->dispatch('trigger-print');
     }
 

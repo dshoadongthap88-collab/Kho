@@ -54,11 +54,13 @@
             
             <!-- Export Buttons -->
             <div class="flex gap-2 mb-0.5">
-                <button wire:click="exportExcel" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-sm" title="Xuất báo cáo Excel">
-                    <span class="text-sm">📊</span> Excel
+                <button type="button" wire:click="exportExcel" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer">
+                    <span wire:loading.remove wire:target="exportExcel" class="text-sm">📊</span>
+                    <span wire:loading wire:target="exportExcel" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Excel
                 </button>
-                <button onclick="window.print()" class="flex items-center gap-1.5 px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition shadow-sm" title="Xuất báo cáo PDF/In">
-                    <span class="text-sm">📄</span> PDF
+                <button type="button" onclick="window.print()" class="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-black text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer" title="Xuất báo cáo PDF/In">
+                    <span class="text-sm">📄</span> PDF / IN
                 </button>
             </div>
         </div>
@@ -220,7 +222,7 @@
                         </span>
                     </td>
                     <td class="px-4 py-3 text-center text-sm font-black {{ $tx->quantity >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                        {{ $tx->quantity >= 0 ? '+' : '' }}{{ number_format($tx->quantity, 2) }}
+                        {{ $tx->quantity >= 0 ? '+' : '' }}{{ number_format($tx->quantity) }}
                     </td>
                     <td class="px-4 py-3 text-xs font-medium text-gray-600 italic">👤 {{ $tx->creator->name ?? '-' }}</td>
                     <td class="px-4 py-3 text-[10px] text-gray-400 leading-tight">{{ Str::limit($tx->note, 50) }}</td>

@@ -21,11 +21,13 @@
             <div class="flex justify-between items-center mb-3">
                 <h3 class="text-lg font-semibold">Danh sách NVL</h3>
                 <div class="flex gap-2 no-print">
-                    <button onclick="window.print()" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 transition text-sm">
+                    <button type="button" onclick="window.print()" class="bg-slate-800 hover:bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 transition text-sm font-bold shadow-md cursor-pointer">
                         🖨️ In BOM NVL
                     </button>
-                    <button wire:click="saveBom" class="bg-blue-600 border border-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition text-sm">
-                        💾 Lưu cấu hình
+                    <button type="button" wire:click="saveBom" wire:loading.attr="disabled" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition text-sm font-bold shadow-md cursor-pointer">
+                        <span wire:loading.remove wire:target="saveBom">💾</span>
+                        <span wire:loading wire:target="saveBom" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        Lưu cấu hình
                     </button>
                 </div>
             </div>
@@ -60,7 +62,7 @@
                         </td>
                         @endif
                         <td class="px-3 py-2 text-center">
-                            <button wire:click="removeMaterial({{ $item['id'] }})" class="text-red-500 hover:text-red-700 text-sm">Xóa</button>
+                            <button wire:confirm="Xác nhận xóa nguyên vật liệu {{ $item['material_name'] }} khỏi định mức?" wire:click="removeMaterial({{ $item['id'] }})" class="text-rose-500 hover:text-rose-700 text-sm font-bold transition-all hover:scale-110">Xóa</button>
                         </td>
                     </tr>
                     @endforeach
@@ -84,7 +86,7 @@
                     </div>
                     <div class="w-28">
                         <label class="block text-xs text-gray-500 mb-1">Số lượng</label>
-                        <input type="number" wire:model="newQuantity" step="0.001" min="0.001" class="w-full rounded border-gray-300 shadow-sm text-sm">
+                        <input type="text" inputmode="numeric" wire:model.lazy="newQuantity" class="w-full rounded border-gray-300 shadow-sm text-sm" placeholder="0">
                     </div>
                     <div class="w-24">
                         <label class="block text-xs text-gray-500 mb-1">ĐVT</label>

@@ -105,9 +105,13 @@ class ContactList extends Component
 
     public function delete($id)
     {
-        $contact = Supplier::findOrFail($id);
-        $contact->delete();
-        session()->flash('message', 'Đã xoá đối tác.');
+        try {
+            $contact = Supplier::findOrFail($id);
+            $contact->delete();
+            session()->flash('message', 'Đã xoá đối tác thành công.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Không thể xóa đối tác này vì đã có dữ liệu giao dịch liên quan.');
+        }
     }
 
     public function render()

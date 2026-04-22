@@ -1,22 +1,22 @@
-<div>
-    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
+<div style="font-family: 'Times New Roman', Times, serif;">
+    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6 no-print relative z-10">
         <div class="flex flex-wrap items-center gap-3">
             <!-- Date Filter Standard -->
-            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm transition-all focus-within:ring-2 focus-within:ring-indigo-100">
+            <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-inner focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
                 <div class="flex items-center gap-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Từ ngày</label>
-                    <input type="date" wire:model.live="dateFrom" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-tighter">Từ ngày</label>
+                    <input type="date" wire:model.live="dateFrom" class="text-[13px] border-none bg-transparent focus:ring-0 p-0 font-bold text-slate-700">
                 </div>
-                <div class="w-px h-4 bg-slate-200 mx-1"></div>
+                <div class="w-px h-4 bg-slate-300 mx-1"></div>
                 <div class="flex items-center gap-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Đến ngày</label>
-                    <input type="date" wire:model.live="dateTo" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
+                    <label class="text-[11px] font-black text-slate-500 uppercase tracking-tighter">Đến ngày</label>
+                    <input type="date" wire:model.live="dateTo" class="text-[13px] border-none bg-transparent focus:ring-0 p-0 font-bold text-slate-700">
                 </div>
             </div>
 
             <!-- Search Standard -->
-            <div class="relative w-64">
-                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm tên, mã, hãng..." class="w-full pl-9 pr-4 py-2 text-xs font-bold rounded-xl border-slate-200 focus:ring-indigo-500 shadow-sm transition-all">
+            <div class="relative w-72">
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm tên, mã, hãng..." class="w-full pl-9 pr-4 py-2.5 text-[13px] font-bold rounded-xl border-slate-200 focus:ring-indigo-500 shadow-sm transition-all bg-slate-50 focus:bg-white">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
@@ -28,23 +28,36 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
             @if(count($selectedIds) > 0)
-                <div class="flex items-center gap-2 pr-3 border-r border-slate-300 mr-2 animate-in slide-in-from-right-4 duration-300">
-                    <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Chọn: {{ count($selectedIds) }}</span>
-                    <button wire:click="deleteSelected" wire:confirm="Xóa {{ count($selectedIds) }} sản phẩm đã chọn?" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition">
-                        <span>🗑️</span> XÓA
+                <div wire:key="bulk-actions-container" class="flex items-center gap-2 pr-3 border-r border-slate-300 mr-1 py-1">
+                    <span class="text-[11px] font-black text-indigo-700 bg-indigo-50 px-2.5 py-1.5 rounded-lg border border-indigo-100">CHỌN: {{ count($selectedIds) }}</span>
+                    
+                    <button wire:key="btn-delete-selected" type="button" 
+                            onclick="confirm('Xác nhận xóa các sản phẩm đã chọn?') || event.stopImmediatePropagation()"
+                            wire:click="deleteSelected" 
+                            wire:loading.attr="disabled"
+                            class="flex items-center gap-1.5 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-[12px] font-black transition-all hover:scale-105 active:scale-95 shadow-md hover:shadow-lg cursor-pointer">
+                        <span wire:loading.remove wire:target="deleteSelected">🗑️</span>
+                        <span wire:loading wire:target="deleteSelected" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        XÓA
                     </button>
-                    <button wire:click="printLabels" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg text-xs font-black transition">
-                        <span>🏷️</span> IN NHÃN
+
+                    <button wire:key="btn-print-selected" type="button" 
+                            wire:click="printLabels" 
+                            wire:loading.attr="disabled"
+                            class="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-black text-white rounded-xl text-[12px] font-black transition-all hover:scale-105 active:scale-95 shadow-md hover:shadow-lg cursor-pointer">
+                        <span wire:loading.remove wire:target="printLabels">📄</span>
+                        <span wire:loading wire:target="printLabels" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        IN PDF (PHIẾU IN)
                     </button>
                 </div>
             @endif
 
-            <button wire:click="openModal" class="bg-indigo-600 font-black hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-xs flex items-center gap-2 transition shadow-md shadow-indigo-100">
+            <button wire:click="openModal" class="bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-6 py-2.5 rounded-xl text-[12px] flex items-center gap-2 transition-all shadow-md hover:shadow-xl active:scale-95">
                 <span>➕</span> THÊM SẢN PHẨM
             </button>
-            <button wire:click="$set('showImportModal', true)" class="bg-emerald-600 font-black hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs transition shadow-md shadow-emerald-100">
+            <button wire:click="$set('showImportModal', true)" class="bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-6 py-2.5 rounded-xl text-[12px] transition-all shadow-md hover:shadow-xl active:scale-95">
                 📥 IMPORT EXCEL
             </button>
         </div>
@@ -66,12 +79,12 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
-                    <th class="px-6 py-4 w-10 text-center no-print bg-slate-100/30">
+                    <th class="px-6 py-4 w-10 text-center no-print">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
-                               {{ count($selectedIds) >= count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
+                               {{ count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
-                    <th class="px-4 py-3">Mã sản phẩm</th>
+                    <th class="px-3 py-4 text-[11px] font-black uppercase tracking-tighter text-slate-500">Mã sản phẩm</th>
                     <th class="px-4 py-3 w-16 text-center">Hình ảnh</th>
                     <th class="px-4 py-3">Tên sản phẩm</th>
                     <th class="px-4 py-3">Phân loại</th>
@@ -84,12 +97,11 @@
                     <th class="px-4 py-3">Vị trí</th>
                     <th class="px-4 py-3">Tình trạng</th>
                     <th class="px-4 py-3">Tồn tối thiểu</th>
-                    <th class="px-4 py-3 text-right no-print">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($products as $product)
-                    <tr class="hover:bg-slate-50/80 transition group {{ $product->is_low_stock ? 'bg-orange-50/30' : '' }} {{ in_array($product->id, $selectedIds) ? 'bg-indigo-50/30 ring-inset ring-1 ring-indigo-200' : '' }}">
+                    <tr wire:key="product-{{ $product->id }}" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors {{ in_array((string)$product->id, $selectedIds) ? 'bg-indigo-50/50' : '' }}">
                         <td class="px-6 py-4 text-center no-print">
                             <input type="checkbox" wire:model.live="selectedIds" value="{{ $product->id }}" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
@@ -133,10 +145,6 @@
                         </td>
                         <td class="px-4 py-3 font-semibold text-gray-700">
                             {{ $product->min_stock > 0 ? number_format($product->min_stock) : '-' }}
-                        </td>
-                        <td class="px-4 py-3 text-right no-print">
-                            <button wire:click="openModal({{ $product->id }})" class="text-blue-500 hover:text-blue-700 mr-2" title="Sửa">📝</button>
-                            <button onclick="confirm('Xoá sản phẩm này?') || event.stopImmediatePropagation()" wire:click="delete({{ $product->id }})" class="text-red-500 hover:text-red-700" title="Xoá">🗑️</button>
                         </td>
                     </tr>
                 @empty
@@ -194,7 +202,7 @@
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Số lượng</label>
-                                <input type="number" wire:model="quantity" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                <input type="text" inputmode="numeric" wire:model.lazy="quantity" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="0">
                                 @error('quantity') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
@@ -227,7 +235,7 @@
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Tồn tối thiểu</label>
-                                <input type="number" wire:model="min_stock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                <input type="text" inputmode="numeric" wire:model.lazy="min_stock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="0">
                                 @error('min_stock') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -284,17 +292,123 @@
 
     <style>
         @media print {
-            .no-print, header, nav, aside, .sidebar, .px-4.py-3.bg-gray-50.border-t {
+            .no-print, header, nav, aside, .sidebar, .sidebar-toolbar,
+            .bg-white.p-6.rounded-2xl, .bg-white.rounded-xl.shadow-sm,
+            .px-4.py-3.bg-gray-50.border-t, button, input, select {
                 display: none !important;
             }
-            .bg-white { background-color: transparent !important; }
-            .shadow-sm { box-shadow: none !important; }
-            .border { border: 1px solid #000 !important; }
-            table { width: 100% !important; border-collapse: collapse !important; }
-            th, td { border: 1px solid #000 !important; padding: 4px !important; font-size: 10px !important; }
-            tr:not(.bg-indigo-50) { display: none !important; } /* In các mục đã chọn */
-            tr.bg-indigo-50 { display: table-row !important; }
-            @page { size: portrait; margin: 1cm; }
+            body {
+                background: white !important;
+                font-family: 'Times New Roman', Times, serif !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                color: black !important;
+            }
+            main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+            .print-only { display: block !important; }
+            .print-container { width: 100%; padding: 15mm; }
+            table.print-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin-top: 15px;
+            }
+            table.print-table th, table.print-table td {
+                border: 1.5px solid black !important;
+                padding: 6px 8px !important;
+                font-size: 13px !important;
+                color: black !important;
+            }
+            table.print-table th {
+                background-color: #e5e7eb !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-weight: bold;
+                text-transform: uppercase;
+                font-size: 12px !important;
+            }
+            @page { size: A4 portrait; margin: 10mm; }
         }
+        .print-only { display: none; }
     </style>
+
+    <!-- PHIẾU IN DANH MỤC SẢN PHẨM -->
+    <div class="print-only print-container" style="font-family: 'Times New Roman', Times, serif;">
+        <!-- Header công ty -->
+        <div style="margin-bottom: 20px;">
+            <h1 style="font-size: 20px; font-weight: bold; text-transform: uppercase; margin: 0;">CTY TNHH ABC</h1>
+            <p style="font-size: 14px; margin: 4px 0;">Quản lý kho: HÓC MÔN</p>
+            <p style="font-size: 14px; margin: 4px 0;">SĐT: 0708091050</p>
+        </div>
+
+        <div style="border-bottom: 2px solid black; margin-bottom: 20px;"></div>
+
+        <!-- Tiêu đề phiếu -->
+        <div style="text-align: center; margin-bottom: 25px;">
+            <h2 style="font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; margin: 0;">BẢNG DANH MỤC SẢN PHẨM</h2>
+            <p style="font-size: 13px; font-style: italic; margin-top: 6px;">
+                Ngày {{ now()->format('d') }} tháng {{ now()->format('m') }} năm {{ now()->format('Y') }}
+            </p>
+        </div>
+
+        <!-- Bảng sản phẩm -->
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px; text-align: center;">STT</th>
+                    <th style="width: 110px;">Mã SP</th>
+                    <th>Tên sản phẩm</th>
+                    <th style="width: 130px;">Hãng SX</th>
+                    <th style="width: 80px; text-align: center;">Số lượng</th>
+                    <th style="width: 100px; text-align: center;">Vị trí</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($printItems as $index => $item)
+                <tr>
+                    <td style="text-align: center;">{{ $index + 1 }}</td>
+                    <td style="font-family: monospace; text-transform: uppercase;">{{ $item->code }}</td>
+                    <td style="font-weight: bold;">{{ $item->name }}</td>
+                    <td>{{ $item->brand ?? '-' }}</td>
+                    <td style="text-align: center; font-weight: bold;">{{ number_format($item->inventory?->quantity ?? 0) }}</td>
+                    <td style="text-align: center;">{{ $item->location ?? '-' }}</td>
+                </tr>
+                @endforeach
+                {{-- Thêm hàng trống nếu ít hơn 8 dòng --}}
+                @for($i = count($printItems); $i < max(8, count($printItems)); $i++)
+                <tr>
+                    <td style="text-align: center; color: transparent;">_</td>
+                    <td></td><td></td><td></td><td></td><td></td>
+                </tr>
+                @endfor
+            </tbody>
+        </table>
+
+        <!-- Chữ ký -->
+        <div style="display: flex; justify-content: space-between; margin-top: 50px; text-align: center; font-size: 14px;">
+            <div style="width: 45%;">
+                <p style="font-weight: bold; text-transform: uppercase;">Người lập phiếu</p>
+                <p style="font-size: 11px; font-style: italic;">(Ký, ghi rõ họ tên)</p>
+                <div style="height: 80px;"></div>
+                <p style="font-weight: bold; text-transform: uppercase;">{{ auth()->user()->name ?? '........................' }}</p>
+            </div>
+            <div style="width: 45%;">
+                <p style="font-weight: bold; text-transform: uppercase;">Quản lý kho</p>
+                <p style="font-size: 11px; font-style: italic;">(Ký, ghi rõ họ tên)</p>
+                <div style="height: 80px;"></div>
+                <p style="font-weight: bold;">.................................</p>
+            </div>
+        </div>
+
+        <div style="text-align: right; margin-top: 30px; font-size: 10px; font-style: italic; color: #666;">
+            In lúc: {{ now()->format('d/m/Y H:i') }}
+        </div>
+    </div>
+
+    @script
+    <script>
+        $wire.on('trigger-print', () => {
+            setTimeout(() => { window.print(); }, 500);
+        });
+    </script>
+    @endscript
 </div>

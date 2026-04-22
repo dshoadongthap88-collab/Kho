@@ -1,39 +1,53 @@
-<div>
-    <div class="flex justify-between items-center mb-4">
-        <div class="flex-1 max-w-sm">
-            <input wire:model.live="search" type="text" placeholder="Tìm theo tên, mã, hãng..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+<div style="font-family: 'Times New Roman', Times, serif;">
+    <div class="flex justify-between items-center mb-6">
+        <div class="flex-1 max-w-md relative">
+            <input wire:model.live="search" type="text" placeholder="Tìm theo tên, mã, hãng..." class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition-all">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-3">
             @if(count($selectedProducts) > 0)
-                <button onclick="window.print()" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 transition">
-                    <span>🖨️</span> In {{ count($selectedProducts) }} mục đã chọn
+                <button type="button" 
+                        wire:confirm="Xác nhận xóa các nguyên vật liệu đã chọn?" 
+                        wire:click="deleteSelected" 
+                        wire:loading.attr="disabled"
+                        class="bg-rose-500 hover:bg-rose-600 text-white px-6 py-2.5 rounded-xl text-[12px] font-black flex items-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer">
+                    <span wire:loading.remove wire:target="deleteSelected">🗑️</span>
+                    <span wire:loading wire:target="deleteSelected" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    XÓA {{ count($selectedProducts) }} MỤC
+                </button>
+                <button type="button" 
+                        onclick="window.print()" 
+                        class="bg-slate-800 hover:bg-black text-white px-6 py-2.5 rounded-xl text-[12px] font-black flex items-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer">
+                    <span>🖨️</span> IN {{ count($selectedProducts) }} MỤC
                 </button>
             @endif
-            <button wire:click="openModal" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                <span>➕</span> Thêm NVL
+            <button wire:click="openModal" class="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white px-6 py-2.5 rounded-xl text-[12px] font-black flex items-center gap-2 transition-all hover:scale-105 shadow-xl shadow-indigo-100">
+                <span>➕</span> THÊM NVL MỚI
             </button>
         </div>
     </div>
 
-    <div class="flex items-center gap-4 mb-4 bg-gray-50 p-3 rounded-lg border">
-        <span class="text-sm font-medium text-gray-600">Phân loại nhanh:</span>
+    <div class="flex items-center gap-4 mb-6 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 shadow-sm">
+        <span class="text-[11px] font-black text-indigo-900 uppercase tracking-widest">PHÂN LOẠI NHANH:</span>
         <div class="flex gap-2">
-            <button wire:click="$set('filterMode', 'all')" class="px-3 py-1 text-sm rounded-full {{ $filterMode === 'all' ? 'bg-blue-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100' }}">
-                Tất cả
+            <button wire:click="$set('filterMode', 'all')" class="px-4 py-1.5 text-[12px] font-black rounded-full transition-all {{ $filterMode === 'all' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">
+                TẤT CẢ
             </button>
-            <button wire:click="$set('filterMode', 'expiring')" class="px-3 py-1 text-sm rounded-full {{ $filterMode === 'expiring' ? 'bg-red-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100' }}">
-                Sắp hết hạn
+            <button wire:click="$set('filterMode', 'expiring')" class="px-4 py-1.5 text-[12px] font-black rounded-full transition-all {{ $filterMode === 'expiring' ? 'bg-rose-600 text-white shadow-lg shadow-rose-100' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">
+                ⚠️ SẮP HẾT HẠN
             </button>
-            <button wire:click="$set('filterMode', 'low_stock')" class="px-3 py-1 text-sm rounded-full {{ $filterMode === 'low_stock' ? 'bg-orange-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-100' }}">
-                Sắp hết tồn
+            <button wire:click="$set('filterMode', 'low_stock')" class="px-4 py-1.5 text-[12px] font-black rounded-full transition-all {{ $filterMode === 'low_stock' ? 'bg-amber-600 text-white shadow-lg shadow-amber-100' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">
+                📉 SẮP HẾT TỒN
             </button>
         </div>
         
-        <div class="h-6 w-px bg-gray-300 mx-2"></div>
+        <div class="h-6 w-px bg-indigo-200 mx-2"></div>
         
-        <div class="flex gap-2">
-            <button wire:click="selectExpiring" class="text-xs text-red-600 hover:underline">Chọn mục hết hạn</button>
-            <button wire:click="selectLowStock" class="text-xs text-orange-600 hover:underline">Chọn mục hết tồn</button>
+        <div class="flex gap-3">
+            <button wire:click="selectExpiring" class="text-[11px] font-black text-rose-600 hover:underline uppercase tracking-tight">CHỌN MỤC HẾT HẠN</button>
+            <button wire:click="selectLowStock" class="text-[11px] font-black text-amber-600 hover:underline uppercase tracking-tight">CHỌN MỤC HẾT TỒN</button>
         </div>
     </div>
 
@@ -49,65 +63,72 @@
         </div>
     @endif
 
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden border">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="bg-gray-50 border-b text-gray-600 uppercase text-xs font-semibold">
-                    <th class="px-4 py-3 w-10 no-print">
+                <tr class="bg-slate-800 border-b border-slate-700 text-white uppercase text-[11px] font-black tracking-widest">
+                    <th class="px-6 py-4 w-10 no-print text-center">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
                                {{ count($selectedProducts) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
-                               class="rounded border-gray-300">
+                               class="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500">
                     </th>
-                    <th class="px-4 py-3">Mã NVL</th>
-                    <th class="px-4 py-3 w-16 text-center">Hình ảnh</th>
-                    <th class="px-4 py-3">Tên Nguyên Vật Liệu</th>
-                    <th class="px-4 py-3">Hãng sản xuất</th>
-                    <th class="px-4 py-3">QC Hộp</th>
-                    <th class="px-4 py-3">ĐV tính (g/kg/ml/L)</th>
-                    <th class="px-4 py-3">Số lô</th>
-                    <th class="px-4 py-3 text-center">Số lượng</th>
-                    <th class="px-4 py-3">Tình trạng</th>
-                    <th class="px-4 py-3 text-right no-print">Thao tác</th>
+                    <th class="px-4 py-4">MÃ NVL</th>
+                    <th class="px-4 py-4 w-16 text-center">ẢNH</th>
+                    <th class="px-4 py-4">TÊN NGUYÊN VẬT LIỆU</th>
+                    <th class="px-4 py-4">HÃNG SX</th>
+                    <th class="px-4 py-4">QUY CÁCH</th>
+                    <th class="px-4 py-4">ĐVT</th>
+                    <th class="px-4 py-4 text-center">SỐ LÔ</th>
+                    <th class="px-4 py-4 text-center">TỒN KHO</th>
+                    <th class="px-4 py-4">TRẠNG THÁI</th>
+                    <th class="px-4 py-4 text-right no-print">THAO TÁC</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($products as $product)
-                    <tr class="hover:bg-gray-50 transition border-b 
-                        {{ $product->is_expiring_soon ? 'bg-red-50' : ($product->is_low_stock ? 'bg-orange-50' : '') }}
-                        {{ in_array($product->id, $selectedProducts) ? 'ring-2 ring-blue-400' : '' }}">
-                        <td class="px-4 py-3 no-print">
-                            <input type="checkbox" wire:model.live="selectedProducts" value="{{ $product->id }}" class="rounded border-gray-300">
+                    <tr class="hover:bg-indigo-50/30 transition-all border-b border-slate-100 
+                        {{ $product->is_expiring_soon ? 'bg-rose-50/50' : ($product->is_low_stock ? 'bg-amber-50/50' : '') }}
+                        {{ in_array($product->id, $selectedProducts) ? 'bg-indigo-50' : '' }}">
+                        <td class="px-6 py-4 no-print text-center">
+                            <input type="checkbox" wire:model.live="selectedProducts" value="{{ $product->id }}" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                         </td>
-                        <td class="px-4 py-3 font-mono text-sm text-blue-600">{{ $product->code }}</td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-4 py-4 font-black text-[13px] text-indigo-600 tracking-tight">{{ $product->code }}</td>
+                        <td class="px-4 py-4 text-center">
                             @if($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="Img" class="w-10 h-10 object-cover rounded shadow-sm border">
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="Img" class="w-12 h-12 object-cover rounded-xl shadow-md border-2 border-white ring-1 ring-slate-200">
                             @else
-                                <div class="w-10 h-10 bg-gray-100 flex items-center justify-center rounded border text-gray-400 text-xs">No img</div>
+                                <div class="w-12 h-12 bg-slate-50 flex items-center justify-center rounded-xl border border-slate-200 text-slate-300 text-[10px] font-black uppercase">NO IMG</div>
                             @endif
                         </td>
-                        <td class="px-4 py-3 font-medium text-gray-800">{{ $product->name }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ $product->brand }}</td>
-                        <td class="px-4 py-3 text-gray-600 italic">{{ $product->box_spec }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ $product->unit }}</td>
-                        <td class="px-4 py-3 text-sm font-semibold text-purple-700">{{ $product->batch_number }}</td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold 
-                                {{ $product->is_low_stock ? 'bg-orange-600 text-white' : (($product->inventory?->quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500') }}">
+                        <td class="px-4 py-4">
+                            <div class="font-black text-slate-900 text-[13px] uppercase tracking-tight">{{ $product->name }}</div>
+                            <div class="text-[10px] text-slate-400 font-bold mt-0.5">VỊ TRÍ: {{ $product->location ?: 'CHƯA XÁC ĐỊNH' }}</div>
+                        </td>
+                        <td class="px-4 py-4 text-[12px] font-bold text-slate-600">{{ $product->brand }}</td>
+                        <td class="px-4 py-4 text-[11px] font-black text-slate-500 italic bg-slate-50/50 rounded">{{ $product->box_spec }}</td>
+                        <td class="px-4 py-4 text-[12px] font-bold text-slate-700 uppercase">{{ $product->unit }}</td>
+                        <td class="px-4 py-4 text-center">
+                            <span class="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-lg text-[11px] font-black border border-purple-100 shadow-sm">{{ $product->batch_number }}</span>
+                        </td>
+                        <td class="px-4 py-4 text-center">
+                            <span class="px-3 py-1.5 rounded-xl text-[13px] font-black shadow-sm border
+                                {{ $product->is_low_stock ? 'bg-rose-600 text-white border-rose-700' : (($product->inventory?->quantity ?? 0) > 0 ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-slate-100 text-slate-400 border-slate-200') }}">
                                 {{ number_format($product->inventory?->quantity ?? 0) }}
                                 @if($product->is_low_stock) ⚠️ @endif
                             </span>
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-4">
                             @if($product->status === 'active')
-                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Đang kinh doanh</span>
+                                <span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase border border-emerald-100">ĐANG HOẠT ĐỘNG</span>
                             @else
-                                <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Ngừng kinh doanh</span>
+                                <span class="bg-rose-50 text-rose-700 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase border border-rose-100">NGỪNG SỬ DỤNG</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-right no-print">
-                            <button wire:click="openModal({{ $product->id }})" class="text-blue-500 hover:text-blue-700 mr-2" title="Sửa">📝</button>
-                            <button onclick="confirm('Xoá sản phẩm này?') || event.stopImmediatePropagation()" wire:click="delete({{ $product->id }})" class="text-red-500 hover:text-red-700" title="Xoá">🗑️</button>
+                        <td class="px-4 py-4 text-right no-print">
+                            <div class="flex items-center justify-end gap-1">
+                                <button wire:click="openModal({{ $product->id }})" class="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="Sửa">📝</button>
+                                <button wire:confirm="Xoá nguyên vật liệu này?" wire:click="delete({{ $product->id }})" class="p-2 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" title="Xoá">🗑️</button>
+                            </div>
                         </td>
                     </tr>
                 @empty

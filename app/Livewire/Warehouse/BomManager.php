@@ -58,9 +58,13 @@ class BomManager extends Component
 
     public function removeMaterial($bomId)
     {
-        Bom::destroy($bomId);
-        $this->loadBom($this->selectedProductId);
-        session()->flash('success', 'Đã xóa NVL!');
+        try {
+            Bom::destroy($bomId);
+            $this->loadBom($this->selectedProductId);
+            session()->flash('success', 'Đã xóa nguyên vật liệu khỏi định mức thành công.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Không thể xóa định mức này.');
+        }
     }
 
     public function saveBom()

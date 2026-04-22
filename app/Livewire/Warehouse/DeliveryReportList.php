@@ -143,6 +143,18 @@ class DeliveryReportList extends Component
         return Excel::download(new DeliveryExport($data), 'bao_cao_giao_hang_' . now()->format('Ymd_His') . '.xlsx');
     }
 
+    public function printSingle($id)
+    {
+        $this->selectedIds = [(string)$id];
+        $this->printSelected();
+    }
+
+    public function delete($id)
+    {
+        $this->selectedIds = [(string)$id];
+        $this->deleteSelected();
+    }
+
     public function printSelected()
     {
         if (empty($this->selectedIds)) {

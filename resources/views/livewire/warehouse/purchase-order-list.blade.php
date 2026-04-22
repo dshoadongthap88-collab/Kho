@@ -46,11 +46,15 @@
             @if(count($selectedIds) > 0)
                 <div class="flex items-center gap-2 pr-3 border-r border-slate-300 mr-2 animate-in slide-in-from-right-4 duration-300">
                     <span class="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded">Chọn: {{ count($selectedIds) }}</span>
-                    <button wire:click="deleteSelected" wire:confirm="Xóa {{ count($selectedIds) }} đơn hàng đã chọn?" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition">
-                        <span>🗑️</span> XÓA
+                    <button type="button" wire:click="deleteSelected" wire:confirm="Xóa {{ count($selectedIds) }} đơn hàng đã chọn?" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition cursor-pointer">
+                        <span wire:loading.remove wire:target="deleteSelected">🗑️</span>
+                        <span wire:loading wire:target="deleteSelected" class="w-3 h-3 border-2 border-rose-600 border-t-transparent rounded-full animate-spin"></span>
+                        XÓA
                     </button>
-                    <button wire:click="printSelected" class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg text-xs font-black transition">
-                        <span>🖨️</span> IN GỘP
+                    <button type="button" wire:click="printSelected" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-lg text-xs font-black transition cursor-pointer">
+                        <span wire:loading.remove wire:target="printSelected">🖨️</span>
+                        <span wire:loading wire:target="printSelected" class="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></span>
+                        IN GỘP
                     </button>
                 </div>
             @endif
@@ -133,12 +137,12 @@
                             @endswitch
                         </td>
                         <td class="px-4 py-3 text-right flex gap-1 justify-end no-print">
-                            <button wire:click="toggleSelectAll([{{ $order->id }}])" class="text-slate-400 hover:text-amber-600 p-1" title="In phiếu">🖨️</button>
+                            <button wire:click="printSingle({{ $order->id }})" class="text-slate-400 hover:text-amber-600 p-1 transition-all hover:scale-110" title="In phiếu">🖨️</button>
                             @if($order->status === 'pending')
-                                <button wire:click="confirmOrder({{ $order->id }})" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold transition" title="Xác nhận">DUYỆT</button>
+                                <button wire:click="confirmOrder({{ $order->id }})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-black transition-all hover:scale-105 shadow-sm" title="Xác nhận">DUYỆT</button>
                             @endif
-                            <button wire:click="openModal({{ $order->id }})" class="text-blue-500 hover:text-blue-700 p-1" title="Sửa">📝</button>
-                            <button onclick="confirm('Xoá đơn hàng này?') || event.stopImmediatePropagation()" wire:click="delete({{ $order->id }})" class="text-red-500 hover:text-red-700 p-1" title="Xoá">🗑️</button>
+                            <button wire:click="openModal({{ $order->id }})" class="text-indigo-500 hover:text-indigo-700 p-1 transition-all hover:scale-110" title="Sửa">📝</button>
+                            <button wire:confirm="Xác nhận xoá đơn hàng {{ $order->po_number }}?" wire:click="delete({{ $order->id }})" class="text-rose-400 hover:text-rose-600 p-1 transition-all hover:scale-110" title="Xoá">🗑️</button>
                         </td>
                     </tr>
                 @empty
@@ -243,7 +247,7 @@
                                             <p class="text-[10px] text-gray-500 mt-1">Chỉ hiển thị các nguyên vật liệu có tồn kho ≤ định mức an toàn.</p>
                                         </div>
                                         <div class="col-span-2">
-                                            <input type="number" step="0.01" wire:model="newItemQuantity" placeholder="SL Mua" class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
+                                            <input type="text" inputmode="numeric" wire:model.lazy="newItemQuantity" placeholder="SL Mua" class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm">
                                         </div>
                                         <div class="col-span-2 no-print">
                                             @php

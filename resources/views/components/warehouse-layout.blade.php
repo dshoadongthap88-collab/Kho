@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Kho' }} - ERP Warehouse</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     @livewireStyles
 </head>
@@ -130,7 +131,9 @@
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 py-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ $title ?? '' }}</h1>
+        <h1 class="text-3xl font-black text-slate-900 mb-6 uppercase tracking-tight no-print" style="font-family: 'Times New Roman', Times, serif;">
+            {{ mb_strtoupper($title ?? '') }}
+        </h1>
         {{ $slot }}
     </main>
 

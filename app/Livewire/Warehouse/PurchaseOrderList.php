@@ -271,10 +271,14 @@ class PurchaseOrderList extends Component
 
     public function delete($id)
     {
-        $order = PurchaseOrder::findOrFail($id);
-        $order->items()->delete();
-        $order->delete();
-        session()->flash('message', 'Đã xoá đơn hàng.');
+        try {
+            $order = PurchaseOrder::findOrFail($id);
+            $order->items()->delete();
+            $order->delete();
+            session()->flash('message', 'Đã xoá đơn hàng thành công.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Không thể xóa đơn hàng này vì đã có dữ liệu liên quan.');
+        }
     }
 
     public function exportExcel()
@@ -321,11 +325,21 @@ class PurchaseOrderList extends Component
     {
         if (empty($this->selectedIds)) return;
 
-        \App\Models\PurchaseOrderItem::whereIn('purchase_order_id', $this->selectedIds)->delete();
-        PurchaseOrder::whereIn('id', $this->selectedIds)->delete();
-        
-        session()->flash('message', 'Đã xóa ' . count($this->selectedIds) . ' đơn mua hàng.');
-        $this->selectedIds = [];
+        try {
+            \App\Models\PurchaseOrderItem::whereIn('purchase_order_id', $this->selectedIds)->delete();
+            PurchaseOrder::whereIn('id', $this->selectedIds)->delete();
+            
+            session()->flash('message', 'Đã xóa ' . count($this->selectedIds) . ' đơn mua hàng.');
+            $this->selectedIds = [];
+        } catch (\Exception $e) {
+            session()->flash('error', 'Một số đơn hàng không thể xóa do có dữ liệu liên quan.');
+        }
+    }
+
+    public function printSingle($id)
+    {
+        $this->selectedIds = [(string)$id];
+        $this->printSelected();
     }
 
     public function toggleSelectAll($idsOnPage)
@@ -337,16 +351,6 @@ class PurchaseOrderList extends Component
         }
     }
 
-    public function printSelected()
-    {
-        if (empty($this->selectedOrders)) {
-            session()->flash('error', 'Vui lòng đánh dấu chọn (tick) ít nhất một phiếu đề xuất để in.');
-            return;
-        }
-
-        // Tạm mượn chức năng window.print của trình duyệt (có thể mở rộng thành trang view in ấn riêng)
-        $this->dispatch('trigger-print');
-    }
 
     public function openOfficeModal()
     {

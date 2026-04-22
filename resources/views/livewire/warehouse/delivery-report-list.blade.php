@@ -56,13 +56,24 @@
                 @if(count($selectedIds) > 0)
                     <div class="flex items-center gap-2 pr-2 border-r border-slate-300 mr-2 animate-in slide-in-from-right-4">
                         <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Đã chọn: {{ count($selectedIds) }}</span>
-                        <button wire:click="deleteSelected" wire:confirm="Xóa {{ count($selectedIds) }} báo cáo đã chọn?" class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition">
-                            <span>🗑️</span> XÓA
+                        <button type="button" 
+                                wire:click="deleteSelected" 
+                                wire:confirm="Xóa {{ count($selectedIds) }} báo cáo đã chọn?" 
+                                wire:loading.attr="disabled"
+                                class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg text-xs font-black transition cursor-pointer">
+                            <span wire:loading.remove wire:target="deleteSelected">🗑️</span>
+                            <span wire:loading wire:target="deleteSelected" class="w-4 h-4 border-2 border-rose-600 border-t-transparent rounded-full animate-spin"></span>
+                            XÓA
                         </button>
                     </div>
                 @endif
-                <button wire:click="printSelected" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg text-xs font-black transition shadow-sm">
-                    <span class="text-sm">🖨️</span> In Ghép
+                <button type="button" 
+                        wire:click="printSelected" 
+                        wire:loading.attr="disabled"
+                        class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer">
+                    <span wire:loading.remove wire:target="printSelected" class="text-sm">🖨️</span>
+                    <span wire:loading wire:target="printSelected" class="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
+                    In Ghép
                 </button>
                 <button wire:click="exportExcel" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-sm" title="Xuất báo cáo Excel">
                     <span class="text-sm">📊</span> Excel
@@ -144,20 +155,21 @@
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    <button wire:click="toggleSelectAll([{{ $report->id }}])" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition" title="Chọn in">🖨️</button>
+                                    <button wire:click="printSingle({{ $report->id }})" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition" title="In báo cáo này">🖨️</button>
                                     @if($report->status !== 'delivered')
-                                        <button wire:click="openConfirmModal({{ $report->id }})" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm transition">
+                                        <button wire:click="openConfirmModal({{ $report->id }})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-sm transition-all hover:scale-105 uppercase">
                                             Xác nhận
                                         </button>
                                     @else
                                         @if($report->photo_path)
-                                            <a href="{{ Storage::url($report->photo_path) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs font-semibold underline flex items-center justify-center gap-1">
-                                                <span>📷</span> Ảnh
+                                            <a href="{{ Storage::url($report->photo_path) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-[11px] font-black underline flex items-center justify-center gap-1 bg-indigo-50 px-2 py-1 rounded-lg">
+                                                <span>📷</span> ẢNH
                                             </a>
                                         @else
-                                            <span class="text-xs text-slate-400">N/A</span>
+                                            <span class="text-[10px] text-slate-400 font-bold">N/A</span>
                                         @endif
                                     @endif
+                                    <button wire:confirm="Xác nhận xóa báo cáo giao hàng này?" wire:click="delete({{ $report->id }})" class="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition" title="Xóa">🗑️</button>
                                 </div>
                             </td>
                         </tr>
@@ -291,7 +303,7 @@
                             <tr>
                                 <td class="border border-slate-900 px-2 py-1 text-center">{{ $idx + 1 }}</td>
                                 <td class="border border-slate-900 px-2 py-1 font-bold">{{ $ii->product->name }}</td>
-                                <td class="border border-slate-900 px-2 py-1 text-right font-black">{{ number_format($ii->quantity, 2) }}</td>
+                                <td class="border border-slate-900 px-2 py-1 text-right font-black">{{ number_format($ii->quantity) }}</td>
                                 <td class="border border-slate-900 px-2 py-1 text-center italic">{{ $ii->product->unit }}</td>
                             </tr>
                             @endforeach

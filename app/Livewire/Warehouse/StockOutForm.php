@@ -27,7 +27,7 @@ class StockOutForm extends Component
     ];
     public $receiver_department = '';
     public $note = '';
-    public $type = 'production';
+    public $type = 'repair';
 
     // Biến cho quy trình "Xuất cho sản xuất"
     public $production_product_id = '';
@@ -183,29 +183,25 @@ class StockOutForm extends Component
             $this->items[$index]['unit_price'] = $product->price ?: 0;
             $this->calculateTotal($index);
 
-            // 2. Kiểm tra tồn kho thực tế (Tổng từ tất cả các lô)
-            $service = app(InventoryService::class);
-            $batches = $service->getAvailableBatches($productId);
-            $this->items[$index]['available_qty'] = $batches->sum('stock');
+            // 2. Kiểm tra tồn kho thực tế (Lấy trực tiếp từ bảng inventories để đảm bảo chính xác 100%)
+            $inventoryRecord = \App\Models\Inventory::where('product_id', $productId)->first();
+            $this->items[$index]['available_qty'] = $inventoryRecord ? $inventoryRecord->quantity : 0;
 
             // 3. Xử lý thông minh việc chọn lô
+            $service = app(InventoryService::class);
+            $batches = $service->getAvailableBatches($productId);
+            
             if ($batches->count() > 1) {
                 // Có nhiều lô → Mở cửa sổ cho người dùng chọn
                 $this->activeItemIndex = $index;
                 $this->availableBatches = $batches->toArray();
                 $this->showBatchModal = true;
             } elseif ($batches->count() == 1) {
-                // Chỉ có 1 lô → Cập nhật thông tin từ lô này (Ghi đè nếu lô có dữ liệu)
+                // Chỉ có 1 lô → Cập nhật thông tin từ lô này
                 $batch = $batches->first();
-                if ($batch->batch_number) {
-                    $this->items[$index]['batch_number'] = $batch->batch_number;
-                }
-                if ($batch->expiry_date) {
-                    $this->items[$index]['expiry_date'] = $batch->expiry_date;
-                }
-                if ($batch->warehouse_location) {
-                    $this->items[$index]['warehouse_location'] = $batch->warehouse_location;
-                }
+                if ($batch->batch_number) $this->items[$index]['batch_number'] = $batch->batch_number;
+                if ($batch->expiry_date) $this->items[$index]['expiry_date'] = $batch->expiry_date;
+                if ($batch->warehouse_location) $this->items[$index]['warehouse_location'] = $batch->warehouse_location;
             }
         }
 

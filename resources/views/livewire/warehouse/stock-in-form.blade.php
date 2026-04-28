@@ -17,6 +17,19 @@
                 </div>
             @endif
 
+            @if($errors->any())
+                <div class="mb-4 p-4 bg-rose-50 text-rose-700 rounded-2xl font-bold border border-rose-200 animate-in fade-in slide-in-from-top-2">
+                    <div class="flex items-center gap-2 mb-2 text-rose-800">
+                        <span>❌</span> <span>Có lỗi xảy ra:</span>
+                    </div>
+                    <ul class="list-disc list-inside text-[13px] ml-6">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
                 <div class="bg-slate-50 px-6 py-5 border-b border-slate-200 flex items-center justify-between">
                     <h2 class="text-[15px] font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
@@ -105,7 +118,7 @@
                                                placeholder="0">
                                     </td>
                                     <td class="px-2 py-3 text-center">
-                                        <span class="text-[11px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200 uppercase">{{ $items[$index]['unit'] ?: '-' }}</span>
+                                        <span class="text-[11px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200 uppercase">{{ $items[$index]['unit'] ?? '-' }}</span>
                                     </td>
                                     <td class="px-2 py-3">
                                         <input type="number" wire:model.live="items.{{ $index }}.unit_price" step="1" min="0"
@@ -426,6 +439,48 @@
     <script>
         $wire.on('trigger-print', () => {
             setTimeout(() => { window.print(); }, 500);
+        });
+
+        $wire.on('show-success-effect', () => {
+            const effect = document.createElement('div');
+            effect.innerHTML = `
+                <div class="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none transition-all duration-500 opacity-0" id="success-effect-container">
+                    <div class="bg-white/90 backdrop-blur-md border-4 border-emerald-500 text-emerald-600 rounded-[3rem] p-12 flex flex-col items-center justify-center shadow-[0_0_100px_rgba(16,185,129,0.4)] transform scale-50 transition-transform duration-500" id="success-effect-box">
+                        <div class="bg-emerald-500 text-white p-4 rounded-full mb-6 shadow-xl animate-[bounce_1s_ease-in-out]">
+                            <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <h2 class="text-4xl font-black uppercase tracking-widest text-slate-800">Đã Nhập Kho</h2>
+                        <p class="text-slate-500 font-bold mt-2 text-lg">Hệ thống đã lưu phiếu thành công!</p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(effect);
+            
+            setTimeout(() => {
+                const container = document.getElementById('success-effect-container');
+                const box = document.getElementById('success-effect-box');
+                if (container && box) {
+                    container.classList.remove('opacity-0');
+                    container.classList.add('opacity-100');
+                    box.classList.remove('scale-50');
+                    box.classList.add('scale-100');
+                }
+            }, 50);
+
+            setTimeout(() => {
+                const container = document.getElementById('success-effect-container');
+                const box = document.getElementById('success-effect-box');
+                if (container && box) {
+                    container.classList.remove('opacity-100');
+                    container.classList.add('opacity-0');
+                    box.classList.remove('scale-100');
+                    box.classList.add('scale-50');
+                    
+                    setTimeout(() => {
+                        if (effect.parentNode) effect.parentNode.removeChild(effect);
+                    }, 500);
+                }
+            }, 2500);
         });
     </script>
     @endscript

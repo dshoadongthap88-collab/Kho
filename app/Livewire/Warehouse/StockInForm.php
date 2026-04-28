@@ -163,7 +163,16 @@ class StockInForm extends Component
 
     public function openProductModal()
     {
-        $this->newPCode = 'P' . str_pad(Product::count() + 1, 4, '0', STR_PAD_LEFT);
+        $prefix = ($this->type === 'import_material') ? 'NVL' : 'SP';
+        
+        $count = Product::where('code', 'like', $prefix . '%')->count() + 1;
+        $this->newPCode = $prefix . str_pad($count, 4, '0', STR_PAD_LEFT);
+        
+        while (Product::where('code', $this->newPCode)->exists()) {
+            $count++;
+            $this->newPCode = $prefix . str_pad($count, 4, '0', STR_PAD_LEFT);
+        }
+
         $this->newPName = '';
         $this->newPUnit = 'Cái';
         $this->showProductModal = true;
@@ -175,6 +184,11 @@ class StockInForm extends Component
             'newPCode' => 'required|unique:products,code',
             'newPName' => 'required|string',
             'newPUnit' => 'required|string',
+        ], [
+            'newPCode.required' => 'Mã sản phẩm không được để trống.',
+            'newPCode.unique' => 'Mã sản phẩm này đã tồn tại.',
+            'newPName.required' => 'Vui lòng nhập tên sản phẩm.',
+            'newPUnit.required' => 'Vui lòng nhập đơn vị tính.',
         ]);
 
         $productType = 'product_purchased'; // default
@@ -232,11 +246,27 @@ class StockInForm extends Component
 
     public function save()
     {
+        // Loại bỏ các dòng trống chưa chọn sản phẩm
+        $this->items = array_values(array_filter($this->items, function ($item) {
+            return !empty($item['product_id']);
+        }));
+
+        if (empty($this->items)) {
+            $this->addError('general', 'Vui lòng thêm ít nhất một sản phẩm vào phiếu nhập.');
+            $this->addItem();
+            return;
+        }
+
         $this->validate([
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.batch_number' => 'required|string',
+            'items.*.batch_number' => 'nullable|string',
             'items.*.quantity' => 'required|numeric|min:0.0001',
             'supplier_name' => 'nullable|string',
+        ], [
+            'items.*.product_id.required' => 'Vui lòng chọn sản phẩm hợp lệ.',
+            'items.*.product_id.exists' => 'Sản phẩm không tồn tại.',
+            'items.*.quantity.required' => 'Vui lòng nhập số lượng.',
+            'items.*.quantity.min' => 'Số lượng phải lớn hơn 0.',
         ]);
 
         $service = app(InventoryService::class);
@@ -253,13 +283,16 @@ class StockInForm extends Component
             ]);
 
             foreach ($this->items as $item) {
+                $batchNo = empty($item['batch_number']) ? '-' : $item['batch_number'];
+                $expiry = !empty($item['expiry_date']) ? $item['expiry_date'] : null;
+
                 // Tạo StockInItem
                 \App\Models\StockInItem::create([
                     'stock_in_id' => $stockIn->id,
                     'product_id' => $item['product_id'],
-                    'batch_number' => $item['batch_number'],
-                    'expiry_date' => $item['expiry_date'] ?: null,
-                    'warehouse_location' => $item['warehouse_location'],
+                    'batch_number' => $batchNo,
+                    'expiry_date' => $expiry,
+                    'warehouse_location' => $item['warehouse_location'] ?? null,
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'] ?? 0,
                     'vat_rate' => $item['vat_rate'] ?? 0,
@@ -273,14 +306,14 @@ class StockInForm extends Component
                     'stock_in',
                     $stockIn->id,
                     $this->note,
-                    $item['batch_number'],
-                    $item['expiry_date'] ?: null,
-                    $item['warehouse_location']
+                    $batchNo,
+                    $expiry,
+                    $item['warehouse_location'] ?? null
                 );
                 
                 // Cập nhật vị trí mặc định và phân loại của sản phẩm
                 $productUpdates = [];
-                if ($item['warehouse_location']) {
+                if (!empty($item['warehouse_location'])) {
                     $productUpdates['location'] = $item['warehouse_location'];
                 }
                 if ($this->type === 'import_material') {
@@ -293,6 +326,7 @@ class StockInForm extends Component
             }
 
             session()->flash('success', 'Nhập kho thành công!');
+            $this->dispatch('show-success-effect');
             $this->reset(['items', 'supplier_name', 'manufacturer', 'note']);
             $this->addItem();
         });

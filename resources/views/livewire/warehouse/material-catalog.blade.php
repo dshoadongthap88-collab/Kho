@@ -1,67 +1,78 @@
 <div style="font-family: 'Times New Roman', Times, serif;">
-    <div class="flex justify-between items-center mb-6">
-        <div class="flex-1 max-w-md relative">
-            <input wire:model.live="search" type="text" placeholder="Tìm theo tên, mã, hãng..." class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition-all">
-            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Search Standard -->
+            <div class="relative w-64">
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm tên, mã, hãng..." class="w-full pl-9 pr-3 py-2 text-[12px] font-bold rounded-lg border-slate-200 focus:ring-indigo-500 shadow-sm transition-all bg-slate-50 focus:bg-white">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                <button wire:click="$set('filterMode', 'all')" class="px-3 py-1 text-[10px] font-black uppercase rounded transition-all {{ $filterMode === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Tất cả</button>
+                <button wire:click="$set('filterMode', 'expiring')" class="px-3 py-1 text-[10px] font-black uppercase rounded transition-all {{ $filterMode === 'expiring' ? 'bg-rose-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Sắp hết hạn</button>
+                <button wire:click="$set('filterMode', 'low_stock')" class="px-3 py-1 text-[10px] font-black uppercase rounded transition-all {{ $filterMode === 'low_stock' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Sắp hết tồn</button>
+            </div>
+            
+            <div class="flex gap-2">
+                <button wire:click="selectExpiring" class="text-[10px] font-black text-rose-600 hover:underline uppercase tracking-tight">Chọn hết hạn</button>
+                <button wire:click="selectLowStock" class="text-[10px] font-black text-amber-600 hover:underline uppercase tracking-tight">Chọn hết tồn</button>
             </div>
         </div>
-        <div class="flex gap-3">
+
+        <div class="flex items-center gap-2">
             @if(count($selectedProducts) > 0)
-                <button type="button" 
-                        wire:confirm="Xác nhận xóa các nguyên vật liệu đã chọn?" 
-                        wire:click="deleteSelected" 
-                        wire:loading.attr="disabled"
-                        class="bg-rose-500 hover:bg-rose-600 text-white px-6 py-2.5 rounded-xl text-[12px] font-black flex items-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer">
-                    <span wire:loading.remove wire:target="deleteSelected">🗑️</span>
-                    <span wire:loading wire:target="deleteSelected" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    XÓA {{ count($selectedProducts) }} MỤC
-                </button>
-                <button type="button" 
-                        onclick="window.print()" 
-                        class="bg-slate-800 hover:bg-black text-white px-6 py-2.5 rounded-xl text-[12px] font-black flex items-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer">
-                    <span>🖨️</span> IN {{ count($selectedProducts) }} MỤC
-                </button>
+                <div wire:key="bulk-actions-container" class="flex items-center gap-1.5 pr-2 border-r border-slate-300 mr-1 py-1">
+                    <span class="text-[10px] font-black text-indigo-700 bg-indigo-50 px-2 py-1 rounded border border-indigo-100">CHỌN: {{ count($selectedProducts) }}</span>
+                    
+                    <button wire:key="btn-delete-selected" type="button" 
+                            onclick="confirm('Xác nhận xóa các nguyên vật liệu đã chọn?') || event.stopImmediatePropagation()"
+                            wire:click="deleteSelected" 
+                            wire:loading.attr="disabled"
+                            class="flex items-center gap-1 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
+                        <span wire:loading.remove wire:target="deleteSelected">🗑️</span>
+                        <span wire:loading wire:target="deleteSelected" class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        XÓA
+                    </button>
+
+                    <button wire:key="btn-print-selected" type="button" 
+                            onclick="window.print()" 
+                            class="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-black text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
+                        <span>🖨️</span>
+                        IN
+                    </button>
+                </div>
             @endif
-            <button wire:click="openModal" class="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white px-6 py-2.5 rounded-xl text-[12px] font-black flex items-center gap-2 transition-all hover:scale-105 shadow-xl shadow-indigo-100">
+
+            <button wire:click="openModal" class="bg-gradient-to-r from-indigo-600 to-indigo-700 font-black hover:from-indigo-700 hover:to-indigo-800 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
                 <span>➕</span> THÊM NVL MỚI
             </button>
+            <button wire:click="$set('showImportModal', true)" class="bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-4 py-1.5 rounded-lg text-[11px] transition-all shadow-sm hover:shadow-md active:scale-95">
+                📥 IMPORT EXCEL
+            </button>
         </div>
     </div>
 
-    <div class="flex items-center gap-4 mb-6 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 shadow-sm">
-        <span class="text-[11px] font-black text-indigo-900 uppercase tracking-widest">PHÂN LOẠI NHANH:</span>
-        <div class="flex gap-2">
-            <button wire:click="$set('filterMode', 'all')" class="px-4 py-1.5 text-[12px] font-black rounded-full transition-all {{ $filterMode === 'all' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">
-                TẤT CẢ
-            </button>
-            <button wire:click="$set('filterMode', 'expiring')" class="px-4 py-1.5 text-[12px] font-black rounded-full transition-all {{ $filterMode === 'expiring' ? 'bg-rose-600 text-white shadow-lg shadow-rose-100' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">
-                ⚠️ SẮP HẾT HẠN
-            </button>
-            <button wire:click="$set('filterMode', 'low_stock')" class="px-4 py-1.5 text-[12px] font-black rounded-full transition-all {{ $filterMode === 'low_stock' ? 'bg-amber-600 text-white shadow-lg shadow-amber-100' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50' }}">
-                📉 SẮP HẾT TỒN
-            </button>
-        </div>
+    <!-- Toast Notifications -->
+    <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+        @if (session()->has('message'))
+            <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show" x-transition.opacity.duration.500ms 
+                 class="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-xl shadow-lg border border-emerald-200 font-black text-[13px] flex items-center gap-2 pointer-events-auto">
+                <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                {{ session('message') }}
+            </div>
+        @endif
         
-        <div class="h-6 w-px bg-indigo-200 mx-2"></div>
-        
-        <div class="flex gap-3">
-            <button wire:click="selectExpiring" class="text-[11px] font-black text-rose-600 hover:underline uppercase tracking-tight">CHỌN MỤC HẾT HẠN</button>
-            <button wire:click="selectLowStock" class="text-[11px] font-black text-amber-600 hover:underline uppercase tracking-tight">CHỌN MỤC HẾT TỒN</button>
-        </div>
+        @if (session()->has('error'))
+            <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 4000)" x-show="show" x-transition.opacity.duration.500ms 
+                 class="bg-rose-50 text-rose-600 px-6 py-3 rounded-xl shadow-lg border border-rose-200 font-black text-[13px] flex items-center gap-2 pointer-events-auto">
+                <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                {{ session('error') }}
+            </div>
+        @endif
     </div>
-
-    @if (session()->has('message'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {{ session('message') }}
-        </div>
-    @endif
-    
-    @if (session()->has('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {{ session('error') }}
-        </div>
-    @endif
 
     <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
         <table class="w-full text-left border-collapse">
@@ -102,7 +113,7 @@
                         </td>
                         <td class="px-4 py-4">
                             <div class="font-black text-slate-900 text-[13px] uppercase tracking-tight">{{ $product->name }}</div>
-                            <div class="text-[10px] text-slate-400 font-bold mt-0.5">VỊ TRÍ: {{ $product->location ?: 'CHƯA XÁC ĐỊNH' }}</div>
+                            <div class="text-[10px] text-slate-400 font-bold mt-0.5">VỊ TRÍ: {{ $product->inventory?->warehouse_location ?? ($product->location ?: 'CHƯA XÁC ĐỊNH') }}</div>
                         </td>
                         <td class="px-4 py-4 text-[12px] font-bold text-slate-600">{{ $product->brand }}</td>
                         <td class="px-4 py-4 text-[11px] font-black text-slate-500 italic bg-slate-50/50 rounded">{{ $product->box_spec }}</td>

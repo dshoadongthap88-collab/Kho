@@ -166,11 +166,18 @@ class ProductCatalog extends Component
                 $product->update(['image' => $imagePath]);
             }
             
-            // Sync location and quantity with inventory if exists
-            if ($product->inventory) {
-                $product->inventory->update([
-                    'warehouse_location' => $this->location,
+            // Đồng bộ với bảng Inventory
+            $inventory = Inventory::where('product_id', $product->id)->first();
+            if ($inventory) {
+                $inventory->update([
                     'quantity' => $this->quantity,
+                    'warehouse_location' => $this->location
+                ]);
+            } else {
+                Inventory::create([
+                    'product_id' => $product->id,
+                    'quantity' => $this->quantity ?: 0,
+                    'warehouse_location' => $this->location
                 ]);
             }
 
@@ -191,11 +198,11 @@ class ProductCatalog extends Component
                 'image' => $imagePath,
             ]);
 
-            // Create initial inventory record
+            // Tạo luôn record bên Inventory
             Inventory::create([
                 'product_id' => $product->id,
-                'quantity' => $this->quantity,
-                'warehouse_location' => $this->location,
+                'quantity' => $this->quantity ?: 0,
+                'warehouse_location' => $this->location
             ]);
 
             session()->flash('message', 'Thêm sản phẩm mới thành công.');
@@ -278,7 +285,10 @@ class ProductCatalog extends Component
     {
         $products = Product::query()
             ->with('inventory')
-            ->where('code', 'like', 'SP%')
+            ->where(function($q) {
+                $q->where('type', '!=', 'material')
+                  ->orWhereNull('type');
+            })
             ->where(function($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
                   ->orWhere('code', 'like', '%' . $this->search . '%')

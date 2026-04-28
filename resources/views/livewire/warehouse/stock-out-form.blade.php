@@ -90,31 +90,28 @@
                 </div>
 
                 <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="space-y-1.5">
-                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Khách hàng / Bộ phận nhận</label>
-                            <input type="text" wire:model="customer_name" list="customers_list" class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-3 px-4 text-[13px] font-black text-slate-800 uppercase" placeholder="Chọn hoặc nhập tên...">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Khách hàng / Bộ phận nhận</label>
+                            <input type="text" wire:model="customer_name" list="customers_list" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[12px] font-black text-slate-800 uppercase" placeholder="Chọn hoặc nhập tên...">
                             <datalist id="customers_list">
                                 @foreach($customers as $customer)
                                     <option value="{{ $customer->name }}"></option>
                                 @endforeach
                             </datalist>
                         </div>
-                        <div class="space-y-1.5">
-                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Phòng ban (nếu có)</label>
-                            <input type="text" wire:model="receiver_department" class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-3 px-4 text-[13px] font-bold text-slate-800" placeholder="Phòng Kế hoạch, Xưởng 1...">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Phòng ban (nếu có)</label>
+                            <input type="text" wire:model="receiver_department" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Phòng Kế hoạch, Tổ bảo trì...">
                         </div>
-                        <div class="space-y-1.5">
-                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Loại hình xuất kho</label>
-                            <select wire:model="type" class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-3 px-4 text-[13px] font-black text-slate-800 appearance-none">
-                                <option value="production">🏭 XUẤT CHO SẢN XUẤT</option>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Loại hình xuất kho</label>
+                            <select wire:model="type" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[12px] font-black text-slate-800 appearance-none">
+                                <option value="repair">🛠️ XUẤT CHO TỔ ĐỘI SỬA CHỮA</option>
                                 <option value="delivery">🚚 XUẤT GIAO KHÁCH HÀNG</option>
-                                <option value="disposal">🗑️ XUẤT HỦY / THANH LÝ</option>
-                                <option value="manual">⚙️ XUẤT KHÁC / THỦ CÔNG</option>
+                                <option value="disposal">🗑️ XUẤT HỦY</option>
                             </select>
                         </div>
-                    </div>
                     </div>
 
                     @if($type === 'production')
@@ -499,8 +496,9 @@
                                         <td class="px-6 py-4 font-black text-slate-800 text-[13px] uppercase tracking-tighter">{{ $so->customer_name ?: '-' }}</td>
                                         <td class="px-6 py-4">
                                             @switch($so->type)
-                                                @case('production') <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-[10px] font-black uppercase border border-indigo-100">🏭 SẢN XUẤT</span> @break
+                                                @case('repair') <span class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-black uppercase border border-blue-100">🛠️ SỬA CHỮA</span> @break
                                                 @case('delivery') <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-black uppercase border border-emerald-100">🚚 GIAO HÀNG</span> @break
+                                                @case('disposal') <span class="px-2.5 py-1 bg-red-50 text-red-700 rounded-lg text-[10px] font-black uppercase border border-red-100">🗑️ HỦY</span> @break
                                                 @default <span class="px-2.5 py-1 bg-slate-50 text-slate-600 rounded-lg text-[10px] font-black uppercase border border-slate-100">KHÁC</span>
                                             @endswitch
                                         </td>

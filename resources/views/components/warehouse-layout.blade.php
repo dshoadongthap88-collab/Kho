@@ -10,7 +10,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <nav class="bg-indigo-900 text-white shadow-xl sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="w-full px-8 py-3 flex items-center justify-between">
             <div class="flex items-center gap-8">
                 <a href="{{ route('warehouse.inventory') }}" class="flex items-center gap-2 text-xl font-extrabold tracking-tight">
                     <span class="bg-white text-indigo-900 p-1 rounded-lg">📦</span>
@@ -82,41 +82,23 @@
                 @auth
                     <div class="relative group">
                         <button class="flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-800 hover:bg-indigo-700 transition duration-150 text-sm font-medium text-white">
+                            <span class="bg-indigo-900 px-2 py-0.5 rounded text-xs text-indigo-200 border border-indigo-700">Nhà số {{ session('current_house', 1) }}</span>
                             <span>👤</span>
-                            <span>{{ Auth::user()->name }}</span>
+                            <span>{{ Auth::user()->role === 'admin' ? 'Admin' : 'Nhân viên' }} - {{ Auth::user()->name }}</span>
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
-                        <div class="absolute right-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right -translate-y-2 group-hover:translate-y-0 z-50">
+                        <div class="absolute right-0 mt-0 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right -translate-y-2 group-hover:translate-y-0 z-50">
                             <div class="px-4 py-3 border-b border-gray-100 text-sm text-gray-600">
                                 <div class="font-semibold text-gray-800">{{ Auth::user()->name }}</div>
-                                <div class="text-xs text-gray-500">
-                                    @if(Auth::user()->phone)
-                                        {{ Auth::user()->phone }}
-                                    @endif
-                                    @if(Auth::user()->email)
-                                        <br>{{ Auth::user()->email }}
-                                    @endif
-                                </div>
-                                <div class="text-xs text-indigo-600 font-semibold mt-1">
-                                    @switch(Auth::user()->role)
-                                        @case('admin')
-                                            👨‍💼 Quản trị viên
-                                            @break
-                                        @case('staff')
-                                            👨‍💼 Nhân viên
-                                            @break
-                                        @default
-                                            {{ Auth::user()->role }}
-                                    @endswitch
-                                </div>
                             </div>
-                            <a href="{{ route('password.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">🔐 Đổi mật khẩu</a>
-                            @if(Auth::user()->role === 'admin')
+                            
+                            @if(Auth::user()->role === 'admin' && session('current_house', 1) == 1)
                                 <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">👥 Quản lý nhân viên</a>
                             @endif
-                            <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100">
+
+                            <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100 mt-1">
                                 @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">🚪 Đăng xuất</button>
+                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-slate-100 font-medium">🚪 Đăng xuất</button>
                             </form>
                         </div>
                     </div>
@@ -130,8 +112,8 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 py-6">
-        <h1 class="text-3xl font-black text-slate-900 mb-6 uppercase tracking-tight no-print" style="font-family: 'Times New Roman', Times, serif;">
+    <main class="w-full px-2 py-2">
+        <h1 class="text-2xl font-black text-slate-900 mb-1 uppercase tracking-tight no-print" style="font-family: 'Times New Roman', Times, serif;">
             {{ mb_strtoupper($title ?? '') }}
         </h1>
         {{ $slot }}

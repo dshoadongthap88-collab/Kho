@@ -23,19 +23,26 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->midd
 
 // Protected Routes (require auth)
 Route::middleware('auth')->group(function () {
-    Route::get('/', function () {
-        return redirect()->route('warehouse.inventory');
+    // Tenant Routes
+    Route::get('/select-house', [\App\Http\Controllers\TenantController::class, 'selectHouse'])->name('tenant.select-house');
+    Route::post('/verify-house', [\App\Http\Controllers\TenantController::class, 'verifyHouse'])->name('tenant.verify-house');
+
+    // Tenant Protected Routes
+    Route::middleware('tenant')->group(function () {
+        Route::get('/', function () {
+            return redirect()->route('warehouse.inventory');
+        });
+
+        // Password Routes
+        Route::get('/password/edit', [PasswordController::class, 'edit'])->name('password.edit');
+        Route::put('/password/update', [PasswordController::class, 'update'])->name('password.update');
+        Route::post('/admin/password/reset/{user}', [PasswordController::class, 'resetUserPassword'])->name('password.reset')->middleware('admin');
+
+        // Admin Routes
+        Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+            Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
+        });
+
+        require __DIR__.'/warehouse.php';
     });
-
-    // Password Routes
-    Route::get('/password/edit', [PasswordController::class, 'edit'])->name('password.edit');
-    Route::put('/password/update', [PasswordController::class, 'update'])->name('password.update');
-    Route::post('/admin/password/reset/{user}', [PasswordController::class, 'resetUserPassword'])->name('password.reset')->middleware('admin');
-
-    // Admin Routes
-    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
-    });
-
-    require __DIR__.'/warehouse.php';
 });

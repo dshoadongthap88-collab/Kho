@@ -75,7 +75,7 @@
                             <thead>
                                 <tr class="bg-slate-800">
                                     <th class="px-4 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 min-w-[200px]">Sản phẩm</th>
-                                    <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Số lô</th>
+                                    <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Mã Code NCC</th>
                                     <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-32">Hạn dùng</th>
                                     <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Vị trí</th>
                                     <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-20">SL</th>
@@ -102,7 +102,7 @@
                                     </td>
                                     <td class="px-2 py-3">
                                         <input type="text" wire:model.live="items.{{ $index }}.batch_number" 
-                                               class="w-full rounded-lg border-slate-200 text-[12px] font-black focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 bg-slate-50 focus:bg-white text-indigo-700" placeholder="Số lô...">
+                                               class="w-full rounded-lg border-slate-200 text-[12px] font-black focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 bg-slate-50 focus:bg-white text-indigo-700" placeholder="Mã Code NCC...">
                                     </td>
                                     <td class="px-2 py-3">
                                         <input type="date" wire:model="items.{{ $index }}.expiry_date" 
@@ -384,7 +384,7 @@
                     <tr class="bg-slate-100 uppercase text-[10px] font-black">
                         <th class="border border-slate-900 px-2 py-2 text-center w-10">STT</th>
                         <th class="border border-slate-900 px-2 py-2 text-left">Tên sản phẩm / Quy cách</th>
-                        <th class="border border-slate-900 px-2 py-2 text-center w-16">Số lô</th>
+                        <th class="border border-slate-900 px-2 py-2 text-center w-16">Mã Code NCC</th>
                         <th class="border border-slate-900 px-2 py-2 text-center w-16">ĐVT</th>
                         <th class="border border-slate-900 px-2 py-2 text-right w-20">Số lượng</th>
                         <th class="border border-slate-900 px-2 py-2 text-right w-24">Đơn giá</th>

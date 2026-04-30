@@ -25,9 +25,10 @@ class StockOutForm extends Component
         'email' => '',
         'contact_person' => ''
     ];
-    public $receiver_department = '';
+    public $receiver_name = '';
     public $note = '';
     public $type = 'repair';
+    public $asset_code = '';
 
     // Biến cho quy trình "Xuất cho sản xuất"
     public $production_product_id = '';
@@ -122,10 +123,12 @@ class StockOutForm extends Component
                     'email' => $customer->email ?: '',
                     'contact_person' => $customer->contact_person ?: ''
                 ];
+                $this->receiver_name = $customer->contact_person ?: ($customer->department ?: '');
             } else {
                 $this->customer_details = [
                     'address' => '', 'phone' => '', 'email' => '', 'contact_person' => ''
                 ];
+                $this->receiver_name = '';
             }
         }
 
@@ -416,7 +419,8 @@ class StockOutForm extends Component
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|numeric|min:0.0001',
             'customer_name' => 'nullable|string',
-            'receiver_department' => 'nullable|string',
+            'receiver_name' => 'nullable|string',
+            'asset_code' => 'nullable|string',
         ]);
 
         $service = app(InventoryService::class);
@@ -425,7 +429,9 @@ class StockOutForm extends Component
             try {
                 $stockOut = StockOut::create([
                     'code' => 'SO-' . date('Ymd') . '-' . str_pad(StockOut::count() + 1, 4, '0', STR_PAD_LEFT),
-                    'customer_name' => $this->customer_name . ($this->receiver_department ? " ({$this->receiver_department})" : ""),
+                    'customer_name' => $this->customer_name,
+                    'receiver_name' => $this->receiver_name,
+                    'asset_code' => $this->asset_code,
                     'type' => $this->type,
                     'status' => 'completed',
                     'note' => $this->note,
@@ -503,7 +509,7 @@ class StockOutForm extends Component
             'products' => Product::where('status', 'active')->orderBy('name')->get(),
             'productionProducts' => $productionProducts,
             'locations' => Product::whereNotNull('location')->distinct()->pluck('location'),
-            'customers' => Supplier::whereIn('type', ['customer', 'Both', 'both', 'KH'])->orderBy('name')->get(),
+            'customers' => Supplier::orderBy('name')->get(),
             'stockOuts' => $stockOuts
         ]);
     }

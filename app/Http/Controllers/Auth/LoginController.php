@@ -57,7 +57,7 @@ class LoginController extends Controller
         // Đăng nhập
         Auth::login($user, remember: $request->boolean('remember'));
 
-        return redirect()->route('warehouse.inventory')->with('success', 'Đăng nhập thành công!');
+        return redirect()->route('tenant.select-house');
     }
 
     /**

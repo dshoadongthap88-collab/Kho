@@ -95,7 +95,7 @@ class ProductsImport implements ToModel, WithHeadingRow, WithUpserts, WithValida
         return [
             'ma_sp.required'        => 'Thiếu mã sản phẩm.',
             'ten_san_pham.required' => 'Thiếu tên sản phẩm.',
-            'so_lo.required'        => 'Thiếu số lô.',
+            'so_lo.required'        => 'Thiếu mã Code NCC.',
         ];
     }
 }

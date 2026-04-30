@@ -179,7 +179,24 @@
 
                         <div class="pt-2 border-t border-gray-100"></div>
 
-                        <!-- Phân quyền -->
+                        <!-- Phân quyền Ngôi nhà -->
+                        <h4 class="text-sm font-bold text-gray-700 flex items-center gap-1 mb-3">
+                            <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                            Phân quyền Ngôi Nhà (Cơ sở)
+                        </h4>
+                        
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4">
+                            <div class="grid grid-cols-2 gap-2">
+                                @for($i = 1; $i <= 4; $i++)
+                                <label class="flex items-center p-1.5 hover:bg-white rounded cursor-pointer transition-colors border border-transparent hover:border-gray-200">
+                                    <input type="checkbox" name="allowed_houses[]" value="{{ $i }}" x-model="formData.allowed_houses" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500 focus:ring-2">
+                                    <span class="ml-2 text-sm text-gray-700 font-medium">Nhà Số {{ $i }}</span>
+                                </label>
+                                @endfor
+                            </div>
+                        </div>
+
+                        <!-- Phân quyền Module -->
                         <h4 class="text-sm font-bold text-gray-700 flex items-center gap-1 mb-3">
                             <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                             Phân quyền Module (Tick vào để cấp quyền)
@@ -267,7 +284,8 @@
                     department: '',
                     username: '',
                     password: '',
-                    permissions: []
+                    permissions: [],
+                    allowed_houses: [1]
                 },
                 openCreate() {
                     this.isEdit = false;
@@ -281,7 +299,8 @@
                         department: '',
                         username: '',
                         password: '',
-                        permissions: []
+                        permissions: [],
+                        allowed_houses: [1]
                     };
                     this.isFormOpen = true;
                 },
@@ -297,7 +316,8 @@
                         department: user.department || '',
                         username: user.username || user.email || '',
                         password: '', // Khi edit mặc định để trống
-                        permissions: Array.isArray(user.permissions) ? user.permissions : []
+                        permissions: Array.isArray(user.permissions) ? user.permissions : [],
+                        allowed_houses: Array.isArray(user.allowed_houses) ? user.allowed_houses : (user.allowed_houses ? JSON.parse(user.allowed_houses) : [])
                     };
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     this.isFormOpen = true;

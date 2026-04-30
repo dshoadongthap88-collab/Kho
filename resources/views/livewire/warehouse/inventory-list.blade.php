@@ -113,7 +113,7 @@
                     <th wire:click="sortBy('products.code')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 italic">Mã SP</th>
                     <th wire:click="sortBy('products.name')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">Tên sản phẩm</th>
                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hãng SX</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Số lô</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Mã Code NCC</th>
                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hạn dùng</th>
                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">ĐVT</th>
                     <th wire:click="sortBy('inventories.quantity')" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">Tồn kho</th>
@@ -176,17 +176,66 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4 border-b pb-2">✏️ Chỉnh sửa thông tin kho</h3>
-                        <div class="space-y-4 mt-4">
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">Số lượng tồn kho</label>
-                                <input type="number" step="0.01" wire:model="editingQuantity" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                @error('editingQuantity') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                        <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4 border-b pb-2">✏️ Chỉnh sửa thông tin chi tiết</h3>
+                        <div class="space-y-4 mt-4 max-h-[60vh] overflow-y-auto px-1 custom-scrollbar">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Mã SP <span class="text-rose-500">*</span></label>
+                                    <input type="text" wire:model="editingProductCode" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm">
+                                    @error('editingProductCode') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Hãng SX</label>
+                                    <input type="text" wire:model="editingBrand" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    @error('editingBrand') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                                </div>
                             </div>
+                            
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">Vị trí lưu kho</label>
-                                <input type="text" wire:model="editingLocation" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                @error('editingLocation') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Tên sản phẩm <span class="text-rose-500">*</span></label>
+                                <input type="text" wire:model="editingProductName" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                @error('editingProductName') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Mã Code NCC</label>
+                                    <input type="text" wire:model="editingBatchNumber" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono">
+                                    @error('editingBatchNumber') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Hạn dùng</label>
+                                    <input type="date" wire:model="editingExpiryDate" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    @error('editingExpiryDate') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Đơn vị tính <span class="text-rose-500">*</span></label>
+                                    <input type="text" wire:model="editingUnit" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    @error('editingUnit') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Tồn tối thiểu <span class="text-rose-500">*</span></label>
+                                    <input type="number" step="0.01" wire:model="editingMinStock" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                    @error('editingMinStock') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-t border-gray-100"></div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-indigo-700 mb-1">Số lượng tồn kho <span class="text-rose-500">*</span></label>
+                                    <input type="number" step="0.01" wire:model="editingQuantity" class="w-full border-indigo-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold text-indigo-700 bg-indigo-50">
+                                    @error('editingQuantity') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-indigo-700 mb-1">Vị trí lưu kho</label>
+                                    <input type="text" wire:model="editingLocation" class="w-full border-indigo-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-indigo-50">
+                                    @error('editingLocation') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -219,7 +268,7 @@
                                     <li>ma_sp <span class="text-gray-500 font-sans italic">(Mã SP - Bắt buộc)</span></li>
                                     <li>ten_sp <span class="text-gray-500 font-sans italic">(Tên sản phẩm)</span></li>
                                     <li>hang_sx <span class="text-gray-500 font-sans italic">(Hãng SX)</span></li>
-                                    <li>so_lo <span class="text-gray-500 font-sans italic">(Số lô)</span></li>
+                                    <li>so_lo <span class="text-gray-500 font-sans italic">(Mã Code NCC)</span></li>
                                     <li>han_dung <span class="text-gray-500 font-sans italic">(Hạn dùng)</span></li>
                                 </ul>
                                 <ul class="list-disc list-inside text-xs text-blue-700 font-mono ml-1">

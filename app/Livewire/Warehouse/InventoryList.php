@@ -26,6 +26,14 @@ class InventoryList extends Component
     public $excelFile;
     
     public $editingInventoryId = null;
+    public $editingProductId = null;
+    public $editingProductName = '';
+    public $editingProductCode = '';
+    public $editingBrand = '';
+    public $editingBatchNumber = '';
+    public $editingExpiryDate = '';
+    public $editingUnit = '';
+    public $editingMinStock = 0;
     public $editingQuantity = 0;
     public $editingLocation = '';
 
@@ -80,6 +88,9 @@ class InventoryList extends Component
         }
 
         $productId = $this->selectedItems[0];
+        $product = Product::find($productId);
+        if (!$product) return;
+
         $inventory = Inventory::where('product_id', $productId)->first();
         
         if (!$inventory) {
@@ -91,6 +102,15 @@ class InventoryList extends Component
             ]);
         }
 
+        $this->editingProductId = $product->id;
+        $this->editingProductName = $product->name;
+        $this->editingProductCode = $product->code;
+        $this->editingBrand = $product->brand;
+        $this->editingBatchNumber = $product->batch_number;
+        $this->editingExpiryDate = $product->expiry_date;
+        $this->editingUnit = $product->unit;
+        $this->editingMinStock = $product->min_stock;
+
         $this->editingInventoryId = $inventory->id;
         $this->editingQuantity = $inventory->quantity;
         $this->editingLocation = $inventory->warehouse_location;
@@ -100,9 +120,31 @@ class InventoryList extends Component
     public function saveEdit()
     {
         $this->validate([
+            'editingProductName' => 'required|string|max:255',
+            'editingProductCode' => 'required|string|max:100',
+            'editingBrand' => 'nullable|string|max:255',
+            'editingBatchNumber' => 'nullable|string|max:100',
+            'editingExpiryDate' => 'nullable|date',
+            'editingUnit' => 'required|string|max:50',
+            'editingMinStock' => 'required|numeric|min:0',
             'editingQuantity' => 'required|numeric|min:0',
             'editingLocation' => 'nullable|string|max:255',
         ]);
+
+        if ($this->editingProductId) {
+            $product = Product::find($this->editingProductId);
+            if ($product) {
+                $product->update([
+                    'name' => $this->editingProductName,
+                    'code' => $this->editingProductCode,
+                    'brand' => $this->editingBrand,
+                    'batch_number' => $this->editingBatchNumber,
+                    'expiry_date' => $this->editingExpiryDate ?: null,
+                    'unit' => $this->editingUnit,
+                    'min_stock' => $this->editingMinStock,
+                ]);
+            }
+        }
 
         if ($this->editingInventoryId) {
             $inventory = Inventory::find($this->editingInventoryId);
@@ -111,11 +153,12 @@ class InventoryList extends Component
                     'quantity' => $this->editingQuantity,
                     'warehouse_location' => $this->editingLocation,
                 ]);
-                session()->flash('success', 'Đã cập nhật tồn kho thành công.');
-                $this->showEditModal = false;
-                $this->selectedItems = [];
             }
         }
+
+        session()->flash('success', 'Đã cập nhật thông tin sản phẩm và tồn kho thành công.');
+        $this->showEditModal = false;
+        $this->selectedItems = [];
     }
 
     public function importExcel()

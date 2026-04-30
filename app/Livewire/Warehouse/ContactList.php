@@ -20,6 +20,7 @@ class ContactList extends Component
     // Form fields
     public $name;
     public $address;
+    public $department;
     public $phone;
     public $contact_person;
     public $email;
@@ -33,10 +34,11 @@ class ContactList extends Component
         return [
             'name' => 'required|string|max:255',
             'address' => 'nullable|string|max:255',
+            'department' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'contact_person' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
-            'type' => 'required|in:customer,supplier,both',
+            'type' => 'required|in:customer,supplier,both,internal',
             'status' => 'required|in:active,inactive',
         ];
     }
@@ -49,7 +51,7 @@ class ContactList extends Component
     public function openModal($id = null)
     {
         $this->resetValidation();
-        $this->reset(['name', 'address', 'phone', 'contact_person', 'email', 'type', 'status', 'contactId']);
+        $this->reset(['name', 'address', 'department', 'phone', 'contact_person', 'email', 'type', 'status', 'contactId']);
         
         if ($id) {
             $this->isEdit = true;
@@ -57,6 +59,7 @@ class ContactList extends Component
             $contact = Supplier::findOrFail($id);
             $this->name = $contact->name;
             $this->address = $contact->address;
+            $this->department = $contact->department;
             $this->phone = $contact->phone;
             $this->contact_person = $contact->contact_person;
             $this->email = $contact->email;
@@ -80,6 +83,7 @@ class ContactList extends Component
             $contact->update([
                 'name' => $this->name,
                 'address' => $this->address,
+                'department' => $this->department,
                 'phone' => $this->phone,
                 'contact_person' => $this->contact_person,
                 'email' => $this->email,
@@ -91,6 +95,7 @@ class ContactList extends Component
             Supplier::create([
                 'name' => $this->name,
                 'address' => $this->address,
+                'department' => $this->department,
                 'phone' => $this->phone,
                 'contact_person' => $this->contact_person,
                 'email' => $this->email,

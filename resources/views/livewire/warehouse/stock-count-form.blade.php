@@ -151,7 +151,7 @@
                         <th class="border-2 border-black w-6">STT</th>
                         <th class="border-2 border-black">Tên sản phẩm</th>
                         <th class="border-2 border-black w-20">Mã SP</th>
-                        <th class="border-2 border-black w-16">Số lô</th>
+                        <th class="border-2 border-black w-16">Mã Code NCC</th>
                         <th class="border-2 border-black w-16">Hạn dùng</th>
                         <th class="border-2 border-black w-14">SL Hệ thống</th>
                         <th class="border-2 border-black w-14">SL Thực tế</th>

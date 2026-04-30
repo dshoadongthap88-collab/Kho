@@ -9,6 +9,7 @@
                 <option value="customer">Khách hàng</option>
                 <option value="supplier">Nhà cung cấp</option>
                 <option value="both">Cả hai</option>
+                <option value="internal">Nội bộ</option>
             </select>
         </div>
         <button wire:click="openModal" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
@@ -32,7 +33,7 @@
                     <th class="px-4 py-3">Số điện thoại</th>
                     <th class="px-4 py-3">Người liên hệ</th>
                     <th class="px-4 py-3">Email</th>
-                    <th class="px-4 py-3 text-right">Công nợ (đ)</th>
+                    <th class="px-4 py-3 text-left">Bộ phận</th>
                     <th class="px-4 py-3">Tình trạng</th>
                     <th class="px-4 py-3 text-right">Thao tác</th>
                 </tr>
@@ -45,6 +46,8 @@
                                 <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Khách hàng</span>
                             @elseif($contact->type === 'supplier')
                                 <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Nhà cung cấp</span>
+                            @elseif($contact->type === 'internal')
+                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Nội bộ</span>
                             @else
                                 <span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Cả hai</span>
                             @endif
@@ -54,8 +57,8 @@
                         <td class="px-4 py-3 text-gray-600 font-mono">{{ $contact->phone }}</td>
                         <td class="px-4 py-3 text-gray-800 font-medium">{{ $contact->contact_person }}</td>
                         <td class="px-4 py-3 text-blue-600 text-sm italic underline">{{ $contact->email }}</td>
-                        <td class="px-4 py-3 text-right font-bold {{ $contact->total_debt > 0 ? 'text-red-500' : 'text-slate-400' }}">
-                            {{ $contact->total_debt > 0 ? number_format($contact->total_debt) : '0' }}
+                        <td class="px-4 py-3 text-left text-gray-600 font-medium">
+                            {{ $contact->department ?? '-' }}
                         </td>
                         <td class="px-4 py-3">
                             @if($contact->status === 'active')
@@ -108,10 +111,17 @@
                                     @error('phone') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Email</label>
-                                <input type="email" wire:model="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" wire:model="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                    @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Bộ phận</label>
+                                    <input type="text" wire:model="department" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="Dùng cho đối tác Nội bộ">
+                                    @error('department') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Địa chỉ</label>
@@ -125,6 +135,7 @@
                                         <option value="customer">Khách hàng</option>
                                         <option value="supplier">Nhà cung cấp</option>
                                         <option value="both">Cả hai</option>
+                                        <option value="internal">Nội bộ</option>
                                     </select>
                                     @error('type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>

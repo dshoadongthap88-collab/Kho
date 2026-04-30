@@ -15,5 +15,6 @@ class Supplier extends Model
         'email',
         'type',
         'status',
+        'department',
     ];
 }

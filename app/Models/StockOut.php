@@ -10,6 +10,8 @@ class StockOut extends Model
     protected $fillable = [
         'code',
         'customer_name',
+        'receiver_name',
+        'asset_code',
         'type',
         'status',
         'note',

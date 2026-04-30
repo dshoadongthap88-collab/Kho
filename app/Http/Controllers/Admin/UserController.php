@@ -31,13 +31,22 @@ class UserController extends Controller
             'password' => 'nullable|string|min:6',
             'department' => 'nullable|string',
             'role' => 'required|string|in:admin,staff,viewer',
-            'permissions' => 'nullable|array'
+            'permissions' => 'nullable|array',
+            'allowed_houses' => 'nullable|array'
         ]);
 
         $data = $request->except('password');
         
         $password = $request->filled('password') ? $request->password : '123456';
         $data['password'] = Hash::make($password);
+
+        if (!$request->has('permissions')) {
+            $data['permissions'] = [];
+        }
+
+        if (!$request->has('allowed_houses')) {
+            $data['allowed_houses'] = [];
+        }
 
         User::create($data);
 
@@ -56,7 +65,8 @@ class UserController extends Controller
             'department' => 'nullable|string',
             'role' => 'required|string|in:admin,staff,viewer',
             'password' => 'nullable|string|min:6',
-            'permissions' => 'nullable|array'
+            'permissions' => 'nullable|array',
+            'allowed_houses' => 'nullable|array'
         ]);
 
         $data = $request->except('password');
@@ -68,6 +78,10 @@ class UserController extends Controller
         // Đảm bảo không bị null (khi không checkbox nào được chọn, request sẽ không có 'permissions')
         if (!$request->has('permissions')) {
             $data['permissions'] = [];
+        }
+
+        if (!$request->has('allowed_houses')) {
+            $data['allowed_houses'] = [];
         }
 
         $user->update($data);

@@ -105,7 +105,7 @@
                                     <th class="px-3 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-12 no-print">In</th>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Sản phẩm</th>
                                     <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">ĐVT</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Số lô (Batch)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Mã Code NCC</th>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Hạn dùng</th>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Vị trí kho</th>
                                     <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-28">Số lượng</th>
@@ -140,7 +140,7 @@
                                     </td>
                                     <td class="px-4 py-4">
                                         <input type="text" wire:model.live="items.{{ $index }}.batch_number" 
-                                               class="w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Số lô...">
+                                               class="w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Mã Code NCC...">
                                     </td>
                                     <td class="px-4 py-4">
                                         <input type="date" wire:model="items.{{ $index }}.expiry_date" 
@@ -233,7 +233,7 @@
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
-                                    <th class="px-4 py-3 text-left">Số lô (Batch)</th>
+                                    <th class="px-4 py-3 text-left">Mã Code NCC</th>
                                     <th class="px-4 py-3 text-left">Hạn sử dụng</th>
                                     <th class="px-4 py-3 text-left">Vị trí kho</th>
                                     <th class="px-4 py-3 text-right">Tồn khả dụng</th>

@@ -10,6 +10,9 @@ use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ProductsImport;
 use Illuminate\Validation\Rule;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\Storage;
 
 class ProductCatalog extends Component
 {
@@ -62,7 +65,7 @@ class ProductCatalog extends Component
             'quantity' => 'required|numeric|min:0',
             'min_stock' => 'required|numeric|min:0',
             'type' => 'required|in:product,product_produced,product_purchased',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif,bmp|max:5120', // Tăng lên 5MB và hỗ trợ nhiều định dạng hơn
         ];
     }
 
@@ -141,74 +144,95 @@ class ProductCatalog extends Component
     {
         $this->validate();
 
-        $imagePath = null;
-        if ($this->image) {
-            $imagePath = $this->image->store('products', 'public');
-        }
-
-        if ($this->isEdit) {
-            $product = Product::find($this->productId);
-            $product->update([
-                'code' => $this->code,
-                'name' => $this->name,
-                'brand' => $this->brand,
-                'box_spec' => $this->box_spec,
-                'carton_spec' => $this->carton_spec,
-                'status' => $this->status,
-                'location' => $this->location,
-                'batch_number' => $this->batch_number,
-                'expiry_date' => $this->expiry_date ?: null,
-                'min_stock' => $this->min_stock,
-                'type' => $this->type,
-            ]);
-            
-            if ($imagePath) {
-                $product->update(['image' => $imagePath]);
+        try {
+            $imagePath = null;
+            if ($this->image && !is_string($this->image)) {
+                // Nén ảnh bằng Intervention Image v3
+                $manager = new ImageManager(new Driver());
+                $name = time() . '_' . $this->image->getClientOriginalName();
+                $tempPath = $this->image->getRealPath();
+                
+                // Đọc và nén
+                $img = $manager->read($tempPath);
+                $img->scale(width: 1000); // Giới hạn chiều rộng 1000px
+                
+                // Lưu vào public storage
+                $savePath = 'products/' . $name;
+                Storage::disk('public')->put($savePath, (string) $img->toWebp(75)); // Nén về định dạng WebP chất lượng 75%
+                $imagePath = $savePath;
             }
-            
-            // Đồng bộ với bảng Inventory
-            $inventory = Inventory::where('product_id', $product->id)->first();
-            if ($inventory) {
-                $inventory->update([
-                    'quantity' => $this->quantity,
-                    'warehouse_location' => $this->location
+
+            // Đảm bảo quantity là số
+            $qty = (float)($this->quantity ?: 0);
+
+            if ($this->isEdit) {
+                $product = Product::findOrFail($this->productId);
+                $product->update([
+                    'code' => $this->code,
+                    'name' => $this->name,
+                    'brand' => $this->brand,
+                    'box_spec' => $this->box_spec,
+                    'carton_spec' => $this->carton_spec,
+                    'status' => $this->status,
+                    'location' => $this->location,
+                    'batch_number' => $this->batch_number,
+                    'expiry_date' => $this->expiry_date ?: null,
+                    'min_stock' => (float)($this->min_stock ?: 0),
+                    'type' => $this->type,
                 ]);
+                
+                if ($imagePath) {
+                    $product->update(['image' => $imagePath]);
+                }
+                
+                // Đồng bộ với bảng Inventory
+                $inventory = Inventory::where('product_id', $product->id)->first();
+                if ($inventory) {
+                    $inventory->update([
+                        'quantity' => $qty,
+                        'warehouse_location' => $this->location
+                    ]);
+                } else {
+                    Inventory::create([
+                        'product_id' => $product->id,
+                        'quantity' => $qty,
+                        'warehouse_location' => $this->location
+                    ]);
+                }
+
+                session()->flash('message', 'Cập nhật sản phẩm thành công.');
             } else {
+                $product = Product::create([
+                    'code' => $this->code,
+                    'name' => $this->name,
+                    'brand' => $this->brand,
+                    'box_spec' => $this->box_spec,
+                    'carton_spec' => $this->carton_spec,
+                    'status' => $this->status,
+                    'location' => $this->location,
+                    'batch_number' => $this->batch_number,
+                    'expiry_date' => $this->expiry_date ?: null,
+                    'min_stock' => (float)($this->min_stock ?: 0),
+                    'type' => $this->type,
+                    'image' => $imagePath,
+                ]);
+
+                // Tạo luôn record bên Inventory
                 Inventory::create([
                     'product_id' => $product->id,
-                    'quantity' => $this->quantity ?: 0,
+                    'quantity' => $qty,
                     'warehouse_location' => $this->location
                 ]);
+
+                session()->flash('message', 'Thêm sản phẩm mới thành công.');
             }
 
-            session()->flash('message', 'Cập nhật sản phẩm thành công.');
-        } else {
-            $product = Product::create([
-                'code' => $this->code,
-                'name' => $this->name,
-                'brand' => $this->brand,
-                'box_spec' => $this->box_spec,
-                'carton_spec' => $this->carton_spec,
-                'status' => $this->status,
-                'location' => $this->location,
-                'batch_number' => $this->batch_number,
-                'expiry_date' => $this->expiry_date ?: null,
-                'min_stock' => $this->min_stock,
-                'type' => $this->type,
-                'image' => $imagePath,
-            ]);
+            $this->reset(['image']); // Xoá ảnh tạm sau khi lưu
+            $this->showModal = false;
 
-            // Tạo luôn record bên Inventory
-            Inventory::create([
-                'product_id' => $product->id,
-                'quantity' => $this->quantity ?: 0,
-                'warehouse_location' => $this->location
-            ]);
-
-            session()->flash('message', 'Thêm sản phẩm mới thành công.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
-
-        $this->showModal = false;
     }
 
     public function delete($id)

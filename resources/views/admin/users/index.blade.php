@@ -40,7 +40,7 @@
     @endif
 
     <!-- Main Content -->
-    <div class="flex-1 flex overflow-hidden relative z-10 px-4 py-6 gap-6">
+    <div class="flex-1 flex overflow-hidden relative z-10 px-4 py-4 gap-6">
         
         <!-- Left: Data List (Table) -->
         <div class="w-2/3 bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col overflow-hidden">
@@ -103,12 +103,12 @@
         </div>
 
         <!-- Right: Form (Sửa / Thêm) -->
-        <div class="w-1/3 bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col h-full overflow-hidden transition-all duration-300" 
+        <div class="w-1/3 bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden transition-all duration-300 relative mb-4" 
              x-show="isFormOpen" 
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 translate-x-8"
              x-transition:enter-end="opacity-100 translate-x-0"
-             style="display: none;">
+             style="display: none; max-height: calc(100% - 10px);">
             
             <div class="p-4 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center shrink-0">
                 <h3 class="text-lg font-bold text-indigo-900" x-text="isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên mới'"></h3>
@@ -222,7 +222,8 @@
                                     '4. Tổng hợp' => [
                                         'purchase-request' => 'Phiếu đề xuất mua hàng',
                                         'delivery-note' => 'Biên bản giao nhận',
-                                        'reports_sum' => 'Báo cáo tổng hợp'
+                                        'reports_transaction' => 'Báo cáo chi tiết giao dịch',
+                                        'reports_stock' => 'Báo cáo kho'
                                     ],
                                     '5. Giao hàng' => [
                                         'customer-debt' => 'Công nợ khách hàng',
@@ -251,12 +252,45 @@
                 </form>
             </div>
             
-            <div class="p-4 border-t border-gray-100 bg-gray-50 shrink-0 flex justify-end gap-3">
-                <button type="button" @click="closeForm()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-200">Hủy</button>
-                <button type="button" @click="document.getElementById('userForm').submit()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow transition-colors text-sm font-bold flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                    <span x-text="isEdit ? 'Lưu thay đổi' : 'Tạo mới'"></span>
+            <div class="p-6 border-t border-gray-100 bg-gray-50 shrink-0 flex justify-end gap-3 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] z-10 pb-8">
+                <button type="button" @click="closeForm()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-200" :disabled="isSubmitting">Hủy</button>
+                <button type="button" @click="submitForm()" 
+                        class="px-6 py-2 rounded-lg shadow-lg transition-all duration-300 text-sm font-bold flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-1 min-w-[140px] justify-center"
+                        :class="isSubmitting ? 'bg-green-500 text-white cursor-default' : 'bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500'"
+                        :disabled="isSubmitting">
+                    
+                    <template x-if="!isSubmitting">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                            <span x-text="isEdit ? 'Lưu thay đổi' : 'Tạo mới'"></span>
+                        </div>
+                    </template>
+                    
+                    <template x-if="isSubmitting">
+                        <div class="flex items-center gap-2 animate-bounce">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span>ĐÃ XÁC NHẬN</span>
+                        </div>
+                    </template>
                 </button>
+            </div>
+            
+            <!-- Success Overlay Effect -->
+            <div x-show="isSubmitting" 
+                 x-transition:enter="transition opacity ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 class="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-50"
+                 style="display: none;">
+                <div class="bg-white p-6 rounded-2xl shadow-2xl border border-green-100 flex flex-col items-center gap-4 transform scale-110">
+                    <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center shadow-inner">
+                        <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <div class="text-center">
+                        <h4 class="text-lg font-bold text-gray-800">Thành công!</h4>
+                        <p class="text-sm text-gray-500">Đang lưu dữ liệu...</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -274,6 +308,7 @@
             return {
                 isFormOpen: false,
                 isEdit: false,
+                isSubmitting: false,
                 showPassword: false,
                 formAction: '',
                 formData: {
@@ -324,6 +359,13 @@
                 },
                 closeForm() {
                     this.isFormOpen = false;
+                    this.isSubmitting = false;
+                },
+                submitForm() {
+                    this.isSubmitting = true;
+                    setTimeout(() => {
+                        document.getElementById('userForm').submit();
+                    }, 2000);
                 }
             }
         }

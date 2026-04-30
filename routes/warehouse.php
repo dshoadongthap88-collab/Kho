@@ -45,9 +45,13 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
 
     Route::get('/delivery-note', \App\Livewire\Warehouse\MaterialRequirement::class)->name('delivery-note')->middleware('permission:delivery-note');
 
-    Route::get('/reports', function () {
-        return view('warehouse.reports');
-    })->name('reports')->middleware('permission:reports_sum');
+    Route::get('/reports/transaction-detail', function () {
+        return view('warehouse.transaction-detail-report');
+    })->name('reports.transaction-detail')->middleware('permission:reports_transaction');
+
+    Route::get('/reports/stock', function () {
+        return view('warehouse.stock-report');
+    })->name('reports.stock')->middleware('permission:reports_stock');
 
     Route::get('/customer-debt', function () {
         return view('warehouse.customer-debt');

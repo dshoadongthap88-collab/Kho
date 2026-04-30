@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -43,6 +44,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Relation::morphMap([
+            'stock_out' => \App\Models\StockOut::class,
+            'stock_in' => \App\Models\StockIn::class,
+            'reversal' => \App\Models\StockOut::class,
+        ]);
     }
 }

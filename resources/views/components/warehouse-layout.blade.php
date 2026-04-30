@@ -59,7 +59,8 @@
                         <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
                             <a href="{{ route('warehouse.purchase-request') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Phiếu đề xuất mua hàng</a>
                             <a href="{{ route('warehouse.delivery-note') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Nhu cầu NVL</a>
-                            <a href="{{ route('warehouse.reports') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Báo cáo tổng hợp</a>
+                            <a href="{{ route('warehouse.reports.transaction-detail') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50 {{ request()->routeIs('warehouse.reports.transaction-detail') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo chi tiết giao dịch</a>
+                            <a href="{{ route('warehouse.reports.stock') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo kho</a>
                         </div>
                     </div>
 

@@ -161,6 +161,26 @@ class InventoryList extends Component
         $this->selectedItems = [];
     }
 
+    public function syncInventory()
+    {
+        $products = Product::all();
+        $updatedCount = 0;
+
+        foreach ($products as $product) {
+            $totalQty = \App\Models\InventoryTransaction::where('product_id', $product->id)->sum('quantity');
+            
+            $inventory = Inventory::firstOrCreate(['product_id' => $product->id]);
+            
+            if ($inventory->quantity != $totalQty) {
+                $inventory->quantity = $totalQty;
+                $inventory->save();
+                $updatedCount++;
+            }
+        }
+
+        session()->flash('success', "Đã đồng bộ xong tồn kho cho {$updatedCount} sản phẩm dựa trên lịch sử giao dịch.");
+    }
+
     public function importExcel()
     {
         $this->validate([

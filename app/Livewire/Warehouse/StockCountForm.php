@@ -4,6 +4,7 @@ namespace App\Livewire\Warehouse;
 
 use App\Models\Inventory;
 use App\Models\Product;
+use App\Models\StockCountItem;
 use App\Services\InventoryService;
 use Livewire\Component;
 
@@ -114,17 +115,33 @@ class StockCountForm extends Component
             'created_by' => auth()->id(),
         ]);
 
+        $adjustedCount = 0;
+
         foreach ($this->countItems as $item) {
+            // Luôn lưu chi tiết kiểm kê (dù chênh lệch = 0)
+            StockCountItem::create([
+                'stock_count_id' => $stockCount->id,
+                'product_id' => $item['product_id'],
+                'system_quantity' => $item['system_quantity'],
+                'physical_quantity' => $item['actual_quantity'],
+                'difference' => $item['difference'],
+                'note' => $item['difference'] != 0 ? "Chênh lệch {$item['difference']}" : null,
+            ]);
+
+            // Chỉ điều chỉnh tồn kho nếu có chênh lệch
             if ($item['difference'] != 0) {
                 $service->adjustQuantity(
                     $item['product_id'],
                     $item['actual_quantity'],
                     "Kiểm kê #{$stockCount->code}: Chênh lệch {$item['difference']}"
                 );
+                $adjustedCount++;
             }
         }
 
-        session()->flash('success', 'Kiểm kê hoàn tất!');
+        $totalItems = count($this->countItems);
+        session()->flash('success', "Kiểm kê hoàn tất! Đã kiểm {$totalItems} sản phẩm, điều chỉnh {$adjustedCount} mục chênh lệch.");
+        $this->dispatch('show-success-effect');
         return redirect()->route('warehouse.inventory');
     }
 

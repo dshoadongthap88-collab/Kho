@@ -47,6 +47,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::morphMap([
             'stock_out' => \App\Models\StockOut::class,
             'stock_in' => \App\Models\StockIn::class,
+            'stock_count' => \App\Models\StockCount::class,
             'reversal' => \App\Models\StockOut::class,
         ]);
     }

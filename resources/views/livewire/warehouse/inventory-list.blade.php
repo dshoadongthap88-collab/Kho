@@ -85,6 +85,11 @@
                     In danh sách ({{ count($selectedItems) }})
                 </button>
             @else
+                <button wire:click="syncInventory" wire:loading.attr="disabled" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 shadow-sm font-bold mr-2">
+                    <span wire:loading.remove wire:target="syncInventory">🔄</span>
+                    <span wire:loading wire:target="syncInventory" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Đồng bộ tồn kho
+                </button>
                 <button wire:click="$set('showImportModal', true)" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm font-bold mr-2">
                     📥 Nhập từ Excel
                 </button>

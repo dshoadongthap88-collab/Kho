@@ -19,6 +19,11 @@ class StockCount extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function items()
+    {
+        return $this->hasMany(StockCountItem::class);
+    }
+
     public function transactions()
     {
         return $this->morphMany(InventoryTransaction::class, 'reference');

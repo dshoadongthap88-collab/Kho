@@ -6,20 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('stock_count_items', function (Illuminate\Database\Schema\Blueprint $table) {
-            $table->id();
-            $table->foreignId('stock_count_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->constrained();
-            $table->float('system_quantity');
-            $table->float('physical_quantity');
-            $table->float('difference');
-            $table->string('note')->nullable();
-            $table->timestamps();
+        Schema::table('stock_count_items', function (Blueprint $table) {
+            $table->foreignId('stock_count_id')->after('id')->constrained('stock_counts')->onDelete('cascade');
+            $table->foreignId('product_id')->after('stock_count_id')->constrained('products')->onDelete('cascade');
+            $table->decimal('system_quantity', 15, 2)->default(0)->after('product_id')->comment('Tồn kho theo hệ thống');
+            $table->decimal('actual_quantity', 15, 2)->nullable()->after('system_quantity')->comment('Số lượng kiểm đếm thực tế');
+            $table->decimal('difference', 15, 2)->default(0)->after('actual_quantity')->comment('Chênh lệch = thực tế - hệ thống');
+            $table->text('note')->nullable()->after('difference');
         });
     }
 

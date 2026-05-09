@@ -10,6 +10,7 @@ class StockCountItem extends Model
         'stock_count_id',
         'product_id',
         'system_quantity',
+        'actual_quantity',
         'physical_quantity',
         'difference',
         'note',

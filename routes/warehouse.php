@@ -60,4 +60,5 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
     Route::get('/delivery-report', function () {
         return view('warehouse.delivery-report');
     })->name('delivery-report')->middleware('permission:delivery-report');
+
 });

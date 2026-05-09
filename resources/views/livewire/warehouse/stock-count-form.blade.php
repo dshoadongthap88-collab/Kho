@@ -1,217 +1,233 @@
 <div>
-    <style>
-        @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body { background: white !important; margin: 0; padding: 0; color: black !important; }
-            .bg-white { box-shadow: none !important; border: none !important; }
-            table { width: 100% !important; border-collapse: collapse !important; margin-top: 10px; }
-            th, td { border: 1px solid black !important; padding: 6px 4px !important; color: black !important; }
-            
-            /* Khu vực 1/3 trên */
-            .print-header {
-                height: 30vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                border-bottom: 2px solid black;
-                margin-bottom: 20px;
-            }
+    {{-- Flash Messages --}}
+    @if(session('success'))
+    <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl flex items-center gap-3 shadow-sm">
+        <span class="text-xl">✅</span> <span class="font-semibold text-sm">{!! session('success') !!}</span>
+    </div>
+    @endif
+    @if(session('error'))
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl flex items-center gap-3 shadow-sm">
+        <span class="text-xl">❌</span> <span class="font-semibold text-sm">{{ session('error') }}</span>
+    </div>
+    @endif
+    @if(session('info'))
+    <div class="mb-4 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl flex items-center gap-3 shadow-sm">
+        <span class="text-xl">ℹ️</span> <span class="font-semibold text-sm">{{ session('info') }}</span>
+    </div>
+    @endif
 
-            /* Print-specific layout switching */
-            body.printing-check-sheet .screen-layout { display: none !important; }
-            body:not(.printing-check-sheet) .check-sheet-layout { display: none !important; }
-        }
-        .print-only { display: none; }
-        .check-sheet-layout { display: none; }
-    </style>
+    <div class="flex gap-2 mb-6 no-print">
+        <button wire:click="$set('activeTab', 'stocktake')"
+            class="px-5 py-2 rounded-lg text-sm font-bold transition {{ $activeTab === 'stocktake' ? 'bg-indigo-700 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50' }}">
+            📋 Phiếu kiểm kê
+        </button>
+        <button wire:click="$set('activeTab', 'daily')"
+            class="px-5 py-2 rounded-lg text-sm font-bold transition {{ $activeTab === 'daily' ? 'bg-orange-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50' }}">
+            ☀️ Kiểm kê hàng ngày
+        </button>
+    </div>
 
-    <div class="screen-layout">
-    <div class="bg-white rounded-xl shadow p-6">
-        <div class="flex justify-between items-center mb-6 no-print">
-            <h2 class="text-xl font-bold">📋 Kiểm kê kho</h2>
-            <div class="flex gap-2">
-                @if(count($selectedItems) > 0)
-                    <button onclick="printInventoryCheck()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2 text-sm shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                        In phiếu kiểm kê ({{ count($selectedItems) }})
-                    </button>
-                @else
-                    <button disabled title="Vui lòng chọn sản phẩm để in" class="bg-gray-100 text-gray-400 cursor-not-allowed px-4 py-2 rounded-lg flex items-center gap-2 text-sm border border-gray-200">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                        In phiếu kiểm kê
-                    </button>
-                @endif
-            </div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="flex border-b border-gray-200 mb-6 no-print">
-            <button wire:click="setType('daily')" class="{{ $type === 'daily' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} w-1/2 py-4 px-1 text-center border-b-2 font-bold text-sm transition-colors uppercase tracking-wider">
-                Kiểm kê hàng ngày (10 SP/vị trí)
-            </button>
-            <button wire:click="setType('monthly')" class="{{ $type === 'monthly' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} w-1/2 py-4 px-1 text-center border-b-2 font-bold text-sm transition-colors uppercase tracking-wider">
-                Kiểm kê hàng tháng (Toàn bộ)
-            </button>
-        </div>
-
-        <div class="flex flex-wrap justify-between items-end mb-4 gap-4 no-print">
-            <div class="flex-1">
-                @if($type === 'monthly')
-                <div class="relative w-full max-w-md">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </span>
-                    <input type="text" wire:model.live="search" class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" placeholder="Tìm tên hoặc mã SP...">
+    {{-- ======================== TAB: KIỂM KÊ ======================== --}}
+    @if($activeTab === 'stocktake')
+    <div>
+        {{-- Nếu đang có phiếu kiểm kê đang mở --}}
+        @if($currentCount)
+        <div class="bg-white rounded-xl shadow border mb-6">
+            <div class="px-5 py-4 border-b flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-black text-indigo-800 uppercase">📋 Phiếu kiểm kê: {{ $currentCount->code }}</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Nhập số lượng kiểm đếm thực tế vào cột "Thực tế". Hệ thống sẽ tính chênh lệch tự động.</p>
                 </div>
-                @else
-                <p class="text-gray-500 text-sm">Hệ thống lấy ngẫu nhiên 10 sản phẩm ưu tiên cùng một vị trí kho để thuận tiện kiểm đếm.</p>
-                <button wire:click="loadItems" class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-semibold flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    Tải danh sách khác
+                <div class="flex gap-2 no-print">
+                    <button onclick="window.print()"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-black transition cursor-pointer flex items-center gap-1">
+                        🖨️ In phiếu
+                    </button>
+                    <button wire:click="confirmStockCount({{ $currentCount->id }})"
+                        wire:confirm="Xác nhận hoàn tất kiểm kê? Hệ thống sẽ tự động điều chỉnh tồn kho theo số liệu thực tế."
+                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-black transition cursor-pointer">
+                        ✅ Xác nhận
+                    </button>
+                    <button wire:click="cancelStockCount({{ $currentCount->id }})"
+                        wire:confirm="Hủy phiếu kiểm kê này?"
+                        class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-xs font-bold transition cursor-pointer">
+                        ✖ Hủy phiếu
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-100">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Mã SP</th>
+                            <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Tên sản phẩm</th>
+                            <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Tồn hệ thống</th>
+                            <th class="px-4 py-3 text-center text-[10px] font-bold text-yellow-600 uppercase">Thực tế (Nhập)</th>
+                            <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Chênh lệch</th>
+                            <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase no-print">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        @foreach($currentCount->items as $item)
+                        <tr class="hover:bg-gray-50 {{ $item->difference != 0 && $item->actual_quantity !== null ? ($item->difference < 0 ? 'bg-red-50' : 'bg-green-50') : '' }}">
+                            <td class="px-4 py-2 text-xs font-bold text-indigo-700">{{ $item->product->code ?? '-' }}</td>
+                            <td class="px-4 py-2 text-sm font-medium text-gray-800">{{ $item->product->name ?? '-' }}</td>
+                            <td class="px-4 py-2 text-center text-sm font-black text-gray-700">{{ number_format($item->system_quantity) }}</td>
+                            <td class="px-4 py-2 text-center no-print">
+                                <input type="number" 
+                                    value="{{ $item->actual_quantity }}"
+                                    wire:change="updateActualQty({{ $item->id }}, $event.target.value)"
+                                    class="w-24 text-center border border-yellow-300 rounded-lg px-2 py-1 text-sm font-bold focus:ring-yellow-500 focus:border-yellow-500 bg-yellow-50"
+                                    placeholder="0">
+                            </td>
+                            <td class="px-4 py-2 text-center text-sm font-black 
+                                {{ $item->difference < 0 ? 'text-red-600' : ($item->difference > 0 ? 'text-green-600' : 'text-gray-400') }}">
+                                @if($item->actual_quantity !== null)
+                                    {{ $item->difference > 0 ? '+' : '' }}{{ number_format($item->difference) }}
+                                @else
+                                    <span class="text-gray-300 text-xs">Chưa nhập</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-2 text-xs text-gray-400 no-print">{{ $item->note }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @else
+        {{-- Form tạo phiếu kiểm kê mới --}}
+        <div class="bg-white rounded-xl border shadow-sm p-5 mb-6 no-print">
+            <h2 class="text-sm font-black text-gray-700 uppercase mb-3">➕ Tạo phiếu kiểm kê mới</h2>
+            <p class="text-xs text-gray-400 mb-3">Hệ thống sẽ tự động tải toàn bộ danh sách sản phẩm và số tồn kho hiện tại vào phiếu kiểm kê để bạn đối chiếu thực tế.</p>
+            <div class="flex gap-4 items-end">
+                <div class="flex-1">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ghi chú phiếu kiểm kê</label>
+                    <input type="text" wire:model="countNote" placeholder="VD: Kiểm kê tháng 5/2026..." class="w-full rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
+                </div>
+                <button wire:click="createNewStockCount" wire:loading.attr="disabled"
+                    class="px-6 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-sm font-black transition shadow cursor-pointer">
+                    <span wire:loading.remove wire:target="createNewStockCount">📋 Tạo phiếu kiểm kê</span>
+                    <span wire:loading wire:target="createNewStockCount">Đang tải...</span>
                 </button>
-                @endif
-            </div>
-            
-            <div class="text-xs text-gray-500 font-medium">Nhập số lượng thực tế đếm được.</div>
-        </div>
-
-        <table class="w-full mb-4">
-            <thead>
-                <tr class="bg-gray-50">
-                    <th class="px-3 py-2 text-center no-print">
-                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', array_keys($countItems)) }}])" 
-                               {{ count($selectedItems) > 0 && count($selectedItems) === count($countItems) ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                    </th>
-                    <th class="px-3 py-2 text-left text-sm">Mã SP</th>
-                    <th class="px-3 py-2 text-left text-sm">Tên sản phẩm</th>
-                    <th class="px-3 py-2 text-center text-sm">Tồn hệ thống</th>
-                    <th class="px-3 py-2 text-center text-sm">Tồn thực tế</th>
-                    <th class="px-3 py-2 text-center text-sm">Chênh lệch</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($countItems as $index => $item)
-                <tr class="border-b {{ $item['difference'] != 0 ? 'bg-yellow-50' : '' }} {{ in_array($index, $selectedItems) ? 'bg-indigo-50/50' : '' }}">
-                    <td class="px-3 py-2 text-center no-print">
-                        <input type="checkbox" wire:model.live="selectedItems" value="{{ $index }}"
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                    </td>
-                    <td class="px-3 py-2 text-sm font-mono">{{ $item['product_code'] }}</td>
-                    <td class="px-3 py-2 text-sm">{{ $item['product_name'] }}</td>
-                    <td class="px-3 py-2 text-center text-sm text-gray-500">{{ number_format($item['system_quantity']) }}</td>
-                    <td class="px-3 py-2 text-center">
-                        <input type="text" inputmode="numeric" wire:model.lazy="countItems.{{ $index }}.actual_quantity"
-                               wire:change="updateDifference({{ $index }})"
-                               class="w-24 text-center rounded border-gray-300 shadow-sm text-sm"
-                               placeholder="0">
-                    </td>
-                    <td class="px-3 py-2 text-center text-sm font-bold
-                        {{ $item['difference'] > 0 ? 'text-green-600' : ($item['difference'] < 0 ? 'text-red-600' : 'text-gray-400') }}">
-                        {{ $item['difference'] > 0 ? '+' : '' }}{{ $item['difference'] }}
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Ghi chú kiểm kê</label>
-            <textarea wire:model="note" rows="2" class="w-full rounded-lg border-gray-300 shadow-sm"></textarea>
-        </div>
-
-        <div class="flex justify-end gap-3">
-            <a href="{{ route('warehouse.inventory') }}" class="px-4 py-2 border rounded-lg hover:bg-gray-50">Hủy</a>
-            <button wire:click="save" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
-                Xác nhận kiểm kê
-            </button>
-        </div>
-    </div>
-
-    </div>
-
-    <!-- Layout in phiếu kiểm kê (Ẩn trên màn hình) -->
-    <div class="print-only check-sheet-layout px-8">
-        <!-- 1/3 TRÊN -->
-        <div class="print-header text-center">
-            <h1 class="text-4xl font-black mb-4 tracking-tighter">KIỂM KÊ KHO</h1>
-            <p class="text-lg">Ngày ...... tháng ...... năm 20......</p>
-            <div class="mt-4 text-sm italic">
-                (Kèm theo Chứng từ số: .................... / Ngày: ...../...../20.....)
             </div>
         </div>
+        @endif
 
-        <!-- 2/3 DƯỚI (Dữ liệu) -->
-        <div class="min-h-[50vh]">
-            <table class="w-full border-collapse border-2 border-black">
-                <thead>
-                    <tr class="bg-gray-100 font-bold uppercase text-[10px]">
-                        <th class="border-2 border-black w-6">STT</th>
-                        <th class="border-2 border-black">Tên sản phẩm</th>
-                        <th class="border-2 border-black w-20">Mã SP</th>
-                        <th class="border-2 border-black w-16">Mã Code NCC</th>
-                        <th class="border-2 border-black w-16">Hạn dùng</th>
-                        <th class="border-2 border-black w-14">SL Hệ thống</th>
-                        <th class="border-2 border-black w-14">SL Thực tế</th>
-                        <th class="border-2 border-black w-14">Chênh lệch</th>
-                        <th class="border-2 border-black w-16">Vị trí</th>
+        {{-- Lịch sử phiếu kiểm kê --}}
+        <div class="bg-white rounded-xl shadow border overflow-hidden">
+            <div class="px-5 py-3 border-b flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-sm font-bold text-gray-700">Lịch sử phiếu kiểm kê</h3>
+                    <div class="flex items-center gap-1 ml-4 no-print" wire:key="bulk-actions-toolbar">
+                        <span class="text-[10px] font-bold {{ count($selectedStockCounts) > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-400' }} px-2 py-1 rounded-full transition-colors">
+                            Đã chọn {{ count($selectedStockCounts) }}
+                        </span>
+                        
+                        <button type="button" wire:click="bulkPrint" 
+                            {{ count($selectedStockCounts) == 0 ? 'disabled' : '' }}
+                            class="p-1.5 rounded-lg transition-all {{ count($selectedStockCounts) > 0 ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 cursor-pointer shadow-sm' : 'bg-gray-50 text-gray-300 cursor-not-allowed opacity-50' }}" 
+                            title="In các phiếu đã chọn">
+                            🖨️
+                        </button>
+
+                        <button type="button" wire:click="bulkDelete" 
+                            wire:confirm="Bạn có chắc chắn muốn XÓA các phiếu đã chọn?"
+                            {{ count($selectedStockCounts) == 0 ? 'disabled' : '' }}
+                            class="p-1.5 rounded-lg transition-all {{ count($selectedStockCounts) > 0 ? 'bg-red-50 text-red-600 hover:bg-red-100 cursor-pointer shadow-sm' : 'bg-gray-50 text-gray-300 cursor-not-allowed opacity-50' }}" 
+                            title="Xóa các phiếu đã chọn">
+                            🗑️
+                        </button>
+
+                        @if(count($selectedStockCounts) === 1)
+                        @php $firstId = reset($selectedStockCounts); @endphp
+                        <button type="button" wire:click="editStockCount({{ $firstId }})" 
+                            class="p-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-all cursor-pointer shadow-sm animate-bounce-short" 
+                            title="Tiếp tục chỉnh sửa phiếu này">
+                            ✏️
+                        </button>
+                        @endif
+                    </div>
+                </div>
+                <input type="text" wire:model.live="listSearch" placeholder="Tìm mã phiếu..." class="rounded-lg border-gray-200 shadow-sm text-xs focus:ring-indigo-500 w-48">
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-center w-10">
+                            <input type="checkbox" 
+                                wire:click="toggleSelectAll([{{ implode(',', $stockCounts->pluck('id')->toArray()) }}])"
+                                {{ count($selectedStockCounts) >= count($stockCounts) && count($selectedStockCounts) > 0 ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        </th>
+                        <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Mã phiếu</th>
+                        <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Trạng thái</th>
+                        <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Ghi chú</th>
+                        <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Người tạo</th>
+                        <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Ngày tạo</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @php $count = 1; @endphp
-                    @foreach($countItems as $index => $item)
-                        @if(in_array($index, $selectedItems))
-                        <tr class="text-[10px]">
-                            <td class="text-center font-bold">{{ $count++ }}</td>
-                            <td class="px-1 leading-tight">
-                                <div class="font-bold">{{ $item['product_name'] }}</div>
-                                <div class="text-[9px] italic">ĐVT: {{ $item['unit'] }}</div>
-                            </td>
-                            <td class="text-center font-mono">{{ $item['product_code'] }}</td>
-                            <td class="text-center">{{ $item['batch_number'] ?? '-' }}</td>
-                            <td class="text-center">{{ $item['expiry_date'] ? \Carbon\Carbon::parse($item['expiry_date'])->format('d/m/y') : '-' }}</td>
-                            <td class="text-center font-bold">{{ number_format($item['system_quantity']) }}</td>
-                            <td class="text-center font-bold">{{ number_format($item['actual_quantity']) }}</td>
-                            <td class="text-center font-bold {{ $item['difference'] != 0 ? 'text-red-600' : '' }}">
-                                {{ $item['difference'] > 0 ? '+' : '' }}{{ $item['difference'] }}
-                            </td>
-                            <td class="text-center text-[9px]">{{ $item['location'] ?? '-' }}</td>
-                        </tr>
-                        @endif
-                    @endforeach
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($stockCounts as $sc)
+                    @php
+                        $statusMap = [
+                            'pending' => ['label' => '⏳ Đang kiểm', 'class' => 'bg-yellow-100 text-yellow-700'],
+                            'completed' => ['label' => '✅ Hoàn thành', 'class' => 'bg-green-100 text-green-700'],
+                            'cancelled' => ['label' => '✖ Đã hủy', 'class' => 'bg-red-100 text-red-700'],
+                        ];
+                        $s = $statusMap[$sc->status] ?? ['label' => $sc->status, 'class' => 'bg-gray-100 text-gray-600'];
+                    @endphp
+                    <tr wire:key="sc-row-{{ $sc->id }}" class="hover:bg-gray-50 transition-colors {{ in_array($sc->id, $selectedStockCounts) ? 'bg-indigo-50/50' : '' }}">
+                        <td class="px-4 py-3 text-center">
+                            <input type="checkbox" wire:model.live="selectedStockCounts" value="{{ $sc->id }}" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        </td>
+                        <td class="px-4 py-3 text-sm font-bold text-indigo-700">{{ $sc->code }}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $s['class'] }}">{{ $s['label'] }}</span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-gray-500">{{ $sc->note }}</td>
+                        <td class="px-4 py-3 text-xs text-gray-600">👤 {{ $sc->creator->name ?? '-' }}</td>
+                        <td class="px-4 py-3 text-xs text-gray-400 font-mono">{{ $sc->created_at->format('d/m/Y H:i') }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="6" class="px-4 py-12 text-center text-gray-400 italic text-sm">Chưa có phiếu kiểm kê nào. Tạo phiếu đầu tiên để bắt đầu!</td></tr>
+                    @endforelse
                 </tbody>
             </table>
-        </div>
-
-        <!-- CHỮ KÝ -->
-        <div class="grid grid-cols-3 gap-4 mt-16 text-center text-sm font-bold uppercase">
-            <div>
-                <p>NHÂN VIÊN KIỂM KHO</p>
-                <p class="text-[10px] font-normal italic lowercase mt-1">(Ký, ghi rõ họ tên)</p>
-            </div>
-            <div>
-                <p>KẾ TOÁN KHO</p>
-                <p class="text-[10px] font-normal italic lowercase mt-1">(Ký, ghi rõ họ tên)</p>
-            </div>
-            <div>
-                <p>QUẢN LÝ KHO</p>
-                <p class="text-[10px] font-normal italic lowercase mt-1">(Ký, ghi rõ họ tên)</p>
-            </div>
+            <div class="px-4 py-3 border-t">{{ $stockCounts->links() }}</div>
         </div>
     </div>
+    @endif
 
-    <script>
-        function printInventoryCheck() {
-            document.body.classList.add('printing-check-sheet');
-            window.print();
-            window.onafterprint = function() {
-                document.body.classList.remove('printing-check-sheet');
-            };
-            setTimeout(() => {
-                document.body.classList.remove('printing-check-sheet');
-            }, 500);
-        }
-    </script>
+    {{-- ======================== TAB: KIỂM KÊ HÀNG NGÀY ======================== --}}
+    @if($activeTab === 'daily')
+    <div class="bg-white rounded-xl border shadow-sm p-8 text-center max-w-2xl mx-auto my-12">
+        <div class="w-20 h-20 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">☀️</div>
+        <h2 class="text-2xl font-black text-gray-800 uppercase mb-4">Kiểm kê hàng ngày</h2>
+        <p class="text-gray-500 mb-8 leading-relaxed">
+            Hệ thống sẽ tự động chọn ngẫu nhiên <b>10 vật tư</b> dựa trên vị trí kho và quy tắc chống trùng lặp (không chọn lại vật tư đã kiểm trong 7 ngày qua).
+        </p>
+        <button wire:click="createDailyStockCount" wire:loading.attr="disabled"
+            class="px-8 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-black shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto cursor-pointer">
+            <span wire:loading.remove wire:target="createDailyStockCount">📋 Tạo 10 mã kiểm kê ngay</span>
+            <span wire:loading wire:target="createDailyStockCount" class="flex items-center gap-2">
+                <span class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> Đang chọn mã...
+            </span>
+        </button>
+    </div>
+    @endif
 </div>
+
+{{-- Print Styles --}}
+<style>
+    @media print {
+        .no-print, header, nav, aside, footer { display: none !important; }
+        body { background: white !important; margin: 0; padding: 20px; }
+        .shadow, .border { box-shadow: none !important; border: 1px solid #eee !important; }
+        table { width: 100% !important; border-collapse: collapse !important; }
+        th, td { border: 1px solid #ddd !important; padding: 8px !important; text-align: left; }
+        th { background-color: #f9f9f9 !important; -webkit-print-color-adjust: exact; }
+        .bg-blue-50, .bg-green-50, .bg-indigo-50 { background-color: white !important; }
+        .text-indigo-600, .text-blue-600 { color: black !important; }
+    }
+</style>

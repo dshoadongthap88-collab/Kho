@@ -70,7 +70,7 @@ class InventoryService
     /**
      * Điều chỉnh tồn kho
      */
-    public function adjustQuantity(int $productId, int $newQuantity, string $note = null)
+    public function adjustQuantity(int $productId, float $newQuantity, string $note = null)
     {
         return DB::transaction(function () use ($productId, $newQuantity, $note) {
             $inventory = Inventory::where('product_id', $productId)->firstOrFail();

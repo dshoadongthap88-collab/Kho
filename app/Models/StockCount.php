@@ -9,6 +9,7 @@ class StockCount extends Model
     protected $fillable = [
         'code',
         'status',
+        'type',
         'note',
         'created_by',
     ];

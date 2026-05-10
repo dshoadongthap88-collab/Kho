@@ -9,14 +9,19 @@ use App\Models\StockCount;
 use App\Models\StockCountItem;
 use App\Services\InventoryService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\StockCountTemplateExport;
+use App\Imports\StockCountImport;
 
 
 
 class StockCountForm extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public $activeTab = 'stocktake'; // 'stocktake' | 'sync' | 'daily' | 'periodic'
 
@@ -35,6 +40,13 @@ class StockCountForm extends Component
     // --- List ---
     public $listSearch = '';
     public $selectedStockCounts = [];
+    public $excelFile;
+    public $locationFilter = '';
+    
+    // --- Printing ---
+    public $isPrintingMultiple = false;
+    public $printBatchItems = [];
+    public $printBatchCodes = [];
 
     protected $listeners = [];
 
@@ -63,12 +75,12 @@ class StockCountForm extends Component
                     'product_id' => $inv->product_id,
                     'system_quantity' => $inv->quantity,
                     'actual_quantity' => null,
-                    'physical_quantity' => 0,
                     'difference' => 0,
                 ]);
             }
         session()->flash('success', "Đã tạo phiếu kiểm kê {$code} với " . $inventories->count() . " sản phẩm.");
 
+        $this->selectedStockCounts = [];
         $this->currentCountId = $stockCount->id;
     }
 
@@ -124,11 +136,11 @@ class StockCountForm extends Component
                 'product_id' => $inv->product_id,
                 'system_quantity' => $inv->quantity,
                 'actual_quantity' => null,
-                'physical_quantity' => 0,
                 'difference' => 0,
             ]);
         }
 
+        $this->selectedStockCounts = [];
         $this->currentCountId = $stockCount->id;
         $this->activeTab = 'stocktake';
         session()->flash('success', "Đã tạo phiếu kiểm kê hàng ngày {$code} với 10 vật tư.");
@@ -144,7 +156,6 @@ class StockCountForm extends Component
         $actual = (float) $actualQty;
         $item->update([
             'actual_quantity' => $actual,
-            'physical_quantity' => $actual,
             'difference' => $actual - $item->system_quantity,
         ]);
     }
@@ -164,10 +175,10 @@ class StockCountForm extends Component
         DB::transaction(function () use ($stockCount, $service, &$adjustedCount) {
             foreach ($stockCount->items as $item) {
                 // Chỉ điều chỉnh những dòng có nhập actual_quantity và có chênh lệch
-                if ($item->actual_quantity !== null && $item->difference != 0) {
+                if ($item->actual_quantity !== null && (float)$item->difference != 0) {
                     $service->adjustQuantity(
                         $item->product_id,
-                        (int) $item->actual_quantity,
+                        (float) $item->actual_quantity,
                         "Điều chỉnh từ phiếu kiểm kê {$stockCount->code}"
                     );
                     $adjustedCount++;
@@ -178,16 +189,7 @@ class StockCountForm extends Component
         });
 
         $this->currentCountId = null;
-        session()->flash('success', "Đã xác nhận kiểm kê và điều chỉnh {$adjustedCount} sản phẩm.");
-    }
-
-    public function cancelStockCount($stockCountId)
-    {
-        StockCount::findOrFail($stockCountId)->update(['status' => 'cancelled']);
-        if ($this->currentCountId == $stockCountId) {
-            $this->currentCountId = null;
-        }
-        session()->flash('info', 'Đã hủy phiếu kiểm kê.');
+        session()->flash('success', 'Xác nhận kiểm kê và điều chỉnh kho thành công!');
     }
 
     public function editStockCount($id)
@@ -199,23 +201,36 @@ class StockCountForm extends Component
     public function deleteStockCount($id)
     {
         StockCount::findOrFail($id)->delete();
-        session()->flash('info', 'Đã xóa phiếu kiểm kê.');
+        session()->flash('success', 'Đã xóa phiếu kiểm kê.');
+    }
+
+    public function cancelStockCount($id)
+    {
+        StockCount::findOrFail($id)->update(['status' => 'cancelled']);
+        $this->currentCountId = null;
     }
 
     public function bulkDelete()
     {
+        Log::info('Triggered bulkDelete', ['selected' => $this->selectedStockCounts]);
+
         if (empty($this->selectedStockCounts)) {
             session()->flash('error', 'Vui lòng chọn ít nhất một phiếu để xóa.');
             return;
         }
 
-        // Đảm bảo các ID là số nguyên
-        $ids = collect($this->selectedStockCounts)->map(fn($id) => (int)$id)->toArray();
-        
-        StockCount::whereIn('id', $ids)->delete();
-        
-        $this->selectedStockCounts = [];
-        session()->flash('success', 'Đã xóa các phiếu được chọn.');
+        try {
+            $ids = collect($this->selectedStockCounts)->map(fn($id) => (int)$id)->filter()->toArray();
+            
+            if (!empty($ids)) {
+                StockCount::destroy($ids);
+                $this->selectedStockCounts = [];
+                $this->resetPage();
+                session()->flash('success', 'Đã xóa thành công ' . count($ids) . ' phiếu kiểm kê.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Lỗi khi xóa: ' . $e->getMessage());
+        }
     }
 
     public function bulkPrint()
@@ -225,7 +240,121 @@ class StockCountForm extends Component
             return;
         }
 
-        session()->flash('info', 'Tính năng in hàng loạt ' . count($this->selectedStockCounts) . ' phiếu đang được chuẩn bị.');
+        $counts = StockCount::with('items.product')->whereIn('id', $this->selectedStockCounts)->get();
+        
+        $this->printBatchItems = [];
+        $this->printBatchCodes = [];
+        
+        foreach ($counts as $count) {
+            $this->printBatchCodes[] = $count->code;
+            foreach ($count->items as $item) {
+                $this->printBatchItems[] = [
+                    'count_code' => $count->code,
+                    'product_code' => $item->product->code ?? '-',
+                    'product_name' => $item->product->name ?? '-',
+                    'system_qty' => $item->system_quantity,
+                    'actual_qty' => $item->actual_quantity,
+                    'difference' => $item->difference,
+                    'location' => $item->product->location ?? '-',
+                ];
+            }
+        }
+
+        $this->isPrintingMultiple = true;
+    }
+
+    // =====================
+    // PERIODIC FUNCTIONS (EXCEL)
+    // =====================
+
+    public function exportPeriodicTemplate()
+    {
+        try {
+            $query = Inventory::with('product')
+                ->whereHas('product')
+                ->where('quantity', '>=', 0);
+
+            if ($this->locationFilter) {
+                $query->where('warehouse_location', 'like', "%{$this->locationFilter}%");
+            }
+
+            $inventories = $query->get();
+            
+            if ($inventories->isEmpty()) {
+                session()->flash('error', 'Không có dữ liệu vật tư để xuất Excel.');
+                return;
+            }
+
+            $data = $inventories->map(function($inv) {
+                return [
+                    'ma_san_pham' => $inv->product->code ?? 'N/A',
+                    'ten_san_pham' => $inv->product->name ?? 'N/A',
+                    'vi_tri' => $inv->warehouse_location ?? '-',
+                    'ton_he_thong' => $inv->quantity,
+                    'so_luong_thuc_te' => ''
+                ];
+            });
+
+            $code = 'KKP-' . date('Ymd') . '-' . str_pad(StockCount::count() + 1, 4, '0', STR_PAD_LEFT);
+            
+            DB::beginTransaction();
+
+            $stockCount = StockCount::create([
+                'code' => $code,
+                'status' => 'pending',
+                'type' => 'periodic',
+                'note' => 'Kiểm kê định kỳ (Xuất từ Excel)',
+                'created_by' => auth()->id(),
+            ]);
+
+            foreach ($inventories as $inv) {
+                StockCountItem::create([
+                    'stock_count_id' => $stockCount->id,
+                    'product_id' => $inv->product_id,
+                    'system_quantity' => $inv->quantity,
+                    'actual_quantity' => null,
+                    'physical_quantity' => 0,
+                    'difference' => 0,
+                ]);
+            }
+
+            DB::commit();
+
+            $this->currentCountId = $stockCount->id;
+
+            $fileName = "mau_kiem_ke_" . str_replace('-', '_', $code) . ".xlsx";
+            
+            // Dọn dẹp bộ đệm đầu ra để tránh các ký tự lạ làm hỏng file
+            if (ob_get_level()) ob_end_clean();
+
+            return response()->streamDownload(function() use ($data) {
+                echo Excel::raw(new StockCountTemplateExport($data), \Maatwebsite\Excel\Excel::XLSX);
+            }, $fileName);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Lỗi xuất Excel kiểm kê: ' . $e->getMessage());
+            session()->flash('error', 'Có lỗi xảy ra khi xuất file: ' . $e->getMessage());
+        }
+    }
+
+    public function importPeriodicResults()
+    {
+        $this->validate([
+            'excelFile' => 'required|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        if (!$this->currentCountId) {
+            session()->flash('error', 'Vui lòng chọn hoặc tạo một phiếu kiểm kê trước khi nhập Excel.');
+            return;
+        }
+
+        try {
+            Excel::import(new StockCountImport($this->currentCountId), $this->excelFile);
+            $this->reset('excelFile');
+            session()->flash('success', 'Nhập dữ liệu kiểm kê từ Excel thành công!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Lỗi khi nhập Excel: ' . $e->getMessage());
+        }
     }
 
     // =====================

@@ -26,6 +26,7 @@ class StockOutForm extends Component
         'contact_person' => ''
     ];
     public $receiver_name = '';
+    public $receiver_contact = '';
     public $note = '';
     public $type = 'repair';
     public $asset_code = '';
@@ -420,6 +421,7 @@ class StockOutForm extends Component
             'items.*.quantity' => 'required|numeric|min:0.0001',
             'customer_name' => 'nullable|string',
             'receiver_name' => 'nullable|string',
+            'receiver_contact' => 'nullable|string',
             'asset_code' => 'nullable|string',
         ]);
 
@@ -431,6 +433,7 @@ class StockOutForm extends Component
                     'code' => 'SO-' . date('Ymd') . '-' . str_pad(StockOut::count() + 1, 4, '0', STR_PAD_LEFT),
                     'customer_name' => $this->customer_name,
                     'receiver_name' => $this->receiver_name,
+                    'receiver_contact' => $this->receiver_contact,
                     'asset_code' => $this->asset_code,
                     'type' => $this->type,
                     'status' => 'completed',
@@ -469,7 +472,7 @@ class StockOutForm extends Component
 
                     \App\Models\DeliveryReport::create([
                         'stock_out_id' => $stockOut->id,
-                        'customer_name' => $this->customer_name . ($this->receiver_department ? " ({$this->receiver_department})" : ""),
+                        'customer_name' => $this->customer_name ?: '',
                         'status' => 'pending',
                         'payment_status' => 'unpaid',
                         'total_amount' => $totalInvoice,
@@ -478,8 +481,11 @@ class StockOutForm extends Component
                 }
 
                 session()->flash('success', 'Xuất kho thành công!');
-                $this->reset(['items', 'customer_name', 'receiver_department', 'note']);
+                $this->reset(['items', 'customer_name', 'receiver_name', 'receiver_contact', 'note', 'asset_code']);
                 $this->addItem();
+                $this->activeTab = 'list';
+                $this->listDateFrom = now()->startOfMonth()->format('Y-m-d');
+                $this->listDateTo = now()->format('Y-m-d');
             } catch (\Exception $e) {
                 session()->flash('error', 'Lỗi: ' . $e->getMessage());
                 DB::rollBack();

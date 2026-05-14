@@ -61,10 +61,7 @@
 
     {{-- ===== PHẦN IN: Header Công ty (chỉ hiện khi in) ===== --}}
     <div class="hidden print:block print-header" style="margin-bottom: 8px;">
-        <div style="font-size: 16px; font-weight: bold; text-transform: uppercase; text-align: left;">CÔNG TY TNHH A</div>
-        <div style="font-size: 12px; text-align: left;">Địa chỉ: 123 Tỉnh Lộ 10, Long An</div>
-        <div style="font-size: 12px; text-align: left;">SĐT: 0708091050</div>
-        <div style="margin-top: 16px; font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; text-align: center;">DANH SÁCH CÔNG NỢ</div>
+        <div style="font-size: 18px; font-weight: bold; text-transform: uppercase; text-align: center; letter-spacing: 1px;">CÔNG TY CPĐT VÀ THI CÔNG HẠ TẦNG VINALPHA</div>
         <div style="font-size: 11px; color: #666; margin-top: 4px; text-align: center;">Ngày in: {{ now()->format('d/m/Y H:i') }}</div>
         <hr style="margin-top: 10px; border-top: 1px solid #333;">
     </div>
@@ -305,8 +302,6 @@
                                         <tr>
                                             <th class="px-4 py-2">Sản phẩm</th>
                                             <th class="px-4 py-2 text-center">Số lượng</th>
-                                            <th class="px-4 py-2 text-right">Đơn giá</th>
-                                            <th class="px-4 py-2 text-right">Thành tiền</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100 italic text-sm">
@@ -317,17 +312,9 @@
                                                     <div class="text-[10px] text-slate-500">Mã: {{ $item->product->code }}</div>
                                                 </td>
                                                 <td class="px-4 py-2 text-center">{{ number_format($item->quantity) }}</td>
-                                                <td class="px-4 py-2 text-right">{{ number_format($item->unit_price) }} đ</td>
-                                                <td class="px-4 py-2 text-right font-bold text-slate-700">{{ number_format($item->total_amount) }} đ</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
-                                    <tfoot class="bg-indigo-50/30">
-                                        <tr class="font-bold text-indigo-900">
-                                            <td colspan="3" class="px-4 py-2 text-right uppercase text-xs">Tổng cộng thanh toán:</td>
-                                            <td class="px-4 py-2 text-right text-base">{{ number_format($selectedStockOut->items->sum('total_amount')) }} đ</td>
-                                        </tr>
-                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -360,7 +347,7 @@
         <div class="print-page p-8 bg-white" style="font-family: 'Times New Roman', serif; min-height: 297mm; page-break-after: always;">
             <div class="flex justify-between items-start mb-6 border-b-2 border-slate-900 pb-4">
                 <div>
-                    <h1 class="text-xl font-black uppercase">CÔNG TY TNHH SANE</h1>
+                    <h1 class="text-xl font-black uppercase">CÔNG TY CPĐT VÀ THI CÔNG HẠ TẦNG VINALPHA</h1>
                     <p class="text-[11px] font-bold text-slate-500">Long An - SĐT: 0708091050</p>
                 </div>
                 <div class="text-right">
@@ -390,8 +377,6 @@
                         <th class="border border-slate-900 px-2 py-2 text-left">Tên sản phẩm / Quy cách</th>
                         <th class="border border-slate-900 px-2 py-2 text-center w-14">ĐVT</th>
                         <th class="border border-slate-900 px-2 py-2 text-right w-20">Lượng</th>
-                        <th class="border border-slate-900 px-2 py-2 text-right w-24">Đơn giá</th>
-                        <th class="border border-slate-900 px-2 py-2 text-right w-28">Thành tiền</th>
                     </tr>
                 </thead>
                 <tbody class="text-[12px]">
@@ -402,26 +387,10 @@
                             <td class="border border-slate-900 px-2 py-2 font-bold">{{ $ii->product->name }} ({{ $ii->product->code }})</td>
                             <td class="border border-slate-900 px-2 py-2 text-center italic">{{ $ii->product->unit }}</td>
                             <td class="border border-slate-900 px-2 py-2 text-right font-bold">{{ number_format($ii->quantity) }}</td>
-                            <td class="border border-slate-900 px-2 py-2 text-right italic text-slate-500">{{ number_format($ii->unit_price) }}</td>
-                            <td class="border border-slate-900 px-2 py-2 text-right font-black">{{ number_format($ii->total_amount) }}</td>
                         </tr>
                         @endforeach
                     @endif
                 </tbody>
-                <tfoot>
-                    <tr class="bg-slate-50 font-black text-slate-900">
-                        <td colspan="5" class="border border-slate-900 px-2 py-2 text-right uppercase text-xs">Tổng giá trị đơn hàng:</td>
-                        <td class="border border-slate-900 px-2 py-2 text-right text-[13px] font-black underline">{{ number_format($pItem->total_amount) }} đ</td>
-                    </tr>
-                    <tr class="font-bold text-emerald-700 bg-emerald-50/30">
-                        <td colspan="5" class="border border-slate-900 px-2 py-2 text-right uppercase text-xs">Số tiền đã trả:</td>
-                        <td class="border border-slate-900 px-2 py-2 text-right text-[13px]">{{ number_format($pItem->paid_amount) }} đ</td>
-                    </tr>
-                    <tr class="bg-rose-50 font-black text-red-700">
-                        <td colspan="5" class="border border-slate-900 px-2 py-2 text-right uppercase text-xs">DƯ NỢ CÒN LẠI:</td>
-                        <td class="border border-slate-900 px-2 py-2 text-right text-lg underline decoration-double">{{ number_format($pItem->total_amount - $pItem->paid_amount) }} đ</td>
-                    </tr>
-                </tfoot>
             </table>
 
             <div class="grid grid-cols-2 gap-4 text-center mt-12 mb-8">

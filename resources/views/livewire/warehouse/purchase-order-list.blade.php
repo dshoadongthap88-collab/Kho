@@ -259,13 +259,9 @@
                                             </div>
                                         </div>
                                         <div class="col-span-2">
-                                            <input type="number" step="0.01" wire:model="newItemUnitPrice" placeholder="Đơn giá" class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm bg-blue-50">
-                                        </div>
-                                        <div class="col-span-2">
                                             <button wire:click="addItem" type="button" class="w-full bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm font-semibold transition">Thêm</button>
                                         </div>
                                     </div>
-                                    <small class="text-blue-600">💡 Đơn giá tự động lấy từ danh mục sản phẩm (có thể chỉnh sửa)</small>
                                 </div>
 
                                 @if(!empty($items))
@@ -278,8 +274,6 @@
                                                     <th class="px-2 py-2 text-left">Hãng SX</th>
                                                     <th class="px-2 py-2 text-center">ĐVT</th>
                                                     <th class="px-2 py-2 text-right">SL Mua</th>
-                                                    <th class="px-2 py-2 text-right">Đơn giá</th>
-                                                    <th class="px-2 py-2 text-right">Thành tiền</th>
                                                     <th class="px-2 py-2 text-center">Xoá</th>
                                                 </tr>
                                             </thead>
@@ -294,8 +288,6 @@
                                                         <td class="px-2 py-2 text-xs text-gray-600">{{ $product?->brand ?? 'N/A' }}</td>
                                                         <td class="px-2 py-2 text-center text-xs bg-gray-50">{{ $product?->unit ?? 'N/A' }}</td>
                                                         <td class="px-2 py-2 text-right font-bold text-blue-700">{{ $item['quantity'] }}</td>
-                                                        <td class="px-2 py-2 text-right">{{ number_format($item['unit_price'], 0, ',', '.') }}</td>
-                                                        <td class="px-2 py-2 text-right font-semibold text-amber-700">{{ number_format($item['line_total'], 0, ',', '.') }}</td>
                                                         <td class="px-2 py-2 text-center">
                                                             <button wire:click="removeItem({{ $index }})" type="button" class="text-red-500 hover:text-red-700">✕</button>
                                                         </td>
@@ -386,8 +378,6 @@
                                                 <tr class="bg-gray-100 border-b">
                                                     <th class="px-3 py-2 text-left">Tên vật tư/VPP</th>
                                                     <th class="px-3 py-2 text-center w-16">SL</th>
-                                                    <th class="px-3 py-2 text-right w-24">Đơn giá</th>
-                                                    <th class="px-3 py-2 text-right w-28">Thành tiền</th>
                                                     <th class="px-3 py-2 text-center w-12">Xoá</th>
                                                 </tr>
                                             </thead>
@@ -396,8 +386,6 @@
                                                     <tr>
                                                         <td class="px-3 py-2 font-medium">{{ $item['name'] }}</td>
                                                         <td class="px-3 py-2 text-center font-bold text-blue-700">{{ $item['quantity'] }}</td>
-                                                        <td class="px-3 py-2 text-right">{{ number_format($item['unit_price'], 0, ',', '.') }}</td>
-                                                        <td class="px-3 py-2 text-right font-semibold text-amber-700">{{ number_format($item['line_total'], 0, ',', '.') }}</td>
                                                         <td class="px-3 py-2 text-center">
                                                             <button wire:click="removeOfficeItem({{ $index }})" type="button" class="text-red-500 hover:text-red-700 font-bold">✕</button>
                                                         </td>
@@ -428,9 +416,9 @@
         @foreach($printItems as $printOrder)
         <div style="font-family: 'Times New Roman', serif; padding: 15mm; page-break-after: always; width: 100%;">
             <!-- Header -->
-            <div class="mb-4 text-left">
-                <h1 class="text-xl font-bold uppercase">CÔNG TY TNHH ABC</h1>
-                <p class="text-[14px]">Địa chỉ: 123 Tỉnh Lộ 10 - Long An - SĐT: 0708091050</p>
+            <div class="mb-4 text-center">
+                <h1 class="text-xl font-bold uppercase" style="font-size: 18px; letter-spacing: 1px;">CÔNG TY CPĐT VÀ THI CÔNG HẠ TẦNG VINALPHA</h1>
+                <p class="text-[14px]">Địa chỉ: Long An - SĐT: 0708091050</p>
             </div>
             <div style="border-bottom: 2px solid #000; margin-bottom: 20px;"></div>
 

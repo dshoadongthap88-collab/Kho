@@ -257,6 +257,10 @@
     <div class="hidden print:block fixed inset-0 bg-white z-[9999]">
         @foreach($printItems as $pItem)
         <div class="print-page p-8 bg-white" style="font-family: 'Times New Roman', serif; min-height: 297mm; page-break-after: always;">
+            {{-- Header Công ty --}}
+            <div style="text-align: center; margin-bottom: 16px;">
+                <h1 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin: 0;">CÔNG TY CPĐT VÀ THI CÔNG HẠ TẦNG VINALPHA</h1>
+            </div>
             <div class="flex justify-between items-start mb-6 border-b-2 border-slate-900 pb-4">
                 <div>
                     <h1 class="text-xl font-black uppercase tracking-tighter text-slate-900">BÁO CÁO GIAO HÀNG</h1>

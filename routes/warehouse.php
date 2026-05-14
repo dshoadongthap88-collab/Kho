@@ -61,4 +61,21 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return view('warehouse.delivery-report');
     })->name('delivery-report')->middleware('permission:delivery-report');
 
+    // Asset Management Routes
+    Route::get('/asset-dashboard', function () {
+        return view('warehouse.asset.dashboard');
+    })->name('asset-dashboard');
+
+    Route::get('/asset-manager', function () {
+        return view('warehouse.asset.manager');
+    })->name('asset-manager');
+
+    Route::get('/asset-bom-manager', function () {
+        return view('warehouse.asset.bom-manager');
+    })->name('asset-bom-manager');
+
+    Route::get('/maintenance-form', function () {
+        return view('warehouse.asset.maintenance-form');
+    })->name('maintenance-form');
+
 });

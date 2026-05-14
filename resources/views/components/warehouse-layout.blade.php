@@ -45,8 +45,7 @@
                         </button>
                         <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
                             <a href="{{ route('warehouse.product-catalog') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Danh mục sản phẩm</a>
-                            <a href="{{ route('warehouse.material-names') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Tên NVL</a>
-                            <a href="{{ route('warehouse.bom') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">BOM/NVL</a>
+                            <a href="{{ route('warehouse.bom') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">BOM/ MÃ TÀI SẢN</a>
                         </div>
                     </div>
 
@@ -64,15 +63,19 @@
                         </div>
                     </div>
 
-                    <!-- Module 5: Giao hàng -->
+
+
+                    <!-- Module 5: Tài sản & Bảo trì -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 group-hover:bg-indigo-800 flex items-center gap-1 {{ request()->routeIs('warehouse.customer-*') || request()->routeIs('warehouse.delivery-report') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
-                            5. Giao hàng
+                        <button class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 group-hover:bg-indigo-800 flex items-center gap-1 {{ request()->routeIs('warehouse.asset-*') || request()->routeIs('warehouse.maintenance-*') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                            5. Tài sản & Bảo trì
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
-                        <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
-                            <a href="{{ route('warehouse.customer-debt') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Công nợ khách hàng</a>
-                            <a href="{{ route('warehouse.delivery-report') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Báo cáo giao hàng</a>
+                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="{{ route('warehouse.asset-dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Dashboard Cảnh báo</a>
+                            <a href="{{ route('warehouse.asset-manager') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Danh mục thiết bị</a>
+                            <a href="{{ route('warehouse.asset-bom-manager') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Định mức dầu nhớt (BOM)</a>
+                            <a href="{{ route('warehouse.maintenance-form') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Phiếu bảo trì & thay dầu</a>
                         </div>
                     </div>
                 </div>

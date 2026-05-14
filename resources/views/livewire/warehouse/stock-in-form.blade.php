@@ -80,9 +80,6 @@
                                     <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Vị trí</th>
                                     <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-20">SL</th>
                                     <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-16">ĐVT</th>
-                                    <th class="px-2 py-3 text-right text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Đơn giá</th>
-                                    <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-14">VAT</th>
-                                    <th class="px-2 py-3 text-right text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-32">Thành tiền</th>
                                     <th class="px-2 py-3 border-b border-slate-700 w-10"></th>
                                 </tr>
                             </thead>
@@ -90,7 +87,7 @@
                                 @foreach($items as $index => $item)
                                 <tr class="hover:bg-indigo-50/30 transition-colors">
                                     <td class="px-4 py-3">
-                                        <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}" 
+                                        <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}"
                                                class="w-full rounded-lg border-slate-200 text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-3 bg-slate-50 focus:bg-white"
                                                placeholder="Mã hoặc tên SP...">
                                         <datalist id="product_list_{{ $index }}">
@@ -101,15 +98,15 @@
                                         @error("items.{$index}.product_id") <p class="text-rose-500 text-[10px] mt-1 font-bold">{{ $message }}</p> @enderror
                                     </td>
                                     <td class="px-2 py-3">
-                                        <input type="text" wire:model.live="items.{{ $index }}.batch_number" 
+                                        <input type="text" wire:model.live="items.{{ $index }}.batch_number"
                                                class="w-full rounded-lg border-slate-200 text-[12px] font-black focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 bg-slate-50 focus:bg-white text-indigo-700" placeholder="Mã Code NCC...">
                                     </td>
                                     <td class="px-2 py-3">
-                                        <input type="date" wire:model="items.{{ $index }}.expiry_date" 
+                                        <input type="date" wire:model="items.{{ $index }}.expiry_date"
                                                class="w-full rounded-lg border-slate-200 text-[12px] focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 bg-slate-50 focus:bg-white font-bold text-slate-700">
                                     </td>
                                     <td class="px-2 py-3">
-                                        <input type="text" wire:model="items.{{ $index }}.warehouse_location" 
+                                        <input type="text" wire:model="items.{{ $index }}.warehouse_location"
                                                class="w-full text-[12px] font-bold rounded-lg border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 bg-slate-50 focus:bg-white" placeholder="Vị trí...">
                                     </td>
                                     <td class="px-2 py-3">
@@ -119,17 +116,6 @@
                                     </td>
                                     <td class="px-2 py-3 text-center">
                                         <span class="text-[11px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200 uppercase">{{ $items[$index]['unit'] ?? '-' }}</span>
-                                    </td>
-                                    <td class="px-2 py-3">
-                                        <input type="number" wire:model.live="items.{{ $index }}.unit_price" step="1" min="0"
-                                               class="w-full text-right text-[12px] font-bold rounded-lg border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-1 bg-slate-50 focus:bg-white">
-                                    </td>
-                                    <td class="px-2 py-3">
-                                        <input type="number" wire:model.live="items.{{ $index }}.vat_rate" step="0.1" min="0"
-                                               class="w-full text-center text-[12px] rounded-lg border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-1 bg-slate-50 focus:bg-white">
-                                    </td>
-                                    <td class="px-4 py-3 text-right font-black text-indigo-700 text-[14px]">
-                                        {{ number_format($items[$index]['total_amount'] ?? 0) }} đ
                                     </td>
                                     <td class="px-2 py-3 text-center">
                                         @if(count($items) > 1)
@@ -144,11 +130,10 @@
                             @if(count($items) > 0)
                             <tfoot class="border-t-2 border-slate-100">
                                 <tr class="bg-indigo-50/50">
-                                    <td colspan="8" class="px-6 py-4 text-right font-black text-slate-500 uppercase tracking-widest text-[11px]">Tổng cộng giá trị nhập:</td>
+                                    <td colspan="6" class="px-6 py-4 text-right font-black text-slate-500 uppercase tracking-widest text-[11px]">Tổng số lượng:</td>
                                     <td class="px-4 py-4 text-right font-black text-indigo-900 text-[16px] underline decoration-double">
-                                        {{ number_format(collect($items)->sum('total_amount')) }} đ
+                                        {{ number_format(collect($items)->sum('quantity')) }}
                                     </td>
-                                    <td></td>
                                 </tr>
                             </tfoot>
                             @endif
@@ -357,6 +342,10 @@
     <div class="hidden print:block fixed inset-0 bg-white z-[9999]">
         @foreach($printItems as $pItem)
         <div class="print-page p-8 bg-white" style="font-family: 'Times New Roman', serif; min-height: 297mm; page-break-after: always;">
+            {{-- Header Công ty --}}
+            <div style="text-align: center; margin-bottom: 16px;">
+                <h1 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin: 0;">CÔNG TY CPĐT VÀ THI CÔNG HẠ TẦNG VINALPHA</h1>
+            </div>
             <div class="flex justify-between items-start mb-6 border-b-2 border-slate-900 pb-4">
                 <div>
                     <h1 class="text-xl font-black uppercase">CÔNG TY TNHH SANE</h1>
@@ -387,8 +376,6 @@
                         <th class="border border-slate-900 px-2 py-2 text-center w-16">Mã Code NCC</th>
                         <th class="border border-slate-900 px-2 py-2 text-center w-16">ĐVT</th>
                         <th class="border border-slate-900 px-2 py-2 text-right w-20">Số lượng</th>
-                        <th class="border border-slate-900 px-2 py-2 text-right w-24">Đơn giá</th>
-                        <th class="border border-slate-900 px-2 py-2 text-right w-24">Thành tiền</th>
                     </tr>
                 </thead>
                 <tbody class="text-xs">
@@ -399,20 +386,12 @@
                         <td class="border border-slate-900 px-2 py-2 text-center">{{ $ii->batch_number }}</td>
                         <td class="border border-slate-900 px-2 py-2 text-center">{{ $ii->product->unit }}</td>
                         <td class="border border-slate-900 px-2 py-2 text-right font-bold">{{ number_format($ii->quantity) }}</td>
-                        <td class="border border-slate-900 px-2 py-2 text-right">{{ number_format($ii->unit_price) }}</td>
-                        <td class="border border-slate-900 px-2 py-2 text-right font-black">{{ number_format($ii->total_amount) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
-                <tfoot>
-                    <tr class="bg-slate-50 font-black">
-                        <td colspan="6" class="border border-slate-900 px-2 py-2 text-right uppercase">Tổng cộng:</td>
-                        <td class="border border-slate-900 px-2 py-2 text-right text-sm font-black">{{ number_format($pItem->items->sum('total_amount')) }} đ</td>
-                    </tr>
-                </tfoot>
             </table>
 
-            <div class="grid grid-cols-4 gap-4 text-center mt-12">
+            <div class="grid grid-cols-3 gap-4 text-center mt-12">
                 <div>
                     <p class="font-bold text-xs uppercase">Người giao hàng</p>
                     <p class="text-[9px] italic">(Ký, ghi rõ họ tên)</p>
@@ -423,10 +402,6 @@
                 </div>
                 <div>
                     <p class="font-bold text-xs uppercase">Thủ kho</p>
-                    <p class="text-[9px] italic">(Ký, ghi rõ họ tên)</p>
-                </div>
-                <div>
-                    <p class="font-bold text-xs uppercase">Giám đốc</p>
                     <p class="text-[9px] italic">(Ký, ghi rõ họ tên)</p>
                 </div>
             </div>

@@ -11,6 +11,7 @@ class StockOut extends Model
         'code',
         'customer_name',
         'receiver_name',
+        'receiver_contact',
         'asset_code',
         'type',
         'status',

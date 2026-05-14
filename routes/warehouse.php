@@ -31,6 +31,9 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return view('warehouse.stock-count');
     })->name('stock-count')->middleware('permission:stock-count');
 
+    Route::get('/stock-transfer', \App\Livewire\Warehouse\StockTransferList::class)->name('stock-transfer.index');
+    Route::get('/stock-transfer/create', \App\Livewire\Warehouse\StockTransferForm::class)->name('stock-transfer.create');
+
     Route::get('/bom', function () {
         return view('warehouse.bom');
     })->name('bom')->middleware('permission:bom');

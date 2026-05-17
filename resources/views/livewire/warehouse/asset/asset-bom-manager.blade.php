@@ -1,4 +1,198 @@
-<div class="space-y-4">
+<div class="space-y-4" x-data="{ 
+    activeTab: 'excel',
+    ocrProgress: 0,
+    ocrStatus: '',
+    ocrRunning: false,
+    ocrImageSrc: '',
+    ocrParsedRows: [],
+    
+    // Xử lý kéo thả và dán ảnh chụp
+    handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            this.readImage(file);
+        }
+    },
+    handleImagePaste(event) {
+        const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                this.readImage(file);
+                break;
+            }
+        }
+    },
+    readImage(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.ocrImageSrc = e.target.result;
+            this.ocrStatus = 'Hình ảnh đã sẵn sàng để nhận diện!';
+            this.ocrParsedRows = [];
+        };
+        reader.readAsDataURL(file);
+    },
+    
+    // Chạy OCR sử dụng Tesseract.js
+    async runOCR() {
+        if (!this.ocrImageSrc) {
+            alert('Vui lòng chọn hoặc dán ảnh chụp thiết bị/bảng định mức trước!');
+            return;
+        }
+        
+        this.ocrRunning = true;
+        this.ocrProgress = 10;
+        this.ocrStatus = 'Đang khởi tạo công cụ nhận diện AI...';
+        
+        try {
+            const worker = await Tesseract.createWorker('vie+eng', 1, {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        this.ocrProgress = Math.round(15 + m.progress * 80);
+                        this.ocrStatus = `Đang phân tích cấu trúc bảng định mức: ${Math.round(m.progress * 100)}%`;
+                    }
+                }
+            });
+            
+            this.ocrStatus = 'Đang quét và nhận diện chữ tiếng Việt...';
+            const { data: { text } } = await worker.recognize(this.ocrImageSrc);
+            await worker.terminate();
+            
+            this.ocrProgress = 95;
+            this.ocrStatus = 'Đang bóc tách cột và chuẩn hóa định mức bảo dưỡng...';
+            
+            // Phân tích văn bản nhận diện được
+            this.ocrParsedRows = this.parseTextToBoms(text);
+            
+            this.ocrProgress = 100;
+            this.ocrRunning = false;
+            this.ocrStatus = `Nhận diện xong! Tìm thấy ${this.ocrParsedRows.length} dòng thiết bị. Vui lòng xem bảng xem trước phía dưới.`;
+        } catch (error) {
+            console.error(error);
+            this.ocrRunning = false;
+            this.ocrStatus = 'Lỗi nhận diện: ' + error.message;
+            alert('Nhận diện thất bại! Hãy thử ảnh có độ sắc nét tốt hơn.');
+        }
+    },
+    
+    // Giải thuật bóc tách và phân tích văn bản OCR thông minh
+    parseTextToBoms(text) {
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+        const parsed = [];
+        
+        lines.forEach(line => {
+            // Định dạng Mã tài sản: TS-XXX hoặc tương tự
+            const assetCodeMatch = line.match(/(TS-\d+|TS\d+|[A-Z0-9]{3,8}-\d+)/i);
+            if (!assetCodeMatch) return;
+            const assetCode = assetCodeMatch[0].toUpperCase();
+            
+            let rest = line.replace(assetCodeMatch[0], '').trim();
+            
+            // Định dạng mã các lọc nhớt, thủy lực, gió (dạng LF-XXX, HF-XXX, AF-XXX)
+            const filterMatches = rest.match(/([A-Z]{2,3}-\d+|[A-Z]{2}\d{3,5})/g) || [];
+            let engineFilter = '';
+            let hydraulicFilter = '';
+            let airFilter = '';
+            
+            filterMatches.forEach(filter => {
+                rest = rest.replace(filter, '').trim();
+                const fUpper = filter.toUpperCase();
+                if (fUpper.startsWith('LF') || fUpper.includes('LF') || fUpper.includes('ENG')) {
+                    engineFilter = fUpper;
+                } else if (fUpper.startsWith('HF') || fUpper.includes('HF') || fUpper.includes('HYD')) {
+                    hydraulicFilter = fUpper;
+                } else if (fUpper.startsWith('AF') || fUpper.includes('AF') || fUpper.includes('AIR')) {
+                    airFilter = fUpper;
+                } else {
+                    if (!engineFilter) engineFilter = fUpper;
+                    else if (!hydraulicFilter) hydraulicFilter = fUpper;
+                    else if (!airFilter) airFilter = fUpper;
+                }
+            });
+            
+            // Định dạng Chu kỳ (ví dụ: 250 giờ, 500 gio, 250h, 5000km)
+            const cycleMatch = rest.match(/(\d+\s*(giờ|gio|h|km|hours))/i);
+            let cycle = '';
+            if (cycleMatch) {
+                cycle = cycleMatch[0];
+                rest = rest.replace(cycleMatch[0], '').trim();
+            }
+            
+            // Bóc tách dung tích dầu động cơ và dầu thủy lực (các số lẻ còn lại)
+            const numberMatches = rest.match(/(\b\d+\b)/g) || [];
+            let engineOil = '';
+            let hydraulicOil = '';
+            
+            numberMatches.forEach(numStr => {
+                rest = rest.replace(numStr, '').trim();
+                const val = parseInt(numStr);
+                if (val > 0) {
+                    if (val >= 30 && !hydraulicOil) {
+                        hydraulicOil = val;
+                    } else if (!engineOil) {
+                        engineOil = val;
+                    } else if (!hydraulicOil) {
+                        hydraulicOil = val;
+                    }
+                }
+            });
+            
+            // Bóc tách Tên thiết bị và Bộ phận từ phần chữ còn lại
+            let name = '';
+            let department = '';
+            const words = rest.split(/\s+/).filter(w => w.length > 0);
+            
+            if (words.length > 0) {
+                if (words.length <= 3) {
+                    name = words.join(' ');
+                } else {
+                    const lastTwo = words.slice(-2).join(' ');
+                    if (/kho|van|co|gioi|bao|tri|truong|xi|nghiep/i.test(lastTwo)) {
+                        department = lastTwo;
+                        name = words.slice(0, -2).join(' ');
+                    } else {
+                        name = words.slice(0, -1).join(' ');
+                        department = words.slice(-1).join(' ');
+                    }
+                }
+            }
+            
+            parsed.push({
+                asset_code: assetCode,
+                name: name || 'Thiết bị mới',
+                department: department || 'Cơ giới',
+                engine_oil_cap: engineOil || '',
+                hydraulic_oil_cap: hydraulicOil || '',
+                engine_oil_filter: engineFilter || '',
+                hydraulic_filter: hydraulicFilter || '',
+                air_filter: airFilter || '',
+                maintenance_cycle: cycle || '250 giờ'
+            });
+        });
+        
+        return parsed;
+    },
+    
+    // Lưu kết quả nhận diện xuống DB qua Livewire
+    submitOcrData() {
+        if (this.ocrParsedRows.length === 0) {
+            alert('Không có dữ liệu thiết bị nào để đồng bộ!');
+            return;
+        }
+        
+        // Gọi Livewire action
+        $wire.saveOcrData(this.ocrParsedRows);
+        
+        // Reset state
+        this.ocrParsedRows = [];
+        this.ocrImageSrc = '';
+        this.ocrStatus = '';
+        this.ocrProgress = 0;
+    }
+}">
+    <!-- Thư viện Tesseract.js phục vụ AI OCR trực tiếp ở trình duyệt -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
     <!-- CSS để in ấn -->
     <style>
         @media print {
@@ -73,10 +267,10 @@
                 ➕ Thêm thiết bị
             </button>
 
-            <!-- Nút NHẬP EXCEL -->
+            <!-- Nút NHẬP EXCEL / OCR -->
             <button wire:click="$set('showImportModal', true)" 
                     class="px-3 py-2 text-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 shadow-sm transition duration-150 flex items-center gap-1">
-                📥 Nhập Excel
+                📥 Nhập Excel & Ảnh
             </button>
 
             <!-- Nút XUẤT EXCEL -->
@@ -282,48 +476,166 @@
         @endif
     </div>
 
-    <!-- MODAL NHẬP EXCEL -->
+    <!-- MODAL NHẬP ĐA PHƯƠNG THỨC (EXCEL & OCR ẢNH CHỤP) -->
     @if($showImportModal)
         <div class="fixed inset-0 z-50 overflow-y-auto no-print">
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
                 <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
                 
-                <div class="inline-block align-middle bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-100">
-                    <div class="bg-white px-6 pt-6 pb-4">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-base font-black text-slate-800 uppercase tracking-tight">📥 Nhập định mức từ Excel/CSV</h3>
-                            <button wire:click="$set('showImportModal', false)" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+                <div class="inline-block align-middle bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-slate-100">
+                    
+                    <!-- Tab Header -->
+                    <div class="bg-slate-50 border-b border-slate-150 px-6 py-3 flex items-center justify-between">
+                        <div class="flex gap-4">
+                            <button @click="activeTab = 'excel'" 
+                                    :class="activeTab === 'excel' ? 'border-sky-600 text-sky-600 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
+                                    class="py-2 px-1 text-sm border-b-2 transition duration-150">
+                                📥 Nhập từ Excel/CSV linh hoạt
+                            </button>
+                            <button @click="activeTab = 'ocr'" 
+                                    :class="activeTab === 'ocr' ? 'border-sky-600 text-sky-600 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
+                                    class="py-2 px-1 text-sm border-b-2 transition duration-150 flex items-center gap-1.5">
+                                📷 Nhận diện từ Ảnh chụp (AI OCR)
+                                <span class="bg-indigo-100 text-indigo-800 text-[10px] px-1.5 py-0.5 rounded font-black uppercase">Mới</span>
+                            </button>
                         </div>
-                        
-                        <div class="p-3 bg-sky-50 text-sky-850 rounded-lg text-xs font-semibold mb-4 leading-relaxed">
-                            💡 Cột trong tệp Excel/CSV cần xếp theo đúng thứ tự:
-                            <span class="font-extrabold text-sky-950">Mã tài sản, Tên thiết bị, Bộ phận, Dầu động cơ, Dầu thủy lực, Lọc nhớt, Lọc thủy lực, Lọc gió, Chu kỳ.</span>
+                        <button wire:click="$set('showImportModal', false)" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+                    </div>
+
+                    <!-- Tab 1: Nhập từ Excel/CSV -->
+                    <div x-show="activeTab === 'excel'" class="p-6 space-y-4">
+                        <div class="p-3.5 bg-emerald-50 text-emerald-850 rounded-lg text-xs font-semibold leading-relaxed border border-emerald-100">
+                            ✨ <span class="font-extrabold text-emerald-950">Hệ thống đồng bộ cột thông minh:</span> Anh/chị có thể sắp xếp các cột Excel/CSV theo thứ tự tùy ý! Hệ thống sẽ quét các dòng tiêu đề như 
+                            <i>"Mã tài sản", "Tên thiết bị", "Bộ phận", "Dầu động cơ", "Lọc nhớt"...</i> để tự động phân tích và trích xuất thông tin một cách chuẩn xác nhất.
                         </div>
 
-                        <div class="mb-4">
+                        <div>
                             <p class="text-xs text-slate-500 mb-2">Tải tệp mẫu để điền thông tin nhanh chóng và đúng định dạng:</p>
-                            <button wire:click="downloadTemplate" class="text-sky-600 hover:text-sky-800 text-xs font-black underline flex items-center gap-1">
-                                📥 Tải tệp tin Excel/CSV mẫu tại đây
+                            <button wire:click="downloadTemplate" class="text-sky-650 hover:text-sky-850 text-xs font-black underline flex items-center gap-1">
+                                📥 Tải tệp tin Excel/CSV mẫu tiêu chuẩn tại đây
                             </button>
                         </div>
 
-                        <div class="mt-4">
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Chọn tệp từ máy tính</label>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Chọn tệp Excel/CSV từ máy tính</label>
                             <input type="file" wire:model="excelFile" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border file:border-slate-200 file:text-xs file:font-bold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100" />
                             @error('excelFile') <span class="text-red-500 text-xs font-bold block mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <div wire:loading wire:target="excelFile" class="mt-3 text-xs text-sky-600 font-bold flex items-center gap-1.5">
+                        <div wire:loading wire:target="excelFile" class="text-xs text-sky-600 font-bold flex items-center gap-1.5">
                             ⏳ Đang tải tệp tin lên hệ thống...
                         </div>
+
+                        <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                            <button type="button" wire:click="$set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                                Hủy bỏ
+                            </button>
+                            <button type="button" wire:click="importExcel" class="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-black text-white transition">
+                                Xác nhận nhập tệp
+                            </button>
+                        </div>
                     </div>
-                    <div class="bg-slate-50 px-6 py-3 sm:flex sm:flex-row-reverse gap-2">
-                        <button type="button" wire:click="importExcel" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-xs font-black text-white sm:w-auto transition">
-                            Xác nhận nhập
-                        </button>
-                        <button type="button" wire:click="$set('showImportModal', false)" class="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-200 shadow-sm px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 sm:mt-0 sm:w-auto transition">
-                            Hủy bỏ
-                        </button>
+
+                    <!-- Tab 2: Nhận diện từ Ảnh chụp AI OCR -->
+                    <div x-show="activeTab === 'ocr'" class="p-6 space-y-4" @paste="handleImagePaste($event)">
+                        <div class="p-3 bg-indigo-50 text-indigo-850 rounded-lg text-xs font-semibold leading-relaxed border border-indigo-100">
+                            📷 <span class="font-extrabold text-indigo-950">Giải pháp nhận diện ảnh thông minh:</span> Anh/chị chỉ cần **chụp ảnh màn hình bảng Excel hoặc chụp ảnh thiết bị**, rồi nhấn **Ctrl + V** để dán ảnh trực tiếp vào đây hoặc chọn ảnh chụp để AI bóc tách định mức nhanh chóng!
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Khu vực tải ảnh & Preview -->
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center min-h-[220px] bg-slate-50 relative hover:border-sky-350 transition-colors">
+                                <template x-if="!ocrImageSrc">
+                                    <div class="text-center space-y-2 pointer-events-none select-none">
+                                        <span class="text-3xl block">📋</span>
+                                        <p class="text-xs font-bold text-slate-600">Nhấp Ctrl + V để dán ảnh chụp</p>
+                                        <p class="text-[10px] text-slate-400">Hoặc click nút chọn tệp bên dưới</p>
+                                        <input type="file" @change="handleImageUpload($event)" accept="image/*" class="mt-2 text-xs text-slate-500 w-44" />
+                                    </div>
+                                </template>
+                                
+                                <template x-if="ocrImageSrc">
+                                    <div class="w-full flex flex-col items-center relative">
+                                        <img :src="ocrImageSrc" class="max-h-[160px] rounded-lg shadow-sm border border-slate-200 object-contain" />
+                                        <button @click="ocrImageSrc = ''; ocrParsedRows = []" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow hover:bg-red-700">✕</button>
+                                        <span class="text-[10px] text-slate-500 font-bold block mt-2">Ảnh đã sẵn sàng. Bấm bắt đầu bên phải ➡️</span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Trạng thái quét AI -->
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-150 flex flex-col justify-between">
+                                <div class="space-y-3">
+                                    <h4 class="text-xs font-bold text-slate-700 uppercase">Trạng thái nhận diện AI</h4>
+                                    <p class="text-xs font-semibold text-slate-600" x-text="ocrStatus || 'Chưa tải ảnh chụp lên...'"></p>
+                                    
+                                    <!-- Thanh tiến trình quét -->
+                                    <template x-if="ocrRunning">
+                                        <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                                            <div class="bg-indigo-650 h-2.5 rounded-full transition-all duration-300" :style="`width: ${ocrProgress}%`"></div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div class="pt-4">
+                                    <button type="button" @click="runOCR()" :disabled="ocrRunning || !ocrImageSrc" 
+                                            class="w-full py-2.5 rounded-lg text-xs font-black text-white shadow bg-indigo-600 hover:bg-indigo-750 disabled:bg-slate-350 disabled:cursor-not-allowed transition flex items-center justify-center gap-1">
+                                        🔍 Bắt đầu phân tích AI OCR
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kết quả phân tích dạng lưới xem trước -->
+                        <template x-if="ocrParsedRows.length > 0">
+                            <div class="border border-slate-200 rounded-lg overflow-hidden bg-white mt-4">
+                                <div class="bg-slate-50 px-4 py-2 border-b border-slate-150">
+                                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-tight">📋 Kết quả xem trước (Có thể sửa lại nếu sai sót)</h4>
+                                </div>
+                                <div class="max-h-[220px] overflow-y-auto">
+                                    <table class="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-100 font-bold border-b border-slate-200 text-slate-800">
+                                                <th class="p-2 w-20">Mã TS</th>
+                                                <th class="p-2">Tên thiết bị</th>
+                                                <th class="p-2">Bộ phận</th>
+                                                <th class="p-2 text-center w-12">Dầu máy</th>
+                                                <th class="p-2 text-center w-12">Thủy lực</th>
+                                                <th class="p-2 w-16">Lọc nhớt</th>
+                                                <th class="p-2 w-16">Lọc TL</th>
+                                                <th class="p-2 w-16">Lọc gió</th>
+                                                <th class="p-2 w-16 text-center">Chu kỳ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="(row, idx) in ocrParsedRows" :key="idx">
+                                                <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                                                    <td class="p-1.5"><input type="text" x-model="row.asset_code" class="w-full p-1 text-[11px] font-bold text-sky-850 uppercase border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.name" class="w-full p-1 text-[11px] font-bold uppercase border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.department" class="w-full p-1 text-[11px] border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.engine_oil_cap" class="w-full p-1 text-[11px] text-center font-bold border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.hydraulic_oil_cap" class="w-full p-1 text-[11px] text-center font-bold border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.engine_oil_filter" class="w-full p-1 text-[11px] uppercase border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.hydraulic_filter" class="w-full p-1 text-[11px] uppercase border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.air_filter" class="w-full p-1 text-[11px] uppercase border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.maintenance_cycle" class="w-full p-1 text-[11px] text-center border rounded bg-slate-50 focus:bg-white" /></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                            <button type="button" wire:click="$set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                                Hủy bỏ
+                            </button>
+                            <button type="button" @click="submitOcrData()" :disabled="ocrParsedRows.length === 0"
+                                    class="rounded-lg bg-indigo-650 hover:bg-indigo-750 disabled:bg-slate-300 disabled:cursor-not-allowed px-5 py-2 text-xs font-black text-white shadow-sm transition">
+                                💾 Đồng bộ dữ liệu nhận diện vào hệ thống
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

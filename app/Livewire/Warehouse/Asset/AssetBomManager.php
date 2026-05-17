@@ -304,19 +304,83 @@ class AssetBomManager extends Component
                 $rows = $data[0];
                 $header = array_shift($rows);
                 
+                // Khởi tạo các chỉ số cột mặc định là null
+                $indices = [
+                    'asset_code' => null,
+                    'name' => null,
+                    'department' => null,
+                    'engine_oil_cap' => null,
+                    'hydraulic_oil_cap' => null,
+                    'engine_oil_filter' => null,
+                    'hydraulic_filter' => null,
+                    'air_filter' => null,
+                    'maintenance_cycle' => null
+                ];
+
+                // Hàm chuẩn hóa chuỗi để so sánh
+                $normalize = function($str) {
+                    $str = mb_strtolower($str, 'UTF-8');
+                    $str = preg_replace('/[áàảãạăắằẳẵặâấầẩẫậ]/u', 'a', $str);
+                    $str = preg_replace('/[éèẻẽẹêếềểễệ]/u', 'e', $str);
+                    $str = preg_replace('/[íìỉĩị]/u', 'i', $str);
+                    $str = preg_replace('/[óòỏõọôốồổỗộơớờởỡợ]/u', 'o', $str);
+                    $str = preg_replace('/[úùủũụưứừửữự]/u', 'u', $str);
+                    $str = preg_replace('/[ýỳỷỹỵ]/u', 'y', $str);
+                    $str = preg_replace('/[đ]/u', 'd', $str);
+                    $str = preg_replace('/[^a-z0-9]/', '', $str);
+                    return $str;
+                };
+
+                // So khớp tiêu đề cột thông minh
+                foreach ($header as $index => $colName) {
+                    if (empty($colName)) continue;
+                    $norm = $normalize($colName);
+                    
+                    if (str_contains($norm, 'mataisan') || str_contains($norm, 'assetcode') || str_contains($norm, 'macode') || $norm === 'ma' || $norm === 'code') {
+                        $indices['asset_code'] = $index;
+                    } elseif (str_contains($norm, 'tenthietbi') || str_contains($norm, 'tenmay') || str_contains($norm, 'assetname') || str_contains($norm, 'name') || str_contains($norm, 'thietbi')) {
+                        $indices['name'] = $index;
+                    } elseif (str_contains($norm, 'bophan') || str_contains($norm, 'phongban') || str_contains($norm, 'department') || str_contains($norm, 'dept')) {
+                        $indices['department'] = $index;
+                    } elseif (str_contains($norm, 'daudongco') || str_contains($norm, 'nhotdongco') || str_contains($norm, 'engineoil') || str_contains($norm, '15w40')) {
+                        $indices['engine_oil_cap'] = $index;
+                    } elseif (str_contains($norm, 'nhotthuyluc') || str_contains($norm, 'dauthuyluc') || str_contains($norm, 'hydraulicoil') || str_contains($norm, 'aw68')) {
+                        $indices['hydraulic_oil_cap'] = $index;
+                    } elseif (str_contains($norm, 'locnhotdongco') || str_contains($norm, 'locdau') || str_contains($norm, 'locnhot') || str_contains($norm, 'engineoilfilter')) {
+                        $indices['engine_oil_filter'] = $index;
+                    } elseif (str_contains($norm, 'locthuyluc') || str_contains($norm, 'hydraulicfilter') || str_contains($norm, 'lochut') || str_contains($norm, 'lochoi')) {
+                        $indices['hydraulic_filter'] = $index;
+                    } elseif (str_contains($norm, 'locgio') || str_contains($norm, 'airfilter')) {
+                        $indices['air_filter'] = $index;
+                    } elseif (str_contains($norm, 'chuky') || str_contains($norm, 'cycle') || str_contains($norm, 'baoduong') || str_contains($norm, 'period')) {
+                        $indices['maintenance_cycle'] = $index;
+                    }
+                }
+
+                // Nếu không khớp tiêu đề nào thì fallback theo vị trí cột mặc định
+                if ($indices['asset_code'] === null) $indices['asset_code'] = 0;
+                if ($indices['name'] === null) $indices['name'] = 1;
+                if ($indices['department'] === null) $indices['department'] = 2;
+                if ($indices['engine_oil_cap'] === null) $indices['engine_oil_cap'] = 3;
+                if ($indices['hydraulic_oil_cap'] === null) $indices['hydraulic_oil_cap'] = 4;
+                if ($indices['engine_oil_filter'] === null) $indices['engine_oil_filter'] = 5;
+                if ($indices['hydraulic_filter'] === null) $indices['hydraulic_filter'] = 6;
+                if ($indices['air_filter'] === null) $indices['air_filter'] = 7;
+                if ($indices['maintenance_cycle'] === null) $indices['maintenance_cycle'] = 8;
+                
                 $importedCount = 0;
                 foreach ($rows as $row) {
-                    if (empty($row[0])) continue;
+                    $assetCode = isset($row[$indices['asset_code']]) ? trim($row[$indices['asset_code']]) : '';
+                    if (empty($assetCode)) continue;
                     
-                    $assetCode = trim($row[0]);
-                    $name = trim($row[1] ?? '');
-                    $dept = trim($row[2] ?? '');
-                    $engOil = trim($row[3] ?? '');
-                    $hydOil = trim($row[4] ?? '');
-                    $engFilter = trim($row[5] ?? '');
-                    $hydFilter = trim($row[6] ?? '');
-                    $airFilter = trim($row[7] ?? '');
-                    $cycle = trim($row[8] ?? '');
+                    $name = isset($row[$indices['name']]) ? trim($row[$indices['name']]) : '';
+                    $dept = isset($row[$indices['department']]) ? trim($row[$indices['department']]) : '';
+                    $engOil = isset($row[$indices['engine_oil_cap']]) ? trim($row[$indices['engine_oil_cap']]) : '';
+                    $hydOil = isset($row[$indices['hydraulic_oil_cap']]) ? trim($row[$indices['hydraulic_oil_cap']]) : '';
+                    $engFilter = isset($row[$indices['engine_oil_filter']]) ? trim($row[$indices['engine_oil_filter']]) : '';
+                    $hydFilter = isset($row[$indices['hydraulic_filter']]) ? trim($row[$indices['hydraulic_filter']]) : '';
+                    $airFilter = isset($row[$indices['air_filter']]) ? trim($row[$indices['air_filter']]) : '';
+                    $cycle = isset($row[$indices['maintenance_cycle']]) ? trim($row[$indices['maintenance_cycle']]) : '';
 
                     Asset::updateOrCreate(
                         ['asset_code' => $assetCode],
@@ -338,13 +402,41 @@ class AssetBomManager extends Component
                 $this->initFields();
                 $this->showImportModal = false;
                 $this->excelFile = null;
-                session()->flash('message', "Nhập dữ liệu thành công! Đã xử lý {$importedCount} thiết bị.");
+                session()->flash('message', "Nhập dữ liệu thành công! Đã đồng bộ và xử lý {$importedCount} thiết bị.");
             } else {
                 session()->flash('error', 'Tệp tin trống hoặc không hợp lệ.');
             }
         } catch (\Exception $e) {
             session()->flash('error', 'Có lỗi xảy ra khi nhập dữ liệu: ' . $e->getMessage());
         }
+    }
+
+    public function saveOcrData($rows)
+    {
+        $savedCount = 0;
+        foreach ($rows as $row) {
+            if (empty($row['asset_code'])) continue;
+            
+            Asset::updateOrCreate(
+                ['asset_code' => trim($row['asset_code'])],
+                [
+                    'name' => trim($row['name'] ?: 'Thiết bị mới'),
+                    'department' => trim($row['department'] ?: 'Cơ giới'),
+                    'engine_oil_cap' => trim($row['engine_oil_cap'] ?: null),
+                    'hydraulic_oil_cap' => trim($row['hydraulic_oil_cap'] ?: null),
+                    'engine_oil_filter' => trim($row['engine_oil_filter'] ?: null),
+                    'hydraulic_filter' => trim($row['hydraulic_filter'] ?: null),
+                    'air_filter' => trim($row['air_filter'] ?: null),
+                    'maintenance_cycle' => trim($row['maintenance_cycle'] ?: null),
+                    'status' => 'active'
+                ]
+            );
+            $savedCount++;
+        }
+
+        $this->initFields();
+        $this->showImportModal = false;
+        session()->flash('message', "Đồng bộ nhận diện ảnh thành công! Đã lưu {$savedCount} thiết bị.");
     }
 
     public function render()

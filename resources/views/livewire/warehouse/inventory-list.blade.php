@@ -32,7 +32,7 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap gap-3 items-center">
                 <!-- Tìm kiếm -->
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tên/Mã sản phẩm..."
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tên/Mã vật tư..."
                        class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-64">
                 
                 <!-- Bộ lọc Hãng SX -->
@@ -74,7 +74,7 @@
                                 ✏️ Sửa số lượng / Vị trí
                             </button>
                         @endif
-                        <button wire:click="deleteSelected" wire:confirm="Xác nhận xóa dữ liệu tồn kho các sản phẩm đã chọn?" @click="open = false" class="w-full text-left px-4 py-3 text-sm hover:bg-rose-50 flex items-center gap-2 text-rose-600 font-medium border-t border-gray-100">
+                        <button wire:click="deleteSelected" wire:confirm="Xác nhận xóa dữ liệu tồn kho các vật tư đã chọn?" @click="open = false" class="w-full text-left px-4 py-3 text-sm hover:bg-rose-50 flex items-center gap-2 text-rose-600 font-medium border-t border-gray-100">
                             🗑️ Xóa đã chọn ({{ count($selectedItems) }})
                         </button>
                     </div>
@@ -88,7 +88,7 @@
                 <button wire:click="$set('showImportModal', true)" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm font-bold mr-2">
                     📥 Nhập từ Excel
                 </button>
-                <button disabled title="Vui lòng chọn ít nhất 1 sản phẩm để in" class="bg-gray-300 text-gray-500 cursor-not-allowed px-6 py-2 rounded-lg flex items-center gap-2 shadow-sm">
+                <button disabled title="Vui lòng chọn ít nhất 1 vật tư để in" class="bg-gray-300 text-gray-500 cursor-not-allowed px-6 py-2 rounded-lg flex items-center gap-2 shadow-sm">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                     In danh sách
                 </button>
@@ -110,8 +110,8 @@
                                {{ count($selectedItems) > 0 && count($selectedItems) === count($inventories->pluck('id')) ? 'checked' : '' }}
                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                     </th>
-                    <th wire:click="sortBy('products.code')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 italic">Mã SP</th>
-                    <th wire:click="sortBy('products.name')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">Tên sản phẩm</th>
+                    <th wire:click="sortBy('products.code')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 italic">Mã Vật Tư</th>
+                    <th wire:click="sortBy('products.name')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">TÊN VẬT TƯ</th>
                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hãng SX</th>
                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Mã Code NCC</th>
                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hạn dùng</th>
@@ -180,7 +180,7 @@
                         <div class="space-y-4 mt-4 max-h-[60vh] overflow-y-auto px-1 custom-scrollbar">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Mã SP <span class="text-rose-500">*</span></label>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Mã Vật Tư <span class="text-rose-500">*</span></label>
                                     <input type="text" wire:model="editingProductCode" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm">
                                     @error('editingProductCode') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
                                 </div>
@@ -192,7 +192,7 @@
                             </div>
                             
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">Tên sản phẩm <span class="text-rose-500">*</span></label>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">TÊN VẬT TƯ <span class="text-rose-500">*</span></label>
                                 <input type="text" wire:model="editingProductName" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                 @error('editingProductName') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
                             </div>
@@ -262,11 +262,11 @@
                         <h3 class="text-lg font-bold text-gray-900 mb-2">📥 Nhập tồn kho từ Excel</h3>
                         
                         <div class="mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
-                            <p class="text-[13px] text-blue-800 font-medium mb-1">Hệ thống sẽ cập nhật tự động dựa trên các cột có trong file (bắt buộc phải có cột Mã sản phẩm):</p>
+                            <p class="text-[13px] text-blue-800 font-medium mb-1">Hệ thống sẽ cập nhật tự động dựa trên các cột có trong file (bắt buộc phải có cột Mã vật tư):</p>
                             <div class="grid grid-cols-2 gap-x-2 gap-y-1 mt-2">
                                 <ul class="list-disc list-inside text-xs text-blue-700 font-mono ml-1">
-                                    <li>ma_sp <span class="text-gray-500 font-sans italic">(Mã SP - Bắt buộc)</span></li>
-                                    <li>ten_sp <span class="text-gray-500 font-sans italic">(Tên sản phẩm)</span></li>
+                                    <li>ma_sp <span class="text-gray-500 font-sans italic">(Mã Vật Tư - Bắt buộc)</span></li>
+                                    <li>ten_sp <span class="text-gray-500 font-sans italic">(Tên vật tư)</span></li>
                                     <li>hang_sx <span class="text-gray-500 font-sans italic">(Hãng SX)</span></li>
                                     <li>so_lo <span class="text-gray-500 font-sans italic">(Mã Code NCC)</span></li>
                                     <li>han_dung <span class="text-gray-500 font-sans italic">(Hạn dùng)</span></li>

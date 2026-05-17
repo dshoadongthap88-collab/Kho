@@ -17,6 +17,16 @@ class StockOut extends Model
         'status',
         'note',
         'created_by',
+        'project_name',
+        'document_number',
+        'license_plate',
+        'km_number',
+        'operating_hours',
+        'device_name',
+        'department',
+        'warehouse_keeper',
+        'supervisor_qltb',
+        'supervisor_ca',
     ];
 
     public function creator()

@@ -83,7 +83,7 @@
                             </span>
                         </div>
                         
-                        <h2 class="text-2xl font-bold mb-2">Nhà Số {{ $i }}</h2>
+                        <h2 class="text-2xl font-bold mb-2 text-center">{{ $i == 1 ? 'Dự án Hóc Môn' : ($i == 2 ? 'Dự án Hậu Nghĩa' : ($i == 3 ? 'Dự án Cần Giờ' : 'Dự án Số 4')) }}</h2>
                         
                         @if($isAllowed)
                             <div class="mt-4 px-4 py-1.5 rounded-full bg-green-500/20 border border-green-500/30 text-green-300 text-sm font-medium">
@@ -130,8 +130,8 @@
                 
                 <div class="mb-6">
                     <input type="password" id="password" name="password" required
-                           class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center tracking-widest text-lg"
-                           placeholder="••••••••" autofocus>
+                       class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center tracking-widest text-lg"
+                       placeholder="••••••••" autofocus>
                     <p id="errorMessage" class="text-red-400 text-sm mt-2 text-center hidden"></p>
                 </div>
 
@@ -150,7 +150,8 @@
     <script>
         function openPinModal(houseId) {
             document.getElementById('houseId').value = houseId;
-            document.getElementById('modalHouseName').textContent = 'Nhà Số ' + houseId;
+            const projectNames = {1: 'Dự án Hóc Môn', 2: 'Dự án Hậu Nghĩa', 3: 'Dự án Cần Giờ', 4: 'Dự án Số 4'};
+            document.getElementById('modalHouseName').textContent = projectNames[houseId];
             document.getElementById('password').value = '';
             document.getElementById('errorMessage').classList.add('hidden');
             

@@ -74,7 +74,7 @@
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr class="bg-slate-800">
-                                    <th class="px-4 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 min-w-[200px]">Sản phẩm</th>
+                                    <th class="px-4 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 min-w-[200px]">Vật tư</th>
                                     <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Mã Code NCC</th>
                                     <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-32">Hạn dùng</th>
                                     <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Vị trí</th>
@@ -89,7 +89,7 @@
                                     <td class="px-4 py-3">
                                         <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}"
                                                class="w-full rounded-lg border-slate-200 text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-3 bg-slate-50 focus:bg-white"
-                                               placeholder="Mã hoặc tên SP...">
+                                               placeholder="Mã hoặc tên vật tư...">
                                         <datalist id="product_list_{{ $index }}">
                                             @foreach($products as $product)
                                                 <option value="{{ $product->code }} - {{ $product->name }}"></option>
@@ -148,7 +148,7 @@
             @endif
 
             <button wire:click="openProductModal" class="bg-white border-2 border-emerald-600 text-emerald-700 px-6 py-2.5 rounded-xl text-[12px] font-black flex items-center gap-2 hover:bg-emerald-50 transition-all shadow-sm active:scale-95">
-                <span>📦</span> TẠO NHANH SẢN PHẨM
+                <span>📦</span> TẠO NHANH VẬT TƯ
             </button>
         </div>
 
@@ -305,16 +305,16 @@
     @if($showProductModal)
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
             <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-                <h3 class="text-lg font-bold mb-4">Tạo nhanh sản phẩm mới</h3>
+                <h3 class="text-lg font-bold mb-4">Tạo nhanh vật tư mới</h3>
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Mã sản phẩm</label>
+                        <label class="block text-sm font-medium text-gray-700">Mã vật tư</label>
                         <input type="text" wire:model="newPCode" class="w-full rounded-lg border-gray-300 focus:ring-blue-500">
                         @error('newPCode') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Tên sản phẩm</label>
+                        <label class="block text-sm font-medium text-gray-700">Tên vật tư</label>
                         <input type="text" wire:model="newPName" class="w-full rounded-lg border-gray-300 focus:ring-blue-500">
                         @error('newPName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
@@ -372,7 +372,7 @@
                 <thead>
                     <tr class="bg-slate-100 uppercase text-[10px] font-black">
                         <th class="border border-slate-900 px-2 py-2 text-center w-10">STT</th>
-                        <th class="border border-slate-900 px-2 py-2 text-left">Tên sản phẩm / Quy cách</th>
+                        <th class="border border-slate-900 px-2 py-2 text-left">Tên vật tư / Quy cách</th>
                         <th class="border border-slate-900 px-2 py-2 text-center w-16">Mã Code NCC</th>
                         <th class="border border-slate-900 px-2 py-2 text-center w-16">ĐVT</th>
                         <th class="border border-slate-900 px-2 py-2 text-right w-20">Số lượng</th>

@@ -19,6 +19,9 @@ class StockOutItem extends Model
         'unit_price',
         'vat_rate',
         'total_amount',
+        'requested_quantity',
+        'recovered_quantity',
+        'item_note',
     ];
 
     public function stockOut()

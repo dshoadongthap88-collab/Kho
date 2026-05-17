@@ -74,7 +74,7 @@
             @endif
 
             <button wire:click="openModal" class="bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
-                <span>➕</span> THÊM SẢN PHẨM
+                <span>➕</span> THÊM VẬT TƯ
             </button>
             <button wire:click="$set('showImportModal', true)" class="bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-4 py-1.5 rounded-lg text-[11px] transition-all shadow-sm hover:shadow-md active:scale-95">
                 📥 IMPORT EXCEL
@@ -110,9 +110,9 @@
                                {{ count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
-                    <th class="px-3 py-4 text-[11px] font-black uppercase tracking-tighter text-slate-500">Mã sản phẩm</th>
+                    <th class="px-3 py-4 text-[11px] font-black uppercase tracking-tighter text-slate-500">Mã vật tư</th>
                     <th class="px-4 py-3 w-16 text-center">Hình ảnh</th>
-                    <th class="px-4 py-3">Tên sản phẩm</th>
+                    <th class="px-4 py-3">TÊN VẬT TƯ</th>
                     <th class="px-4 py-3">Phân loại</th>
                     <th class="px-4 py-3">Hãng sản xuất</th>
                     <th class="px-4 py-3">QC Hộp</th>
@@ -185,7 +185,7 @@
                     </tr>
                 @empty
                      <tr>
-                        <td colspan="11" class="px-4 py-8 text-center text-gray-500">Không tìm thấy sản phẩm nào.</td>
+                        <td colspan="11" class="px-4 py-8 text-center text-gray-500">Không tìm thấy vật tư nào.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -203,10 +203,10 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $isEdit ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới' }}</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $isEdit ? 'Chỉnh sửa vật tư' : 'Thêm vật tư mới' }}</h3>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="col-span-2 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mb-2">
-                                <label class="block text-[11px] font-black text-indigo-900 uppercase tracking-widest mb-3">📸 Hình ảnh sản phẩm</label>
+                                <label class="block text-[11px] font-black text-indigo-900 uppercase tracking-widest mb-3">📸 Hình ảnh vật tư</label>
                                 <div class="flex items-center gap-6">
                                     <div class="relative group">
                                         @if ($image)
@@ -241,12 +241,12 @@
                                 @error('image') <span class="text-rose-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Mã sản phẩm</label>
+                                <label class="block text-sm font-medium text-gray-700">Mã vật tư</label>
                                 <input type="text" wire:model="code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('code') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Tên sản phẩm</label>
+                                <label class="block text-sm font-medium text-gray-700">Tên vật tư</label>
                                 <input type="text" wire:model="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
@@ -349,7 +349,7 @@
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Nhập dữ liệu từ Excel</h3>
                         
                         <div class="mb-4">
-                            <p class="text-sm text-gray-500 mb-2">Tải tệp Excel (.xlsx, .xls) hoặc CSV để nhập hàng loạt sản phẩm.</p>
+                            <p class="text-sm text-gray-500 mb-2">Tải tệp Excel (.xlsx, .xls) hoặc CSV để nhập hàng loạt vật tư.</p>
                             <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium underline">Tải tệp mẫu (.xlsx) tại đây</a>
                         </div>
 
@@ -417,7 +417,7 @@
         .print-only { display: none; }
     </style>
 
-    <!-- PHIẾU IN DANH MỤC SẢN PHẨM -->
+    <!-- PHIẾU IN DANH MỤC VẬT TƯ -->
     <div class="print-only print-container" style="font-family: 'Times New Roman', Times, serif;">
         <!-- Header công ty -->
         <div style="margin-bottom: 20px;">
@@ -430,7 +430,7 @@
 
         <!-- Tiêu đề phiếu -->
         <div style="text-align: center; margin-bottom: 25px;">
-            <h2 style="font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; margin: 0;">BẢNG DANH MỤC SẢN PHẨM</h2>
+            <h2 style="font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; margin: 0;">BẢNG DANH MỤC VẬT TƯ</h2>
             <p style="font-size: 13px; font-style: italic; margin-top: 6px;">
                 Ngày {{ now()->format('d') }} tháng {{ now()->format('m') }} năm {{ now()->format('Y') }}
             </p>
@@ -441,8 +441,8 @@
             <thead>
                 <tr>
                     <th style="width: 40px; text-align: center;">STT</th>
-                    <th style="width: 110px;">Mã SP</th>
-                    <th>Tên sản phẩm</th>
+                    <th style="width: 110px;">Mã Vật Tư</th>
+                    <th>TÊN VẬT TƯ</th>
                     <th style="width: 130px;">Hãng SX</th>
                     <th style="width: 80px; text-align: center;">Số lượng</th>
                     <th style="width: 100px; text-align: center;">Vị trí</th>

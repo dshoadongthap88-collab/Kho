@@ -9,23 +9,23 @@
     @livewireStyles
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <nav class="bg-indigo-900 text-white shadow-xl sticky top-0 z-50">
+    <nav class="bg-sky-100 text-sky-950 border-b border-sky-200 shadow-md sticky top-0 z-50 no-print">
         <div class="w-full px-8 py-3 flex items-center justify-between">
             <div class="flex items-center gap-8">
-                <a href="{{ route('warehouse.inventory') }}" class="flex items-center gap-2 text-xl font-extrabold tracking-tight">
-                    <span class="bg-white text-indigo-900 p-1 rounded-lg">📦</span>
+                <a href="{{ route('warehouse.inventory') }}" class="flex items-center gap-2 text-xl font-extrabold tracking-tight text-sky-900 hover:text-sky-950 transition-all">
+                    <span class="bg-sky-600 text-white p-1.5 rounded-lg shadow-sm">📦</span>
                     <span>ERP KHO</span>
                 </a>
                 
                 <div class="hidden md:flex items-center gap-1">
                     <!-- Module 1: Thông tin NCC/KH -->
-                    <a href="{{ route('warehouse.contacts') }}" class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 hover:bg-indigo-800 {{ request()->routeIs('warehouse.contacts') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                    <a href="{{ route('warehouse.contacts') }}" class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 hover:bg-sky-200 hover:text-sky-950 {{ request()->routeIs('warehouse.contacts') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                         1. Thông tin NCC/KH
                     </a>
 
                     <!-- Module 2: Kho -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 group-hover:bg-indigo-800 flex items-center gap-1 {{ request()->routeIs('warehouse.stock-*') || request()->routeIs('warehouse.inventory') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.stock-*') || request()->routeIs('warehouse.inventory') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             2. Kho
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
@@ -40,7 +40,7 @@
 
                     <!-- Module 3: Sản Phẩm, BOM/NVL -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 group-hover:bg-indigo-800 flex items-center gap-1 {{ request()->routeIs('warehouse.product-*') || request()->routeIs('warehouse.bom') || request()->routeIs('warehouse.material-*') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.product-*') || request()->routeIs('warehouse.bom') || request()->routeIs('warehouse.material-*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             3. Sản phẩm & BOM
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
@@ -52,7 +52,7 @@
 
                     <!-- Module 4: Tổng hợp -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 group-hover:bg-indigo-800 flex items-center gap-1 {{ request()->routeIs('warehouse.purchase-*') || request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.purchase-*') || request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             4. Tổng hợp
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
@@ -64,11 +64,9 @@
                         </div>
                     </div>
 
-
-
                     <!-- Module 5: Tài sản & Bảo trì -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 group-hover:bg-indigo-800 flex items-center gap-1 {{ request()->routeIs('warehouse.asset-*') || request()->routeIs('warehouse.maintenance-*') ? 'bg-indigo-800 text-white shadow-inner' : 'text-indigo-100' }}">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.asset-*') || request()->routeIs('warehouse.maintenance-*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             5. Tài sản & Bảo trì
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
@@ -86,33 +84,33 @@
                 <!-- User Menu -->
                 @auth
                     <div class="relative group">
-                        <button class="flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-800 hover:bg-indigo-700 transition duration-150 text-sm font-medium text-white">
-                            <span class="bg-indigo-900 px-2 py-0.5 rounded text-xs text-indigo-200 border border-indigo-700">Nhà số {{ session('current_house', 1) }}</span>
+                        <button class="flex items-center gap-2 px-3 py-2 rounded-md bg-sky-200 hover:bg-sky-300 transition duration-150 text-sm font-bold text-sky-950">
+                            <span class="bg-sky-600 px-2 py-0.5 rounded text-xs text-white border border-sky-700">Dự án {{ session('current_house', 1) == 2 ? 'Hậu Nghĩa' : (session('current_house', 1) == 3 ? 'Cần Giờ' : 'Hóc Môn') }}</span>
                             <span>👤</span>
                             <span>{{ Auth::user()->role === 'admin' ? 'Admin' : 'Nhân viên' }} - {{ Auth::user()->name }}</span>
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute right-0 mt-0 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right -translate-y-2 group-hover:translate-y-0 z-50">
-                            <div class="px-4 py-3 border-b border-gray-100 text-sm text-gray-600">
+                            <div class="px-4 py-3 border-b border-gray-100 text-sm text-gray-600 text-left">
                                 <div class="font-semibold text-gray-800">{{ Auth::user()->name }}</div>
                             </div>
                             
                             @if(Auth::user()->role === 'admin' && session('current_house', 1) == 1)
-                                <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">👥 Quản lý nhân viên</a>
+                                <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 text-left">👥 Quản lý nhân viên</a>
                             @endif
 
-                            <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100 mt-1">
+                            <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100 mt-1 text-left">
                                 @csrf
                                 <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-slate-100 font-medium">🚪 Đăng xuất</button>
                             </form>
                         </div>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="px-3 py-2 rounded-md bg-indigo-800 hover:bg-indigo-700 transition duration-150 text-sm font-medium text-white">
+                    <a href="{{ route('login') }}" class="px-3 py-2 rounded-md bg-sky-200 hover:bg-sky-300 transition duration-150 text-sm font-bold text-sky-950">
                         Đăng nhập
                     </a>
                 @endauth
-                <span class="text-xs text-indigo-300">v1.1</span>
+                <span class="text-xs text-sky-600 font-bold">v1.1</span>
             </div>
         </div>
     </nav>

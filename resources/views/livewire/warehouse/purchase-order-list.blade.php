@@ -465,8 +465,8 @@
                 <thead>
                     <tr class="bg-gray-100">
                         <th class="border border-black px-2 py-2 w-10 text-center font-bold">STT</th>
-                        <th class="border border-black px-2 py-2 text-left w-24 font-bold">Mã SP</th>
-                        <th class="border border-black px-2 py-2 text-left font-bold">Tên SP (Nguyên vật liệu)</th>
+                        <th class="border border-black px-2 py-2 text-left w-24 font-bold">Mã Vật Tư</th>
+                        <th class="border border-black px-2 py-2 text-left font-bold">TÊN VẬT TƯ (Nguyên vật liệu)</th>
                         <th class="border border-black px-2 py-2 text-center w-24 font-bold">S.Lượng</th>
                         <th class="border border-black px-2 py-2 text-center w-20 font-bold">ĐVT</th>
                         <th class="border border-black px-2 py-2 text-left w-24 font-bold">Ghi chú</th>

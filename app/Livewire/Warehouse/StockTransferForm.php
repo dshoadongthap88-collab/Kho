@@ -17,6 +17,9 @@ class StockTransferForm extends Component
     public $note = '';
     public $items = [];
     public $available_houses = [1, 2, 3, 4];
+    public $searchQuery = ''; // Search query for autocomplete
+    public $searchResults = []; // Search results for autocomplete
+    public $activeIndex = null; // Currently active input index
 
     public function mount()
     {
@@ -38,6 +41,41 @@ class StockTransferForm extends Component
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
+    }
+
+    public function searchProduct($index, $value)
+    {
+        $this->activeIndex = $index;
+        if (empty($value)) {
+            $this->searchResults = [];
+            return;
+        }
+
+        $products = Product::where('code', 'like', "%{$value}%")
+            ->orWhere('name', 'like', "%{$value}%")
+            ->limit(10)
+            ->get(['code', 'name', 'unit']);
+
+        $this->searchResults = $products->map(function ($p) {
+            return [
+                'code' => $p->code,
+                'label' => "{$p->code} - {$p->name}",
+                'unit' => $p->unit,
+            ];
+        })->toArray();
+    }
+
+    public function selectProduct($index, $productCode)
+    {
+        $this->items[$index]['product_code'] = $productCode;
+        $this->searchResults = [];
+        $this->activeIndex = null;
+    }
+
+    public function clearSearch()
+    {
+        $this->searchResults = [];
+        $this->activeIndex = null;
     }
 
     public function save()
@@ -72,9 +110,14 @@ class StockTransferForm extends Component
             foreach ($this->items as $itemData) {
                 // Lấy sản phẩm ở nhà hiện tại (dùng product_code là code của Product hoặc Material)
                 // Giả định product_code là trường 'code' trong bảng products
-                $product = Product::where('code', $itemData['product_code'])->first();
+                $productCode = $itemData['product_code'];
+                if (str_contains($productCode, ' - ')) {
+                    $productCode = trim(explode(' - ', $productCode)[0]);
+                }
+
+                $product = Product::where('code', $productCode)->first();
                 if (!$product) {
-                    throw new \Exception("Mã sản phẩm/vật tư {$itemData['product_code']} không tồn tại trong nhà hiện tại.");
+                    throw new \Exception("Mã sản phẩm/vật tư {$productCode} không tồn tại trong nhà hiện tại.");
                 }
 
                 // Trừ tồn kho nhà hiện tại
@@ -113,6 +156,33 @@ class StockTransferForm extends Component
             // 2. Chuyển kết nối sang nhà đích để cộng tồn kho và tạo sản phẩm nếu cần
             $this->processTargetHouse($transfer, $this->to_house);
 
+            // 3. Phát thông báo chuyển kho tự động sang kênh chat chung đồng bộ
+            try {
+                $senderName = auth()->user()->name ?? 'Thủ kho';
+                $senderId = auth()->id();
+                
+                $fromHouseName = $currentHouse == 1 ? 'Hóc Môn' : ($currentHouse == 2 ? 'Hậu Nghĩa' : ($currentHouse == 3 ? 'Cần Giờ' : 'Số 4'));
+                $toHouseName = $this->to_house == 1 ? 'Hóc Môn' : ($this->to_house == 2 ? 'Hậu Nghĩa' : ($this->to_house == 3 ? 'Cần Giờ' : 'Số 4'));
+                
+                $itemDetails = [];
+                foreach ($this->items as $itemData) {
+                    $productCode = $itemData['product_code'];
+                    if (str_contains($productCode, ' - ')) {
+                        $productCode = trim(explode(' - ', $productCode)[0]);
+                    }
+                    $p = Product::where('code', $productCode)->first();
+                    $pName = $p ? $p->name : $productCode;
+                    $itemDetails[] = "{$itemData['quantity']}x {$pName}";
+                }
+                $itemsListString = implode(', ', $itemDetails);
+                
+                $systemMsg = "🚚 [ĐIỀU CHUYỂN KHO] Đã chuyển thành công từ kho {$fromHouseName} sang kho {$toHouseName} các mặt hàng: {$itemsListString}. Ghi chú: " . ($this->note ?: 'Không có');
+                
+                StockTransferList::broadcastMessage($senderName, $systemMsg, 'system', $senderId);
+            } catch (\Exception $ex) {
+                // Không để lỗi chat làm gián đoạn luồng chuyển kho chính
+            }
+
             session()->flash('success', 'Chuyển kho thành công!');
             return redirect()->route('warehouse.stock-transfer.index');
 
@@ -136,15 +206,20 @@ class StockTransferForm extends Component
             DB::beginTransaction();
 
             foreach ($this->items as $itemData) {
+                $productCode = $itemData['product_code'];
+                if (str_contains($productCode, ' - ')) {
+                    $productCode = trim(explode(' - ', $productCode)[0]);
+                }
+
                 // Lấy sản phẩm từ connection của nhà đích
-                $targetProduct = Product::where('code', $itemData['product_code'])->first();
+                $targetProduct = Product::where('code', $productCode)->first();
                 
                 if (!$targetProduct) {
                     // Tự động tạo sản phẩm nếu chưa có
                     // Chuyển kết nối về nhà nguồn để lấy data
                     Config::set('database.connections.tenant.database', $oldDb);
                     DB::purge('tenant');
-                    $sourceProduct = Product::where('code', $itemData['product_code'])->first();
+                    $sourceProduct = Product::where('code', $productCode)->first();
                     
                     // Chuyển lại connection về nhà đích
                     Config::set('database.connections.tenant.database', $newDb);
@@ -196,8 +271,19 @@ class StockTransferForm extends Component
         DB::purge('tenant');
     }
 
+    public function updated($name, $value)
+    {
+        // Giữ lại để bắt các sự kiện thay đổi nếu cần thiết sau này
+    }
+
     public function render()
     {
-        return view('livewire.warehouse.stock-transfer-form')->layout('components.warehouse-layout', ['title' => 'Tạo Phiếu Chuyển Kho']);
+        $products = Product::whereHas('inventory', function ($q) {
+            $q->where('quantity', '>', 0);
+        })->get(['code', 'name', 'unit']);
+
+        return view('livewire.warehouse.stock-transfer-form', [
+            'products' => $products
+        ])->layout('components.warehouse-layout', ['title' => 'Tạo Phiếu Chuyển Kho']);
     }
 }

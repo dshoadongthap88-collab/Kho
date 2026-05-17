@@ -20,8 +20,8 @@
                 </h2>
                 <p class="text-indigo-200 text-sm mt-0.5">
                     Chuyển vật tư/sản phẩm từ
-                    <strong class="text-white">Nhà {{ session('current_house', 1) }}</strong>
-                    sang nhà khác
+                    <strong class="text-white">Dự án {{ session('current_house', 1) == 2 ? 'Hậu Nghĩa' : (session('current_house', 1) == 3 ? 'Cần Giờ' : 'Hóc Môn') }}</strong>
+                    sang dự án khác
                 </p>
             </div>
             <a href="{{ route('warehouse.stock-transfer.index') }}"
@@ -36,12 +36,12 @@
                 {{-- Chọn nhà đích --}}
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">
-                        🏠 Chuyển đến Nhà <span class="text-red-500">*</span>
+                        🏠 Chuyển đến Dự án <span class="text-red-500">*</span>
                     </label>
                     <select wire:model="to_house"
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
                         @foreach($available_houses as $house)
-                            <option value="{{ $house }}">Nhà số {{ $house }}</option>
+                            <option value="{{ $house }}">{{ $house == 1 ? 'Dự án Hóc Môn' : ($house == 2 ? 'Dự án Hậu Nghĩa' : ($house == 3 ? 'Dự án Cần Giờ' : 'Dự án Số 4')) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -67,7 +67,7 @@
                     </button>
                 </div>
 
-                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <div class="border border-gray-200 rounded-lg overflow-hidden relative">
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 text-gray-600 text-xs uppercase font-semibold">
                             <tr>
@@ -81,11 +81,20 @@
                             @foreach($items as $index => $item)
                                 <tr wire:key="item-{{ $index }}">
                                     <td class="px-4 py-2 text-gray-400 text-center">{{ $index + 1 }}</td>
-                                    <td class="px-4 py-2">
-                                        <input type="text"
-                                            wire:model="items.{{ $index }}.product_code"
-                                            placeholder="Nhập mã vật tư..."
-                                            class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                    <td class="px-4 py-2 relative">
+                                        <div class="relative">
+                                            <input type="text"
+                                                wire:model.live.debounce.250ms="items.{{ $index }}.product_code"
+                                                list="product_list_{{ $index }}"
+                                                placeholder="Mã hoặc tên vật tư..."
+                                                class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 uppercase">
+                                            
+                                            <datalist id="product_list_{{ $index }}">
+                                                @foreach($products as $prod)
+                                                    <option value="{{ $prod->code }} - {{ $prod->name }}"></option>
+                                                @endforeach
+                                            </datalist>
+                                        </div>
                                         @error("items.{$index}.product_code")
                                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                         @enderror
@@ -122,8 +131,8 @@
             <div class="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 flex items-center gap-3 text-sm text-indigo-800">
                 <span class="text-2xl">🔄</span>
                 <div>
-                    <strong>Nhà {{ session('current_house', 1) }}</strong>
-                    → <strong>Nhà {{ $to_house }}</strong>
+                    <strong>Dự án {{ session('current_house', 1) == 2 ? 'Hậu Nghĩa' : (session('current_house', 1) == 3 ? 'Cần Giờ' : 'Hóc Môn') }}</strong>
+                    → <strong>{{ $to_house == 1 ? 'Dự án Hóc Môn' : ($to_house == 2 ? 'Dự án Hậu Nghĩa' : ($to_house == 3 ? 'Dự án Cần Giờ' : 'Dự án Số 4')) }}</strong>
                     &nbsp;|&nbsp; {{ count($items) }} mặt hàng
                 </div>
             </div>

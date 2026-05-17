@@ -2,8 +2,8 @@
     <style>
         @media print {
             @page {
-                size: A4;
-                margin: 0; /* Xóa margin mặc định để ẩn URL/Date của trình duyệt */
+                size: A4 landscape;
+                margin: 5mm; /* Khổ ngang A4 lề sạch đẹp */
             }
             nav, .sidebar-toolbar, button, a, .no-print {
                 display: none !important;
@@ -24,37 +24,30 @@
                 display: block !important;
             }
         }
+        .custom-toast {
+            animation: slideIn 0.3s ease-out forwards;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        @keyframes slideIn {
+            0% { transform: translateY(1rem); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .custom-toast.hide {
+            animation: fadeOut 0.3s ease-in forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
     </style>
 
-    <div class="relative flex items-start gap-2">
-        <!-- Sidebar Toolbar (Left) -->
-        <div class="sidebar-toolbar sticky top-24 hidden md:flex flex-col gap-4 no-print">
-            <div class="flex flex-col gap-2 mb-4 bg-slate-100 p-2 rounded-2xl shadow-inner border border-slate-200">
-                <button wire:click="switchTab('form')" class="w-14 h-14 flex items-center justify-center rounded-xl transition-all {{ $activeTab === 'form' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 hover:bg-white' }}" title="LẬP PHIẾU MỚI">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                </button>
-                <button wire:click="switchTab('list')" class="w-14 h-14 flex items-center justify-center rounded-xl transition-all {{ $activeTab === 'list' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 hover:bg-white' }}" title="DANH SÁCH PHIẾU">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                </button>
-            </div>
-
-            <button onclick="window.print()" class="group flex flex-col items-center justify-center w-16 h-16 bg-white border border-slate-200 rounded-2xl shadow-sm hover:bg-indigo-50 hover:border-indigo-200 transition-all duration-300" title="IN PHIẾU XUẤT">
-                <svg class="w-7 h-7 text-slate-600 group-hover:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                </svg>
-                <span class="text-[9px] font-black text-slate-500 uppercase mt-1 group-hover:text-indigo-600">IN PHIẾU</span>
-            </button>
-
-            <a href="{{ route('warehouse.inventory') }}" class="group flex flex-col items-center justify-center w-16 h-16 bg-white border border-slate-200 rounded-2xl shadow-sm hover:bg-slate-50 transition-all duration-300" title="QUAY LẠI">
-                <svg class="w-6 h-6 text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                <span class="text-[9px] font-black text-slate-400 uppercase mt-1 group-hover:text-slate-600">THOÁT</span>
-            </a>
-        </div>
-
+    <div class="relative w-full">
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2 no-print"></div>
         <!-- Main Content -->
-        <div class="flex-1 main-content">
+        <div class="w-full main-content">
             @if($activeTab === 'form')
             @if(session('success'))
                 <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg shadow-sm border border-green-200 no-print">
@@ -78,19 +71,57 @@
             @endif
 
             <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden printable-area no-print">
-                <div class="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between">
+                <!-- Header visible only on screen -->
+                <div class="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between no-print">
                     <h2 class="text-[16px] font-black text-slate-900 flex items-center gap-3 uppercase tracking-tight">
                         <span class="p-2.5 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-100">📤</span>
                         PHIẾU XUẤT KHO MỚI
                     </h2>
-                    <div class="hidden print-only text-right">
-                        <p class="text-sm font-bold text-slate-600 uppercase">Số phiếu: SO-{{ date('Ymd') }}-XXXX</p>
-                        <p class="text-xs text-slate-400 font-bold">Ngày in: {{ date('d/m/Y H:i') }}</p>
+                    <div class="flex items-center gap-2">
+                        <!-- Thêm mới -->
+                        <button type="button" onclick="handleResetForm('add')" class="flex items-center gap-1.5 px-3.5 py-2 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
+                            <span>➕</span> Thêm Mới
+                        </button>
+                        <!-- Sửa phiếu -->
+                        <button type="button" onclick="showToast('Bạn đang soạn thảo trực tiếp. Chọn vật tư ở bảng dưới để sửa đổi.', '✏️')" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
+                            <span>✏️</span> Sửa Phiếu
+                        </button>
+                        <!-- Xóa phiếu -->
+                        <button type="button" onclick="handleResetForm('delete')" class="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500 hover:bg-rose-600 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150" title="Xóa sạch dữ liệu đang điền">
+                            <span>🗑️</span> Xóa Phiếu
+                        </button>
+                        <!-- In phiếu -->
+                        <button type="button" onclick="handlePrint()" class="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
+                            <span>🖨️</span> In Phiếu
+                        </button>
+                        <!-- Danh sách phiếu -->
+                        <button type="button" onclick="handleSwitchTab('list')" class="flex items-center gap-1.5 px-3.5 py-2 bg-slate-600 hover:bg-slate-700 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
+                            <span>📋</span> Danh Sách Phiếu
+                        </button>
+                        <!-- Lưu phiếu -->
+                        <button type="button" onclick="handleSave()" class="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
+                            <span>💾</span> Lưu Phiếu
+                        </button>
+                        <!-- Thoát -->
+                        <a href="{{ route('warehouse.inventory') }}" onclick="return handleExit(event)" class="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[12px] font-extrabold rounded-xl shadow border border-slate-200 transition duration-150">
+                            <span>⬅️</span> Thoát
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Header visible only when printing -->
+                <div class="hidden print:flex items-center justify-between px-6 py-3 border-b border-black">
+                    <h2 class="text-[16px] font-black text-black uppercase tracking-tight">
+                        PHIẾU XUẤT KHO MỚI
+                    </h2>
+                    <div class="text-right">
+                        <p class="text-xs font-bold text-black uppercase">Số phiếu: SO-{{ date('Ymd') }}-XXXX</p>
+                        <p class="text-[10px] text-black font-bold">Ngày in: {{ date('d/m/Y H:i') }}</p>
                     </div>
                 </div>
 
                 <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-2">
+                    <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-2">
                         <div class="space-y-1">
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Khách hàng / Bộ phận nhận</label>
                             <select wire:model.live="customer_name" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[12px] font-black text-slate-800 uppercase appearance-none">
@@ -127,7 +158,62 @@
                                 <option value="disposal">🗑️ XUẤT HỦY</option>
                             </select>
                         </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Lý do xuất kho</label>
+                            <div class="relative">
+                                <select wire:model.live="note" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 pl-3 pr-8 text-[12px] font-black text-slate-800 appearance-none">
+                                    <option value="">-- Chọn lý do --</option>
+                                    <option value="BẢO DƯỠNG ĐỊNH KỲ">BẢO DƯỠNG ĐỊNH KỲ</option>
+                                    <option value="SỬA CHỮA">SỬA CHỮA</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    @if($type === 'repair')
+                    <div class="grid grid-cols-1 md:grid-cols-7 gap-3 mb-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm no-print">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Số Phiếu ĐNSC/BD</label>
+                            <input type="text" wire:model="document_number" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Số phiếu...">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Dự án (D.A)</label>
+                            <input type="text" wire:model="project_name" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Mã dự án...">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">BP sử dụng</label>
+                            <div class="relative">
+                                <select wire:model="department" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 pl-3 pr-8 text-[12px] font-bold text-slate-800 appearance-none">
+                                    <option value="">-- Chọn BP --</option>
+                                    <option value="BCH VINALPHA">BCH VINALPHA</option>
+                                    <option value="TỔ ĐỘI KTSC VINALPHA">TỔ ĐỘI KTSC VINALPHA</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-slate-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Biển số</label>
+                            <input type="text" wire:model="license_plate" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800 uppercase" placeholder="Biển kiểm soát...">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Số KM</label>
+                            <input type="text" wire:model="km_number" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Đồng hồ KM...">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Số giờ HĐ</label>
+                            <input type="text" wire:model="operating_hours" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Số giờ hoạt động...">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên thiết bị</label>
+                            <input type="text" wire:model="device_name" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Tên thiết bị bảo dưỡng...">
+                        </div>
+                    </div>
+                    @endif
 
                     @if($type === 'production')
                     <!-- Production BOM Selection Area -->
@@ -162,15 +248,18 @@
                     <div class="overflow-hidden border border-slate-200 rounded-2xl shadow-inner bg-slate-50/30 mb-3">
                         <table class="w-full border-collapse">
                             <thead>
-                                <tr class="bg-slate-800">
+                                <tr class="bg-emerald-600">
                                     <th class="px-2 py-3 text-center text-[10px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-10 no-print">IN</th>
-                                    <th class="px-4 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 min-w-[220px]">Sản phẩm / Vật tư</th>
-                                    <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-20">SL Xuất</th>
-                                    <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Tồn kho</th>
-                                    <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-20">Hãng SX</th>
+                                    <th class="px-4 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 min-w-[350px]">TÊN VẬT TƯ / MÃ VẬT TƯ</th>
+                                    <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-16">Đề nghị</th>
+                                    <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-16">Thực xuất</th>
+                                    <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-16">Thu hồi</th>
+                                    <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-20">Tồn kho</th>
+                                    <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-16">Hãng SX</th>
                                     <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-14">ĐVT</th>
-                                    <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-32">Mã Code NCC / Hạn dùng</th>
-                                    <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-20">Vị trí</th>
+                                    <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-44">Code / Hạn dùng</th>
+                                    <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Vị trí</th>
+                                    <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Ghi chú</th>
                                     <th class="px-2 py-3 border-b border-slate-700 w-10 no-print"></th>
                                 </tr>
                             </thead>
@@ -183,7 +272,7 @@
                                     <td class="px-2 py-1.5">
                                         <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}" 
                                                class="w-full rounded-lg border-slate-300 text-xs font-bold focus:ring-indigo-500 focus:border-indigo-500 transition placeholder:font-normal uppercase {{ $type === 'production' ? 'bg-slate-100 cursor-not-allowed' : '' }}"
-                                               placeholder="Mã hoặc tên SP..." {{ $type === 'production' ? 'readonly' : '' }}>
+                                               placeholder="Mã hoặc tên vật tư..." {{ $type === 'production' ? 'readonly' : '' }}>
                                         <datalist id="product_list_{{ $index }}">
                                             @foreach($products as $product)
                                                 <option value="{{ $product->code }} - {{ $product->name }}"></option>
@@ -192,10 +281,20 @@
                                         @error("items.{$index}.product_id") <p class="text-red-500 text-[10px] mt-1 no-print">{{ $message }}</p> @enderror
                                     </td>
                                     <td class="px-2 py-1.5">
+                                        <input type="text" inputmode="numeric" wire:model.lazy="items.{{ $index }}.requested_quantity" 
+                                               class="w-full text-center text-xs font-bold rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                               placeholder="1">
+                                    </td>
+                                    <td class="px-2 py-1.5">
                                         <input type="text" inputmode="numeric" wire:model.lazy="items.{{ $index }}.quantity" {{ $type === 'production' ? 'readonly' : '' }}
                                                class="w-full text-center text-xs font-black rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0 {{ $type === 'production' ? 'bg-slate-100 cursor-not-allowed' : '' }}"
                                                placeholder="0">
                                         @error("items.{$index}.quantity") <p class="text-red-500 text-[10px] mt-1 no-print">{{ $message }}</p> @enderror
+                                    </td>
+                                    <td class="px-2 py-1.5">
+                                        <input type="text" inputmode="numeric" wire:model.lazy="items.{{ $index }}.recovered_quantity" 
+                                               class="w-full text-center text-xs font-bold rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                               placeholder="0">
                                     </td>
                                     <td class="px-2 py-1.5 text-center">
                                         @if(isset($items[$index]['available_qty']))
@@ -215,19 +314,23 @@
                                         <span class="text-[10px] font-bold text-slate-500 uppercase">{{ $items[$index]['brand'] ?? '-' }}</span>
                                     </td>
                                     <td class="px-1 py-1.5 text-center">
-                                        <span class="inline-block px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 border border-slate-200 min-w-[35px]">
+                                        <span class="inline-block px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 border border-slate-200 min-w-[30px]">
                                             {{ $items[$index]['unit'] ?: '-' }}
                                         </span>
                                     </td>
                                     <td class="px-2 py-1.5">
                                         <input type="text" wire:model.live="items.{{ $index }}.batch_number" 
-                                               class="w-full rounded-lg text-[10px] border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition mb-1" placeholder="Mã Code NCC...">
+                                               class="w-full rounded-lg text-[10px] border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition mb-1" placeholder="Số lô...">
                                         <input type="date" wire:model="items.{{ $index }}.expiry_date" 
                                                class="w-full rounded-lg border-slate-300 text-[9px] focus:ring-indigo-500 focus:border-indigo-500 transition">
                                     </td>
                                     <td class="px-2 py-1.5">
-                                        <input type="text" wire:model="items.{{ $index }}.warehouse_location" list="location_list_{{ $index }}"
+                                        <input type="text" wire:model="items.{{ $index }}.warehouse_location"
                                                class="w-full text-[10px] rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Vị trí...">
+                                    </td>
+                                    <td class="px-2 py-1.5 w-24">
+                                        <input type="text" wire:model="items.{{ $index }}.item_note"
+                                               class="w-24 text-[10px] rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Ghi chú...">
                                     </td>
                                     <td class="px-2 py-1.5 text-center no-print">
                                         @if(count($items) > 1 || $type === 'manual')
@@ -246,17 +349,26 @@
                         @if($this->canAddItem() && $type !== 'production')
                             <button wire:click="addItem" class="text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition border border-indigo-200 shadow-sm">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                Thêm dòng sản phẩm
+                                Thêm dòng vật tư
                             </button>
                         @endif
                     </div>
 
-                    <div class="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-200 no-print">
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 px-1 flex items-center gap-2">
-                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            Ghi chú phiếu xuất
-                        </label>
-                        <textarea wire:model="note" rows="1" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Nhập lý do xuất, thông tin vận chuyển..."></textarea>
+                    <div class="mt-8 mb-4 p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm no-print">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên THỦ KHO</label>
+                                <input type="text" wire:model.live="warehouse_keeper" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên thủ kho...">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Tổ trưởng/ trưởng ca QLTB / vận hành</label>
+                                <input type="text" wire:model.live="supervisor_qltb" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên tổ trưởng QLTB...">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Tổ trưởng / trưởng ca</label>
+                                <input type="text" wire:model.live="supervisor_ca" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên tổ trưởng / trưởng ca...">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex justify-end items-center gap-4 no-print mt-2">
@@ -272,112 +384,174 @@
                 </div>
             </div>
 
-            <!-- PHẦN IN PDF BỊ ẨN KHI XEM THƯỜNG -->
-            <div class="hidden print-only print-container inset-0 bg-white w-full text-black" style="font-family: 'Times New Roman', serif; padding: 15mm;">
-                <!-- 1/5 Header: Company Info -->
-                <div class="mb-2 text-center">
-                    <h1 class="text-xl font-bold uppercase" style="font-size: 18px; letter-spacing: 1px;">CÔNG TY CPĐT VÀ THI CÔNG HẠ TẦNG VINALPHA</h1>
-                    <p class="text-[13px]">Địa chỉ: Long An</p>
-                    <p class="text-[13px]">Điện thoại: 0708091050</p>
-                </div>
-                
-                <div class="text-center mb-4 mt-2">
-                    <h2 class="text-3xl font-bold uppercase tracking-widest text-slate-900">PHIẾU XUẤT KHO</h2>
-                    <p class="italic text-[13px] mt-1">Ngày {{ date('d') }} tháng {{ date('m') }} năm {{ date('Y') }}</p>
-                    <p class="text-[13px] font-bold">Số: SO-{{ date('Ymd') }}-XX</p>
-                </div>
-                <div style="border-bottom: 2px solid #000; margin-bottom: 12px;"></div>
-
-                <!-- 1/5 Customer Info -->
-                <div style="margin-bottom: 20px;">
-                    <table class="w-full text-sm">
-                        <tr>
-                            <td class="font-bold w-48">Khách hàng / Đơn vị nhận:</td>
-                            <td>{{ $customer_name ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Người liên hệ:</td>
-                            <td>{{ $receiver_name ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Người nhận:</td>
-                            <td>{{ $receiver_contact ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Mã tài sản:</td>
-                            <td>{{ $asset_code ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Địa chỉ:</td>
-                            <td>{{ $customer_details['address'] ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Điện thoại:</td>
-                            <td>{{ $customer_details['phone'] ?: '..........................................................' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Lý do xuất:</td>
-                            <td>{{ $note ?: '..........................................................' }}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <!-- 3/5 Items Table -->
-                <div>
-                    <table class="w-full border-collapse border border-slate-800 text-[12px] mb-2 page-break-inside-avoid">
-                        <thead>
-                            <tr class="bg-gray-100">
-                                <th class="border border-slate-800 px-1 py-1.5 w-10">STT</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-left">Mã & Tên SP</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-center w-16">ĐVT</th>
-                                <th class="border border-slate-800 px-1 py-1.5 text-center w-24">SL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php $validCount = 0; @endphp
-                            @foreach($items as $index => $item)
-                                @if($item['product_id'] && $item['is_printed'])
-                                    @php $validCount++; @endphp
-                                    <tr>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ $validCount }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 font-bold uppercase">{{ $item['product_search'] }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ $item['unit'] }}</td>
-                                        <td class="border border-slate-800 px-1 py-1.5 text-center">{{ (float)$item['quantity'] }}</td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                            @for($i = $validCount; $i < 10; $i++)
-                                <tr>
-                                    <td class="border border-slate-800 px-1 py-1.5 text-center text-transparent">_</td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                    <td class="border border-slate-800 px-1 py-1.5"></td>
-                                </tr>
-                            @endfor
-                        </tbody>
-                    </table>
-
-                    <div class="grid grid-cols-3 gap-4 text-center mt-4">
-                        <div>
-                            <p class="font-bold text-sm">Khách hàng nhận</p>
-                            <p class="text-xs italic">(Ký, ghi rõ họ tên)</p>
-                            <div style="height: 80px;"></div>
-                            <p class="font-bold uppercase text-xs">{{ current((array)($customer_details['contact_person'] ?? '..........')) ?: '........................' }}</p>
+            <!-- PHẦN IN PDF BỊ ẨN KHI XEM THƯỜNG (KIỂU V-ALPHA ĐỀ NGHỊ CẤP VẬT TƯ SỬA CHỮA) -->
+            <div class="hidden print-only print-container inset-0 bg-white w-full text-black" style="font-family: 'Times New Roman', serif; padding: 5mm; line-height: 1.3;">
+                <!-- Logo & Title Section -->
+                <div class="grid grid-cols-12 items-center mb-3">
+                    <!-- Logo & Company Name (Inline side-by-side) -->
+                    <div class="col-span-5 flex items-center gap-3">
+                        <!-- Gold logo symbol + Vinalpha text below it -->
+                        <div class="flex flex-col items-center min-w-[55px]">
+                            <svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15.5h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                            </svg>
+                            <span class="text-[8px] font-black text-blue-900 leading-none mt-1 tracking-tighter">VINALPHA</span>
                         </div>
-                        <div>
-                            <p class="font-bold text-sm">Nhân viên giao hàng</p>
-                            <p class="text-xs italic">(Ký, ghi rõ họ tên)</p>
-                            <div style="height: 80px;"></div>
-                            <p class="font-bold uppercase text-xs">........................</p>
-                        </div>
-                        <div>
-                            <p class="font-bold text-sm">Quản lý</p>
-                            <p class="text-xs italic">(Ký, ghi rõ họ tên)</p>
-                            <div style="height: 80px;"></div>
-                            <p class="font-bold uppercase text-xs">........................</p>
+                        <!-- Company Name & Department -->
+                        <div class="text-left font-bold text-slate-800 leading-tight">
+                            <p class="text-[9px] uppercase tracking-wide">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI</p>
+                            <p class="text-[9px] uppercase tracking-wide">CÔNG HẠ TẦNG V-ALPHA</p>
+                            <p class="text-[8px] uppercase tracking-tight text-slate-600 mt-1">PHÒNG KỸ THUẬT SỬA CHỮA</p>
                         </div>
                     </div>
+
+                    <!-- Title -->
+                    <div class="col-span-5 text-center">
+                        <h1 class="text-sm font-bold uppercase tracking-tight leading-normal" style="font-size: 13px;">
+                            ĐỀ NGHỊ CẤP VẬT TƯ SỬA CHỮA & BẢO DƯỠNG<br>
+                            KIÊM PHIẾU XUẤT KHO
+                        </h1>
+                        <p class="text-[10px] mt-1 italic">
+                            Ngày {{ date('d') }} tháng {{ date('m') }} năm {{ date('Y') }}
+                        </p>
+                        <p class="text-[10px] font-bold mt-1">
+                            Số Phiếu ĐNSC/BD: <span class="font-bold underline">{{ $document_number ?: '..................................................' }}</span>
+                        </p>
+                    </div>
+
+                    <!-- Form Code & Project -->
+                    <div class="col-span-2 text-right text-[10px] self-start space-y-1">
+                        <p class="font-bold text-[9px] text-slate-500 tracking-wider">BM01-ĐNCVT</p>
+                        <p class="font-bold mt-2">D.A: <span class="font-black underline">{{ $project_name ?: '_' }}</span></p>
+                    </div>
                 </div>
+
+                <!-- Metadata Details Table Grid (Matching Row 1 & Row 2 with solid black borders) -->
+                <table class="w-full border-collapse border border-black text-[11px] mb-3 font-bold text-black" style="line-height: 1.4;">
+                    <tbody>
+                        <tr>
+                            <!-- Họ và tên người nhận hàng -->
+                            <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" colspan="2" style="width: 35%;">
+                                Họ và tên người nhận hàng: <span class="font-normal">{{ $receiver_contact ?: '........................................' }}</span>
+                            </td>
+                            <!-- BP sử dụng -->
+                            <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 25%;">
+                                BP sử dụng : <span class="font-normal">{{ $department ?: '................................' }}</span>
+                            </td>
+                            <!-- Mã tài sản -->
+                            <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 20%;">
+                                Mã tài sản: <span class="font-normal font-mono uppercase">{{ $asset_code ?: '................................' }}</span>
+                            </td>
+                            <!-- Biển số -->
+                            <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 20%;">
+                                Biển số : <span class="font-normal uppercase">{{ $license_plate ?: '................................' }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <!-- Số KM -->
+                            <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
+                                Số KM : <span class="font-normal">{{ $km_number ?: '................................' }}</span>
+                            </td>
+                            <!-- Số giờ HĐ -->
+                            <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
+                                Số giờ HĐ : <span class="font-normal">{{ $operating_hours ?: '................................' }}</span>
+                            </td>
+                            <!-- Tên thiết bị -->
+                            <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 25%;">
+                                Tên thiết bị: <span class="font-normal">{{ $device_name ?: '................................' }}</span>
+                            </td>
+                            <!-- Lý do xuất kho (spans columns 3 & 4) -->
+                            <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" colspan="2" style="width: 40%;">
+                                Lý do xuất kho: <span class="font-normal">{{ $note ?: '................................' }}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Items Table -->
+                <table class="w-full border-collapse border-2 border-black text-[11px] mb-3">
+                    <thead>
+                        <tr class="bg-gray-100 text-center font-bold">
+                            <th class="border border-black px-1 py-1 w-8">STT</th>
+                            <th class="border border-black px-2 py-1 text-left">TÊN VẬT TƯ SỬA CHỮA</th>
+                            <th class="border border-black px-2 py-1 w-24">MÃ VẬT TƯ</th>
+                            <th class="border border-black px-1 py-1 w-12">ĐVT</th>
+                            <th class="border border-black px-1 py-1 w-16">ĐỀ NGHỊ</th>
+                            <th class="border border-black px-1 py-1 w-16">THỰC XUẤT</th>
+                            <th class="border border-black px-1 py-1 w-16">THU HỒI</th>
+                            <th class="border border-black px-2 py-1 w-32">GHI CHÚ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $validCount = 0; @endphp
+                        @foreach($items as $index => $item)
+                            @if($item['product_id'] && $item['is_printed'])
+                                @php $validCount++; @endphp
+                                <tr>
+                                    <td class="border border-black px-1 py-1.5 text-center">{{ $validCount }}</td>
+                                    <td class="border border-black px-2 py-1.5 font-bold uppercase">
+                                        {{ str_contains($item['product_search'], ' - ') ? explode(' - ', $item['product_search'], 2)[1] : $item['product_search'] }}
+                                    </td>
+                                    <td class="border border-black px-2 py-1.5 text-center font-mono uppercase">
+                                        {{ str_contains($item['product_search'], ' - ') ? explode(' - ', $item['product_search'], 2)[0] : '' }}
+                                    </td>
+                                    <td class="border border-black px-1 py-1.5 text-center">{{ $item['unit'] ?: '-' }}</td>
+                                    <td class="border border-black px-1 py-1.5 text-center font-bold">{{ (float)($item['requested_quantity'] ?? $item['quantity']) }}</td>
+                                    <td class="border border-black px-1 py-1.5 text-center font-bold">{{ (float)$item['quantity'] }}</td>
+                                    <td class="border border-black px-1 py-1.5 text-center">{{ (float)($item['recovered_quantity'] ?? 0) }}</td>
+                                    <td class="border border-black px-2 py-1.5">{{ $item['item_note'] ?: '' }}</td>
+                                </tr>
+                            @endif
+                        @endforeach
+                        @for($i = $validCount; $i < 8; $i++)
+                            <tr>
+                                <td class="border border-black px-1 py-2 text-center font-bold">{{ $i + 1 }}</td>
+                                <td class="border border-black px-2 py-2"></td>
+                                <td class="border border-black px-2 py-2"></td>
+                                <td class="border border-black px-1 py-2"></td>
+                                <td class="border border-black px-1 py-2"></td>
+                                <td class="border border-black px-1 py-2"></td>
+                                <td class="border border-black px-1 py-2"></td>
+                                <td class="border border-black px-2 py-2"></td>
+                            </tr>
+                        @endfor
+                    </tbody>
+                </table>
+
+                <!-- Footer Signatures Section (5 Signatures from left to right) -->
+                <div class="grid grid-cols-5 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
+                    <div>
+                        <p>Nv vận hành</p>
+                        <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                        <div style="height: 50px;"></div>
+                        <p class="font-normal text-slate-300">........................</p>
+                    </div>
+                    <div>
+                        <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
+                        <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                        <div style="height: 50px;"></div>
+                        <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $supervisor_qltb ?: '........................' }}</p>
+                    </div>
+                    <div>
+                        <p>Thủ kho</p>
+                        <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                        <div style="height: 50px;"></div>
+                        <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $warehouse_keeper ?: '........................' }}</p>
+                    </div>
+                    <div>
+                        <p>Nv sửa chữa</p>
+                        <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                        <div style="height: 50px;"></div>
+                        <p class="font-normal text-slate-300">........................</p>
+                    </div>
+                    <div>
+                        <p>Tổ trưởng / trưởng ca</p>
+                        <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                        <div style="height: 50px;"></div>
+                        <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $supervisor_ca ?: '........................' }}</p>
+                    </div>
+                </div>
+            </div>
             @elseif($activeTab === 'list')
                 <!-- Stock Out List Section -->
                 <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden min-h-[600px] main-content">
@@ -515,93 +689,172 @@
         </div>
     </div>
 
-    <!-- PHẦN IN CHI TIẾT HÀNG LOẠT (Nhanh/Ghép) -->
+    <!-- PHẦN IN CHI TIẾT HÀNG LOẠT (Nhanh/Ghép) - THEO MẪU ĐỀ NGHỊ BẢO DƯỠNG V-ALPHA -->
     @if(count($printItems) > 0)
     <div class="hidden print:block fixed inset-0 bg-white z-[9999]">
         @foreach($printItems as $pItem)
-        <div class="print-page p-8 bg-white" style="font-family: 'Times New Roman', serif; min-height: 297mm; page-break-after: always;">
-            <!-- Header -->
-            <div style="text-align: center; margin-bottom: 16px;">
-                <h1 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin: 0;">CÔNG TY CPĐT VÀ THI CÔNG HẠ TẦNG VINALPHA</h1>
-            </div>
-            <div class="flex justify-between items-start mb-6 border-b-2 border-slate-900 pb-4">
-                <div>
-                    <h1 class="text-xl font-black uppercase tracking-tighter">CÔNG TY TNHH SANE</h1>
-                    <p class="text-xs font-bold text-slate-600">Lô B2, KCN Đức Hòa 1, Long An</p>
-                    <p class="text-xs font-bold text-slate-600">Hotline: 0909.XXX.XXX</p>
+        <div class="print-page p-8 bg-white" style="font-family: 'Times New Roman', serif; min-height: 200mm; page-break-after: always; line-height: 1.3;">
+            <!-- Logo & Title Section -->
+            <div class="grid grid-cols-12 items-center mb-3">
+                <!-- Logo & Company Name (Inline side-by-side) -->
+                <div class="col-span-5 flex items-center gap-3">
+                    <!-- Gold logo symbol + Vinalpha text below it -->
+                    <div class="flex flex-col items-center min-w-[55px]">
+                        <svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15.5h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                        </svg>
+                        <span class="text-[8px] font-black text-blue-900 leading-none mt-1 tracking-tighter">VINALPHA</span>
+                    </div>
+                    <!-- Company Name & Department -->
+                    <div class="text-left font-bold text-slate-800 leading-tight">
+                        <p class="text-[9px] uppercase tracking-wide">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI</p>
+                        <p class="text-[9px] uppercase tracking-wide">CÔNG HẠ TẦNG V-ALPHA</p>
+                        <p class="text-[8px] uppercase tracking-tight text-slate-600 mt-1">PHÒNG KỸ THUẬT SỬA CHỮA</p>
+                    </div>
                 </div>
-                <div class="text-right">
-                    <h2 class="text-2xl font-black text-slate-900 uppercase">PHIẾU XUẤT KHO</h2>
-                    <p class="text-sm font-bold mt-1">Số: <span class="text-indigo-700">{{ $pItem->code }}</span></p>
-                    <p class="text-[10px] italic text-slate-500">In lúc: {{ now()->format('d/m/Y H:i') }}</p>
+
+                <!-- Title -->
+                <div class="col-span-5 text-center">
+                    <h1 class="text-sm font-bold uppercase tracking-tight leading-normal" style="font-size: 13px;">
+                        ĐỀ NGHỊ CẤP VẬT TƯ SỬA CHỮA & BẢO DƯỠNG<br>
+                        KIÊM PHIẾU XUẤT KHO
+                    </h1>
+                    <p class="text-[10px] mt-1 italic">
+                        Ngày {{ $pItem->created_at ? $pItem->created_at->format('d') : '.....' }} 
+                        tháng {{ $pItem->created_at ? $pItem->created_at->format('m') : '.....' }} 
+                        năm {{ $pItem->created_at ? $pItem->created_at->format('Y') : '2026' }}
+                    </p>
+                    <p class="text-[10px] font-bold mt-1">
+                        Số Phiếu ĐNSC/BD: <span class="font-bold underline">{{ $pItem->document_number ?: '..................................................' }}</span>
+                    </p>
+                </div>
+
+                <!-- Form Code & Project -->
+                <div class="col-span-2 text-right text-[10px] self-start space-y-1">
+                    <p class="font-bold text-[9px] text-slate-500 tracking-wider">BM01-ĐNCVT</p>
+                    <p class="font-bold mt-2">D.A: <span class="font-black underline">{{ $pItem->project_name ?: '_' }}</span></p>
                 </div>
             </div>
 
-            <!-- Info -->
-            <div class="grid grid-cols-2 gap-8 mb-8">
-                <div class="space-y-1">
-                    <p class="text-sm"><span class="font-bold uppercase text-[10px] text-slate-400 block tracking-widest">Đơn vị nhận hàng</span>
-                       <span class="font-black text-slate-800 text-lg uppercase">{{ $pItem->customer_name }}</span>
-                    </p>
-                    <p class="text-xs"><span class="font-bold">Người liên hệ:</span> {{ $pItem->receiver_name }}</p>
-                    <p class="text-xs"><span class="font-bold">Người nhận:</span> {{ $pItem->receiver_contact }}</p>
-                    <p class="text-xs"><span class="font-bold">Mã tài sản:</span> {{ $pItem->asset_code }}</p>
-                    <p class="text-xs"><span class="font-bold">Lý do:</span> {{ $pItem->note ?: 'Xuất vật tư sản xuất/giao hàng' }}</p>
-                </div>
-                <div class="space-y-1 text-right">
-                    <p class="text-sm"><span class="font-bold uppercase text-[10px] text-slate-400 block tracking-widest">Ngày chứng từ</span> 
-                       <span class="font-black text-slate-800">{{ $pItem->created_at->format('d/m/Y') }}</span>
-                    </p>
-                    <p class="text-xs"><span class="font-bold">Người lập:</span> {{ $pItem->creator->name ?? 'Admin' }}</p>
-                </div>
-            </div>
+            <!-- Metadata Details Table Grid (Matching Row 1 & Row 2 with solid black borders) -->
+            <table class="w-full border-collapse border border-black text-[11px] mb-3 font-bold text-black" style="line-height: 1.4;">
+                <tbody>
+                    <tr>
+                        <!-- Họ và tên người nhận hàng -->
+                        <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" colspan="2" style="width: 35%;">
+                            Họ và tên người nhận hàng: <span class="font-normal">{{ $pItem->receiver_contact ?: '........................................' }}</span>
+                        </td>
+                        <!-- BP sử dụng -->
+                        <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 25%;">
+                            BP sử dụng : <span class="font-normal">{{ $pItem->department ?: '................................' }}</span>
+                        </td>
+                        <!-- Mã tài sản -->
+                        <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 20%;">
+                            Mã tài sản: <span class="font-normal font-mono uppercase">{{ $pItem->asset_code ?: '................................' }}</span>
+                        </td>
+                        <!-- Biển số -->
+                        <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 20%;">
+                            Biển số : <span class="font-normal uppercase">{{ $pItem->license_plate ?: '................................' }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <!-- Số KM -->
+                        <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
+                            Số KM : <span class="font-normal">{{ $pItem->km_number ?: '................................' }}</span>
+                        </td>
+                        <!-- Số giờ HĐ -->
+                        <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
+                            Số giờ HĐ : <span class="font-normal">{{ $pItem->operating_hours ?: '................................' }}</span>
+                        </td>
+                        <!-- Tên thiết bị -->
+                        <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 25%;">
+                            Tên thiết bị: <span class="font-normal">{{ $pItem->device_name ?: '................................' }}</span>
+                        </td>
+                        <!-- Lý do xuất kho (spans columns 3 & 4) -->
+                        <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" colspan="2" style="width: 40%;">
+                            Lý do xuất kho: <span class="font-normal">{{ $pItem->note ?: '................................' }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
 
-            <!-- Table -->
-            <table class="w-full border-collapse border-2 border-slate-900 mb-6">
+            <!-- Items Table -->
+            <table class="w-full border-collapse border-2 border-black text-[11px] mb-3">
                 <thead>
-                    <tr class="bg-slate-100 uppercase text-[10px] font-black">
-                        <th class="border border-slate-900 px-2 py-2 text-center w-10">STT</th>
-                        <th class="border border-slate-900 px-2 py-2 text-left">Sản phẩm / Vật tư</th>
-                        <th class="border border-slate-900 px-2 py-2 text-center w-16">Mã Code NCC</th>
-                        <th class="border border-slate-900 px-2 py-2 text-center w-16">ĐVT</th>
-                        <th class="border border-slate-900 px-2 py-2 text-right w-20">Số lượng</th>
+                    <tr class="bg-gray-100 text-center font-bold">
+                        <th class="border border-black px-1 py-1 w-8">STT</th>
+                        <th class="border border-black px-2 py-1 text-left">TÊN VẬT TƯ SỬA CHỮA</th>
+                        <th class="border border-black px-2 py-1 w-24">MÃ VẬT TƯ</th>
+                        <th class="border border-black px-1 py-1 w-12">ĐVT</th>
+                        <th class="border border-black px-1 py-1 w-16">ĐỀ NGHỊ</th>
+                        <th class="border border-black px-1 py-1 w-16">THỰC XUẤT</th>
+                        <th class="border border-black px-1 py-1 w-16">THU HỒI</th>
+                        <th class="border border-black px-2 py-1 w-32">GHI CHÚ</th>
                     </tr>
                 </thead>
-                <tbody class="text-xs">
+                <tbody>
                     @foreach($pItem->items as $idx => $ii)
                     <tr>
-                        <td class="border border-slate-900 px-2 py-2 text-center">{{ $idx + 1 }}</td>
-                        <td class="border border-slate-900 px-2 py-2 font-bold">{{ $ii->product->name }} ({{ $ii->product->code }})</td>
-                        <td class="border border-slate-900 px-2 py-2 text-center">{{ $ii->batch_number ?: '-' }}</td>
-                        <td class="border border-slate-900 px-2 py-2 text-center">{{ $ii->product->unit }}</td>
-                        <td class="border border-slate-900 px-2 py-2 text-right font-bold">{{ number_format($ii->quantity) }}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">{{ $idx + 1 }}</td>
+                        <td class="border border-black px-2 py-1.5 font-bold uppercase">
+                            {{ $ii->product->name }}
+                        </td>
+                        <td class="border border-black px-2 py-1.5 text-center font-mono uppercase">
+                            {{ $ii->product->code }}
+                        </td>
+                        <td class="border border-black px-1 py-1.5 text-center">{{ $ii->product->unit ?: '-' }}</td>
+                        <td class="border border-black px-1 py-1.5 text-center font-bold">{{ (float)($ii->requested_quantity ?: $ii->quantity) }}</td>
+                        <td class="border border-black px-1 py-1.5 text-center font-bold">{{ (float)$ii->quantity }}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">{{ (float)($ii->recovered_quantity ?: 0) }}</td>
+                        <td class="border border-black px-2 py-1.5">{{ $ii->item_note ?: '' }}</td>
                     </tr>
                     @endforeach
-                    @for($i = count($pItem->items); $i < 5; $i++)
+                    @for($i = count($pItem->items); $i < 8; $i++)
                     <tr>
-                        <td class="border border-slate-900 px-2 py-2 text-center text-transparent">_</td>
-                        <td class="border border-slate-900 px-2 py-2"></td>
-                        <td class="border border-slate-900 px-2 py-2"></td>
-                        <td class="border border-slate-900 px-2 py-2"></td>
-                        <td class="border border-slate-900 px-2 py-2"></td>
+                        <td class="border border-black px-1 py-2 text-center font-bold">{{ $i + 1 }}</td>
+                        <td class="border border-black px-2 py-2"></td>
+                        <td class="border border-black px-2 py-2"></td>
+                        <td class="border border-black px-1 py-2"></td>
+                        <td class="border border-black px-1 py-2"></td>
+                        <td class="border border-black px-1 py-2"></td>
+                        <td class="border border-black px-1 py-2"></td>
+                        <td class="border border-black px-2 py-2"></td>
                     </tr>
                     @endfor
                 </tbody>
             </table>
 
-            <!-- Footer signatures -->
-            <div class="grid grid-cols-3 gap-4 text-center mt-8">
+            <!-- Footer Signatures Section (5 Signatures) -->
+            <div class="grid grid-cols-5 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
                 <div>
-                    <p class="font-bold text-xs uppercase">Người nhận</p>
-                    <p class="text-[9px] italic">(Ký, ghi rõ họ tên)</p>
+                    <p>Nv vận hành</p>
+                    <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                    <div style="height: 50px;"></div>
+                    <p class="font-normal text-slate-300">........................</p>
                 </div>
                 <div>
-                    <p class="font-bold text-xs uppercase">Người giao</p>
-                    <p class="text-[9px] italic">(Ký, ghi rõ họ tên)</p>
+                    <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
+                    <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                    <div style="height: 50px;"></div>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $pItem->supervisor_qltb ?: '........................' }}</p>
                 </div>
                 <div>
-                    <p class="font-bold text-xs uppercase">Thủ kho</p>
-                    <p class="text-[9px] italic">(Ký, ghi rõ họ tên)</p>
+                    <p>Thủ kho</p>
+                    <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                    <div style="height: 50px;"></div>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $pItem->warehouse_keeper ?: '........................' }}</p>
+                </div>
+                <div>
+                    <p>Nv sửa chữa</p>
+                    <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                    <div style="height: 50px;"></div>
+                    <p class="font-normal text-slate-300">........................</p>
+                </div>
+                <div>
+                    <p>Tổ trưởng / trưởng ca</p>
+                    <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                    <div style="height: 50px;"></div>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $pItem->supervisor_ca ?: '........................' }}</p>
                 </div>
             </div>
         </div>
@@ -611,9 +864,106 @@
 
     @script
     <script>
+        let isDirty = false;
+
+        // Reset dirty flag when form is loaded or saved
+        window.addEventListener('livewire:initialized', () => {
+            // Listen for form inputs
+            document.addEventListener('input', (e) => {
+                isDirty = true;
+            });
+            
+            document.addEventListener('change', (e) => {
+                isDirty = true;
+            });
+        });
+
+        // 3s Toast Notification
+        window.showToast = function(message, icon = '✅', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = "custom-toast flex items-center gap-3 text-white px-5 py-3.5 rounded-2xl shadow-2xl pointer-events-auto transform transition-all duration-300 text-xs font-black uppercase tracking-wider";
+            toast.innerHTML = `<span class="text-base">${icon}</span> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            // Auto dismiss
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, duration);
+        };
+
+        // Listeners for Livewire events
+        $wire.on('stock-out-saved', () => {
+            isDirty = false;
+            showToast("Lưu phiếu xuất kho thành công!", "✅", 3000);
+        });
+
+        $wire.on('stock-out-deleted', (event) => {
+            const count = event.count || 1;
+            showToast(`Đã xóa thành công ${count} phiếu xuất kho!`, "🗑️", 3000);
+        });
+
+        $wire.on('stock-out-printing', () => {
+            showToast("Đang tải dữ liệu và chuẩn bị in phiếu...", "🖨️", 3000);
+        });
+
         $wire.on('trigger-print', () => {
             setTimeout(() => { window.print(); }, 500);
         });
+
+        // Handlers
+        window.handleResetForm = function(actionType) {
+            if (isDirty) {
+                if (!confirm("Dữ liệu phiếu xuất kho hiện tại đang có thay đổi. Bạn có chắc chắn muốn bỏ qua các thay đổi này không?")) {
+                    return;
+                }
+            }
+            isDirty = false;
+            $wire.resetForm();
+            if (actionType === 'add') {
+                showToast("Đã khởi tạo phiếu xuất kho mới thành công!", "➕", 3000);
+            } else {
+                showToast("Đã xóa sạch dữ liệu trên phiếu!", "🗑️", 3000);
+            }
+        };
+
+        window.handlePrint = function() {
+            showToast("Đang chuẩn bị bản in phiếu xuất kho...", "🖨️", 3000);
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        };
+
+        window.handleSwitchTab = function(tab) {
+            if (isDirty) {
+                if (!confirm("Dữ liệu phiếu xuất kho đang có thay đổi chưa lưu. Bạn có chắc chắn muốn chuyển sang danh sách phiếu không?")) {
+                    return;
+                }
+            }
+            isDirty = false;
+            $wire.switchTab(tab);
+        };
+
+        window.handleSave = function() {
+            showToast("Đang tiến hành lưu phiếu xuất kho...", "💾", 3000);
+            $wire.save();
+        };
+
+        window.handleExit = function(e) {
+            if (isDirty) {
+                if (!confirm("Dữ liệu phiếu xuất kho đang có thay đổi chưa lưu. Bạn có chắc chắn muốn thoát không?")) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            return true;
+        };
     </script>
     @endscript
 </div>

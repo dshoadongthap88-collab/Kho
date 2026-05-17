@@ -50,6 +50,22 @@ class StockCountForm extends Component
 
     protected $listeners = [];
 
+    public function mount()
+    {
+        // Tự động vá cấu trúc (Self-Healing) cho bảng stock_count_items
+        try {
+            if (\Schema::hasColumn('stock_count_items', 'physical_quantity')) {
+                DB::statement("ALTER TABLE stock_count_items MODIFY COLUMN physical_quantity DECIMAL(15, 4) NULL DEFAULT 0");
+            } else {
+                \Schema::table('stock_count_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->decimal('physical_quantity', 15, 4)->nullable()->default(0);
+                });
+            }
+        } catch (\Exception $e) {
+            // Bỏ qua nếu có lỗi phát sinh do môi trường khác nhau
+        }
+    }
+
     // =====================
     // STOCKTAKE FUNCTIONS
     // =====================
@@ -66,8 +82,30 @@ class StockCountForm extends Component
             'created_by' => auth()->id(),
         ]);
 
-        // Thêm tất cả items vào phiếu
-        $inventories = Inventory::with('product')->where('quantity', '>=', 0)->get();
+        // Thêm tất cả items vào phiếu, sắp xếp theo vị trí kệ A-B-C...
+        $inventories = Inventory::with('product')
+            ->join('products', 'inventories.product_id', '=', 'products.id')
+            ->where('inventories.quantity', '>=', 0)
+            ->orderBy('products.location')
+            ->select('inventories.*')
+            ->get();
+
+        // Lọc trùng lặp mã vật tư và tên vật tư
+        $uniqueInventories = collect();
+        $seenNames = [];
+        $seenCodes = [];
+        foreach ($inventories as $inv) {
+            if (!$inv->product) continue;
+            $pCode = trim($inv->product->code);
+            $pName = trim($inv->product->name);
+            if (in_array($pCode, $seenCodes) || in_array($pName, $seenNames)) {
+                continue;
+            }
+            $seenCodes[] = $pCode;
+            $seenNames[] = $pName;
+            $uniqueInventories->push($inv);
+        }
+        $inventories = $uniqueInventories;
 
         foreach ($inventories as $inv) {
                 StockCountItem::create([
@@ -75,6 +113,7 @@ class StockCountForm extends Component
                     'product_id' => $inv->product_id,
                     'system_quantity' => $inv->quantity,
                     'actual_quantity' => null,
+                    'physical_quantity' => 0,
                     'difference' => 0,
                 ]);
             }
@@ -92,28 +131,46 @@ class StockCountForm extends Component
                   ->whereIn('status', ['pending', 'completed']);
             })
             ->pluck('product_id')
-            ->unique();
+            ->unique()
+            ->toArray();
 
-        // 2. Lấy 10 sản phẩm theo vị trí (proximity)
+        // 2. Lấy danh sách ứng viên và sắp xếp theo vị trí A-B-C
         $inventories = Inventory::with('product')
             ->join('products', 'inventories.product_id', '=', 'products.id')
             ->whereNotIn('inventories.product_id', $recentProductIds)
             ->where('inventories.quantity', '>=', 0)
             ->orderBy('products.location')
-            ->limit(10)
             ->select('inventories.*')
             ->get();
 
         if ($inventories->isEmpty()) {
-            // Nếu tất cả đã được kiểm trong 7 ngày, lấy 10 cái bất kỳ
+            // Nếu tất cả đã được kiểm trong 7 ngày, lấy tất cả bất kỳ
              $inventories = Inventory::with('product')
                 ->join('products', 'inventories.product_id', '=', 'products.id')
                 ->where('inventories.quantity', '>=', 0)
                 ->orderBy('products.location')
-                ->limit(10)
                 ->select('inventories.*')
                 ->get();
         }
+
+        // Lọc trùng lặp mã vật tư và tên vật tư
+        $uniqueInventories = collect();
+        $seenNames = [];
+        $seenCodes = [];
+        foreach ($inventories as $inv) {
+            if (!$inv->product) continue;
+            $pCode = trim($inv->product->code);
+            $pName = trim($inv->product->name);
+            if (in_array($pCode, $seenCodes) || in_array($pName, $seenNames)) {
+                continue;
+            }
+            $seenCodes[] = $pCode;
+            $seenNames[] = $pName;
+            $uniqueInventories->push($inv);
+        }
+        
+        // Giới hạn 10 vật tư
+        $inventories = $uniqueInventories->take(10);
 
         if ($inventories->isEmpty()) {
              session()->flash('error', "Không tìm thấy vật tư nào để kiểm kê.");
@@ -136,6 +193,7 @@ class StockCountForm extends Component
                 'product_id' => $inv->product_id,
                 'system_quantity' => $inv->quantity,
                 'actual_quantity' => null,
+                'physical_quantity' => 0,
                 'difference' => 0,
             ]);
         }
@@ -143,7 +201,7 @@ class StockCountForm extends Component
         $this->selectedStockCounts = [];
         $this->currentCountId = $stockCount->id;
         $this->activeTab = 'stocktake';
-        session()->flash('success', "Đã tạo phiếu kiểm kê hàng ngày {$code} với 10 vật tư.");
+        session()->flash('success', "Đã tạo phiếu kiểm kê hàng ngày {$code} với " . $inventories->count() . " vật tư.");
     }
 
 
@@ -247,7 +305,13 @@ class StockCountForm extends Component
         
         foreach ($counts as $count) {
             $this->printBatchCodes[] = $count->code;
-            foreach ($count->items as $item) {
+            
+            // Sắp xếp các vật tư theo thứ tự kệ A-B-C... trước khi in
+            $sortedItems = $count->items->sortBy(function($item) {
+                return $item->product->location ?? '';
+            });
+
+            foreach ($sortedItems as $item) {
                 $this->printBatchItems[] = [
                     'count_code' => $count->code,
                     'product_code' => $item->product->code ?? '-',
@@ -271,14 +335,33 @@ class StockCountForm extends Component
     {
         try {
             $query = Inventory::with('product')
-                ->whereHas('product')
-                ->where('quantity', '>=', 0);
+                ->join('products', 'inventories.product_id', '=', 'products.id')
+                ->where('inventories.quantity', '>=', 0)
+                ->orderBy('products.location')
+                ->select('inventories.*');
 
             if ($this->locationFilter) {
-                $query->where('warehouse_location', 'like', "%{$this->locationFilter}%");
+                $query->where('inventories.warehouse_location', 'like', "%{$this->locationFilter}%");
             }
 
             $inventories = $query->get();
+
+            // Lọc trùng lặp mã vật tư và tên vật tư
+            $uniqueInventories = collect();
+            $seenNames = [];
+            $seenCodes = [];
+            foreach ($inventories as $inv) {
+                if (!$inv->product) continue;
+                $pCode = trim($inv->product->code);
+                $pName = trim($inv->product->name);
+                if (in_array($pCode, $seenCodes) || in_array($pName, $seenNames)) {
+                    continue;
+                }
+                $seenCodes[] = $pCode;
+                $seenNames[] = $pName;
+                $uniqueInventories->push($inv);
+            }
+            $inventories = $uniqueInventories;
             
             if ($inventories->isEmpty()) {
                 session()->flash('error', 'Không có dữ liệu vật tư để xuất Excel.');
@@ -289,7 +372,7 @@ class StockCountForm extends Component
                 return [
                     'ma_san_pham' => $inv->product->code ?? 'N/A',
                     'ten_san_pham' => $inv->product->name ?? 'N/A',
-                    'vi_tri' => $inv->warehouse_location ?? '-',
+                    'vi_tri' => $inv->product->location ?? $inv->warehouse_location ?? '-',
                     'ton_he_thong' => $inv->quantity,
                     'so_luong_thuc_te' => ''
                 ];
@@ -461,6 +544,14 @@ class StockCountForm extends Component
         $currentCount = $this->currentCountId
             ? StockCount::with('items.product')->find($this->currentCountId)
             : null;
+
+        if ($currentCount) {
+            // Sắp xếp các vật tư theo thứ tự kệ A-B-C... khi hiển thị
+            $sortedItems = $currentCount->items->sortBy(function($item) {
+                return $item->product->location ?? '';
+            });
+            $currentCount->setRelation('items', $sortedItems);
+        }
 
         return view('livewire.warehouse.stock-count-form', [
             'stockCounts' => $stockCounts,

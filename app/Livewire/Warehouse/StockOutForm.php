@@ -30,6 +30,16 @@ class StockOutForm extends Component
     public $note = '';
     public $type = 'repair';
     public $asset_code = '';
+    public $project_name = '';
+    public $document_number = '';
+    public $license_plate = '';
+    public $km_number = '';
+    public $operating_hours = '';
+    public $device_name = '';
+    public $department = '';
+    public $warehouse_keeper = '';
+    public $supervisor_qltb = '';
+    public $supervisor_ca = '';
 
     // Biến cho quy trình "Xuất cho sản xuất"
     public $production_product_id = '';
@@ -59,12 +69,80 @@ class StockOutForm extends Component
         $this->listDateFrom = now()->startOfMonth()->format('Y-m-d');
         $this->listDateTo = now()->format('Y-m-d');
 
+        $currentHouse = session('current_house', 1);
+        if ($currentHouse == 2) {
+            $this->project_name = 'HẬU NGHĨA';
+        } elseif ($currentHouse == 3) {
+            $this->project_name = 'CẦN GIỜ';
+        } else {
+            $this->project_name = 'HÓC MÔN';
+        }
+
+        // Thiết lập giá trị mặc định ưu tiên để hạn chế thao tác nhập liệu
+        $this->customer_name = 'BCH VINALPHA';
+        $this->receiver_name = 'LÊ HOÀNG NAM';
+
+        // Đảm bảo tất cả các cột tùy chỉnh tồn tại động trong bảng stock_outs
+        $customColumns = [
+            'project_name',
+            'document_number',
+            'license_plate',
+            'km_number',
+            'operating_hours',
+            'device_name',
+            'department',
+            'warehouse_keeper',
+            'supervisor_qltb',
+            'supervisor_ca',
+        ];
+
+        foreach ($customColumns as $columnName) {
+            if (!\Schema::hasColumn('stock_outs', $columnName)) {
+                \Schema::table('stock_outs', function (\Illuminate\Database\Schema\Blueprint $table) use ($columnName) {
+                    $table->string($columnName)->nullable();
+                });
+            }
+        }
+
+        // Đảm bảo các cột tùy chỉnh tồn tại động trong bảng stock_out_items
+        $itemCustomColumns = [
+            'requested_quantity' => 'decimal',
+            'recovered_quantity' => 'decimal',
+            'item_note' => 'string',
+        ];
+
+        foreach ($itemCustomColumns as $columnName => $columnType) {
+            if (!\Schema::hasColumn('stock_out_items', $columnName)) {
+                \Schema::table('stock_out_items', function (\Illuminate\Database\Schema\Blueprint $table) use ($columnName, $columnType) {
+                    if ($columnType === 'string') {
+                        $table->string($columnName)->nullable();
+                    } else {
+                        $table->decimal($columnName, 15, 4)->nullable();
+                    }
+                });
+            }
+        }
+
+        // Tải thông tin người ký tự động từ lần gần nhất
+        $lastStockOut = \App\Models\StockOut::latest()->first();
+        if ($lastStockOut) {
+            $this->warehouse_keeper = session('last_warehouse_keeper', $lastStockOut->warehouse_keeper ?? '');
+            $this->supervisor_qltb = session('last_supervisor_qltb', $lastStockOut->supervisor_qltb ?? '');
+            $this->supervisor_ca = session('last_supervisor_ca', $lastStockOut->supervisor_ca ?? '');
+        } else {
+            $this->warehouse_keeper = session('last_warehouse_keeper', '');
+            $this->supervisor_qltb = session('last_supervisor_qltb', '');
+            $this->supervisor_ca = session('last_supervisor_ca', '');
+        }
+
         if (empty($this->items)) {
             if ($this->type !== 'production') {
                 $this->addItem();
             }
         }
     }
+
+
 
     public function switchTab($tab)
     {
@@ -104,6 +182,9 @@ class StockOutForm extends Component
             'expiry_date' => '',
             'warehouse_location' => '',
             'quantity' => 1,
+            'requested_quantity' => 1,
+            'recovered_quantity' => 0,
+            'item_note' => '',
             'unit_price' => 0,
             'vat_rate' => 0,
             'total_amount' => 0,
@@ -114,6 +195,15 @@ class StockOutForm extends Component
 
     public function updated($name, $value)
     {
+        // Ghi nhớ tên người ký thời gian thực vào session ngay khi thay đổi
+        if (in_array($name, ['warehouse_keeper', 'supervisor_qltb', 'supervisor_ca'])) {
+            session([
+                'last_warehouse_keeper' => $this->warehouse_keeper,
+                'last_supervisor_qltb' => $this->supervisor_qltb,
+                'last_supervisor_ca' => $this->supervisor_ca,
+            ]);
+        }
+
         // Khi chọn khách hàng
         if ($name === 'customer_name') {
             $customer = Supplier::where('name', $value)->first();
@@ -362,6 +452,7 @@ class StockOutForm extends Component
             ->get();
 
         $this->dispatch('trigger-print');
+        $this->dispatch('stock-out-printing');
     }
 
     public function deleteSelected()
@@ -397,6 +488,7 @@ class StockOutForm extends Component
         });
 
         session()->flash('success', 'Đã xóa ' . count($this->selectedIds) . ' phiếu và hoàn trả tồn kho.');
+        $this->dispatch('stock-out-deleted', count: count($this->selectedIds));
         $this->selectedIds = [];
     }
 
@@ -425,6 +517,28 @@ class StockOutForm extends Component
             'asset_code' => 'nullable|string',
         ]);
 
+        // Đảm bảo tất cả các cột tùy chỉnh tồn tại động trong bảng stock_outs trước khi lưu
+        $customColumns = [
+            'project_name',
+            'document_number',
+            'license_plate',
+            'km_number',
+            'operating_hours',
+            'device_name',
+            'department',
+            'warehouse_keeper',
+            'supervisor_qltb',
+            'supervisor_ca',
+        ];
+
+        foreach ($customColumns as $columnName) {
+            if (!\Schema::hasColumn('stock_outs', $columnName)) {
+                \Schema::table('stock_outs', function (\Illuminate\Database\Schema\Blueprint $table) use ($columnName) {
+                    $table->string($columnName)->nullable();
+                });
+            }
+        }
+
         $service = app(InventoryService::class);
 
         return DB::transaction(function () use ($service) {
@@ -439,6 +553,16 @@ class StockOutForm extends Component
                     'status' => 'completed',
                     'note' => $this->note,
                     'created_by' => auth()->id(),
+                    'project_name' => $this->project_name,
+                    'document_number' => $this->document_number,
+                    'license_plate' => $this->license_plate,
+                    'km_number' => $this->km_number,
+                    'operating_hours' => $this->operating_hours,
+                    'device_name' => $this->device_name,
+                    'department' => $this->department,
+                    'warehouse_keeper' => $this->warehouse_keeper,
+                    'supervisor_qltb' => $this->supervisor_qltb,
+                    'supervisor_ca' => $this->supervisor_ca,
                 ]);
 
                 foreach ($this->items as $item) {
@@ -449,6 +573,9 @@ class StockOutForm extends Component
                         'expiry_date' => $item['expiry_date'] ?: null,
                         'warehouse_location' => $item['warehouse_location'],
                         'quantity' => $item['quantity'],
+                        'requested_quantity' => $item['requested_quantity'] ?: $item['quantity'],
+                        'recovered_quantity' => $item['recovered_quantity'] ?: 0,
+                        'item_note' => $item['item_note'] ?: '',
                         'unit_price' => $item['unit_price'],
                         'vat_rate' => $item['vat_rate'],
                         'total_amount' => $item['total_amount'],
@@ -480,17 +607,53 @@ class StockOutForm extends Component
                     ]);
                 }
 
+                // Lưu trữ thông tin người ký vào session để tự động điền các phiếu tiếp theo
+                session([
+                    'last_warehouse_keeper' => $this->warehouse_keeper,
+                    'last_supervisor_qltb' => $this->supervisor_qltb,
+                    'last_supervisor_ca' => $this->supervisor_ca,
+                ]);
+
                 session()->flash('success', 'Xuất kho thành công!');
-                $this->reset(['items', 'customer_name', 'receiver_name', 'receiver_contact', 'note', 'asset_code']);
+                $this->reset([
+                    'items', 'customer_name', 'receiver_name', 'receiver_contact', 'note', 'asset_code',
+                    'project_name', 'document_number', 'license_plate', 'km_number', 'operating_hours', 'device_name', 'department'
+                ]);
+                $this->customer_name = 'BCH VINALPHA';
+                $this->receiver_name = 'LÊ HOÀNG NAM';
                 $this->addItem();
                 $this->activeTab = 'list';
                 $this->listDateFrom = now()->startOfMonth()->format('Y-m-d');
                 $this->listDateTo = now()->format('Y-m-d');
+                $this->dispatch('stock-out-saved');
             } catch (\Exception $e) {
                 session()->flash('error', 'Lỗi: ' . $e->getMessage());
                 DB::rollBack();
             }
         });
+    }
+
+    public function resetForm()
+    {
+        $this->reset([
+            'items', 'customer_name', 'receiver_name', 'receiver_contact', 'note', 'asset_code',
+            'project_name', 'document_number', 'license_plate', 'km_number', 'operating_hours', 'device_name', 'department'
+        ]);
+        $this->customer_name = 'BCH VINALPHA';
+        $this->receiver_name = 'LÊ HOÀNG NAM';
+        $this->addItem();
+        
+        $currentHouse = session('current_house', 1);
+        if ($currentHouse == 2) {
+            $this->project_name = 'HẬU NGHĨA';
+        } elseif ($currentHouse == 3) {
+            $this->project_name = 'CẦN GIỜ';
+        } else {
+            $this->project_name = 'HÓC MÔN';
+        }
+        
+        $this->activeTab = 'form';
+        session()->flash('success', 'Đã xóa trắng dữ liệu và làm mới phiếu!');
     }
 
     public function render()

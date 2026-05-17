@@ -69,8 +69,8 @@
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Mã SP</th>
-                            <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Tên sản phẩm</th>
+                            <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Vị trí</th>
+                            <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">TÊN VẬT TƯ / MÃ VẬT TƯ</th>
                             <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Tồn hệ thống</th>
                             <th class="px-4 py-3 text-center text-[10px] font-bold text-yellow-600 uppercase">Thực tế (Nhập)</th>
                             <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Chênh lệch</th>
@@ -80,8 +80,11 @@
                     <tbody class="divide-y divide-gray-50">
                         @foreach($currentCount->items as $item)
                         <tr class="hover:bg-gray-50 {{ $item->difference != 0 && $item->actual_quantity !== null ? ($item->difference < 0 ? 'bg-red-50' : 'bg-green-50') : '' }}">
-                            <td class="px-4 py-2 text-xs font-bold text-indigo-700">{{ $item->product->code ?? '-' }}</td>
-                            <td class="px-4 py-2 text-sm font-medium text-gray-800">{{ $item->product->name ?? '-' }}</td>
+                            <td class="px-4 py-2 text-xs font-bold text-indigo-700">{{ $item->product->location ?? '-' }}</td>
+                            <td class="px-4 py-2 text-sm font-medium text-gray-800">
+                                <div class="font-bold">{{ $item->product->name ?? '-' }}</div>
+                                <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ $item->product->code ?? '-' }}</div>
+                            </td>
                             <td class="px-4 py-2 text-center text-sm font-black text-gray-700">{{ number_format($item->system_quantity) }}</td>
                             <td class="px-4 py-2 text-center no-print">
                                 <input type="number" 
@@ -392,9 +395,8 @@
                     <table class="w-full border-collapse border border-gray-300 text-sm">
                         <thead>
                             <tr class="bg-gray-50">
-                                <th class="border border-gray-300 px-3 py-2 text-left">Mã SP</th>
-                                <th class="border border-gray-300 px-3 py-2 text-left">Tên sản phẩm</th>
-                                <th class="border border-gray-300 px-3 py-2 text-center">Vị trí</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Vị trí</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">TÊN VẬT TƯ / MÃ VẬT TƯ</th>
                                 <th class="border border-gray-300 px-3 py-2 text-center">Hệ thống</th>
                                 <th class="border border-gray-300 px-3 py-2 text-center">Thực tế</th>
                                 <th class="border border-gray-300 px-3 py-2 text-center">Chênh lệch</th>
@@ -403,9 +405,11 @@
                         <tbody>
                             @foreach(collect($printBatchItems)->where('count_code', $code) as $item)
                             <tr>
-                                <td class="border border-gray-300 px-3 py-1 font-mono text-xs">{{ $item['product_code'] }}</td>
-                                <td class="border border-gray-300 px-3 py-1 text-xs">{{ $item['product_name'] }}</td>
-                                <td class="border border-gray-300 px-3 py-1 text-center text-xs">{{ $item['location'] }}</td>
+                                <td class="border border-gray-300 px-3 py-1 font-mono text-xs font-bold text-indigo-700">{{ $item['location'] }}</td>
+                                <td class="border border-gray-300 px-3 py-1 text-xs">
+                                    <div class="font-bold text-gray-800">{{ $item['product_name'] }}</div>
+                                    <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ $item['product_code'] }}</div>
+                                </td>
                                 <td class="border border-gray-300 px-3 py-1 text-center font-bold">{{ number_format($item['system_qty']) }}</td>
                                 <td class="border border-gray-300 px-3 py-1 text-center font-black text-indigo-600">{{ number_format($item['actual_qty']) }}</td>
                                 <td class="border border-gray-300 px-3 py-1 text-center font-bold {{ $item['difference'] < 0 ? 'text-red-600' : 'text-green-600' }}">

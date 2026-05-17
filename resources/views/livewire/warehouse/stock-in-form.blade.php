@@ -128,20 +128,20 @@
         lines.forEach(line => {
             let rest = line;
 
-            // 0. Chuẩn hóa sửa lỗi OCR và bóc tách các đặc thù của bảng in
-            // - Sửa chữ O thành số 0 trong mã hàng (Ví dụ: VAPO7001 -> VAP07001)
+            // 0. Chuan hoa sua loi OCR va boc tach cac dac thu cua bang in
+            // - Sua chu O thanh so 0 trong ma hang: VAPO7001 -> VAP07001
             rest = rest.replace(/\b([A-Z]+)O(\d+)\b/gi, '$10$2');
-            // - Sửa chữ I hoặc l thành số 1 ở cuối mã số sản phẩm (Ví dụ: VAP0700I/VAP0700l -> VAP07001)
+            // - Sua chu I hoac l thanh so 1 o cuoi ma so san pham: VAP0700I/VAP0700l -> VAP07001
             rest = rest.replace(/\b([A-Z]+\d+)I\b/gi, '$11');
             rest = rest.replace(/\b([A-Z]+\d+)l\b/g, '$11');
             
-            // - Loại bỏ số STT (Số thứ tự) ở đầu dòng (Ví dụ: "1 VAP07001" -> "VAP07001")
+            // - Loai bo so STT o dau dong
             const sttMatch = rest.match(/^\s*(\d+)\s+([A-Z]{2,}\d+|\w+-\d+)/i);
             if (sttMatch) {
                 rest = rest.replace(/^\s*\d+\s+/, '');
             }
 
-            // - Loại bỏ các thông số kích thước, phân số thông dụng để tránh bị nhận nhầm làm số lượng (Ví dụ: "1/4", "3/8", "1/2", "3/4", "1-3/4", "5/8", "2AT", "400Bar")
+            // - Loai bo cac thong so kich thuoc, phan so de tranh nhan nham so luong
             rest = rest.replace(/\b\d+\/\d+\b/g, ''); 
             rest = rest.replace(/\b\d+-\d+\/\d+\b/g, '');
             rest = rest.replace(/\b\d+AT\b/gi, '');

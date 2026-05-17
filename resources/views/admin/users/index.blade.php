@@ -214,10 +214,10 @@
                                         'inventory' => 'Tồn kho',
                                         'stock-count' => 'Kiểm kê kho'
                                     ],
-                                    '3. Sản phẩm & BOM' => [
-                                        'product-catalog' => 'Danh mục sản phẩm',
+                                    '3. Vật tư & BOM' => [
+                                        'product-catalog' => 'Danh mục vật tư',
                                         'material-names' => 'Danh mục Tên NVL',
-                                        'bom' => 'BOM / Định mức'
+                                        'bom' => 'BOM - Định mức mã tài sản'
                                     ],
                                     '4. Tổng hợp' => [
                                         'purchase-request' => 'Phiếu đề xuất mua hàng',

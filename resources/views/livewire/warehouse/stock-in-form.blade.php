@@ -5,6 +5,7 @@
     ocrRunning: false,
     ocrImageSrc: '',
     ocrParsedRows: [],
+    ocrMaximized: false,
     
     // Bản đồ sản phẩm phục vụ so khớp trực tiếp trên Trình duyệt
     productsMap: {
@@ -285,6 +286,7 @@
         this.ocrImageSrc = '';
         this.ocrStatus = '';
         this.ocrProgress = 0;
+        this.ocrMaximized = false; // Tự động đóng/thu nhỏ cửa sổ khi đã xác nhận đưa dữ liệu vào tồn kho
     }
 }">
     <!-- Thư viện PDF.js và Tesseract.js phục vụ đọc PDF và quét OCR trực tiếp ở Browser -->
@@ -592,14 +594,15 @@
 
     <!-- MODAL NHẬP ĐA PHƯƠNG THỨC TỰ ĐỘNG (EXCEL / PDF / ẢNH AI OCR) -->
     @if($showImportModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto no-print">
-            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
-                <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
+        <div class="fixed inset-0 z-50 no-print" :class="ocrMaximized ? 'overflow-hidden h-screen w-screen' : 'overflow-y-auto'">
+            <div class="flex items-center justify-center min-h-screen text-center" :class="ocrMaximized ? 'h-screen w-screen p-0 items-stretch' : 'pt-4 px-4 pb-20 align-middle'">
+                <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false); ocrMaximized = false"></div>
                 
-                <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-slate-150">
+                <div :class="ocrMaximized ? 'w-screen h-screen max-w-full my-0 rounded-none flex flex-col' : 'inline-block align-middle sm:max-w-4xl sm:w-full rounded-2xl sm:my-8 border border-slate-150'"
+                     class="bg-white text-left overflow-hidden shadow-2xl transform transition-all">
                     
                     <!-- Tab Header -->
-                    <div class="bg-slate-50 border-b border-slate-150 px-6 py-4 flex items-center justify-between">
+                    <div class="bg-slate-55 border-b border-slate-150 px-6 py-4 flex items-center justify-between shrink-0 bg-slate-50">
                         <div class="flex gap-6">
                             <button @click="activeImportTab = 'excel'" 
                                     :class="activeImportTab === 'excel' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
@@ -619,11 +622,23 @@
                                 <span class="bg-indigo-100 text-indigo-800 text-[9px] px-1.5 py-0.5 rounded font-black uppercase">Thông minh</span>
                             </button>
                         </div>
-                        <button wire:click="$set('showImportModal', false)" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+                        <div class="flex items-center gap-3">
+                            <button type="button" @click="ocrMaximized = !ocrMaximized" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/50 transition duration-150 flex items-center justify-center" title="Phóng to / Thu nhỏ">
+                                <template x-if="ocrMaximized">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4"></path></svg>
+                                </template>
+                                <template x-if="!ocrMaximized">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4h4m12 4V4h-4M4 16v4h4m12-4v4h-4"></path></svg>
+                                </template>
+                            </button>
+                            <button type="button" wire:click="$set('showImportModal', false)" @click="ocrMaximized = false" class="text-slate-450 hover:text-slate-650 text-lg p-1">✕</button>
+                        </div>
                     </div>
 
-                    <!-- Tab 1: Nhập từ Excel/CSV -->
-                    <div x-show="activeImportTab === 'excel'" class="p-6 space-y-4">
+                    <!-- Tab Content Wrapper -->
+                    <div :class="ocrMaximized ? 'flex-1 overflow-y-auto' : ''">
+                        <!-- Tab 1: Nhập từ Excel/CSV -->
+                        <div x-show="activeImportTab === 'excel'" class="p-6 space-y-4">
                         <div class="p-3.5 bg-emerald-50 text-emerald-850 rounded-lg text-xs font-semibold leading-relaxed border border-emerald-100">
                             ✨ <span class="font-extrabold text-emerald-950">Giải pháp đồng bộ cột linh hoạt:</span> Anh/chị có thể sắp xếp thứ tự các cột Excel tùy ý! Hệ thống sẽ quét dòng tiêu đề để bóc tách thông tin tự động. 
                             Những cột nào không tìm thấy hoặc trống thông tin sẽ được <span class="font-black text-orange-700 underline">báo màu cam</span> trên bảng nhập để anh/chị bổ sung nhanh chóng.
@@ -864,9 +879,9 @@
                                 </div>
 
                                 <div class="pt-4">
-                                    <button type="button" @click="runOCR()" :disabled="ocrRunning || !ocrImageSrc" 
-                                            class="w-full py-2 text-xs font-black text-white bg-indigo-650 hover:bg-indigo-750 disabled:bg-slate-350 disabled:cursor-not-allowed rounded-xl transition shadow">
-                                        🔍 Bắt đầu nhận diện AI OCR
+                                    <button type="button" @click="runOCR(); ocrMaximized = true;" :disabled="ocrRunning || !ocrImageSrc" 
+                                            class="w-full py-3.5 text-xs font-black text-slate-900 bg-amber-400 hover:bg-amber-500 disabled:bg-slate-200 disabled:text-slate-450 disabled:cursor-not-allowed rounded-xl transition shadow-lg flex items-center justify-center gap-1.5 active:scale-98">
+                                        <span>🔍</span> Bắt đầu nhận diện AI OCR
                                     </button>
                                 </div>
                             </div>
@@ -988,10 +1003,11 @@
                                 💾 Đồng bộ vào phiếu nhập kho
                             </button>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </div> <!-- Close Tab 3 -->
+                </div> <!-- Close Tab Content Wrapper -->
+            </div> <!-- Close Modal box -->
+        </div> <!-- Close Inner Flex overlay -->
+    </div> <!-- Close Fixed Inset outer wrapper -->
     @endif
 
     <!-- Quick Product Modal -->

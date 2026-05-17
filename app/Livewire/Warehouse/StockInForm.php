@@ -535,6 +535,11 @@ class StockInForm extends Component
     {
         $this->items = [];
         foreach ($rows as $row) {
+            // Chỉ lấy thông tin vật tư dữ liệu thực tế có nội dung trong ảnh
+            if (empty($row['code']) && empty($row['scanned_name']) && empty($row['quantity'])) {
+                continue; 
+            }
+
             $product = null;
             if (!empty($row['code'])) {
                 $product = Product::where('code', trim($row['code']))
@@ -552,7 +557,7 @@ class StockInForm extends Component
                 'expiry_date' => $row['expiry_date'] ?? '',
                 'warehouse_location' => $row['warehouse_location'] ?? ($product?->location ?? ''),
                 'quantity' => $qtyVal,
-                'unit' => $product?->unit ?: ($product?->box_spec ?: ($product?->carton_spec ?: 'Cái')),
+                'unit' => !empty($row['unit']) ? trim($row['unit']) : ($product?->unit ?: ($product?->box_spec ?: ($product?->carton_spec ?: 'Cái'))),
                 'unit_price' => $priceVal,
                 'vat_rate' => 0,
                 'total_amount' => is_numeric($qtyVal) ? ($qtyVal * $priceVal) : 0

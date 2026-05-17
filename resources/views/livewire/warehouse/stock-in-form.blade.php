@@ -159,7 +159,15 @@
                 rest = rest.replace(locationMatch[0], '');
             }
 
-            // 4. Tìm số lượng và đơn giá từ các số trong dòng
+            // 4. Tìm đơn vị tính (ĐVT) tương ứng trong dòng văn bản ảnh chụp
+            const unitMatch = rest.match(/\b(cái|cai|lít|lit|l|kg|kilogam|hộp|hop|chai|lon|vỉ|vi|cuộn|cuon|mét|met|m|bộ|bo|chiếc|chiec|bao|túi|tui|thùng|thung|hũ|hu|can|cặp|cap|tấn|tan|tạ|ta|yến|yen|g|gam|ml)\b/i);
+            let unitVal = '';
+            if (unitMatch) {
+                unitVal = unitMatch[0];
+                rest = rest.replace(unitMatch[0], '');
+            }
+
+            // 5. Tìm số lượng và đơn giá từ các số trong dòng
             const numberMatches = rest.match(/(\b\d+([.,]\d+)?\b)/g) || [];
             let quantity = '';
             let unitPrice = '';
@@ -187,16 +195,15 @@
                 rest = rest.replace(numStr, '');
             });
 
-            // 5. Làm sạch phần văn bản còn lại để lấy tên vật tư quét được (Scanned Name)
+            // 6. Làm sạch phần văn bản còn lại để lấy tên vật tư quét được (Scanned Name)
             let scannedName = rest.replace(/[\/\|\\\[\]\(\)\-\+\*:=\.\?,;]/g, ' ')
-                                  .replace(/\s+(cái|lit|lít|kg|hộp|chai|lon|vi|cuộn|mét|m)\b/gi, ' ')
                                   .replace(/\s+/g, ' ').trim();
 
             if (scannedName.length < 2 && !quantity) {
                 return; // Dòng rác không có thông tin hữu ích
             }
 
-            // 6. So khớp thông minh scannedName với productsMap
+            // 7. So khớp thông minh scannedName với productsMap
             let foundCode = '';
             let foundName = '';
             let matchedProduct = null;
@@ -256,7 +263,7 @@
                 name: foundName || '',
                 scanned_name: scannedName,
                 quantity: quantity || '',
-                unit: matchedProduct ? matchedProduct.unit : 'Cái',
+                unit: unitVal ? (unitVal.charAt(0).toUpperCase() + unitVal.slice(1).toLowerCase()) : (matchedProduct ? matchedProduct.unit : 'Cái'),
                 batch_number: batchNumber || '',
                 expiry_date: expiryDate || '',
                 warehouse_location: location || '',

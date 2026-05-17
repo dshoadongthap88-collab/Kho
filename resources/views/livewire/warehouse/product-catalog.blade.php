@@ -187,8 +187,12 @@
                                 <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Ngừng kinh doanh</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 font-semibold text-gray-700">
-                            {{ $product->min_stock > 0 ? number_format($product->min_stock) : '-' }}
+                        <td class="px-4 py-2 text-center">
+                            <input type="number" 
+                                   value="{{ $product->min_stock }}"
+                                   wire:change="updateMinStock({{ $product->id }}, $event.target.value)"
+                                   class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-2 py-1 transition-all text-center shadow-inner"
+                                   placeholder="0">
                         </td>
                     </tr>
                 @empty

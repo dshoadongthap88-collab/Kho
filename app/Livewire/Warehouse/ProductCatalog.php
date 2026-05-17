@@ -305,6 +305,20 @@ class ProductCatalog extends Component
         }
     }
 
+    public function updateMinStock($productId, $value)
+    {
+        try {
+            $product = Product::findOrFail($productId);
+            $product->update([
+                'min_stock' => (float)($value ?: 0)
+            ]);
+            
+            session()->flash('message', "Đã cập nhật tồn tối thiểu cho " . $product->name . " thành " . number_format($product->min_stock));
+        } catch (\Exception $e) {
+            session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
+    }
+
     public function render()
     {
         $products = Product::query()

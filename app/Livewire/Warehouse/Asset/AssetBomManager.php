@@ -5,10 +5,12 @@ namespace App\Livewire\Warehouse\Asset;
 use Livewire\Component;
 use App\Models\Asset;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 
 class AssetBomManager extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     public $search = '';
     
@@ -26,11 +28,28 @@ class AssetBomManager extends Component
     public $new_name = '';
     public $new_department = '';
 
+    // Checkbox selections
+    public $selectedIds = [];
+    public $selectAll = false;
+
+    // Excel import/export
+    public $showImportModal = false;
+    public $excelFile;
+
+    // Asset editing
+    public $showEditModal = false;
+    public $editingAssetId = null;
+    public $edit_asset_code = '';
+    public $edit_name = '';
+    public $edit_department = '';
+
     protected $queryString = ['search'];
 
     public function updatedSearch()
     {
         $this->resetPage();
+        $this->selectedIds = [];
+        $this->selectAll = false;
     }
 
     public function mount()
@@ -48,6 +67,23 @@ class AssetBomManager extends Component
             $this->hydraulic_filters[$asset->id] = $asset->hydraulic_filter;
             $this->air_filters[$asset->id] = $asset->air_filter;
             $this->maintenance_cycles[$asset->id] = $asset->maintenance_cycle;
+        }
+    }
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $assetsQuery = Asset::query();
+            if ($this->search) {
+                $assetsQuery->where(function($q) {
+                    $q->where('asset_code', 'like', '%'.$this->search.'%')
+                      ->orWhere('name', 'like', '%'.$this->search.'%')
+                      ->orWhere('department', 'like', '%'.$this->search.'%');
+                });
+            }
+            $this->selectedIds = $assetsQuery->pluck('id')->map(fn($id) => (string)$id)->toArray();
+        } else {
+            $this->selectedIds = [];
         }
     }
 
@@ -108,6 +144,209 @@ class AssetBomManager extends Component
         session()->flash('message', 'Đã thêm thiết bị mới thành công.');
     }
 
+    public function openEditModal()
+    {
+        if (count($this->selectedIds) !== 1) {
+            session()->flash('error', 'Vui lòng tích chọn duy nhất một thiết bị để sửa.');
+            return;
+        }
+
+        $id = $this->selectedIds[0];
+        $asset = Asset::findOrFail($id);
+        
+        $this->editingAssetId = $asset->id;
+        $this->edit_asset_code = $asset->asset_code;
+        $this->edit_name = $asset->name;
+        $this->edit_department = $asset->department;
+        $this->showEditModal = true;
+    }
+
+    public function updateAsset()
+    {
+        $this->validate([
+            'edit_asset_code' => 'required|string|unique:assets,asset_code,' . $this->editingAssetId,
+            'edit_name' => 'required|string|max:255',
+            'edit_department' => 'nullable|string|max:255',
+        ], [
+            'edit_asset_code.required' => 'Mã tài sản không được để trống.',
+            'edit_asset_code.unique' => 'Mã tài sản này đã tồn tại.',
+            'edit_name.required' => 'Tên thiết bị không được để trống.',
+        ]);
+
+        $asset = Asset::findOrFail($this->editingAssetId);
+        $asset->update([
+            'asset_code' => $this->edit_asset_code,
+            'name' => $this->edit_name,
+            'department' => $this->edit_department,
+        ]);
+
+        $this->initFields();
+        $this->showEditModal = false;
+        $this->selectedIds = [];
+        $this->selectAll = false;
+        session()->flash('message', 'Đã cập nhật thông tin thiết bị thành công.');
+    }
+
+    public function deleteSelected()
+    {
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'Vui lòng tích chọn ít nhất một thiết bị để xóa.');
+            return;
+        }
+
+        Asset::whereIn('id', $this->selectedIds)->delete();
+        
+        $this->selectedIds = [];
+        $this->selectAll = false;
+        $this->initFields();
+        session()->flash('message', 'Đã xóa các thiết bị được chọn thành công.');
+    }
+
+    public function printSelected()
+    {
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'Vui lòng tích chọn ít nhất một thiết bị để in.');
+            return;
+        }
+
+        $this->dispatch('trigger-print');
+    }
+
+    public function exportExcel()
+    {
+        $assets = Asset::all();
+        
+        $headers = [
+            "Content-type" => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=dinh_muc_ma_tai_san_" . now()->format('Ymd_His') . ".csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $columns = [
+            'Mã tài sản', 'Tên thiết bị', 'Bộ phận', 
+            'Dầu động cơ 15W40 (Lít)', 'Nhớt thủy lực AW68 (Lít)', 
+            'Lọc nhớt động cơ', 'Lọc thủy lực', 'Lọc gió', 'Chu kỳ'
+        ];
+
+        $callback = function() use($assets, $columns) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($file, $columns);
+
+            foreach ($assets as $asset) {
+                fputcsv($file, [
+                    $asset->asset_code,
+                    $asset->name,
+                    $asset->department ?: '',
+                    $asset->engine_oil_cap ?: '',
+                    $asset->hydraulic_oil_cap ?: '',
+                    $asset->engine_oil_filter ?: '',
+                    $asset->hydraulic_filter ?: '',
+                    $asset->air_filter ?: '',
+                    $asset->maintenance_cycle ?: ''
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function downloadTemplate()
+    {
+        $headers = [
+            "Content-type" => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=mau_dinh_muc_ma_tai_san.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $columns = [
+            'Mã tài sản', 'Tên thiết bị', 'Bộ phận', 
+            'Dầu động cơ 15W40 (Lít)', 'Nhớt thủy lực AW68 (Lít)', 
+            'Lọc nhớt động cơ', 'Lọc thủy lực', 'Lọc gió', 'Chu kỳ'
+        ];
+
+        $callback = function() use($columns) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($file, $columns);
+            
+            fputcsv($file, [
+                'TS-001', 'Xe nâng 3 tấn', 'Kho vận', '8', '35', 'LF-3349', 'HF-6710', 'AF-2555', '250 giờ'
+            ]);
+            fputcsv($file, [
+                'TS-002', 'Máy xúc Kobelco', 'Cơ giới', '18', '120', 'LF-9001', 'HF-7602', 'AF-8721', '500 giờ'
+            ]);
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function importExcel()
+    {
+        $this->validate([
+            'excelFile' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
+        ], [
+            'excelFile.required' => 'Vui lòng chọn tệp tin.',
+            'excelFile.mimes' => 'Tệp tin phải có định dạng CSV, XLSX hoặc XLS.',
+        ]);
+
+        try {
+            $data = \Maatwebsite\Excel\Facades\Excel::toArray(new \stdClass(), $this->excelFile);
+            if (!empty($data) && isset($data[0])) {
+                $rows = $data[0];
+                $header = array_shift($rows);
+                
+                $importedCount = 0;
+                foreach ($rows as $row) {
+                    if (empty($row[0])) continue;
+                    
+                    $assetCode = trim($row[0]);
+                    $name = trim($row[1] ?? '');
+                    $dept = trim($row[2] ?? '');
+                    $engOil = trim($row[3] ?? '');
+                    $hydOil = trim($row[4] ?? '');
+                    $engFilter = trim($row[5] ?? '');
+                    $hydFilter = trim($row[6] ?? '');
+                    $airFilter = trim($row[7] ?? '');
+                    $cycle = trim($row[8] ?? '');
+
+                    Asset::updateOrCreate(
+                        ['asset_code' => $assetCode],
+                        [
+                            'name' => $name ?: 'Thiết bị ' . $assetCode,
+                            'department' => $dept ?: null,
+                            'engine_oil_cap' => $engOil ?: null,
+                            'hydraulic_oil_cap' => $hydOil ?: null,
+                            'engine_oil_filter' => $engFilter ?: null,
+                            'hydraulic_filter' => $hydFilter ?: null,
+                            'air_filter' => $airFilter ?: null,
+                            'maintenance_cycle' => $cycle ?: null,
+                            'status' => 'active'
+                        ]
+                    );
+                    $importedCount++;
+                }
+                
+                $this->initFields();
+                $this->showImportModal = false;
+                $this->excelFile = null;
+                session()->flash('message', "Nhập dữ liệu thành công! Đã xử lý {$importedCount} thiết bị.");
+            } else {
+                session()->flash('error', 'Tệp tin trống hoặc không hợp lệ.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Có lỗi xảy ra khi nhập dữ liệu: ' . $e->getMessage());
+        }
+    }
+
     public function render()
     {
         $assetsQuery = Asset::query();
@@ -122,7 +361,7 @@ class AssetBomManager extends Component
 
         $assets = $assetsQuery->orderBy('asset_code', 'asc')->paginate(15);
 
-        // Ensure newly paginated items are populated in form state arrays
+        // Ensure arrays are initialized for edit binding
         foreach ($assets as $asset) {
             if (!isset($this->engine_oil_caps[$asset->id])) {
                 $this->engine_oil_caps[$asset->id] = $asset->engine_oil_cap;

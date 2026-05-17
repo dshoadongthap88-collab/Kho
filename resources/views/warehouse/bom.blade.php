@@ -1,3 +1,3 @@
 <x-warehouse-layout title="BOM - Định mức mã tài sản">
-    <livewire:warehouse.bom-manager />
+    <livewire:warehouse.asset.asset-bom-manager />
 </x-warehouse-layout>

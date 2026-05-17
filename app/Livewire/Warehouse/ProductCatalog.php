@@ -326,7 +326,7 @@ class ProductCatalog extends Component
                 $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
             })
             ->latest()
-            ->paginate(15);
+            ->paginate(8);
 
         return view('livewire.warehouse.product-catalog', [
             'products' => $products,

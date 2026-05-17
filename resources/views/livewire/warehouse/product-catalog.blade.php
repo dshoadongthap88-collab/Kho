@@ -52,6 +52,14 @@
                 <div wire:key="bulk-actions-container" class="flex items-center gap-1.5 pr-2 border-r border-slate-300 mr-1 py-1">
                     <span class="text-[10px] font-black text-indigo-700 bg-indigo-50 px-2 py-1 rounded border border-indigo-100">CHỌN: {{ count($selectedIds) }}</span>
                     
+                    @if(count($selectedIds) === 1)
+                        <button wire:key="btn-edit-selected" type="button" 
+                                wire:click="openModal({{ $selectedIds[0] }})" 
+                                class="flex items-center gap-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
+                            <span>✏️</span> SỬA
+                        </button>
+                    @endif
+
                     <button wire:key="btn-delete-selected" type="button" 
                             onclick="confirm('Xác nhận xóa các vật tư đã chọn?') || event.stopImmediatePropagation()"
                             wire:click="deleteSelected" 
@@ -149,7 +157,7 @@
                                 </button>
                             @endif
                         </td>
-                        <td class="px-4 py-3 font-medium text-gray-800">{{ $product->name }}</td>
+                        <td class="px-4 py-3 text-[11px] font-black text-gray-800 uppercase tracking-tight">{{ $product->name }}</td>
                         <td class="px-4 py-3">
                             @if($product->type === 'product_produced')
                                 <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs">SX</span>

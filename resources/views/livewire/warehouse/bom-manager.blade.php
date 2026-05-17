@@ -4,12 +4,12 @@
     @endif
 
     <div class="bg-white rounded-xl shadow p-6">
-        <h2 class="text-xl font-bold mb-4">🔧 Quản lý BOM - Định mức nguyên vật liệu</h2>
+        <h2 class="text-xl font-bold mb-4">🔧 Quản lý BOM - Định mức mã tài sản</h2>
 
         <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Chọn sản phẩm thành phẩm</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Chọn sản phẩm thành phẩm / Mã tài sản</label>
             <select wire:model.live="selectedProductId" class="w-full rounded-lg border-gray-300 shadow-sm">
-                <option value="">-- Chọn sản phẩm --</option>
+                <option value="">-- Chọn sản phẩm / Mã tài sản --</option>
                 @foreach($products as $product)
                     <option value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }}</option>
                 @endforeach
@@ -19,10 +19,10 @@
         @if($selectedProductId)
         <div class="mb-6">
             <div class="flex justify-between items-center mb-3">
-                <h3 class="text-lg font-semibold">Danh sách NVL</h3>
+                <h3 class="text-lg font-semibold">Danh sách định mức vật tư</h3>
                 <div class="flex gap-2 no-print">
                     <button type="button" onclick="window.print()" class="bg-slate-800 hover:bg-black text-white px-4 py-2 rounded-lg flex items-center gap-2 transition text-sm font-bold shadow-md cursor-pointer">
-                        🖨️ In BOM NVL
+                        🖨️ In BOM Định mức mã tài sản
                     </button>
                     <button type="button" wire:click="saveBom" wire:loading.attr="disabled" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition text-sm font-bold shadow-md cursor-pointer">
                         <span wire:loading.remove wire:target="saveBom">💾</span>
@@ -35,8 +35,8 @@
             <table class="w-full mb-4">
                 <thead>
                     <tr class="bg-gray-50">
-                        <th class="px-3 py-2 text-left text-sm">NVL</th>
-                        <th class="px-3 py-2 text-center text-sm">Định mức / 1 SP</th>
+                        <th class="px-3 py-2 text-left text-sm">Định mức Vật tư</th>
+                        <th class="px-3 py-2 text-center text-sm">Định mức / 1 Mã tài sản</th>
                         <th class="px-3 py-2 text-center text-sm">ĐVT</th>
                         @if($availability)
                         <th class="px-3 py-2 text-center text-sm">Tồn kho</th>
@@ -62,23 +62,23 @@
                         </td>
                         @endif
                         <td class="px-3 py-2 text-center">
-                            <button wire:confirm="Xác nhận xóa nguyên vật liệu {{ $item['material_name'] }} khỏi định mức?" wire:click="removeMaterial({{ $item['id'] }})" class="text-rose-500 hover:text-rose-700 text-sm font-bold transition-all hover:scale-110">Xóa</button>
+                            <button wire:confirm="Xác nhận xóa vật tư {{ $item['material_name'] }} khỏi định mức mã tài sản?" wire:click="removeMaterial({{ $item['id'] }})" class="text-rose-500 hover:text-rose-700 text-sm font-bold transition-all hover:scale-110">Xóa</button>
                         </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
             @else
-                <p class="text-gray-400 text-sm mb-4">Chưa có NVL nào được khai báo cho sản phẩm này.</p>
+                <p class="text-gray-400 text-sm mb-4">Chưa có vật tư định mức nào được khai báo cho sản phẩm/mã tài sản này.</p>
             @endif
 
             <div class="bg-gray-50 rounded-lg p-4">
-                <h4 class="text-sm font-semibold mb-3">Thêm nguyên vật liệu</h4>
+                <h4 class="text-sm font-semibold mb-3">Thêm định mức vật tư</h4>
                 <div class="flex gap-3 items-end">
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1">NVL</label>
+                        <label class="block text-xs text-gray-500 mb-1">Vật tư định mức</label>
                         <select wire:model="newMaterialId" class="w-full rounded border-gray-300 shadow-sm text-sm">
-                            <option value="">-- Chọn NVL --</option>
+                            <option value="">-- Chọn vật tư --</option>
                             @foreach($materials as $mat)
                                 <option value="{{ $mat->id }}">{{ $mat->code }} - {{ $mat->name }}</option>
                             @endforeach

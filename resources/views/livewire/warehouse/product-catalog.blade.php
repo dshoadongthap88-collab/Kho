@@ -84,6 +84,9 @@
             <button wire:click="openModal" class="bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
                 <span>➕</span> THÊM VẬT TƯ
             </button>
+            <button wire:click="saveMinStocks" class="bg-gradient-to-r from-amber-500 to-amber-600 font-black hover:from-amber-600 hover:to-amber-700 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
+                <span>💾</span> LƯU TỒN TỐI THIỂU
+            </button>
             <button wire:click="$set('showImportModal', true)" class="bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-4 py-1.5 rounded-lg text-[11px] transition-all shadow-sm hover:shadow-md active:scale-95">
                 📥 IMPORT EXCEL
             </button>
@@ -189,9 +192,8 @@
                         </td>
                         <td class="px-4 py-2 text-center">
                             <input type="number" 
-                                   value="{{ $product->min_stock }}"
-                                   wire:change="updateMinStock({{ $product->id }}, $event.target.value)"
-                                   class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-2 py-1 transition-all text-center shadow-inner"
+                                   wire:model.defer="minStocks.{{ $product->id }}"
+                                   class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-2 py-1 transition-all text-center shadow-inner placeholder-slate-400"
                                    placeholder="0">
                         </td>
                     </tr>

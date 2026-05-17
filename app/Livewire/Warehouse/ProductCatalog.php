@@ -47,6 +47,7 @@ class ProductCatalog extends Component
     public $dateTo = '';
     public $selectedIds = []; 
     public $printItems = []; // Thêm mảng chứa dữ liệu để in
+    public $minStocks = []; 
 
     protected $queryString = ['search', 'dateFrom', 'dateTo'];
 
@@ -305,15 +306,22 @@ class ProductCatalog extends Component
         }
     }
 
-    public function updateMinStock($productId, $value)
+    public function saveMinStocks()
     {
         try {
-            $product = Product::findOrFail($productId);
-            $product->update([
-                'min_stock' => (float)($value ?: 0)
-            ]);
+            $count = 0;
+            foreach ($this->minStocks as $productId => $value) {
+                $product = Product::find($productId);
+                if ($product) {
+                    $newVal = (float)($value ?: 0);
+                    if ($product->min_stock != $newVal) {
+                        $product->update(['min_stock' => $newVal]);
+                        $count++;
+                    }
+                }
+            }
             
-            session()->flash('message', "Đã cập nhật tồn tối thiểu cho " . $product->name . " thành " . number_format($product->min_stock));
+            session()->flash('message', "Đã lưu thành công định mức tồn tối thiểu cho {$count} vật tư!");
         } catch (\Exception $e) {
             session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
@@ -341,6 +349,13 @@ class ProductCatalog extends Component
             })
             ->latest()
             ->paginate(8);
+
+        // Khởi tạo các giá trị tồn tối thiểu cho ô nhập liệu trên trang hiện tại
+        foreach ($products as $product) {
+            if (!isset($this->minStocks[$product->id])) {
+                $this->minStocks[$product->id] = $product->min_stock > 0 ? $product->min_stock : '';
+            }
+        }
 
         return view('livewire.warehouse.product-catalog', [
             'products' => $products,

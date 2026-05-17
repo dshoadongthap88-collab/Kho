@@ -1,4 +1,258 @@
-<div class="h-full flex flex-col space-y-4" style="font-family: 'Times New Roman', Times, serif;">
+<div class="h-full flex flex-col space-y-4" style="font-family: 'Times New Roman', Times, serif;" x-data="{
+    activeImportTab: 'excel',
+    ocrProgress: 0,
+    ocrStatus: '',
+    ocrRunning: false,
+    ocrImageSrc: '',
+    ocrParsedRows: [],
+    
+    // Bản đồ sản phẩm phục vụ so khớp trực tiếp trên Trình duyệt
+    productsMap: {
+        @foreach($products as $p)
+        '{{ strtolower($p->code) }}': { id: {{ $p->id }}, name: '{{ $p->name }}', unit: '{{ $p->unit ?: 'Cái' }}', price: {{ $p->price ?: 0 }}, location: '{{ $p->location ?: '' }}' },
+        @endforeach
+    },
+
+    // Xử lý khi tải lên / dán ảnh chụp hoặc chọn tệp PDF
+    handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            this.readImage(file);
+        }
+    },
+    handleImagePaste(event) {
+        const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                this.readImage(file);
+                break;
+            }
+        }
+    },
+    readImage(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.ocrImageSrc = e.target.result;
+            this.ocrStatus = 'Ảnh chụp đã sẵn sàng phân tích!';
+            this.ocrParsedRows = [];
+        };
+        reader.readAsDataURL(file);
+    },
+
+    // Đọc và phân tích tệp tin PDF ngay tại Client
+    async handlePdfUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        this.ocrRunning = true;
+        this.ocrProgress = 20;
+        this.ocrStatus = 'Đang đọc cấu trúc tệp PDF...';
+
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            
+            let fullText = '';
+            this.ocrStatus = `Đang phân tích dữ liệu văn bản từ ${pdf.numPages} trang PDF...`;
+            
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n';
+                this.ocrProgress = 20 + Math.round((i / pdf.numPages) * 60);
+            }
+
+            this.ocrStatus = 'Đang bóc tách danh sách vật tư nhập kho...';
+            this.ocrParsedRows = this.parseStockInText(fullText);
+            
+            this.ocrProgress = 100;
+            this.ocrRunning = false;
+            this.ocrStatus = `Nhận diện PDF xong! Tìm thấy ${this.ocrParsedRows.length} dòng vật tư nhập kho.`;
+        } catch (error) {
+            console.error(error);
+            this.ocrRunning = false;
+            this.ocrStatus = 'Lỗi đọc tệp PDF: ' + error.message;
+            alert('Đọc tệp PDF thất bại! Vui lòng kiểm tra định dạng.');
+        }
+    },
+
+    // Chạy OCR cho ảnh chụp
+    async runOCR() {
+        if (!this.ocrImageSrc) {
+            alert('Vui lòng chọn hoặc dán ảnh chụp phiếu trước!');
+            return;
+        }
+
+        this.ocrRunning = true;
+        this.ocrProgress = 10;
+        this.ocrStatus = 'Đang khởi động công cụ AI OCR...';
+
+        try {
+            const worker = await Tesseract.createWorker('vie+eng', 1, {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        this.ocrProgress = Math.round(15 + m.progress * 80);
+                        this.ocrStatus = `Đang quét văn bản trên ảnh chụp: ${Math.round(m.progress * 100)}%`;
+                    }
+                }
+            });
+
+            this.ocrStatus = 'Đang bóc tách chữ tiếng Việt trên phiếu...';
+            const { data: { text } } = await worker.recognize(this.ocrImageSrc);
+            await worker.terminate();
+
+            this.ocrProgress = 95;
+            this.ocrStatus = 'Đang lập bản đồ vật tư khớp danh mục...';
+            
+            this.ocrParsedRows = this.parseStockInText(text);
+
+            this.ocrProgress = 100;
+            this.ocrRunning = false;
+            this.ocrStatus = `Nhận diện ảnh xong! Phân tích được ${this.ocrParsedRows.length} dòng vật tư.`;
+        } catch (error) {
+            console.error(error);
+            this.ocrRunning = false;
+            this.ocrStatus = 'Lỗi OCR: ' + error.message;
+            alert('Nhận diện ảnh thất bại!');
+        }
+    },
+
+    // Giải thuật bóc tách và phân tách thông tin phiếu nhập kho thông minh
+    parseStockInText(text) {
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 3);
+        const parsed = [];
+
+        lines.forEach(line => {
+            let foundCode = '';
+            let matchedProduct = null;
+
+            // Tìm mã vật tư bằng regex
+            const codeMatch = line.match(/([A-Z0-9]{2,8}-\d+|SP\d+|NVL\d+|VTV\d+)/i);
+            if (codeMatch) {
+                const possibleCode = codeMatch[0].toLowerCase();
+                if (this.productsMap[possibleCode]) {
+                    foundCode = codeMatch[0].toUpperCase();
+                    matchedProduct = this.productsMap[possibleCode];
+                }
+            }
+
+            // Tìm gián tiếp bằng tên
+            if (!matchedProduct) {
+                for (const code in this.productsMap) {
+                    if (line.toLowerCase().includes(code)) {
+                        foundCode = code.toUpperCase();
+                        matchedProduct = this.productsMap[code];
+                        break;
+                    }
+                    const nameNorm = this.productsMap[code].name.toLowerCase();
+                    if (line.toLowerCase().includes(nameNorm)) {
+                        foundCode = code.toUpperCase();
+                        matchedProduct = this.productsMap[code];
+                        break;
+                    }
+                }
+            }
+
+            // Nếu không có mã, lấy từ in hoa đầu dòng làm mã giả định
+            if (!foundCode) {
+                const firstWord = line.split(/\s+/)[0];
+                if (firstWord && firstWord.length >= 3 && /^[A-Z0-9-]+$/.test(firstWord)) {
+                    foundCode = firstWord.toUpperCase();
+                } else {
+                    return; // Bỏ qua dòng không rõ thông tin
+                }
+            }
+
+            let rest = line;
+            if (foundCode) rest = rest.replace(new RegExp(foundCode, 'gi'), '');
+            if (matchedProduct) rest = rest.replace(new RegExp(matchedProduct.name, 'gi'), '');
+
+            // Tìm hạn dùng (DD/MM/YYYY hoặc YYYY-MM-DD)
+            const dateMatch = rest.match(/(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/);
+            let expiryDate = '';
+            if (dateMatch) {
+                expiryDate = dateMatch[0];
+                rest = rest.replace(dateMatch[0], '');
+                try {
+                    const parts = expiryDate.split(/[\/-]/);
+                    if (parts[0].length === 4) {
+                        expiryDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                    } else if (parts[2].length === 4) {
+                        expiryDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    }
+                } catch(e) {}
+            }
+
+            // Tìm số lô
+            const batchMatch = rest.match(/(lô\s*[\w\d-]+|lo\s*[\w\d-]+|batch\s*[\w\d-]+)/i);
+            let batchNumber = '';
+            if (batchMatch) {
+                batchNumber = batchMatch[0].replace(/lô|lo|batch/i, '').trim();
+                rest = rest.replace(batchMatch[0], '');
+            }
+
+            // Tìm số lượng và đơn giá
+            const numbers = rest.match(/(\b\d+(\.\d+)?\b)/g) || [];
+            let quantity = '';
+            let unitPrice = '';
+
+            numbers.forEach(numStr => {
+                rest = rest.replace(numStr, '');
+                const val = parseFloat(numStr);
+                if (val > 0) {
+                    if (val > 5000 && !unitPrice) {
+                        unitPrice = val;
+                    } else if (!quantity) {
+                        quantity = val;
+                    } else if (!unitPrice) {
+                        unitPrice = val;
+                    }
+                }
+            });
+
+            // Tìm vị trí
+            const locationMatch = rest.match(/([A-Z]\d+|ROW-\d+|KHO-\w+)/i);
+            let location = '';
+            if (locationMatch) {
+                location = locationMatch[0].toUpperCase();
+            }
+
+            parsed.push({
+                code: foundCode,
+                quantity: quantity || '',
+                batch_number: batchNumber || '',
+                expiry_date: expiryDate || '',
+                warehouse_location: location || '',
+                unit_price: unitPrice || (matchedProduct ? matchedProduct.price : 0)
+            });
+        });
+
+        return parsed;
+    },
+
+    // Gửi dữ liệu đồng bộ về Livewire
+    submitParsedData() {
+        if (this.ocrParsedRows.length === 0) {
+            alert('Không có dữ liệu hợp lệ để đồng bộ!');
+            return;
+        }
+        $wire.importParsedData(this.ocrParsedRows);
+        this.ocrParsedRows = [];
+        this.ocrImageSrc = '';
+        this.ocrStatus = '';
+        this.ocrProgress = 0;
+    }
+}">
+    <!-- Thư viện PDF.js và Tesseract.js phục vụ đọc PDF và quét OCR trực tiếp ở Browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script>
+        // Chỉ định đường dẫn worker cho PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    </script>
+
     <!-- Tab Navigation -->
     <div class="bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex items-center gap-3 w-fit no-print">
         <button wire:click="$set('activeTab', 'form')" class="px-8 py-3 rounded-xl text-[13px] font-black transition-all flex items-center gap-2 {{ $activeTab === 'form' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50' }}">
@@ -36,6 +290,12 @@
                         <span class="p-2 bg-indigo-600 text-white rounded-xl shadow-lg">📥</span>
                         PHIẾU NHẬP KHO MỚI
                     </h2>
+
+                    <!-- Nút Nhập Tự Động cực kỳ sang trọng -->
+                    <button type="button" wire:click="$set('showImportModal', true)" 
+                            class="px-4 py-2.5 text-xs font-black text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl shadow-sm transition-all duration-150 flex items-center gap-1.5 active:scale-95 no-print">
+                        ⚡ Nhập từ Excel / PDF / Ảnh AI
+                    </button>
                 </div>
                 
                 <div class="p-6">
@@ -86,9 +346,10 @@
                             <tbody class="divide-y divide-slate-200 bg-white">
                                 @foreach($items as $index => $item)
                                 <tr class="hover:bg-indigo-50/30 transition-colors">
+                                    <!-- Cột Vật tư -->
                                     <td class="px-4 py-3">
                                         <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}"
-                                               class="w-full rounded-lg border-slate-200 text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-3 bg-slate-50 focus:bg-white"
+                                               class="w-full rounded-lg text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-3 {{ empty($item['product_id']) ? 'border-orange-400 bg-orange-50/40 focus:ring-orange-100 text-orange-900 placeholder:text-orange-300' : 'border-slate-200 bg-slate-50 focus:bg-white text-slate-800' }}"
                                                placeholder="Mã hoặc tên vật tư...">
                                         <datalist id="product_list_{{ $index }}">
                                             @foreach($products as $product)
@@ -97,23 +358,34 @@
                                         </datalist>
                                         @error("items.{$index}.product_id") <p class="text-rose-500 text-[10px] mt-1 font-bold">{{ $message }}</p> @enderror
                                     </td>
+                                    
+                                    <!-- Cột Mã Code NCC -->
                                     <td class="px-2 py-3">
                                         <input type="text" wire:model.live="items.{{ $index }}.batch_number"
-                                               class="w-full rounded-lg border-slate-200 text-[12px] font-black focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 bg-slate-50 focus:bg-white text-indigo-700" placeholder="Mã Code NCC...">
+                                               class="w-full rounded-lg text-[12px] font-black focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 {{ empty($item['batch_number']) ? 'border-orange-400 bg-orange-50/40 focus:ring-orange-100 text-orange-900 placeholder:text-orange-300' : 'border-slate-200 bg-slate-50 focus:bg-white text-indigo-700' }}" 
+                                               placeholder="Mã Code NCC...">
                                     </td>
+                                    
+                                    <!-- Cột Hạn dùng -->
                                     <td class="px-2 py-3">
                                         <input type="date" wire:model="items.{{ $index }}.expiry_date"
-                                               class="w-full rounded-lg border-slate-200 text-[12px] focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 bg-slate-50 focus:bg-white font-bold text-slate-700">
+                                               class="w-full rounded-lg text-[12px] focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 {{ empty($item['expiry_date']) ? 'border-orange-400 bg-orange-50/40 focus:ring-orange-100 text-orange-900' : 'border-slate-200 bg-slate-50 focus:bg-white font-bold text-slate-700' }}">
                                     </td>
+                                    
+                                    <!-- Cột Vị trí -->
                                     <td class="px-2 py-3">
                                         <input type="text" wire:model="items.{{ $index }}.warehouse_location"
-                                               class="w-full text-[12px] font-bold rounded-lg border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 bg-slate-50 focus:bg-white" placeholder="Vị trí...">
+                                               class="w-full text-[12px] font-bold rounded-lg focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-2 {{ empty($item['warehouse_location']) ? 'border-orange-400 bg-orange-50/40 focus:ring-orange-100 text-orange-900 placeholder:text-orange-300' : 'border-slate-200 bg-slate-50 focus:bg-white text-slate-700' }}" 
+                                               placeholder="Vị trí...">
                                     </td>
+                                    
+                                    <!-- Cột Số lượng -->
                                     <td class="px-2 py-3">
                                         <input type="text" inputmode="numeric" wire:model.lazy="items.{{ $index }}.quantity"
-                                               class="w-full text-center text-[13px] font-black rounded-lg border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-1 bg-slate-50 focus:bg-white text-slate-900"
+                                               class="w-full text-center text-[13px] font-black rounded-lg focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-1 {{ (empty($item['quantity']) || $item['quantity'] <= 0) ? 'border-orange-400 bg-orange-50/40 focus:ring-orange-100 text-orange-900' : 'border-slate-200 bg-slate-50 focus:bg-white text-slate-900' }}"
                                                placeholder="0">
                                     </td>
+                                    
                                     <td class="px-2 py-3 text-center">
                                         <span class="text-[11px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200 uppercase">{{ $items[$index]['unit'] ?? '-' }}</span>
                                     </td>
@@ -152,81 +424,56 @@
             </button>
         </div>
 
-        <div class="mb-8">
-            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2 px-1">Ghi chú phiếu nhập</label>
-            <textarea wire:model="note" rows="3" class="w-full rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all p-4 text-[13px] font-bold text-slate-800" placeholder="Nhập lý do nhập kho, thông tin thêm..."></textarea>
-        </div>
-
-        <div class="flex justify-end pt-4">
-            <button wire:click="save" class="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-12 py-3.5 rounded-2xl text-[14px] font-black shadow-xl shadow-indigo-100 hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
-                <span>📥</span> XÁC NHẬN NHẬP KHO
+        <div class="border-t border-slate-150 pt-6 flex items-center justify-between">
+            <div class="w-2/3">
+                <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest px-1 mb-1">Ghi chú phiếu nhập</label>
+                <textarea wire:model="note" rows="2" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[13px] font-bold text-slate-800 placeholder:font-normal" placeholder="Lý do nhập kho, số chứng từ kèm theo..."></textarea>
+            </div>
+            <button wire:click="save" class="px-12 py-4 rounded-xl text-[14px] font-black text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-xl shadow-indigo-100 hover:shadow-indigo-200 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0">
+                <span>💾</span> LƯU PHIẾU NHẬP
             </button>
         </div>
 
                 </div>
             </div>
-        @elseif($activeTab === 'list')
-            @if(session('success'))
-                <div class="mb-4 p-4 bg-emerald-100 text-emerald-800 rounded-2xl font-bold flex items-center gap-2 border border-emerald-200 animate-in fade-in">
-                    <span>✅</span> {{ session('success') }}
-                </div>
-            @endif
+        @endif
 
-            <!-- Standard List Toolbar -->
-            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden min-h-[600px] main-content">
-                <!-- Print Title -->
-                <div class="hidden print:block text-center mb-8">
-                    <h1 class="text-2xl font-black uppercase underline decoration-double">DANH SÁCH PHIẾU NHẬP KHO</h1>
-                    <p class="text-sm font-bold mt-1">TỪ NGÀY: {{ \Carbon\Carbon::parse($listDateFrom)->format('d/m/Y') }} - ĐẾN NGÀY: {{ \Carbon\Carbon::parse($listDateTo)->format('d/m/Y') }}</p>
-                </div>
-
+        <!-- TAB DANH SÁCH PHIẾU -->
+        @if($activeTab === 'list')
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
                 <div class="bg-slate-50 px-6 py-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 no-print">
-                    <h2 class="text-[15px] font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
-                        <span class="p-2 bg-indigo-600 text-white rounded-xl shadow-lg">📋</span>
-                        LỊCH SỬ NHẬP KHO
-                    </h2>
-                    
-                    <div class="flex flex-wrap items-center gap-3 no-print">
-                        <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-inner transition-all focus-within:ring-4 focus-within:ring-indigo-100">
-                            <div class="flex items-center gap-2">
-                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Từ ngày</label>
-                                <input type="date" wire:model.live="listDateFrom" class="text-[12px] border-none focus:ring-0 p-0 font-black text-slate-700 bg-transparent">
-                            </div>
-                            <div class="w-px h-4 bg-slate-200 mx-2"></div>
-                            <div class="flex items-center gap-2">
-                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Đến ngày</label>
-                                <input type="date" wire:model.live="listDateTo" class="text-[12px] border-none focus:ring-0 p-0 font-black text-slate-700 bg-transparent">
-                            </div>
-                        </div>
+                    <div class="flex items-center gap-3">
+                        <input type="date" wire:model.live="listDateFrom" class="rounded-xl border-slate-200 text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 py-2 px-3 bg-white">
+                        <span class="text-slate-400 font-black">➔</span>
+                        <input type="date" wire:model.live="listDateTo" class="rounded-xl border-slate-200 text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 py-2 px-3 bg-white">
+                    </div>
 
+                    <div class="flex items-center gap-2">
                         <div class="relative">
-                            <input type="text" wire:model.live.debounce.300ms="listSearch" placeholder="TÌM MÃ, NCC..." class="pl-11 pr-4 py-2.5 w-64 text-[12px] font-black rounded-2xl border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all bg-white placeholder:text-slate-300">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            </div>
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
+                            <input type="text" wire:model.live.debounce.300ms="listSearch" class="pl-9 pr-4 py-2 w-64 text-[13px] font-bold rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 bg-white" placeholder="Tìm số phiếu, supplier...">
                         </div>
+                        
+                        <button wire:click="exportExcel" class="px-4 py-2 text-xs font-black text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl flex items-center gap-1.5">
+                            📤 Xuất Excel
+                        </button>
 
-                        <div class="flex items-center gap-2 ml-2">
-                            @if(count($selectedIds) > 0)
-                                <div class="flex items-center gap-2 pr-3 border-r border-slate-300 mr-2 animate-in slide-in-from-right-4">
-                                    <span class="text-[11px] font-black text-indigo-700 bg-indigo-50 px-2.5 py-1.5 rounded-lg border border-indigo-100">CHỌN: {{ count($selectedIds) }}</span>
-                                    <button wire:click="deleteSelected" wire:confirm="Xác nhận xóa {{ count($selectedIds) }} phiếu nhập?" class="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-rose-500 to-rose-600 text-white rounded-xl text-[12px] font-black transition-all hover:scale-105 shadow-md">
-                                        <span>🗑️</span> XÓA
-                                    </button>
-                                </div>
-                            @endif
-                                    <button wire:click="printSelected" class="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-indigo-600 text-indigo-700 hover:bg-indigo-50 rounded-xl text-[12px] font-black transition-all shadow-sm">
-                                        <span class="text-sm">🖨️</span> IN GHÉP
-                                    </button>
-                                    <button wire:click="exportExcel" class="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl text-[12px] font-black transition-all shadow-lg shadow-emerald-100">
-                                        <span class="text-sm">📊</span> EXCEL
-                                    </button>
-                                    <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white hover:bg-black rounded-xl text-[12px] font-black transition-all shadow-lg">
-                                        <span class="text-sm">📄</span> IN PDF
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <button wire:click="printSelected" 
+                                @if(empty($selectedIds)) disabled class="px-4 py-2 text-xs font-black text-slate-400 bg-slate-100 border border-slate-200 rounded-xl cursor-not-allowed"
+                                @else class="px-4 py-2 text-xs font-black text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl flex items-center gap-1.5"
+                                @endif>
+                            🖨️ In tích chọn ({{ count($selectedIds) }})
+                        </button>
+
+                        <button wire:click="deleteSelected" 
+                                onclick="confirm('Lưu ý: Số lượng tồn kho tương ứng sẽ bị giảm trừ khi xóa phiếu nhập. Tiếp tục?') || event.stopImmediatePropagation()"
+                                @if(empty($selectedIds)) disabled class="px-4 py-2 text-xs font-black text-slate-400 bg-slate-100 border border-slate-200 rounded-xl cursor-not-allowed"
+                                @else class="px-4 py-2 text-xs font-black text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl flex items-center gap-1.5"
+                                @endif>
+                            🗑️ Xóa đã chọn ({{ count($selectedIds) }})
+                        </button>
+                    </div>
+                </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
@@ -280,7 +527,7 @@
                                             <button wire:click="printSingle({{ $si->id }})" class="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="In phiếu này">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                             </button>
-                                            <button wire:confirm="Xác nhận xóa phiếu nhập {{ $si->code }}? Tồn kho sẽ được giảm trừ tương ứng." wire:click="delete({{ $si->id }})" class="p-2 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" title="Xóa phiếu">
+                                            <button wire:click="delete({{ $si->id }})" class="p-2 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" title="Xóa phiếu">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </div>
@@ -300,6 +547,237 @@
             </div>
         @endif
     </div>
+
+    <!-- MODAL NHẬP ĐA PHƯƠNG THỨC TỰ ĐỘNG (EXCEL / PDF / ẢNH AI OCR) -->
+    @if($showImportModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto no-print">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+                <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
+                
+                <div class="inline-block align-middle bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-slate-150">
+                    
+                    <!-- Tab Header -->
+                    <div class="bg-slate-50 border-b border-slate-150 px-6 py-4 flex items-center justify-between">
+                        <div class="flex gap-6">
+                            <button @click="activeImportTab = 'excel'" 
+                                    :class="activeImportTab === 'excel' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
+                                    class="py-2 px-1 text-[13px] border-b-2 transition duration-150">
+                                📥 Nhập từ Excel/CSV linh hoạt
+                            </button>
+                            <button @click="activeImportTab = 'pdf'" 
+                                    :class="activeImportTab === 'pdf' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
+                                    class="py-2 px-1 text-[13px] border-b-2 transition duration-150 flex items-center gap-1">
+                                📋 Nhập từ tệp tin PDF
+                                <span class="bg-red-100 text-red-700 text-[9px] px-1.5 py-0.5 rounded font-black uppercase">Mới</span>
+                            </button>
+                            <button @click="activeImportTab = 'ocr'" 
+                                    :class="activeImportTab === 'ocr' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
+                                    class="py-2 px-1 text-[13px] border-b-2 transition duration-150 flex items-center gap-1.5">
+                                📷 Nhận diện từ Ảnh chụp (AI OCR)
+                                <span class="bg-indigo-100 text-indigo-800 text-[9px] px-1.5 py-0.5 rounded font-black uppercase">Thông minh</span>
+                            </button>
+                        </div>
+                        <button wire:click="$set('showImportModal', false)" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+                    </div>
+
+                    <!-- Tab 1: Nhập từ Excel/CSV -->
+                    <div x-show="activeImportTab === 'excel'" class="p-6 space-y-4">
+                        <div class="p-3.5 bg-emerald-50 text-emerald-850 rounded-lg text-xs font-semibold leading-relaxed border border-emerald-100">
+                            ✨ <span class="font-extrabold text-emerald-950">Giải pháp đồng bộ cột linh hoạt:</span> Anh/chị có thể sắp xếp thứ tự các cột Excel tùy ý! Hệ thống sẽ quét dòng tiêu đề để bóc tách thông tin tự động. 
+                            Những cột nào không tìm thấy hoặc trống thông tin sẽ được <span class="font-black text-orange-700 underline">báo màu cam</span> trên bảng nhập để anh/chị bổ sung nhanh chóng.
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Chọn tệp tin Excel/CSV từ máy tính</label>
+                            <input type="file" wire:model="excelFile" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border file:border-slate-200 file:text-xs file:font-bold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100" />
+                            @error('excelFile') <span class="text-red-500 text-xs font-bold block mt-1">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div wire:loading wire:target="excelFile" class="text-xs text-indigo-600 font-bold flex items-center gap-1.5">
+                            ⏳ Đang tải tệp tin lên hệ thống...
+                        </div>
+
+                        <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                            <button type="button" wire:click="$set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                                Hủy bỏ
+                            </button>
+                            <button type="button" wire:click="importExcelData" class="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-black text-white transition">
+                                Xác nhận nhập Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Nhập từ tệp tin PDF -->
+                    <div x-show="activeImportTab === 'pdf'" class="p-6 space-y-4">
+                        <div class="p-3.5 bg-red-50 text-red-850 rounded-lg text-xs font-semibold leading-relaxed border border-red-100">
+                            📋 <span class="font-extrabold text-red-950">Giải pháp xử lý PDF thông minh:</span> Hệ thống sẽ đọc dữ liệu text trực tiếp từ tệp tin PDF hóa đơn/phiếu giao hàng của nhà cung cấp và tự động bóc tách các trường: <i>Mã vật tư, Số lượng, Hạn dùng, Số lô, Vị trí, Đơn giá</i> để điền nhanh vào phiếu nhập!
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center min-h-[160px] bg-slate-50 hover:border-indigo-350 transition-colors">
+                                <span class="text-3xl block mb-2">📋</span>
+                                <p class="text-xs font-bold text-slate-600 mb-2">Tải tệp PDF của nhà cung cấp lên</p>
+                                <input type="file" @change="handlePdfUpload($event)" accept="application/pdf" class="text-xs text-slate-500 w-52" />
+                            </div>
+
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-150 flex flex-col justify-between">
+                                <div class="space-y-3">
+                                    <h4 class="text-xs font-bold text-slate-700 uppercase">Trạng thái phân tích PDF</h4>
+                                    <p class="text-xs font-semibold text-slate-650" x-text="ocrStatus || 'Đang đợi tải tệp PDF...'"></p>
+                                    
+                                    <template x-if="ocrRunning">
+                                        <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                                            <div class="bg-red-600 h-2 rounded-full transition-all duration-300" :style="`width: ${ocrProgress}%`"></div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lưới xem trước PDF -->
+                        <template x-if="ocrParsedRows.length > 0">
+                            <div class="border border-slate-200 rounded-lg overflow-hidden bg-white mt-4">
+                                <div class="bg-slate-50 px-4 py-2 border-b border-slate-150 flex justify-between items-center">
+                                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-tight">📋 Lưới xem trước từ tệp PDF</h4>
+                                    <span class="text-[10px] text-orange-700 font-bold bg-orange-50 px-2 py-0.5 rounded border border-orange-100">Các cột thiếu thông tin sẽ báo màu cam trên phiếu để anh/chị điền nhanh</span>
+                                </div>
+                                <div class="max-h-[180px] overflow-y-auto">
+                                    <table class="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-100 font-bold border-b border-slate-200 text-slate-800">
+                                                <th class="p-2">Mã vật tư</th>
+                                                <th class="p-2 text-center w-16">Số lượng</th>
+                                                <th class="p-2 w-20">Hạn dùng</th>
+                                                <th class="p-2 w-20">Số lô</th>
+                                                <th class="p-2 w-20">Vị trí</th>
+                                                <th class="p-2 text-right w-24">Đơn giá</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="(row, idx) in ocrParsedRows" :key="idx">
+                                                <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                                                    <td class="p-1.5"><input type="text" x-model="row.code" class="w-full p-1 text-[11px] font-bold uppercase border rounded bg-slate-50" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.quantity" class="w-full p-1 text-[11px] text-center border rounded bg-slate-50" /></td>
+                                                    <td class="p-1.5"><input type="date" x-model="row.expiry_date" class="w-full p-1 text-[11px] border rounded bg-slate-50" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.batch_number" class="w-full p-1 text-[11px] border rounded bg-slate-50" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.warehouse_location" class="w-full p-1 text-[11px] border rounded bg-slate-50" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.unit_price" class="w-full p-1 text-[11px] text-right border rounded bg-slate-50" /></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                            <button type="button" wire:click="$set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                                Hủy bỏ
+                            </button>
+                            <button type="button" @click="submitParsedData()" :disabled="ocrParsedRows.length === 0"
+                                    class="rounded-lg bg-indigo-650 hover:bg-indigo-750 disabled:bg-slate-350 disabled:cursor-not-allowed px-5 py-2 text-xs font-black text-white shadow-sm transition">
+                                💾 Đồng bộ vào phiếu nhập kho
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Nhận diện từ Ảnh chụp AI OCR -->
+                    <div x-show="activeImportTab === 'ocr'" class="p-6 space-y-4" @paste="handleImagePaste($event)">
+                        <div class="p-3 bg-indigo-50 text-indigo-850 rounded-lg text-xs font-semibold leading-relaxed border border-indigo-100">
+                            📷 <span class="font-extrabold text-indigo-950">Quét ảnh chụp thông minh:</span> Anh/chị chỉ cần chụp ảnh màn hình bảng Excel hoặc chụp phiếu xuất kho của nhà cung cấp, nhấn **Ctrl + V** để dán trực tiếp ảnh vào đây hoặc chọn ảnh chụp để AI bóc tách nhanh chóng!
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Drag Zone / Paste Zone -->
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center min-h-[180px] bg-slate-50 relative hover:border-sky-350 transition-colors">
+                                <template x-if="!ocrImageSrc">
+                                    <div class="text-center space-y-2 pointer-events-none select-none">
+                                        <span class="text-3xl block">📋</span>
+                                        <p class="text-xs font-bold text-slate-600">Nhấp Ctrl + V để dán ảnh chụp</p>
+                                        <p class="text-[10px] text-slate-400">Hoặc chọn ảnh chụp từ thiết bị</p>
+                                        <input type="file" @change="handleImageUpload($event)" accept="image/*" class="mt-2 text-xs text-slate-500 w-44" />
+                                    </div>
+                                </template>
+                                
+                                <template x-if="ocrImageSrc">
+                                    <div class="w-full flex flex-col items-center relative">
+                                        <img :src="ocrImageSrc" class="max-h-[140px] rounded-lg shadow border border-slate-200 object-contain" />
+                                        <button @click="ocrImageSrc = ''; ocrParsedRows = []" class="absolute -top-2 -right-2 bg-red-655 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow hover:bg-red-700">✕</button>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Trạng thái OCR -->
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-150 flex flex-col justify-between">
+                                <div class="space-y-3">
+                                    <h4 class="text-xs font-bold text-slate-700 uppercase">Trạng thái nhận diện AI OCR</h4>
+                                    <p class="text-xs font-semibold text-slate-650" x-text="ocrStatus || 'Đang đợi ảnh chụp...'"></p>
+                                    
+                                    <template x-if="ocrRunning">
+                                        <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                                            <div class="bg-indigo-650 h-2 rounded-full transition-all duration-300" :style="`width: ${ocrProgress}%`"></div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div class="pt-4">
+                                    <button type="button" @click="runOCR()" :disabled="ocrRunning || !ocrImageSrc" 
+                                            class="w-full py-2 text-xs font-black text-white bg-indigo-650 hover:bg-indigo-750 disabled:bg-slate-350 disabled:cursor-not-allowed rounded-xl transition shadow">
+                                        🔍 Bắt đầu nhận diện AI OCR
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lưới xem trước OCR -->
+                        <template x-if="ocrParsedRows.length > 0">
+                            <div class="border border-slate-200 rounded-lg overflow-hidden bg-white mt-4">
+                                <div class="bg-slate-50 px-4 py-2 border-b border-slate-150">
+                                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-tight">📋 Lưới xem trước từ Ảnh chụp AI</h4>
+                                </div>
+                                <div class="max-h-[180px] overflow-y-auto">
+                                    <table class="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-100 font-bold border-b border-slate-200 text-slate-800">
+                                                <th class="p-2">Mã vật tư</th>
+                                                <th class="p-2 text-center w-16">Số lượng</th>
+                                                <th class="p-2 w-20">Hạn dùng</th>
+                                                <th class="p-2 w-20">Số lô</th>
+                                                <th class="p-2 w-20">Vị trí</th>
+                                                <th class="p-2 text-right w-24">Đơn giá</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="(row, idx) in ocrParsedRows" :key="idx">
+                                                <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                                                    <td class="p-1.5"><input type="text" x-model="row.code" class="w-full p-1 text-[11px] font-bold uppercase border rounded bg-slate-50" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.quantity" class="w-full p-1 text-[11px] text-center border rounded bg-slate-50" /></td>
+                                                    <td class="p-1.5"><input type="date" x-model="row.expiry_date" class="w-full p-1 text-[11px] border rounded bg-slate-50" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.batch_number" class="w-full p-1 text-[11px] border rounded bg-slate-50" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.warehouse_location" class="w-full p-1 text-[11px] border rounded bg-slate-50" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.unit_price" class="w-full p-1 text-[11px] text-right border rounded bg-slate-50" /></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                            <button type="button" wire:click="$set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                                Hủy bỏ
+                            </button>
+                            <button type="button" @click="submitParsedData()" :disabled="ocrParsedRows.length === 0"
+                                    class="rounded-lg bg-indigo-650 hover:bg-indigo-750 disabled:bg-slate-350 disabled:cursor-not-allowed px-5 py-2 text-xs font-black text-white shadow-sm transition">
+                                💾 Đồng bộ vào phiếu nhập kho
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- Quick Product Modal -->
     @if($showProductModal)

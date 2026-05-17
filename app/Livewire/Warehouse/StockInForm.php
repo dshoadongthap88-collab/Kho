@@ -12,9 +12,12 @@ use Livewire\WithPagination;
 use App\Exports\StockInListExport;
 use Maatwebsite\Excel\Facades\Excel;
 
+use Livewire\WithFileUploads;
+
 class StockInForm extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     public $items = [];
     public $activeTab = 'form'; // 'form' hoặc 'list'
@@ -34,9 +37,13 @@ class StockInForm extends Component
     public $newPName = '';
     public $newPUnit = 'Cái';
 
+    // Nhập tệp đa phương thức tự động
+    public $showImportModal = false;
+    public $excelFile = null;
+
     protected $rules = [
         'items.*.product_id' => 'required|exists:products,id',
-        'items.*.quantity' => 'required|integer|min:1',
+        'items.*.quantity' => 'required|numeric|min:0.0001',
     ];
 
     public function mount()
@@ -405,13 +412,159 @@ class StockInForm extends Component
         $this->selectedIds = [];
     }
 
-    public function toggleSelectAll($idsOnPage)
+    public function importExcelData()
     {
-        if (count($this->selectedIds) >= count($idsOnPage)) {
-            $this->selectedIds = [];
-        } else {
-            $this->selectedIds = $idsOnPage;
+        $this->validate([
+            'excelFile' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
+        ], [
+            'excelFile.required' => 'Vui lòng chọn tệp tin.',
+            'excelFile.mimes' => 'Tệp tin phải có định dạng CSV, XLSX hoặc XLS.',
+        ]);
+
+        try {
+            $data = \Maatwebsite\Excel\Facades\Excel::toArray(new \stdClass(), $this->excelFile);
+            if (!empty($data) && isset($data[0])) {
+                $rows = $data[0];
+                $header = array_shift($rows);
+                
+                // Khởi tạo chỉ số cột
+                $indices = [
+                    'code' => null,
+                    'quantity' => null,
+                    'batch_number' => null,
+                    'expiry_date' => null,
+                    'warehouse_location' => null,
+                    'unit_price' => null
+                ];
+
+                $normalize = function($str) {
+                    $str = mb_strtolower($str, 'UTF-8');
+                    $str = preg_replace('/[áàảãạăắằẳẵặâấầẩẫậ]/u', 'a', $str);
+                    $str = preg_replace('/[éèẻẽẹêếềểễệ]/u', 'e', $str);
+                    $str = preg_replace('/[íìỉĩị]/u', 'i', $str);
+                    $str = preg_replace('/[óòỏõọôốồổỗộơớờởỡợ]/u', 'o', $str);
+                    $str = preg_replace('/[úùủũụưứừửữự]/u', 'u', $str);
+                    $str = preg_replace('/[ýỳỷỹỵ]/u', 'y', $str);
+                    $str = preg_replace('/[đ]/u', 'd', $str);
+                    $str = preg_replace('/[^a-z0-9]/', '', $str);
+                    return $str;
+                };
+
+                foreach ($header as $index => $colName) {
+                    if (empty($colName)) continue;
+                    $norm = $normalize($colName);
+                    
+                    if (str_contains($norm, 'masanpham') || str_contains($norm, 'mavattu') || str_contains($norm, 'code') || $norm === 'ma') {
+                        $indices['code'] = $index;
+                    } elseif (str_contains($norm, 'soluong') || str_contains($norm, 'quantity') || str_contains($norm, 'sl') || $norm === 'qty') {
+                        $indices['quantity'] = $index;
+                    } elseif (str_contains($norm, 'solo') || str_contains($norm, 'batch') || str_contains($norm, 'macodencc')) {
+                        $indices['batch_number'] = $index;
+                    } elseif (str_contains($norm, 'handung') || str_contains($norm, 'hansudung') || str_contains($norm, 'expiry')) {
+                        $indices['expiry_date'] = $index;
+                    } elseif (str_contains($norm, 'vitri') || str_contains($norm, 'location')) {
+                        $indices['warehouse_location'] = $index;
+                    } elseif (str_contains($norm, 'dongia') || str_contains($norm, 'price') || str_contains($norm, 'unitprice')) {
+                        $indices['unit_price'] = $index;
+                    }
+                }
+
+                // Fallback mặc định
+                if ($indices['code'] === null) $indices['code'] = 0;
+                if ($indices['quantity'] === null) $indices['quantity'] = 4;
+                if ($indices['batch_number'] === null) $indices['batch_number'] = 1;
+                if ($indices['expiry_date'] === null) $indices['expiry_date'] = 2;
+                if ($indices['warehouse_location'] === null) $indices['warehouse_location'] = 3;
+
+                // Xóa các dòng trống hiện tại
+                $this->items = [];
+
+                foreach ($rows as $row) {
+                    $codeVal = isset($row[$indices['code']]) ? trim($row[$indices['code']]) : '';
+                    if (empty($codeVal)) continue;
+
+                    // Thử tìm sản phẩm
+                    $product = Product::where('code', $codeVal)
+                        ->orWhere('name', 'like', $codeVal)
+                        ->first();
+
+                    $qtyVal = isset($row[$indices['quantity']]) ? floatval($row[$indices['quantity']]) : '';
+                    $batchVal = isset($row[$indices['batch_number']]) ? trim($row[$indices['batch_number']]) : '';
+                    
+                    $expiryVal = '';
+                    if (isset($row[$indices['expiry_date']])) {
+                        $dateStr = trim($row[$indices['expiry_date']]);
+                        if (!empty($dateStr)) {
+                            try {
+                                $expiryVal = date('Y-m-d', strtotime(str_replace('/', '-', $dateStr)));
+                            } catch (\Exception $ex) {}
+                        }
+                    }
+
+                    $locationVal = isset($row[$indices['warehouse_location']]) ? trim($row[$indices['warehouse_location']]) : '';
+                    $priceVal = isset($row[$indices['unit_price']]) ? floatval($row[$indices['unit_price']]) : ($product?->price ?? 0);
+
+                    $this->items[] = [
+                        'product_id' => $product?->id ?? '',
+                        'product_search' => $product ? ($product->code . ' - ' . $product->name) : $codeVal,
+                        'batch_number' => $batchVal,
+                        'expiry_date' => $expiryVal,
+                        'warehouse_location' => $locationVal ?: ($product?->location ?? ''),
+                        'quantity' => $qtyVal,
+                        'unit' => $product?->unit ?: ($product?->box_spec ?: ($product?->carton_spec ?: 'Cái')),
+                        'unit_price' => $priceVal,
+                        'vat_rate' => 0,
+                        'total_amount' => is_numeric($qtyVal) ? ($qtyVal * $priceVal) : 0
+                    ];
+                }
+
+                if (empty($this->items)) {
+                    $this->addItem();
+                }
+
+                $this->showImportModal = false;
+                $this->excelFile = null;
+                session()->flash('success', 'Đồng bộ Excel thành công! Những ô thiếu thông tin đã được báo màu cam để anh/chị bổ sung.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Lỗi nhập tệp Excel: ' . $e->getMessage());
         }
+    }
+
+    public function importParsedData($rows)
+    {
+        $this->items = [];
+        foreach ($rows as $row) {
+            $product = null;
+            if (!empty($row['code'])) {
+                $product = Product::where('code', trim($row['code']))
+                    ->orWhere('name', 'like', trim($row['code']))
+                    ->first();
+            }
+
+            $qtyVal = !empty($row['quantity']) ? floatval($row['quantity']) : '';
+            $priceVal = !empty($row['unit_price']) ? floatval($row['unit_price']) : ($product?->price ?? 0);
+
+            $this->items[] = [
+                'product_id' => $product?->id ?? '',
+                'product_search' => $product ? ($product->code . ' - ' . $product->name) : ($row['code'] ?? ''),
+                'batch_number' => $row['batch_number'] ?? '',
+                'expiry_date' => $row['expiry_date'] ?? '',
+                'warehouse_location' => $row['warehouse_location'] ?? ($product?->location ?? ''),
+                'quantity' => $qtyVal,
+                'unit' => $product?->unit ?: ($product?->box_spec ?: ($product?->carton_spec ?: 'Cái')),
+                'unit_price' => $priceVal,
+                'vat_rate' => 0,
+                'total_amount' => is_numeric($qtyVal) ? ($qtyVal * $priceVal) : 0
+            ];
+        }
+
+        if (empty($this->items)) {
+            $this->addItem();
+        }
+
+        $this->showImportModal = false;
+        session()->flash('success', 'Nhận diện tệp thành công! Những ô thiếu thông tin đã được báo màu cam để anh/chị bổ sung.');
     }
 
     public function render()

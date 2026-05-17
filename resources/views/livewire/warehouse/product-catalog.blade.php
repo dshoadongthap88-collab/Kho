@@ -53,7 +53,7 @@
                     <span class="text-[10px] font-black text-indigo-700 bg-indigo-50 px-2 py-1 rounded border border-indigo-100">CHỌN: {{ count($selectedIds) }}</span>
                     
                     <button wire:key="btn-delete-selected" type="button" 
-                            onclick="confirm('Xác nhận xóa các sản phẩm đã chọn?') || event.stopImmediatePropagation()"
+                            onclick="confirm('Xác nhận xóa các vật tư đã chọn?') || event.stopImmediatePropagation()"
                             wire:click="deleteSelected" 
                             wire:loading.attr="disabled"
                             class="flex items-center gap-1 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">

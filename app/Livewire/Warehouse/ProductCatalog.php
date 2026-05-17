@@ -200,7 +200,7 @@ class ProductCatalog extends Component
                     ]);
                 }
 
-                session()->flash('message', 'Cập nhật sản phẩm thành công.');
+                session()->flash('message', 'Cập nhật vật tư thành công.');
             } else {
                 $product = Product::create([
                     'code' => $this->code,
@@ -224,7 +224,7 @@ class ProductCatalog extends Component
                     'warehouse_location' => $this->location
                 ]);
 
-                session()->flash('message', 'Thêm sản phẩm mới thành công.');
+                session()->flash('message', 'Thêm vật tư mới thành công.');
             }
 
             $this->reset(['image']); // Xoá ảnh tạm sau khi lưu
@@ -240,9 +240,9 @@ class ProductCatalog extends Component
         try {
             $product = Product::findOrFail($id);
             $product->delete();
-            session()->flash('message', 'Đã xoá sản phẩm thành công.');
+            session()->flash('message', 'Đã xoá vật tư thành công.');
         } catch (\Exception $e) {
-            session()->flash('error', 'Không thể xóa sản phẩm này vì đã có dữ liệu liên quan (phiếu nhập/xuất, định mức BOM...).');
+            session()->flash('error', 'Không thể xóa vật tư này vì đã có dữ liệu liên quan (phiếu nhập/xuất, định mức BOM...).');
         }
     }
 
@@ -261,11 +261,11 @@ class ProductCatalog extends Component
             }
             
             if ($count > 0) {
-                session()->flash('message', "Đã xóa thành công {$count} sản phẩm.");
+                session()->flash('message', "Đã xóa thành công {$count} vật tư.");
             }
             $this->selectedIds = [];
         } catch (\Exception $e) {
-            session()->flash('error', 'Một số sản phẩm không thể xóa do có dữ liệu liên quan (như phiếu nhập, phiếu xuất hoặc định mức BOM).');
+            session()->flash('error', 'Một số vật tư không thể xóa do có dữ liệu liên quan (như phiếu nhập, phiếu xuất hoặc định mức BOM).');
         }
     }
 
@@ -278,7 +278,7 @@ class ProductCatalog extends Component
     public function printLabels()
     {
         if (empty($this->selectedIds)) {
-            session()->flash('error', 'Vui lòng chọn ít nhất một sản phẩm để in.');
+            session()->flash('error', 'Vui lòng chọn ít nhất một vật tư để in.');
             return;
         }
 

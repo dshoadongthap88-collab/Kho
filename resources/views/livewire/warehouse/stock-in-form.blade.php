@@ -15,7 +15,7 @@
 
     // Xử lý khi tải lên / dán ảnh chụp hoặc chọn tệp PDF
     handleImageUpload(event) {
-        const file = event.target.files[0];
+        const file = event.target.files ? event.target.files[0] : (event.dataTransfer ? event.dataTransfer.files[0] : null);
         if (file) {
             this.readImage(file);
         }
@@ -42,7 +42,7 @@
 
     // Đọc và phân tích tệp tin PDF ngay tại Client
     async handlePdfUpload(event) {
-        const file = event.target.files[0];
+        const file = event.target.files ? event.target.files[0] : (event.dataTransfer ? event.dataTransfer.files[0] : null);
         if (!file) return;
 
         this.ocrRunning = true;
@@ -614,10 +614,27 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center min-h-[160px] bg-slate-50 hover:border-indigo-350 transition-colors">
-                                <span class="text-3xl block mb-2">📋</span>
-                                <p class="text-xs font-bold text-slate-600 mb-2">Tải tệp PDF của nhà cung cấp lên</p>
-                                <input type="file" @change="handlePdfUpload($event)" accept="application/pdf" class="text-xs text-slate-500 w-52" />
+                            <!-- PDF Drag and Drop Zone -->
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center min-h-[200px] bg-slate-50 relative hover:border-red-400 hover:bg-slate-100/50 transition-all cursor-pointer"
+                                 @click="$refs.pdfInput.click()"
+                                 @dragover.prevent="$el.classList.add('border-red-400', 'bg-slate-100')"
+                                 @dragleave.prevent="$el.classList.remove('border-red-400', 'bg-slate-100')"
+                                 @drop.prevent="$el.classList.remove('border-red-400', 'bg-slate-100'); handlePdfUpload($event)">
+                                
+                                <input type="file" x-ref="pdfInput" @change="handlePdfUpload($event)" accept="application/pdf" class="hidden" />
+
+                                <div class="text-center space-y-3 select-none">
+                                    <div class="p-3 bg-red-50 text-red-650 rounded-full inline-block">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <p class="text-[13px] font-black text-slate-800">Kéo & Thả tệp PDF hóa đơn vào đây</p>
+                                        <p class="text-xs text-slate-500 font-bold">Hoặc nhấp để chọn tệp từ thiết bị</p>
+                                    </div>
+                                    <button type="button" class="mt-2 px-4 py-2 bg-red-650 text-white font-black text-xs rounded-xl shadow-md shadow-red-100 hover:bg-red-700 transition">
+                                        📁 Chọn tệp PDF hóa đơn
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="bg-slate-50 p-4 rounded-xl border border-slate-150 flex flex-col justify-between">
@@ -688,21 +705,34 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Drag Zone / Paste Zone -->
-                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center min-h-[180px] bg-slate-50 relative hover:border-sky-350 transition-colors">
+                            <!-- Image Drag and Drop Zone -->
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center min-h-[200px] bg-slate-50 relative hover:border-indigo-400 hover:bg-slate-100/50 transition-all cursor-pointer"
+                                 @click="$refs.imageInput.click()"
+                                 @dragover.prevent="$el.classList.add('border-indigo-400', 'bg-slate-100')"
+                                 @dragleave.prevent="$el.classList.remove('border-indigo-400', 'bg-slate-100')"
+                                 @drop.prevent="$el.classList.remove('border-indigo-400', 'bg-slate-100'); handleImageUpload($event)">
+                                
+                                <input type="file" x-ref="imageInput" @change="handleImageUpload($event)" accept="image/*" class="hidden" />
+
                                 <template x-if="!ocrImageSrc">
-                                    <div class="text-center space-y-2 pointer-events-none select-none">
-                                        <span class="text-3xl block">📋</span>
-                                        <p class="text-xs font-bold text-slate-600">Nhấp Ctrl + V để dán ảnh chụp</p>
-                                        <p class="text-[10px] text-slate-400">Hoặc chọn ảnh chụp từ thiết bị</p>
-                                        <input type="file" @change="handleImageUpload($event)" accept="image/*" class="mt-2 text-xs text-slate-500 w-44" />
+                                    <div class="text-center space-y-3 select-none">
+                                        <div class="p-3 bg-indigo-50 text-indigo-650 rounded-full inline-block">
+                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <p class="text-[13px] font-black text-slate-800">Kéo & Thả ảnh chụp vào đây</p>
+                                            <p class="text-xs text-slate-500 font-bold">Hoặc dán ảnh <kbd class="px-1.5 py-0.5 bg-slate-200 text-[10px] rounded font-black text-slate-700">Ctrl + V</kbd> hay nhấp để chọn tệp</p>
+                                        </div>
+                                        <button type="button" class="mt-2 px-4 py-2 bg-indigo-600 text-white font-black text-xs rounded-xl shadow-md shadow-indigo-100 hover:bg-indigo-700 transition">
+                                            📁 Chọn ảnh từ máy tính
+                                        </button>
                                     </div>
                                 </template>
                                 
                                 <template x-if="ocrImageSrc">
-                                    <div class="w-full flex flex-col items-center relative">
-                                        <img :src="ocrImageSrc" class="max-h-[140px] rounded-lg shadow border border-slate-200 object-contain" />
-                                        <button @click="ocrImageSrc = ''; ocrParsedRows = []" class="absolute -top-2 -right-2 bg-red-655 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow hover:bg-red-700">✕</button>
+                                    <div class="w-full flex flex-col items-center relative p-2" @click.stop>
+                                        <img :src="ocrImageSrc" class="max-h-[160px] rounded-lg shadow-lg border border-slate-200 object-contain" />
+                                        <button @click="ocrImageSrc = ''; ocrParsedRows = []" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-black shadow-lg hover:bg-rose-700 transition-transform hover:scale-110">✕</button>
                                     </div>
                                 </template>
                             </div>

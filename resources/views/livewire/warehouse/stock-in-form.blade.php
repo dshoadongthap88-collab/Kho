@@ -228,6 +228,16 @@
             let foundName = '';
             let matchedProduct = null;
 
+            // Quét tìm xem có từ nào trông giống mã vật tư hay không (Ví dụ: VAP07001, ST-123)
+            // Nhận diện mã kể cả khi chưa có trong CSDL
+            const codeCandidateMatch = scannedName.match(/\b([A-Z]{2,}\d+|\w+-\d+|\d+[A-Z]{2,})\b/i);
+            if (codeCandidateMatch) {
+                const candidate = codeCandidateMatch[0];
+                foundCode = candidate.toUpperCase();
+                // Loại bỏ mã khỏi scannedName để trả lại tên vật tư sạch
+                scannedName = scannedName.replace(candidate, '').replace(/\s+/g, ' ').trim();
+            }
+
             // Tìm khớp mã trực tiếp sau khi lọc sạch ký tự đặc biệt khỏi từ
             const codeWords = scannedName.replace(/[,;.:!\?\(\)\[\]\{\}]/g, ' ').split(/\s+/);
             for (const word of codeWords) {
@@ -236,6 +246,14 @@
                     foundCode = word.toUpperCase();
                     matchedProduct = this.productsMap[wordLower];
                     break;
+                }
+            }
+
+            // Nếu đã tìm thấy foundCode từ trước, thử tra cứu xem nó có trong productsMap không
+            if (foundCode && !matchedProduct) {
+                const codeLower = foundCode.toLowerCase();
+                if (this.productsMap[codeLower]) {
+                    matchedProduct = this.productsMap[codeLower];
                 }
             }
 
@@ -276,6 +294,8 @@
             if (matchedProduct) {
                 foundCode = matchedProduct.code || foundCode;
                 foundName = matchedProduct.name;
+            } else {
+                foundName = scannedName; // Nếu chưa có mã đó trong CSDL, vẫn lấy tên vật tư bóc tách được từ hình ảnh!
             }
 
             parsed.push({
@@ -740,84 +760,57 @@
                                     <table class="w-full text-left text-xs border-collapse">
                                         <thead>
                                             <tr class="bg-slate-800 font-black border-b border-slate-700 text-white uppercase tracking-widest text-[10px]">
-                                                <th class="p-3 min-w-[280px]">Vật tư quét được / Khớp danh mục</th>
-                                                <th class="p-3 text-center w-20">Số lượng</th>
-                                                <th class="p-3 text-center w-16">ĐVT</th>
-                                                <th class="p-3 w-24">Số lô</th>
-                                                <th class="p-3 w-28">Hạn dùng</th>
-                                                <th class="p-3 w-20">Vị trí</th>
-                                                <th class="p-3 text-right w-28">Đơn giá (đ)</th>
+                                                <th class="p-3 w-40 text-center">Mã vật tư</th>
+                                                <th class="p-3 text-left">Tên vật tư</th>
+                                                <th class="p-3 w-28 text-center">ĐVT</th>
+                                                <th class="p-3 w-28 text-center">Số lượng</th>
                                                 <th class="p-3 text-center w-10"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <template x-for="(row, idx) in ocrParsedRows" :key="idx">
                                                 <tr class="border-b border-slate-150 hover:bg-indigo-50/20 transition-colors">
-                                                    <!-- Cột Vật tư -->
-                                                    <td class="p-2 space-y-1">
-                                                        <template x-if="row.code && row.name">
-                                                            <div class="flex items-center gap-1.5 mb-1">
-                                                                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-1.5 py-0.5 rounded border border-emerald-200 shrink-0">
-                                                                    ✅ Khớp: <span x-text="row.code"></span>
-                                                                </span>
-                                                                <span class="text-[11px] font-bold text-slate-850 truncate max-w-[200px]" x-text="row.name"></span>
-                                                            </div>
-                                                        </template>
-
-                                                        <div class="space-y-1">
-                                                            <template x-if="!row.code || !row.name">
-                                                                <div class="text-[10px] font-semibold text-orange-700 bg-orange-50 px-2 py-1 rounded border border-orange-200 leading-tight mb-1 flex items-center gap-1 w-fit">
-                                                                    <span>⚠️</span> Quét được: <span class="font-bold italic" x-text="row.scanned_name || 'Không rõ tên'"></span>
-                                                                </div>
-                                                            </template>
-                                                            
-                                                            <select x-model="row.code" @change="let p = productsMap[row.code.toLowerCase()]; if(p) { row.name = p.name; row.unit = p.unit; row.unit_price = p.price; row.warehouse_location = p.location; } else { row.name = ''; }" 
-                                                                    :class="(!row.code || !row.name) ? 'border-orange-400 bg-orange-50/40 text-orange-950 focus:ring-orange-100' : 'border-slate-200 bg-slate-50 text-slate-800'"
-                                                                    class="w-full text-[11px] p-1.5 rounded-lg font-bold focus:ring-4 focus:ring-indigo-100 transition-all">
-                                                                <option value="">-- Chọn vật tư khớp danh mục... --</option>
-                                                                @foreach($products as $p)
-                                                                    <option value="{{ $p->code }}">{{ $p->code }} - {{ $p->name }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
+                                                    <!-- Cột Mã vật tư -->
+                                                    <td class="p-2 text-center">
+                                                        <input type="text" x-model="row.code" 
+                                                               @input="let p = productsMap[row.code.toLowerCase()]; if(p) { row.name = p.name; row.unit = p.unit; row.unit_price = p.price; row.warehouse_location = p.location; }"
+                                                               :class="!row.code ? 'border-orange-400 bg-orange-50/40 text-orange-950 focus:ring-orange-100' : 'border-slate-200 bg-slate-50 focus:bg-white text-slate-800 font-extrabold'"
+                                                               class="w-full p-2 text-xs text-center rounded-lg transition-all focus:ring-4 focus:ring-indigo-100" placeholder="Mã vật tư..." />
                                                     </td>
 
-                                                    <!-- Cột Số lượng -->
-                                                    <td class="p-2">
-                                                        <input type="text" x-model="row.quantity" 
-                                                               :class="!row.quantity ? 'border-orange-400 bg-orange-50/40 focus:ring-orange-100' : 'border-slate-250 bg-slate-50 focus:bg-white'"
-                                                               class="w-full p-1.5 text-[11px] text-center font-black rounded-lg focus:ring-4 focus:ring-indigo-100 transition-all text-slate-850" placeholder="0" />
+                                                    <!-- Cột Tên vật tư -->
+                                                    <td class="p-2 space-y-1">
+                                                        <template x-if="row.scanned_name && !row.code">
+                                                            <div class="text-[10px] font-semibold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200 leading-tight mb-1 flex items-center gap-1 w-fit">
+                                                                <span>⚠️ Quét được:</span> <span class="font-bold italic" x-text="row.scanned_name"></span>
+                                                            </div>
+                                                        </template>
+                                                        
+                                                        <input type="text" x-model="row.name" 
+                                                               :class="!row.name ? 'border-orange-400 bg-orange-50/40 text-orange-950 focus:ring-orange-100' : 'border-slate-200 bg-slate-50 focus:bg-white text-slate-800'"
+                                                               class="w-full p-2 text-xs font-semibold rounded-lg transition-all focus:ring-4 focus:ring-indigo-100" placeholder="Tên vật tư..." />
+
+                                                        <select x-model="row.code" @change="let p = productsMap[row.code.toLowerCase()]; if(p) { row.code = p.code || row.code.toUpperCase(); row.name = p.name; row.unit = p.unit; row.unit_price = p.price; row.warehouse_location = p.location; }" 
+                                                                class="w-full text-[10px] p-1 rounded bg-slate-50 text-slate-500 border border-slate-150 focus:ring-2 focus:ring-indigo-100 mt-1 font-bold">
+                                                            <option value="">-- Hoặc chọn nhanh từ danh mục chuẩn... --</option>
+                                                            @foreach($products as $p)
+                                                                <option value="{{ $p->code }}">{{ $p->code }} - {{ $p->name }}</option>
+                                                            @endforeach
+                                                        </select>
                                                     </td>
 
                                                     <!-- Cột ĐVT -->
                                                     <td class="p-2 text-center">
-                                                        <span class="text-[10px] font-black text-slate-500 bg-slate-100 px-1.5 py-1 rounded border border-slate-250 uppercase" x-text="row.unit || 'Cái'"></span>
+                                                        <input type="text" x-model="row.unit" 
+                                                               :class="!row.unit ? 'border-orange-400 bg-orange-50/40 text-orange-950 focus:ring-orange-100' : 'border-slate-200 bg-slate-50 focus:bg-white text-slate-800 font-bold'"
+                                                               class="w-full p-2 text-xs text-center rounded-lg transition-all focus:ring-4 focus:ring-indigo-100" placeholder="ĐVT" />
                                                     </td>
 
-                                                    <!-- Cột Số lô -->
-                                                    <td class="p-2">
-                                                        <input type="text" x-model="row.batch_number" 
-                                                               :class="!row.batch_number ? 'border-orange-300 bg-orange-50/20' : 'border-slate-250 bg-slate-50 focus:bg-white'"
-                                                               class="w-full p-1.5 text-[11px] font-bold rounded-lg focus:ring-4 focus:ring-indigo-100 transition-all text-indigo-755" placeholder="Lô..." />
-                                                    </td>
-
-                                                    <!-- Cột Hạn dùng -->
-                                                    <td class="p-2">
-                                                        <input type="date" x-model="row.expiry_date" 
-                                                               :class="!row.expiry_date ? 'border-orange-300 bg-orange-50/20' : 'border-slate-250 bg-slate-50 focus:bg-white'"
-                                                               class="w-full p-1.5 text-[11px] font-semibold rounded-lg focus:ring-4 focus:ring-indigo-100 transition-all text-slate-700" />
-                                                    </td>
-
-                                                    <!-- Cột Vị trí -->
-                                                    <td class="p-2">
-                                                        <input type="text" x-model="row.warehouse_location" 
-                                                               :class="!row.warehouse_location ? 'border-orange-300 bg-orange-50/20' : 'border-slate-250 bg-slate-50 focus:bg-white'"
-                                                               class="w-full p-1.5 text-[11px] font-bold rounded-lg focus:ring-4 focus:ring-indigo-100 transition-all text-slate-700" placeholder="Vị trí..." />
-                                                    </td>
-
-                                                    <!-- Cột Đơn giá -->
-                                                    <td class="p-2">
-                                                        <input type="text" x-model="row.unit_price" class="w-full p-1.5 text-[11px] text-right font-black rounded-lg border-slate-250 bg-slate-50 focus:bg-white text-emerald-700" placeholder="0" />
+                                                    <!-- Cột Số lượng -->
+                                                    <td class="p-2 text-center">
+                                                        <input type="text" x-model="row.quantity" 
+                                                               :class="!row.quantity ? 'border-orange-400 bg-orange-50/40 text-orange-950 focus:ring-orange-100' : 'border-slate-250 bg-slate-50 focus:bg-white font-black text-slate-850'"
+                                                               class="w-full p-2 text-xs text-center rounded-lg focus:ring-4 focus:ring-indigo-100 transition-all text-slate-850" placeholder="0" />
                                                     </td>
 
                                                     <!-- Nút xóa dòng preview -->

@@ -64,8 +64,9 @@ class StockInForm extends Component
 
         $lastItem = end($this->items);
 
-        return !empty($lastItem['product_id']) && 
-               !empty($lastItem['batch_number']) && 
+        $hasProduct = !empty($lastItem['product_id']) || !empty($lastItem['new_code']) || !empty($lastItem['product_search']);
+
+        return $hasProduct && 
                !empty($lastItem['quantity']) && 
                $lastItem['quantity'] > 0;
     }
@@ -79,6 +80,8 @@ class StockInForm extends Component
         $this->items[] = [
             'product_id' => '',
             'product_search' => '',
+            'new_code' => '',
+            'new_name' => '',
             'batch_number' => '',
             'expiry_date' => '',
             'warehouse_location' => '',
@@ -105,6 +108,8 @@ class StockInForm extends Component
             
             if (!$value) {
                 $this->items[$index]['product_id'] = '';
+                $this->items[$index]['new_code'] = '';
+                $this->items[$index]['new_name'] = '';
                 $this->items[$index]['warehouse_location'] = '';
                 $this->items[$index]['batch_number'] = '';
                 $this->items[$index]['expiry_date'] = '';
@@ -128,10 +133,24 @@ class StockInForm extends Component
                 $product = Product::whereRaw('LOWER(name) = ?', [strtolower($searchValue)])->first();
             }
             
-            if (!$product) return;
+            if (!$product) {
+                // === KHÔNG TÌM THẤY SẢN PHẨM TRÊN HỆ THỐNG => CHO PHÉP NHẬP LINH HOẠT VẬT TƯ MỚI ===
+                $this->items[$index]['product_id'] = '';
+                if (str_contains($searchValue, ' - ')) {
+                    $parts = explode(' - ', $searchValue);
+                    $this->items[$index]['new_code'] = trim($parts[0]);
+                    $this->items[$index]['new_name'] = trim($parts[1]);
+                } else {
+                    $this->items[$index]['new_code'] = strtoupper($searchValue);
+                    $this->items[$index]['new_name'] = $searchValue;
+                }
+                return;
+            }
 
             // === ĐÃ TÌM THẤY SẢN PHẨM ===
             $this->items[$index]['product_id'] = $product->id;
+            $this->items[$index]['new_code'] = '';
+            $this->items[$index]['new_name'] = '';
             
             // Tự động điền dữ liệu từ danh mục sản phẩm
             // Lấy UNIT thông minh: Thử Unit -> Box Spec -> Carton Spec
@@ -253,9 +272,9 @@ class StockInForm extends Component
 
     public function save()
     {
-        // Loại bỏ các dòng trống chưa chọn sản phẩm
+        // Loại bỏ các dòng trống chưa chọn sản phẩm và không có thông tin sản phẩm mới
         $this->items = array_values(array_filter($this->items, function ($item) {
-            return !empty($item['product_id']);
+            return !empty($item['product_id']) || !empty($item['new_code']) || !empty($item['product_search']);
         }));
 
         if (empty($this->items)) {
@@ -264,14 +283,19 @@ class StockInForm extends Component
             return;
         }
 
+        // Kiểm tra hợp lệ cho từng dòng
+        foreach ($this->items as $index => $item) {
+            if (empty($item['product_id']) && empty($item['new_code']) && empty($item['product_search'])) {
+                $this->addError("items.{$index}.product_search", 'Vui lòng chọn vật tư hoặc nhập mã/tên vật tư mới.');
+                return;
+            }
+        }
+
         $this->validate([
-            'items.*.product_id' => 'required|exists:products,id',
             'items.*.batch_number' => 'nullable|string',
             'items.*.quantity' => 'required|numeric|min:0.0001',
             'supplier_name' => 'nullable|string',
         ], [
-            'items.*.product_id.required' => 'Vui lòng chọn sản phẩm hợp lệ.',
-            'items.*.product_id.exists' => 'Sản phẩm không tồn tại.',
             'items.*.quantity.required' => 'Vui lòng nhập số lượng.',
             'items.*.quantity.min' => 'Số lượng phải lớn hơn 0.',
         ]);
@@ -290,13 +314,60 @@ class StockInForm extends Component
             ]);
 
             foreach ($this->items as $item) {
+                $productId = $item['product_id'];
+
+                // Tự động tạo sản phẩm mới nếu chưa tồn tại
+                if (empty($productId)) {
+                    // Lấy mã và tên từ new_code / new_name hoặc phân tách từ product_search
+                    $code = !empty($item['new_code']) ? trim($item['new_code']) : '';
+                    $name = !empty($item['new_name']) ? trim($item['new_name']) : '';
+
+                    if (empty($code) || empty($name)) {
+                        $search = trim($item['product_search']);
+                        if (str_contains($search, ' - ')) {
+                            $parts = explode(' - ', $search);
+                            $code = trim($parts[0]);
+                            $name = trim($parts[1]);
+                        } else {
+                            $code = strtoupper($search);
+                            $name = $search;
+                        }
+                    }
+
+                    // Kiểm tra xem sản phẩm có mã này vừa được tạo trong giao dịch hoặc đã có sẵn chưa
+                    $existing = Product::whereRaw('LOWER(code) = ?', [strtolower($code)])->first();
+                    if ($existing) {
+                        $productId = $existing->id;
+                    } else {
+                        // Quyết định loại sản phẩm tự động dựa trên loại nhập kho
+                        $productType = 'product_purchased';
+                        if ($this->type === 'import_material') {
+                            $productType = 'material';
+                        } elseif ($this->type === 'production') {
+                            $productType = 'product_produced';
+                        }
+
+                        $newProduct = Product::create([
+                            'code' => strtoupper($code),
+                            'name' => $name,
+                            'unit' => !empty($item['unit']) ? $item['unit'] : 'Cái',
+                            'brand' => $this->manufacturer ?: null,
+                            'status' => 'active',
+                            'type' => $productType,
+                            'location' => $item['warehouse_location'] ?? null,
+                            'price' => $item['unit_price'] ?? 0,
+                        ]);
+                        $productId = $newProduct->id;
+                    }
+                }
+
                 $batchNo = empty($item['batch_number']) ? '-' : $item['batch_number'];
                 $expiry = !empty($item['expiry_date']) ? $item['expiry_date'] : null;
 
                 // Tạo StockInItem
                 \App\Models\StockInItem::create([
                     'stock_in_id' => $stockIn->id,
-                    'product_id' => $item['product_id'],
+                    'product_id' => $productId,
                     'batch_number' => $batchNo,
                     'expiry_date' => $expiry,
                     'warehouse_location' => $item['warehouse_location'] ?? null,
@@ -308,7 +379,7 @@ class StockInForm extends Component
 
                 // Gọi Service để thực hiện nhập kho và tạo giao dịch
                 $service->import(
-                    $item['product_id'],
+                    $productId,
                     $item['quantity'],
                     'stock_in',
                     $stockIn->id,
@@ -328,11 +399,11 @@ class StockInForm extends Component
                 }
                 
                 if (!empty($productUpdates)) {
-                    Product::where('id', $item['product_id'])->update($productUpdates);
+                    Product::where('id', $productId)->update($productUpdates);
                 }
             }
 
-            session()->flash('success', 'Nhập kho thành công!');
+            session()->flash('success', 'Nhập kho thành công! Các sản phẩm mới đã được tự động thêm vào Danh mục vật tư.');
             $this->dispatch('show-success-effect');
             $this->reset(['items', 'supplier_name', 'manufacturer', 'note']);
             $this->addItem();
@@ -504,9 +575,18 @@ class StockInForm extends Component
                     $locationVal = isset($row[$indices['warehouse_location']]) ? trim($row[$indices['warehouse_location']]) : '';
                     $priceVal = isset($row[$indices['unit_price']]) ? floatval($row[$indices['unit_price']]) : ($product?->price ?? 0);
 
+                    $newCode = '';
+                    $newName = '';
+                    if (!$product) {
+                        $newCode = $codeVal;
+                        $newName = $codeVal; // Lấy tạm mã làm tên khi nhập Excel chỉ có mã
+                    }
+
                     $this->items[] = [
                         'product_id' => $product?->id ?? '',
-                        'product_search' => $product ? ($product->code . ' - ' . $product->name) : $codeVal,
+                        'product_search' => $product ? ($product->code . ' - ' . $product->name) : ($newCode . ' - ' . $newName),
+                        'new_code' => $newCode,
+                        'new_name' => $newName,
                         'batch_number' => $batchVal,
                         'expiry_date' => $expiryVal,
                         'warehouse_location' => $locationVal ?: ($product?->location ?? ''),
@@ -550,9 +630,18 @@ class StockInForm extends Component
             $qtyVal = !empty($row['quantity']) ? floatval($row['quantity']) : '';
             $priceVal = !empty($row['unit_price']) ? floatval($row['unit_price']) : ($product?->price ?? 0);
 
+            $newCode = '';
+            $newName = '';
+            if (!$product) {
+                $newCode = !empty($row['code']) ? trim($row['code']) : '';
+                $newName = !empty($row['name']) ? trim($row['name']) : (!empty($row['scanned_name']) ? trim($row['scanned_name']) : 'Vật tư mới quét');
+            }
+
             $this->items[] = [
                 'product_id' => $product?->id ?? '',
-                'product_search' => $product ? ($product->code . ' - ' . $product->name) : ($row['code'] ?? ''),
+                'product_search' => $product ? ($product->code . ' - ' . $product->name) : ($newCode . ' - ' . $newName),
+                'new_code' => $newCode,
+                'new_name' => $newName,
                 'batch_number' => $row['batch_number'] ?? '',
                 'expiry_date' => $row['expiry_date'] ?? '',
                 'warehouse_location' => $row['warehouse_location'] ?? ($product?->location ?? ''),

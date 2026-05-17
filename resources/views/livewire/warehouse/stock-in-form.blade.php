@@ -128,6 +128,25 @@
         lines.forEach(line => {
             let rest = line;
 
+            // 0. Chuẩn hóa sửa lỗi OCR và bóc tách các đặc thù của bảng in
+            // - Sửa chữ O thành số 0 trong mã hàng (Ví dụ: VAPO7001 -> VAP07001)
+            rest = rest.replace(/\b([A-Z]+)O(\d+)\b/gi, '$10$2');
+            // - Sửa chữ I hoặc l thành số 1 ở cuối mã số sản phẩm (Ví dụ: VAP0700I/VAP0700l -> VAP07001)
+            rest = rest.replace(/\b([A-Z]+\d+)I\b/gi, '$11');
+            rest = rest.replace(/\b([A-Z]+\d+)l\b/g, '$11');
+            
+            // - Loại bỏ số STT (Số thứ tự) ở đầu dòng (Ví dụ: "1 VAP07001" -> "VAP07001")
+            const sttMatch = rest.match(/^\s*(\d+)\s+([A-Z]{2,}\d+|\w+-\d+)/i);
+            if (sttMatch) {
+                rest = rest.replace(/^\s*\d+\s+/, '');
+            }
+
+            // - Loại bỏ các thông số kích thước, phân số thông dụng để tránh bị nhận nhầm làm số lượng (Ví dụ: "1/4", "3/8", "1/2", "3/4", "1-3/4", "5/8", "2AT", "400Bar")
+            rest = rest.replace(/\b\d+\/\d+\b/g, ''); 
+            rest = rest.replace(/\b\d+-\d+\/\d+\b/g, '');
+            rest = rest.replace(/\b\d+AT\b/gi, '');
+            rest = rest.replace(/\b\d+Bar\b/gi, '');
+
             // 1. Tìm và trích xuất ngày hạn dùng (Expiry Date) - Dạng DD/MM/YYYY hoặc YYYY-MM-DD
             const dateMatch = rest.match(/(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/);
             let expiryDate = '';
@@ -209,10 +228,10 @@
             let foundName = '';
             let matchedProduct = null;
 
-            // Tìm khớp mã trực tiếp
-            const codeWords = scannedName.split(/\s+/);
+            // Tìm khớp mã trực tiếp sau khi lọc sạch ký tự đặc biệt khỏi từ
+            const codeWords = scannedName.replace(/[,;.:!\?\(\)\[\]\{\}]/g, ' ').split(/\s+/);
             for (const word of codeWords) {
-                const wordLower = word.toLowerCase();
+                const wordLower = word.trim().toLowerCase();
                 if (this.productsMap[wordLower]) {
                     foundCode = word.toUpperCase();
                     matchedProduct = this.productsMap[wordLower];

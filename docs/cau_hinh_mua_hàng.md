@@ -1,29 +1,29 @@
-# Cấu hình tính năng Phiếu Đề Xuất Mua Hàng (Nằm trong Module: Tổng Hợp)
+# Cấu hình tính năng Báo Cáo Tồn Kho Thu Hồi (Nằm trong Module: Tổng Hợp)
 
 ## 1. Mục tiêu
-Tạo tính năng lập Phiếu Đề Xuất Mua Hàng (Purchase Request), giúp người dùng tổng hợp và đề xuất mua thêm nguyên vật liệu (NVL) dựa trên danh sách các nguyên vật liệu đang ở dưới mức tồn kho tối thiểu hoặc đã thiếu hụt trong hoạt động sản xuất.
+Tạo tính năng lập Báo Cáo Tồn Kho Thu Hồi (Stock Recovery Report), giúp người dùng tổng hợp và quản lý việc thu hồi nguyên vật liệu (NVL) đã được đề xuất mua từ Phiếu Đề Xuất Mua Hàng.
 
-## 2. Thông tin chính trên Phiếu Mua Hàng
-Mỗi mặt hàng trên phiếu mua hàng cần bao gồm các trường thông tin sau:
+## 2. Thông tin chính trên Báo Cáo Tồn Kho Thu Hồi
+Mỗi mặt hàng trên báo cáo tồn kho thu hồi cần bao gồm các trường thông tin sau:
 - **Mã NVL**: Mã định danh của nguyên vật liệu.
 - **Tên NVL**: Tên gọi đầy đủ của nguyên vật liệu.
-- **Số lượng**: Số lượng cần mua bổ sung.
+- **Số lượng**: Số lượng đã thu hồi thực tế.
 - **Hãng SX**: Hãng sản xuất hoặc nhà cung cấp tương ứng.
 - **ĐVT**: Đơn vị tính (kg, chiếc, mét, hộp, v.v.).
 
-## 3. Logic đề xuất tự động (Thông minh)
-Tính năng hỗ trợ tìm kiếm và thêm nguyên vật liệu vào phiếu được thiết kế thông minh để giảm thiểu sai sót:
+## 3. Logic thu hồi và liên kết Purchase Order (Thông minh)
+Tính năng hỗ trợ tìm kiếm và thêm nguyên vật liệu vào báo cáo thu hồi được thiết kế thông minh để giảm thiểu sai sót:
 
-- **Cơ chế gợi ý**: Khi gõ tên sản phẩm, hệ thống tự động lọc và gợi ý các danh mục nguyên vật liệu đang trong tình trạng cảnh báo (cần đặt thêm).
-- **Phân loại cảnh báo**: Dựa theo định mức tồn kho, hệ thống phân loại:
-  - Các NVL sắp hết hàng (dưới mức cảnh báo an toàn).
-  - Các NVL đã hết hoặc thiếu hàng so với tiến độ sản xuất hiện tại.
-- **Bộ lọc loại trừ**: **Tuyệt đối không hiển thị** (hoặc ẩn khỏi gợi ý mua mới) những nguyên vật liệu đang có "đủ tồn kho" để tránh việc mua dư thừa, tăng chi phí lưu kho.
+- **Cơ chế gợi ý**: Khi gõ tên sản phẩm hoặc số PO, hệ thống tự động lọc và gợi ý các NVL đã được đề xuất mua và đã về kho.
+- **Phân loại trạng thái**: Dựa theo trạng thái PO và tình trạng nhập kho:
+  - Các NVL đang chờ thu hồi (đã duyệt mua nhưng chưa thu hồi).
+  - Các NVL đã thu hồi một phần hoặc toàn bộ.
+- **Bộ lọc thông minh**: Hiển thị các NVL có thể thu hồi từ các PO đã được duyệt để tránh thiếu sót thu hồi.
 
 ## 4. Các bước xây dựng dự kiến
-1. Cấu hình bảng dữ liệu, Model và Migration cho tính năng Purchase (Purchase Orders & Purchase Order Details).
-2. Xây dựng Controller hoặc Livewire Component để load NVL dưới mức quy định.
-3. Thiết kế giao diện Form Phiếu Mua Hàng trực quan:
-   - Giao diện dạng bảng để nhập mã, số lượng...
-   - Tích hợp autocomplete/dropdown filter cho ô `Tên NVL` kết nối API cảnh báo tồn kho.
-4. Tích hợp cảnh báo mức tồn kho tối thiểu (Min Stock) vào màn hình mua hàng để làm tiêu chí cho query SQL gợi ý danh mục nguyên vật liệu.
+1. Cấu hình bảng dữ liệu, Model và Migration cho tính năng Stock Recovery (Stock Recoveries & Stock Recovery Details).
+2. Xây dựng Controller hoặc Livewire Component để load NVL từ các PO đã duyệt.
+3. Thiết kế giao diện Form Báo Cáo Tồn Kho Thu Hồi trực quan:
+   - Giao diện dạng bảng để nhập mã, số lượng thu hồi...
+   - Tích hợp autocomplete/dropdown filter cho ô `Tên NVL` và `Số PO`.
+4. Tích hợp liên kết với Phiếu Đề Xuất Mua Hàng để tự động cập nhật trạng thái thu hồi.

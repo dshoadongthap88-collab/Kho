@@ -1,0 +1,1 @@
+Completed! Autocomplete dropdown now shows 'mã - tên' format (e.g., BST001 - Cây bút sơn trắng) when user searches for material code.

@@ -565,6 +565,9 @@ class StockOutForm extends Component
                     'supervisor_ca' => $this->supervisor_ca,
                 ]);
 
+                $lastRecovery = \App\Models\StockRecovery::latest('id')->first();
+                $recoverySequence = ($lastRecovery ? intval(preg_replace('/[^0-9]/', '', $lastRecovery->recovery_number)) : 0);
+
                 foreach ($this->items as $item) {
                     StockOutItem::create([
                         'stock_out_id' => $stockOut->id,
@@ -591,6 +594,25 @@ class StockOutForm extends Component
                         $item['expiry_date'] ?: null,
                         $item['warehouse_location']
                     );
+
+                    // Tự động tạo phiếu Thu hồi phế phẩm nếu có số lượng thu hồi > 0
+                    if (isset($item['recovered_quantity']) && $item['recovered_quantity'] > 0) {
+                        $recoverySequence++;
+                        $recoveryNumber = 'SCR-' . str_pad($recoverySequence, 6, '0', STR_PAD_LEFT);
+                        
+                        $product = \App\Models\Product::find($item['product_id']);
+                        \App\Models\StockRecovery::create([
+                            'recovery_number' => $recoveryNumber,
+                            'stock_out_id' => $stockOut->id,
+                            'product_id' => $item['product_id'],
+                            'quantity' => $item['recovered_quantity'],
+                            'unit' => $product ? ($product->unit ?: ($product->box_spec ?: ($product->carton_spec ?: ''))) : '',
+                            'recovery_date' => now()->format('Y-m-d'),
+                            'status' => 'completed',
+                            'notes' => 'Tự động tạo từ phiếu xuất ' . $stockOut->code,
+                            'created_by' => auth()->id() ?? 1,
+                        ]);
+                    }
                 }
 
                 // Tự động chuyển qua module Báo cáo Giao Hàng nếu loại xuất là 'delivery'

@@ -81,4 +81,7 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return view('warehouse.asset.maintenance-form');
     })->name('maintenance-form');
 
+    // Stock Recovery Report Routes
+    Route::get('/stock-recovery-report', \App\Livewire\Warehouse\StockRecoveryReportList::class)->name('stock-recovery-report')->middleware('permission:stock_recovery');
+
 });

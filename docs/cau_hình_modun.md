@@ -18,6 +18,7 @@ Quản lý các hoạt động trực tiếp tại kho hàng với cơ chế **T
   - Chọn lô hàng thực tế (Batch Selection): Tự động hiển thị bảng chọn nếu có nhiều lô trong kho.
   - Tự động điền dữ liệu tồn kho thực tế.
 - **Tồn kho**: Theo dõi số lượng thực tế theo thời gian thực và vị trí.
+- **Thu hồi phế phẩm**: Ghi nhận và quản lý phế phẩm, vật liệu thu hồi từ quá trình sản xuất hoặc xuất kho.
 - **Kiểm kê kho**: Tạo phiếu kiểm kê, đối soát thực tế và máy, cân bằng kho tự động.
 
 ## 3. Module: Sản phẩm & BOM

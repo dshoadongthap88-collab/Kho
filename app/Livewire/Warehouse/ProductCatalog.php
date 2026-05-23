@@ -310,18 +310,31 @@ class ProductCatalog extends Component
     {
         try {
             $count = 0;
+            $warnings = [];
+
             foreach ($this->minStocks as $productId => $value) {
-                $product = Product::find($productId);
+                $product = Product::with('inventory')->find($productId);
                 if ($product) {
                     $newVal = (float)($value ?: 0);
+                    $currentQty = $product->inventory?->quantity ?? 0;
+
+                    // Kiểm tra cảnh báo: min_stock > số lượng tồn hiện tại
+                    if ($newVal > $currentQty && $newVal > 0) {
+                        $warnings[] = $product->code . ' - ' . $product->name . ' (min: ' . $newVal . ', tồn: ' . $currentQty . ')';
+                    }
+
                     if ($product->min_stock != $newVal) {
                         $product->update(['min_stock' => $newVal]);
                         $count++;
                     }
                 }
             }
-            
-            session()->flash('message', "Đã lưu thành công định mức tồn tối thiểu cho {$count} vật tư!");
+
+            if (count($warnings) > 0) {
+                session()->flash('warning', 'Đã lưu thành công định mức tồn tối thiểu cho ' . $count . ' vật tư. Cảnh báo: Tồn tối thiểu lớn hơn số lượng tồn hiện tại cho ' . count($warnings) . ' vật tư: ' . implode(', ', $warnings));
+            } else {
+                session()->flash('message', "Đã lưu thành công định mức tồn tối thiểu cho {$count} vật tư!");
+            }
         } catch (\Exception $e) {
             session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
@@ -330,7 +343,7 @@ class ProductCatalog extends Component
     public function render()
     {
         $products = Product::query()
-            ->with('inventory')
+            ->with(['inventory'])
             ->where(function($q) {
                 $q->where('type', '!=', 'material')
                   ->orWhereNull('type');
@@ -346,6 +359,13 @@ class ProductCatalog extends Component
             })
             ->when($this->dateTo, function($q) {
                 $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
+            })
+            // Lọc theo filterMode
+            ->when($this->filterMode === 'low_stock', function($q) {
+                $q->whereHas('inventory', function($iq) {
+                    $iq->whereColumn('quantity', '<=', 'products.min_stock');
+                })
+                ->where('min_stock', '>', 0);
             })
             ->latest()
             ->paginate(8);

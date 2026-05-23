@@ -110,7 +110,7 @@
                         <th class="px-4 py-3 w-10 text-center">
                             <input type="checkbox" wire:model.live="selectAll" class="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500">
                         </th>
-                        <th class="px-4 py-3">Mã TS</th>
+                        <th class="px-4 py-3">MÃ TÀI SẢN</th>
                         <th class="px-4 py-3">Tên Thiết Bị / Máy</th>
                         <th class="px-4 py-3">Bộ phận</th>
                         <th class="px-4 py-3">Model/Serial</th>

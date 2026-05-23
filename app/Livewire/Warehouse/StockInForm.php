@@ -272,32 +272,38 @@ class StockInForm extends Component
 
     public function save()
     {
-        // Loại bỏ các dòng trống chưa chọn sản phẩm và không có thông tin sản phẩm mới
-        $this->items = array_values(array_filter($this->items, function ($item) {
-            return !empty($item['product_id']) || !empty($item['new_code']) || !empty($item['product_search']);
-        }));
-
+        // Validate base requirement before anything
         if (empty($this->items)) {
             $this->addError('general', 'Vui lòng thêm ít nhất một sản phẩm vào phiếu nhập.');
             $this->addItem();
             return;
         }
 
-        // Kiểm tra hợp lệ cho từng dòng
+        // Kiểm tra hợp lệ cho từng dòng - KHÔNG filter trước, validate nguyên bản
         foreach ($this->items as $index => $item) {
-            if (empty($item['product_id']) && empty($item['new_code']) && empty($item['product_search'])) {
-                $this->addError("items.{$index}.product_search", 'Vui lòng chọn vật tư hoặc nhập mã/tên vật tư mới.');
+            // Kiểm tra xem dòng có thông tin sản phẩm hợp lệ không
+            $hasProduct = !empty($item['product_id']) ||
+                          (!empty($item['new_code']) && !empty($item['new_name'])) ||
+                          (!empty($item['product_search']) && str_contains($item['product_search'], ' - '));
+
+            if (!$hasProduct) {
+                $this->addError("items.{$index}.product_search", 'Vui lòng chọn vật tư hoặc nhập mã/tên vật tư hợp lệ (định dạng: Mã - Tên).');
                 return;
             }
         }
 
         $this->validate([
-            'items.*.batch_number' => 'nullable|string',
             'items.*.quantity' => 'required|numeric|min:0.0001',
             'supplier_name' => 'nullable|string',
+            'items.*.batch_number' => 'nullable|string',
+            'items.*.expiry_date' => 'nullable|date',
+            'items.*.warehouse_location' => 'nullable|string',
+            'items.*.unit_price' => 'nullable|numeric|min:0',
         ], [
             'items.*.quantity.required' => 'Vui lòng nhập số lượng.',
             'items.*.quantity.min' => 'Số lượng phải lớn hơn 0.',
+            'items.*.expiry_date.date' => 'Hạn dùng không đúng định dạng ngày.',
+            'items.*.unit_price.numeric' => 'Đơn giá phải là số.',
         ]);
 
         $service = app(InventoryService::class);
@@ -540,12 +546,27 @@ class StockInForm extends Component
                     }
                 }
 
-                // Fallback mặc định
-                if ($indices['code'] === null) $indices['code'] = 0;
-                if ($indices['quantity'] === null) $indices['quantity'] = 4;
-                if ($indices['batch_number'] === null) $indices['batch_number'] = 1;
-                if ($indices['expiry_date'] === null) $indices['expiry_date'] = 2;
-                if ($indices['warehouse_location'] === null) $indices['warehouse_location'] = 3;
+                // Kiểm tra các cột bắt buộc sau khi đã map
+                $missing = [];
+                if ($indices['code'] === null) {
+                    $missing[] = 'Mã vật tư (Mã sản phẩm, Mã vặt tư, Code, Mã)';
+                }
+                if ($indices['quantity'] === null) {
+                    $missing[] = 'Số lượng (Số lượng, Quantity, SL, Qty)';
+                }
+
+                if (!empty($missing)) {
+                    throw new \Exception('File Excel thiếu các cột bắt buộc: ' . implode(', ', $missing) . '.
+
+Vui lòng kiểm tra lại tiêu đề cột trong file Excel. Các cột có thể dùng:
+- Mã sản phẩm / Mã vật tư / Mã NCC / Code / Mã
+- Tên vật tư / Tên sản phẩm / Tên
+- Số lượng / Quantity / SL / Qty
+- Số lô / Batch / Lô / Mã Code NCC
+- Hạn dùng / HSD / Expiry / Hạn sử dụng
+- Vị trí / Location / Kho / Vị trí kho
+- Đơn giá / Đơn giá nhập / Unit Price / Price');
+                }
 
                 // Xóa các dòng trống hiện tại
                 $this->items = [];

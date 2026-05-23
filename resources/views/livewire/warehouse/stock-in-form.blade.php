@@ -14,6 +14,45 @@
         @endforeach
     },
 
+    // Helper: Parse số lượng thông minh - xử lý cả dấu phẩy và chấm làm decimal separator
+    parseQuantity(text) {
+        if (!text) return '';
+        const numStr = text.replace(/[^\d.,]/g, '').trim();
+        if (!numStr) return '';
+
+        const hasComma = numStr.includes(',');
+        const hasDot = numStr.includes('.');
+
+        if (hasComma && hasDot) {
+            const lastComma = numStr.lastIndexOf(',');
+            const lastDot = numStr.lastIndexOf('.');
+            if (lastComma > lastDot) {
+                // Format VN: 1.234,56 → 1234.56
+                return parseFloat(numStr.replace(/\./g, '').replace(',', '.'));
+            } else {
+                // Format US: 1,234.56 → 1234.56
+                return parseFloat(numStr.replace(/,/g, ''));
+            }
+        } else if (hasComma) {
+            // Kiểm tra xem phẩy là decimal hay thousands separator
+            const parts = numStr.split(',');
+            if (parts.length === 2 && (parts[1].length === 2 || parts[1].length === 3)) {
+                return parseFloat(numStr.replace(',', '.'));
+            }
+            return parseFloat(numStr.replace(/,/g, ''));
+        } else if (hasDot) {
+            // Kiểm tra chấm có phải decimal không
+            const parts = numStr.split('.');
+            if (parts.length === 2 && parts[1].length <= 3) {
+                return parseFloat(numStr);
+            }
+            // Nhiều hơn 2 phần → bỏ separator
+            return parseFloat(numStr.replace(/\./g, ''));
+        }
+
+        return parseFloat(numStr);
+    },
+
     // Xử lý khi tải lên / dán ảnh chụp hoặc chọn tệp PDF
     handleImageUpload(event) {
         const file = event.target.files ? event.target.files[0] : (event.dataTransfer ? event.dataTransfer.files[0] : null);
@@ -42,32 +81,98 @@
     },
 
     // Đọc và phân tích tệp tin PDF ngay tại Client
+    // Vì PDF VAP lưu bảng dạng ảnh (không có text layer), ta render từng trang thành canvas
+    // rồi dùng Tesseract OCR đọc nội dung bảng
     async handlePdfUpload(event) {
         const file = event.target.files ? event.target.files[0] : (event.dataTransfer ? event.dataTransfer.files[0] : null);
         if (!file) return;
 
         this.ocrRunning = true;
-        this.ocrProgress = 20;
-        this.ocrStatus = 'Đang đọc cấu trúc tệp PDF...';
+        this.ocrProgress = 5;
+        this.ocrStatus = 'Đang khởi động công cụ xử lý PDF...';
 
         try {
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            
-            let fullText = '';
-            this.ocrStatus = `Đang phân tích dữ liệu văn bản từ ${pdf.numPages} trang PDF...`;
-            
+
+            // Bước 1: Thử đọc text layer trước
+            let allTextItems = [];
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => item.str).join(' ');
-                fullText += pageText + '\n';
-                this.ocrProgress = 20 + Math.round((i / pdf.numPages) * 60);
+                textContent.items.forEach(item => allTextItems.push(item));
             }
 
-            this.ocrStatus = 'Đang bóc tách danh sách vật tư nhập kho...';
-            this.ocrParsedRows = this.parseStockInText(fullText);
-            
+            // Lọc các item có nội dung thực sự (không phải metadata như tên người duyệt)
+            const meaningfulItems = allTextItems.filter(it => it.str && it.str.trim().length > 0);
+
+            // Bước 2: Thử parse bảng từ text layer
+            let parsedTableRows = this.parsePdfTableData(meaningfulItems);
+
+            if (parsedTableRows && parsedTableRows.length > 0) {
+                // PDF có text layer và parse được bảng
+                this.ocrParsedRows = parsedTableRows;
+                this.ocrProgress = 100;
+                this.ocrRunning = false;
+                this.ocrStatus = `Nhận diện PDF xong! Tìm thấy ${this.ocrParsedRows.length} dòng vật tư nhập kho.`;
+                return;
+            }
+
+            // Bước 3: PDF không có text layer (như VAP) → render từng trang thành ảnh rồi OCR
+            this.ocrStatus = `PDF dạng ảnh - Đang khởi động OCR để quét ${pdf.numPages} trang...`;
+            this.ocrProgress = 10;
+
+            // Dùng ref để cập nhật progress từ trong callback của Tesseract
+            const self = this;
+            const totalPages = pdf.numPages;
+            let currentPageNum = 1;
+
+            const worker = await Tesseract.createWorker('vie+eng', 1, {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        const baseProgress = 10 + Math.round(((currentPageNum - 1) / totalPages) * 75);
+                        const pageProgress = Math.round((m.progress * 75) / totalPages);
+                        self.ocrProgress = Math.min(85, baseProgress + pageProgress);
+                    }
+                }
+            });
+
+            let combinedOcrText = '';
+
+            for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                currentPageNum = pageNum;
+                this.ocrStatus = `Đang quét trang ${pageNum}/${totalPages} bằng AI OCR...`;
+                this.ocrProgress = 10 + Math.round(((pageNum - 1) / totalPages) * 75);
+
+                const page = await pdf.getPage(pageNum);
+                // Scale 2.5x để tăng độ chính xác OCR với PDF nhỏ
+                const viewport = page.getViewport({ scale: 2.5 });
+
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext('2d');
+
+                await page.render({ canvasContext: ctx, viewport }).promise;
+
+                const imageDataUrl = canvas.toDataURL('image/png');
+                const { data: { text } } = await worker.recognize(imageDataUrl);
+                combinedOcrText += text + '\n';
+            }
+
+            await worker.terminate();
+
+            this.ocrProgress = 90;
+            this.ocrStatus = 'Đang bóc tách dữ liệu bảng từ kết quả OCR...';
+
+            // Parse kết quả OCR: thử nhận diện cấu trúc bảng trước, sau đó fallback
+            const ocrTableRows = this.parseOcrTableText(combinedOcrText);
+            if (ocrTableRows && ocrTableRows.length > 0) {
+                this.ocrParsedRows = ocrTableRows;
+            } else {
+                this.ocrParsedRows = this.parseStockInText(combinedOcrText);
+            }
+
             this.ocrProgress = 100;
             this.ocrRunning = false;
             this.ocrStatus = `Nhận diện PDF xong! Tìm thấy ${this.ocrParsedRows.length} dòng vật tư nhập kho.`;
@@ -187,27 +292,16 @@
                 rest = rest.replace(unitMatch[0], '');
             }
 
-            // 5. Tìm số lượng và đơn giá từ các số trong dòng
+            // 5. Tìm số lượng từ các số trong dòng (đơn giá để trống, người dùng nhập sau)
             const numberMatches = rest.match(/(\b\d+([.,]\d+)?\b)/g) || [];
             let quantity = '';
-            let unitPrice = '';
 
-            const numericValues = numberMatches.map(n => {
-                let cleanNum = n.replace(/[,.]/g, '');
-                return parseFloat(cleanNum);
-            }).filter(v => !isNaN(v) && v > 0);
+            // Parse tất cả numbers dùng parseQuantity để xử lý đúng format VN/US
+            const numericValues = numberMatches.map(n => this.parseQuantity(n)).filter(v => !isNaN(v) && v > 0);
 
             if (numericValues.length > 0) {
-                const priceCandidate = numericValues.find(v => v >= 5000);
-                if (priceCandidate) {
-                    unitPrice = priceCandidate;
-                    const idx = numericValues.indexOf(priceCandidate);
-                    numericValues.splice(idx, 1);
-                }
-                
-                if (numericValues.length > 0) {
-                    quantity = numericValues[0];
-                }
+                // Lấy số đầu tiên làm số lượng (phổ biến trong OCR dòng đơn)
+                quantity = numericValues[0];
             }
 
             // Xóa các số khỏi chuỗi còn lại để lấy tên
@@ -312,6 +406,444 @@
         });
 
         return parsed;
+    },
+
+    // Parse văn bản OCR từ PDF dạng ảnh (như VAP) - nhận diện cấu trúc bảng từ text
+    parseOcrTableText(ocrText) {
+        if (!ocrText) return null;
+
+        const normalizeStr = (s) => s.toLowerCase()
+            .replace(/[áàảãạăắằẳẵặâấầẩẫậ]/g, 'a')
+            .replace(/[éèẻẽẹêếềểễệ]/g, 'e')
+            .replace(/[íìỉĩị]/g, 'i')
+            .replace(/[óòỏõọôốồổỗộơớờởỡợ]/g, 'o')
+            .replace(/[úùủũụưứừửữự]/g, 'u')
+            .replace(/[ýỳỷỹỵ]/g, 'y')
+            .replace(/[đ]/g, 'd')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ').trim();
+
+        const lines = ocrText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+        // Tìm dòng tiêu đề bảng (có chứa \"Mã hàng\" / \"Tên hàng\" / \"Số lượng\")
+        let headerLineIdx = -1;
+        let colPositions = { code: -1, name: -1, unit: -1, qty: -1 };
+
+        for (let i = 0; i < lines.length; i++) {
+            const norm = normalizeStr(lines[i]);
+            const hasCode = norm.includes('ma hang') || norm.includes('ma vat tu') || norm.includes('ma sp') || norm.includes('ma hh') || norm.includes('ma vt');
+            const hasName = norm.includes('ten hang') || norm.includes('ten vat tu') || norm.includes('ten sp') || norm.includes('ten hh') || norm.includes('ten vt');
+            const hasQty  = norm.includes('so luong') || norm.includes('sl nhan') || norm.includes('s luong');
+
+            if (hasCode && hasName) {
+                headerLineIdx = i;
+
+                // Xác định vị trí ký tự của từng cột trong dòng tiêu đề
+                const raw = lines[i];
+                const rawNorm = normalizeStr(raw);
+
+                const codeIdx = rawNorm.search(/ma\s*(hang|vat\s*tu|sp|hh|vt)/);
+                const nameIdx = rawNorm.search(/ten\s*(hang|vat\s*tu|sp|hh|vt)/);
+                const unitIdx = rawNorm.search(/don\s*vi|d\.?v\.?t/);
+                const qtyIdx  = rawNorm.search(/so\s*luong|sl\s*nhan/);
+
+                // Kiểm tra bắt buộc: phải tìm thấy cột Mã và Số lượng
+                if (codeIdx === -1 || qtyIdx === -1) {
+                    console.warn('Không tìm thấy cột bắt buộc (Mã hoặc Số lượng) trong header PDF, bỏ qua dòng này');
+                    continue; // Không break, tiếp tục tìm dòng header khác
+                }
+
+                // Tính tỉ lệ vị trí để ánh xạ lên độ dài chuỗi gốc
+                const ratio = raw.length / rawNorm.length;
+                colPositions.code = Math.round(codeIdx * ratio);
+                colPositions.name = nameIdx >= 0 ? Math.round(nameIdx * ratio) : -1; // Optional
+                colPositions.unit = unitIdx >= 0 ? Math.round(unitIdx * ratio) : -1; // Optional
+                colPositions.qty  = Math.round(qtyIdx * ratio);
+                break;
+            }
+        }
+
+        if (headerLineIdx === -1) {
+            console.warn('Không tìm thấy dòng header phù hợp trong OCR text');
+            return null;
+        }
+
+        // Tính ranh giới giữa các cột (midpoint) - cải thiện với fallback an toàn
+        const sortedCols = [
+            { key: 'code', pos: colPositions.code },
+            { key: 'name', pos: colPositions.name },
+            { key: 'unit', pos: colPositions.unit },
+            { key: 'qty',  pos: colPositions.qty  }
+        ].filter(c => c.pos >= 0).sort((a, b) => a.pos - b.pos);
+
+        if (sortedCols.length < 2) {
+            console.warn('Không đủ cột được xác định để parse bảng');
+            return null;
+        }
+
+        const colBounds = sortedCols.map((col, idx) => {
+            const nextPos = idx < sortedCols.length - 1 ? sortedCols[idx + 1].pos : 9999;
+            const prevPos = idx > 0 ? sortedCols[idx - 1].pos : 0;
+            return {
+                key: col.key,
+                start: idx === 0 ? 0 : Math.round((col.pos + prevPos) / 2),
+                end:   idx === sortedCols.length - 1 ? 9999 : Math.round((col.pos + nextPos) / 2)
+            };
+        });
+
+        const getColText = (line, colKey) => {
+            const bound = colBounds.find(b => b.key === colKey);
+            if (!bound) return '';
+            const start = Math.min(bound.start, line.length);
+            const end   = Math.min(bound.end, line.length);
+            return line.slice(start, end).trim();
+        };
+
+        // Hàm parse số lượng thông minh - phát hiện decimal separator từ context
+        const parseQuantity = (text) => {
+            if (!text) return '';
+            // Lấy phần số, giữ dấu thập phân
+            const numStr = text.replace(/[^\d.,]/g, '').trim();
+            if (!numStr) return '';
+
+            // Nếu có cả dấu phẩy và dấu chấm → giả định dấu chấm là decimal, phẩy là nghìn separator
+            // VD: \"1.234,56\" → 1234.56 (VN) hoặc \"1,234.56\" → 1234.56 (US)
+            let hasComma = numStr.includes(',');
+            let hasDot = numStr.includes('.');
+
+            if (hasComma && hasDot) {
+                // Xác định separator cuối cùng
+                const lastComma = numStr.lastIndexOf(',');
+                const lastDot = numStr.lastIndexOf('.');
+                if (lastComma > lastDot) {
+                    // Format: 1.234,56 (VN) → loại bỏ dấu chấm, thay phẩy bằng chấm
+                    return parseFloat(numStr.replace(/\./g, '').replace(',', '.'));
+                } else {
+                    // Format: 1,234.56 (US) → loại bỏ dấu phẩy
+                    return parseFloat(numStr.replace(/,/g, ''));
+                }
+            } else if (hasComma) {
+                // Chỉ có phẩy: kiểm tra xem là decimal separator hay thousands separator
+                // Nếu sau phẩy có đúng 2-3 số → có thể là decimal (VN)
+                const parts = numStr.split(',');
+                if (parts.length === 2 && (parts[1].length === 2 || parts[1].length === 3)) {
+                    return parseFloat(numStr.replace(',', '.'));
+                }
+                return parseFloat(numStr.replace(/,/g, ''));
+            } else if (hasDot) {
+                // Chỉ có chấm: kiểm tra xem có phải decimal không
+                const parts = numStr.split('.');
+                if (parts.length === 2 && parts[1].length <= 3) {
+                    return parseFloat(numStr);
+                }
+                // Nếu nhiều hơn 2 phần → bỏ separator
+                return parseFloat(numStr.replace(/\./g, ''));
+            }
+
+            return parseFloat(numStr);
+        };
+
+        // Đọc từng dòng dữ liệu bên dưới tiêu đề
+        const parsed = [];
+        let currentRow = null;
+
+        for (let i = headerLineIdx + 1; i < lines.length; i++) {
+            const line = lines[i];
+            if (line.length < 3) continue;
+
+            const norm = normalizeStr(line);
+
+            // Dừng nếu gặp dòng tổng kết
+            if (norm.includes('tong cong') || norm.includes('tong so') || norm.includes('ky ten') || norm.includes('ghi chu')) break;
+
+            const codeVal = getColText(line, 'code').replace(/\s+/g, ' ').trim();
+            const nameVal = getColText(line, 'name').replace(/\s+/g, ' ').trim();
+            const unitVal = getColText(line, 'unit').replace(/\s+/g, ' ').trim();
+            const qtyRaw  = getColText(line, 'qty').trim();
+            const qtyVal  = this.parseQuantity(qtyRaw);
+
+            // Dòng có STT (số thứ tự đầu dòng) → bắt đầu record mới
+            const sttMatch = codeVal.match(/^(\d{1,3})\s+(.*)/);
+            let finalCode = codeVal;
+            if (sttMatch) finalCode = sttMatch[2].trim();
+
+            // Nếu có ít nhất tên hoặc mã hoặc số lượng → tạo record mới
+            if (finalCode || nameVal || qtyVal) {
+                if (currentRow) parsed.push(currentRow);
+
+                // Tra cứu trong productsMap
+                let matchedProduct = null;
+                const codeLower = finalCode.toLowerCase();
+                if (finalCode && this.productsMap[codeLower]) {
+                    matchedProduct = this.productsMap[codeLower];
+                } else if (nameVal) {
+                    const nameLower = nameVal.toLowerCase();
+                    for (const k in this.productsMap) {
+                        if (this.productsMap[k].name.toLowerCase() === nameLower) {
+                            matchedProduct = this.productsMap[k];
+                            break;
+                        }
+                    }
+                }
+
+                currentRow = {
+                    code: matchedProduct ? matchedProduct.code : finalCode,
+                    name: matchedProduct ? matchedProduct.name : nameVal,
+                    scanned_name: nameVal,
+                    quantity: qtyVal || '',
+                    unit: unitVal || (matchedProduct ? matchedProduct.unit : 'Cái'),
+                    batch_number: '',
+                    expiry_date: '',
+                    warehouse_location: matchedProduct ? matchedProduct.location : '',
+                    unit_price: matchedProduct ? matchedProduct.price : 0
+                };
+            } else if (currentRow && nameVal) {
+                // Dòng phụ (multi-line cell): nối thêm tên
+                currentRow.name += ' ' + nameVal;
+                currentRow.scanned_name += ' ' + nameVal;
+            }
+        }
+
+        if (currentRow) parsed.push(currentRow);
+
+        // Lọc bỏ dòng rác (không có tên và không có số lượng)
+        return parsed.filter(r => (r.name && r.name.length > 1) || r.quantity);
+    },
+
+    // Quét và nhận diện cấu trúc dạng BẢNG cho hóa đơn PDF (Hỗ trợ nhiều dòng trong 1 ô)
+    parsePdfTableData(items) {
+        if (!items || items.length === 0) return null;
+
+        let yDirection = 1;
+        if (items.length > 5) {
+            let firstY = items[0].transform[5];
+            let lastY = items[items.length - 1].transform[5];
+            if (firstY < lastY) yDirection = -1; 
+        }
+
+        let linesObj = {};
+        items.forEach(item => {
+            let str = item.str.trim();
+            if (!str) return;
+            let y = item.transform[5];
+            let x = item.transform[4];
+            
+            let foundY = null;
+            for (let existingY in linesObj) {
+                if (Math.abs(Number(existingY) - y) <= 8) {
+                    foundY = existingY;
+                    break;
+                }
+            }
+            if (foundY === null) {
+                foundY = y;
+                linesObj[foundY] = [];
+            }
+            linesObj[foundY].push({ text: str, x: x, y: y, size: Math.abs(item.transform[0]) });
+        });
+
+        let sortedY = Object.keys(linesObj).map(Number).sort((a, b) => {
+            return yDirection === 1 ? b - a : a - b;
+        });
+
+        let lines = [];
+        
+        let normalizeString = (s) => {
+            return s.toLowerCase()
+                .replace(/[áàảãạăắằẳẵặâấầẩẫậ]/g, 'a')
+                .replace(/[éèẻẽẹêếềểễệ]/g, 'e')
+                .replace(/[íìỉĩị]/g, 'i')
+                .replace(/[óòỏõọôốồổỗộơớờởỡợ]/g, 'o')
+                .replace(/[úùủũụưứừửữự]/g, 'u')
+                .replace(/[ýỳỷỹỵ]/g, 'y')
+                .replace(/[đ]/g, 'd')
+                .replace(/[^a-z0-9]/g, '');
+        };
+
+        sortedY.forEach(y => {
+            let lineItems = linesObj[y].sort((a, b) => a.x - b.x);
+            let fullStr = lineItems.map(i => i.text).join(' ');
+            let normStr = normalizeString(fullStr);
+            lines.push({ y: Number(y), items: lineItems, normStr, rawStr: fullStr });
+        });
+
+        // Tìm dòng tiêu đề
+        let headerLineIdx = -1;
+        for (let i = 0; i < lines.length; i++) {
+            let s = lines[i].normStr;
+            if (
+                (s.includes('mahang') || s.includes('mavattu') || s.includes('masp') || s.includes('mavt') || s.includes('mahh')) &&
+                (s.includes('tenhang') || s.includes('tenvattu') || s.includes('tensp') || s.includes('tenvt') || s.includes('tenhh'))
+            ) {
+                headerLineIdx = i;
+                break;
+            }
+        }
+
+        if (headerLineIdx === -1) return null; 
+
+        // Gộp các chữ liền kề trong dòng tiêu đề với ngưỡng scale-invariant
+        let headerItems = lines[headerLineIdx].items;
+        let mergedHeaders = [];
+        let curHeader = null;
+        
+        let avgWidth = headerItems.length > 0 ? headerItems.reduce((acc, it) => acc + (it.size || 6), 0) / headerItems.length : 6;
+        if (avgWidth < 1) avgWidth = 6;
+        let mergeThreshold = avgWidth * 3.5; 
+        
+        for (let it of headerItems) {
+            if (!curHeader) {
+                curHeader = { text: it.text, x: it.x, endX: it.x + (it.text.length * avgWidth * 0.7) };
+            } else {
+                if (it.x - curHeader.endX < mergeThreshold) { 
+                    curHeader.text += ' ' + it.text;
+                    curHeader.endX = it.x + (it.text.length * avgWidth * 0.7);
+                } else {
+                    mergedHeaders.push(curHeader);
+                    curHeader = { text: it.text, x: it.x, endX: it.x + (it.text.length * avgWidth * 0.7) };
+                }
+            }
+        }
+        if (curHeader) mergedHeaders.push(curHeader);
+
+        for (let i = 0; i < mergedHeaders.length; i++) {
+            let startX = (i === 0) ? -9999 : (mergedHeaders[i-1].x + mergedHeaders[i].x) / 2;
+            let endX = (i === mergedHeaders.length - 1) ? 9999 : (mergedHeaders[i].x + mergedHeaders[i+1].x) / 2;
+            mergedHeaders[i].start = startX;
+            mergedHeaders[i].end = endX;
+            mergedHeaders[i].normText = normalizeString(mergedHeaders[i].text);
+        }
+
+        let colBounds = { code: null, name: null, unit: null, quantity: null };
+        
+        for (let i = 0; i < mergedHeaders.length; i++) {
+            let nText = mergedHeaders[i].normText;
+            if (!colBounds.code && (nText.includes('mahang') || nText.includes('mavattu') || nText.includes('masp') || nText.includes('mavt') || nText.includes('mahh'))) colBounds.code = mergedHeaders[i];
+            else if (!colBounds.name && (nText.includes('tenhang') || nText.includes('tenvattu') || nText.includes('tensp') || nText.includes('tenvt') || nText.includes('tenhh'))) colBounds.name = mergedHeaders[i];
+            else if (!colBounds.unit && (nText.includes('donvi') || nText.includes('dvt'))) colBounds.unit = mergedHeaders[i];
+            else if (nText.includes('soluongnhan')) colBounds.quantity = mergedHeaders[i];
+            else if (!colBounds.quantity && (nText.includes('soluong') || nText.includes('sl'))) colBounds.quantity = mergedHeaders[i];
+        }
+
+        if (!colBounds.code && !colBounds.name) return null;
+
+        let colsData = { code: [], name: [], unit: [], quantity: [] };
+        let headerY = lines[headerLineIdx].y;
+        
+        items.forEach(it => {
+            let x = it.transform[4];
+            let y = it.transform[5];
+            let text = it.str.trim();
+            if (!text) return;
+
+            if (Math.abs(y - headerY) <= 8) return;
+            if (yDirection === 1 && y > headerY) return; 
+            if (yDirection === -1 && y < headerY) return; 
+
+            if (colBounds.code && x >= colBounds.code.start && x <= colBounds.code.end) colsData.code.push({text, y, x});
+            else if (colBounds.name && x >= colBounds.name.start && x <= colBounds.name.end) colsData.name.push({text, y, x});
+            else if (colBounds.unit && x >= colBounds.unit.start && x <= colBounds.unit.end) colsData.unit.push({text, y, x});
+            else if (colBounds.quantity && x >= colBounds.quantity.start && x <= colBounds.quantity.end) colsData.quantity.push({text, y, x});
+        });
+
+        let anchors = colsData.code.length > 0 ? colsData.code : (colsData.quantity.length > 0 ? colsData.quantity : colsData.name);
+        anchors.sort((a, b) => yDirection === 1 ? b.y - a.y : a.y - b.y);
+        
+        let finalAnchors = [];
+        anchors.forEach(a => {
+            if (finalAnchors.length === 0) {
+                finalAnchors.push(a);
+            } else {
+                let last = finalAnchors[finalAnchors.length - 1];
+                if (Math.abs(last.y - a.y) > 20) { 
+                    finalAnchors.push(a);
+                }
+            }
+        });
+
+        let rows = finalAnchors.map(a => ({
+            anchorY: a.y,
+            codeItems: [],
+            nameItems: [],
+            unitItems: [],
+            quantityItems: []
+        }));
+
+        if (rows.length === 0) return null;
+
+        let assignToRow = (itemsArray, targetCol) => {
+            itemsArray.forEach(it => {
+                let closestRow = null;
+                let minDiff = 9999;
+                rows.forEach(r => {
+                    let diff = Math.abs(r.anchorY - it.y);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestRow = r;
+                    }
+                });
+                if (closestRow && minDiff < 50) { 
+                    closestRow[targetCol].push(it);
+                }
+            });
+        };
+
+        assignToRow(colsData.code, 'codeItems');
+        assignToRow(colsData.name, 'nameItems');
+        assignToRow(colsData.unit, 'unitItems');
+        assignToRow(colsData.quantity, 'quantityItems');
+
+        let parsed = [];
+
+        rows.forEach(r => {
+            let sortAndJoin = (arr) => arr.sort((a, b) => yDirection === 1 ? b.y - a.y : a.y - b.y).map(i => i.text).join(' ').trim();
+
+            let codeVal = sortAndJoin(r.codeItems);
+            let nameVal = sortAndJoin(r.nameItems);
+            let unitVal = sortAndJoin(r.unitItems);
+            let qtyRaw = sortAndJoin(r.quantityItems);
+            let qtyVal = this.parseQuantity(qtyRaw);
+
+            if (!codeVal && !nameVal && !qtyVal) return; 
+            if (nameVal.toLowerCase().includes('tổng') || nameVal.toLowerCase().includes('cộng') || codeVal.toLowerCase().includes('tổng')) return;
+
+            let finalQty = qtyVal;
+            if (isNaN(finalQty)) finalQty = '';
+
+            let foundCode = codeVal;
+            let matchedProduct = null;
+            let codeLower = foundCode.toLowerCase();
+
+            if (foundCode && this.productsMap[codeLower]) {
+                matchedProduct = this.productsMap[codeLower];
+            } else if (nameVal) {
+                let searchName = nameVal.toLowerCase();
+                for (const k in this.productsMap) {
+                    if (this.productsMap[k].name.toLowerCase() === searchName) {
+                        matchedProduct = this.productsMap[k];
+                        foundCode = matchedProduct.code;
+                        break;
+                    }
+                }
+            }
+
+            let finalName = matchedProduct ? matchedProduct.name : nameVal;
+            if (!foundCode && matchedProduct) foundCode = matchedProduct.code;
+
+            parsed.push({
+                code: foundCode || '',
+                name: finalName || '',
+                scanned_name: nameVal,
+                quantity: finalQty || '',
+                unit: unitVal ? (unitVal.charAt(0).toUpperCase() + unitVal.slice(1).toLowerCase()) : (matchedProduct ? matchedProduct.unit : 'Cái'),
+                batch_number: '',
+                expiry_date: '',
+                warehouse_location: matchedProduct ? matchedProduct.location : '',
+                unit_price: matchedProduct ? matchedProduct.price : 0
+            });
+        });
+
+        return parsed.length > 0 ? parsed : null;
     },
 
     // Gửi dữ liệu đồng bộ về Livewire

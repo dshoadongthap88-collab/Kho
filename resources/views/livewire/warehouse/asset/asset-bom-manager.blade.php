@@ -596,7 +596,7 @@
                                     <table class="w-full text-left text-xs border-collapse">
                                         <thead>
                                             <tr class="bg-slate-100 font-bold border-b border-slate-200 text-slate-800">
-                                                <th class="p-2 w-20">Mã TS</th>
+                                                <th class="p-2 w-20">MÃ TÀI SẢN</th>
                                                 <th class="p-2">Tên thiết bị</th>
                                                 <th class="p-2">Bộ phận</th>
                                                 <th class="p-2 text-center w-12">Dầu máy</th>

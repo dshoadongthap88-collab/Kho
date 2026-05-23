@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(php artisan *)",
-      "Bash(bash start.bat)"
+      "Bash(bash start.bat)",
+      "Bash(Select-String -Pattern \"warehouse\")"
     ]
   }
 }

@@ -1,22 +1,24 @@
-<div x-data="{ showLightbox: false, lightboxUrl: '' }" style="font-family: 'Times New Roman', Times, serif;">
-    <!-- Lightbox Modal -->
-    <div x-show="showLightbox" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 no-print"
-         style="display: none;"
-         @click="showLightbox = false"
-         @keydown.escape.window="showLightbox = false">
-        <div class="relative max-w-5xl w-full flex flex-col items-center">
-            <button @click="showLightbox = false" class="absolute -top-12 right-0 text-white hover:text-gray-300 text-4xl font-black transition-all">✕</button>
-            <img :src="lightboxUrl" class="max-h-[85vh] max-w-full rounded-lg shadow-2xl border-4 border-white object-contain bg-white/10">
-            <div class="mt-4 text-white font-black text-sm uppercase tracking-widest bg-black/50 px-4 py-2 rounded-full">Bấm bên ngoài hoặc phím ESC để thoát</div>
+<div style="font-family: 'Times New Roman', Times, serif;">
+    <div x-data="{ showLightbox: false, lightboxUrl: '' }">
+        <!-- Lightbox Modal -->
+        <div x-show="showLightbox"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 no-print"
+             style="display: none;"
+             @click="showLightbox = false"
+             @keydown.escape.window="showLightbox = false">
+            <div class="relative max-w-5xl w-full flex flex-col items-center">
+                <button @click="showLightbox = false" class="absolute -top-12 right-0 text-white hover:text-gray-300 text-4xl font-black transition-all">✕</button>
+                <img :src="lightboxUrl" class="max-h-[85vh] max-w-full rounded-lg shadow-2xl border-4 border-white object-contain bg-white/10">
+                <div class="mt-4 text-white font-black text-sm uppercase tracking-widest bg-black/50 px-4 py-2 rounded-full">Bấm bên ngoài hoặc phím ESC để thoát</div>
+            </div>
         </div>
-    </div>
+
 
     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
         <div class="flex flex-wrap items-center gap-3">
@@ -41,10 +43,19 @@
                 </div>
             </div>
 
-            <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                <button wire:click="$set('filterMode', 'all')" class="px-3 py-1 text-[10px] font-black uppercase rounded transition-all {{ $filterMode === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Tất cả</button>
-                <button wire:click="$set('filterMode', 'low_stock')" class="px-3 py-1 text-[10px] font-black uppercase rounded transition-all {{ $filterMode === 'low_stock' ? 'bg-orange-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">Sắp hết tồn</button>
+            <div class="flex gap-2 bg-slate-100 p-2 rounded-lg border border-slate-300">
+                <button type="button"
+                        wire:click="setFilterMode('all')"
+                        class="px-4 py-2 text-xs font-bold uppercase rounded {{ $filterMode === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-300' }}">
+                    Tất cả
+                </button>
+                <button type="button"
+                        wire:click="setFilterMode('low_stock')"
+                        class="px-4 py-2 text-xs font-bold uppercase rounded {{ $filterMode === 'low_stock' ? 'bg-orange-600 text-white' : 'bg-white text-slate-600 border border-slate-300' }}">
+                    Sắp hết tồn
+                </button>
             </div>
+
         </div>
 
         <div class="flex items-center gap-2">
@@ -81,13 +92,13 @@
                 </div>
             @endif
 
-            <button wire:click="openModal" class="bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
+            <button type="button" wire:click="openModal" wire:loading.attr="disabled" class="bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
                 <span>➕</span> THÊM VẬT TƯ
             </button>
-            <button wire:click="saveMinStocks" class="bg-gradient-to-r from-amber-500 to-amber-600 font-black hover:from-amber-600 hover:to-amber-700 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
+            <button type="button" wire:click="saveMinStocks" wire:loading.attr="disabled" class="bg-gradient-to-r from-amber-500 to-amber-600 font-black hover:from-amber-600 hover:to-amber-700 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
                 <span>💾</span> LƯU TỒN TỐI THIỂU
             </button>
-            <button wire:click="$set('showImportModal', true)" class="bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-4 py-1.5 rounded-lg text-[11px] transition-all shadow-sm hover:shadow-md active:scale-95">
+            <button type="button" wire:click="$set('showImportModal', true)" wire:loading.attr="disabled" class="bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-4 py-1.5 rounded-lg text-[11px] transition-all shadow-sm hover:shadow-md active:scale-95">
                 📥 IMPORT EXCEL
             </button>
         </div>

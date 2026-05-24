@@ -49,7 +49,7 @@ class ProductCatalog extends Component
     public $printItems = []; // Thêm mảng chứa dữ liệu để in
     public $minStocks = []; 
 
-    protected $queryString = ['search', 'dateFrom', 'dateTo'];
+    protected $queryString = ['search', 'dateFrom', 'dateTo', 'filterMode'];
 
     public function rules()
     {
@@ -70,10 +70,24 @@ class ProductCatalog extends Component
         ];
     }
 
-    public function updatedFilterMode()
+    public function setFilterMode($mode)
     {
+        \Log::info('Filter mode triggered: ' . $mode);
+        $this->filterMode = $mode;
         $this->resetPage();
+        session()->flash('message', 'Đã chuyển sang chế độ: ' . ($mode == 'all' ? 'Tất cả' : 'Sắp hết tồn'));
     }
+
+    private function applyLowStockFilter($query)
+    {
+        return $query->leftJoin('inventories', 'products.id', '=', 'inventories.product_id')
+                     ->where(function($sq) {
+                         $sq->whereRaw('COALESCE(inventories.quantity, 0) <= products.min_stock');
+                     })
+                     ->select('products.*');
+    }
+
+
 
     public function selectExpiring()
     {
@@ -316,11 +330,11 @@ class ProductCatalog extends Component
                 $product = Product::with('inventory')->find($productId);
                 if ($product) {
                     $newVal = (float)($value ?: 0);
-                    $currentQty = $product->inventory?->quantity ?? 0;
+                    $currentQty = (float)($product->inventory?->quantity ?? 0);
 
-                    // Kiểm tra cảnh báo: min_stock > số lượng tồn hiện tại
-                    if ($newVal > $currentQty && $newVal > 0) {
-                        $warnings[] = $product->code . ' - ' . $product->name . ' (min: ' . $newVal . ', tồn: ' . $currentQty . ')';
+                    // Cảnh báo: min_stock > số lượng tồn hiện tại
+                    if ($newVal > $currentQty) {
+                        $warnings[] = "{$product->code} (tồn: {$currentQty}, min: {$newVal})";
                     }
 
                     if ($product->min_stock != $newVal) {
@@ -331,7 +345,7 @@ class ProductCatalog extends Component
             }
 
             if (count($warnings) > 0) {
-                session()->flash('warning', 'Đã lưu thành công định mức tồn tối thiểu cho ' . $count . ' vật tư. Cảnh báo: Tồn tối thiểu lớn hơn số lượng tồn hiện tại cho ' . count($warnings) . ' vật tư: ' . implode(', ', $warnings));
+                session()->flash('warning', 'Đã lưu ' . $count . ' vật tư. CẢNH BÁO: ' . count($warnings) . ' mặt hàng đang dưới mức tồn tối thiểu: ' . implode(', ', $warnings));
             } else {
                 session()->flash('message', "Đã lưu thành công định mức tồn tối thiểu cho {$count} vật tư!");
             }
@@ -339,6 +353,7 @@ class ProductCatalog extends Component
             session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
+
 
     public function render()
     {
@@ -362,12 +377,9 @@ class ProductCatalog extends Component
             })
             // Lọc theo filterMode
             ->when($this->filterMode === 'low_stock', function($q) {
-                $q->whereHas('inventory', function($iq) {
-                    $iq->whereColumn('quantity', '<=', 'products.min_stock');
-                })
-                ->where('min_stock', '>', 0);
+                return $this->applyLowStockFilter($q);
             })
-            ->latest()
+            ->orderBy('products.created_at', 'desc')
             ->paginate(8);
 
         // Khởi tạo các giá trị tồn tối thiểu cho ô nhập liệu trên trang hiện tại

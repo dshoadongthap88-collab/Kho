@@ -7,9 +7,9 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return redirect()->route('warehouse.inventory');
     });
 
-    Route::get('/product-catalog', function () {
-        return view('warehouse.product-catalog');
-    })->name('product-catalog')->middleware('permission:product-catalog');
+    Route::get('/product-catalog', \App\Livewire\Warehouse\ProductCatalog::class)
+        ->name('product-catalog')
+        ->middleware('permission:product-catalog');
 
     Route::get('/contacts', function () {
         return view('warehouse.customer-management');

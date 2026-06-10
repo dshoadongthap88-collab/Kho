@@ -84,16 +84,21 @@
                                     <td class="px-4 py-2 relative">
                                         <div class="relative">
                                             <input type="text"
-                                                wire:model.live.debounce.250ms="items.{{ $index }}.product_code"
-                                                list="product_list_{{ $index }}"
-                                                placeholder="Mã hoặc tên vật tư..."
+                                                wire:model.live.debounce.300ms="items.{{ $index }}.product_code"
+                                                placeholder="Nhập mã hoặc tên vật tư..."
                                                 class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 uppercase">
-                                            
-                                            <datalist id="product_list_{{ $index }}">
-                                                @foreach($products as $prod)
-                                                    <option value="{{ $prod->code }} - {{ $prod->name }}"></option>
-                                                @endforeach
-                                            </datalist>
+
+                                            @if(isset($searchResults) && count($searchResults) > 0 && $activeIndex === $index)
+                                                <div class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto mt-1">
+                                                    @foreach($searchResults as $res)
+                                                        <div wire:click="selectProduct({{ $index }}, '{{ $res['code'] }}')"
+                                                             class="px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm border-b border-gray-50 last:border-0 flex justify-between items-center">
+                                                            <span><strong>{{ $res['code'] }}</strong> - {{ $res['label'] }}</span>
+                                                            <span class="text-xs text-gray-400">{{ $res['unit'] }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         </div>
                                         @error("items.{$index}.product_code")
                                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

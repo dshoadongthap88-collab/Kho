@@ -11,10 +11,19 @@ class InventoryTransaction extends Model
         'product_id',
         'type',
         'quantity',
+        'transaction_date',
+        'batch_number',
+        'expiry_date',
+        'warehouse_location',
         'reference_type',
         'reference_id',
         'note',
         'created_by',
+    ];
+
+    protected $casts = [
+        'expiry_date' => 'date',
+        'transaction_date' => 'date',
     ];
 
     public function product()

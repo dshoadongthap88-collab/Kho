@@ -41,6 +41,7 @@ class MaterialCatalog extends Component
     public $quantity;
     public $min_stock = 0;
     public $type = 'material';
+    public $description; // Ghi chú
     public $selectedProducts = [];
     public $filterMode = 'all';
 
@@ -64,6 +65,7 @@ class MaterialCatalog extends Component
             'quantity' => 'required|numeric|min:0',
             'min_stock' => 'required|numeric|min:0',
             'type' => 'required|in:material',
+            'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif,bmp|max:5120', // Tăng lên 5MB và hỗ trợ nhiều định dạng hơn
         ];
     }
@@ -110,7 +112,7 @@ class MaterialCatalog extends Component
     public function openModal($id = null)
     {
         $this->resetValidation();
-        $this->reset(['code', 'name', 'brand', 'box_spec', 'carton_spec', 'unit', 'status', 'location', 'quantity', 'productId', 'image', 'type']);
+        $this->reset(['code', 'name', 'brand', 'box_spec', 'carton_spec', 'unit', 'status', 'location', 'quantity', 'productId', 'image', 'type', 'description']);
         
         if ($id) {
             $this->isEdit = true;
@@ -129,6 +131,7 @@ class MaterialCatalog extends Component
             $this->quantity = $product->inventory?->quantity ?? 0;
             $this->min_stock = $product->min_stock;
             $this->type = $product->type ?? 'material';
+            $this->description = $product->description;
         } else {
             $this->isEdit = false;
             $this->min_stock = 0;
@@ -177,6 +180,7 @@ class MaterialCatalog extends Component
                     'expiry_date' => $this->expiry_date ?: null,
                     'min_stock' => (float)($this->min_stock ?: 0),
                     'type' => $this->type,
+                    'description' => $this->description,
                 ]);
                 
                 if ($imagePath) {
@@ -214,6 +218,7 @@ class MaterialCatalog extends Component
                     'min_stock' => (float)($this->min_stock ?: 0),
                     'type' => $this->type,
                     'image' => $imagePath,
+                    'description' => $this->description,
                 ]);
 
                 // Tạo luôn record bên Inventory

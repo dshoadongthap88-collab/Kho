@@ -16,7 +16,14 @@ Tài liệu hướng dẫn nghiệp vụ và đặc tả tính năng của phân
 
 ---
 
-## ⚙️ 2. Đặc tả Kỹ thuật của Ô Chọn Vật Tư Thông Minh
+## ⚙️ 2. Đặc tả Kỹ thuật & Các tính năng
+
+### 🔹 Xem chi tiết phiếu chuyển kho (Danh sách)
+* Tại màn hình danh sách lịch sử chuyển kho, **cột Mã Phiếu** được thiết kế để có thể nhấp vào (clickable). 
+* Khi người dùng nhấp vào **Mã phiếu đã chuyển**, hệ thống sẽ tự động bật một Popup/Modal hiển thị ngay lập tức tất cả thông tin chi tiết của phiếu chuyển kho đó. 
+* **Thông tin chi tiết bao gồm:** Ngày chuyển, người lập, từ kho nào đến kho nào, ghi chú, cùng với danh sách đầy đủ mã vật tư, tên vật tư, số lượng và đơn vị tính đã được điều chuyển.
+
+### 🔹 Đặc tả Kỹ thuật của Ô Chọn Vật Tư Thông Minh
 Để hạn chế tối đa thao tác nhập tay và tránh sai sót mã vật tư, mục **"Mã vật tư / sản phẩm"** trong bảng chi tiết chuyển kho được cấu hình như sau:
 
 ### 🔹 Nguồn Dữ Liệu Tồn Kho (Data Source)

@@ -46,3 +46,4 @@ Route::middleware('auth')->group(function () {
         require __DIR__.'/warehouse.php';
     });
 });
+Route::get('/test-agent-ping', function() { return "pong-from-d-project"; });

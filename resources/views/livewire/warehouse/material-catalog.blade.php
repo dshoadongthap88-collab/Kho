@@ -102,27 +102,29 @@
                                {{ count($selectedProducts) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
                                class="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500">
                     </th>
-                    <th class="px-4 py-4">MÃ NVL</th>
+                    <th class="px-3 py-4 text-center w-12">STT</th>
                     <th class="px-4 py-4 w-16 text-center">ẢNH</th>
-                    <th class="px-4 py-4">TÊN NGUYÊN VẬT LIỆU</th>
-                    <th class="px-4 py-4">HÃNG SX</th>
-                    <th class="px-4 py-4">QUY CÁCH</th>
-                    <th class="px-4 py-4">ĐVT</th>
-                    <th class="px-4 py-4 text-center">MÃ CODE NCC</th>
-                    <th class="px-4 py-4 text-center">TỒN KHO</th>
+                    <th class="px-4 py-4">MÃ VẬT TƯ</th>
+                    <th class="px-4 py-4">TÊN VẬT TƯ</th>
+                    <th class="px-4 py-4 text-center">SỐ LƯỢNG TỒN</th>
+                    <th class="px-4 py-4">ĐƠN VỊ TÍNH</th>
+                    <th class="px-4 py-4 text-center">SỐ LƯỢNG TỐI THIỂU</th>
+                    <th class="px-4 py-4">GHI CHÚ</th>
                     <th class="px-4 py-4">TRẠNG THÁI</th>
                     <th class="px-4 py-4 text-right no-print">THAO TÁC</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-                @forelse($products as $product)
+                @forelse($products as $index => $product)
                     <tr class="hover:bg-indigo-50/30 transition-all border-b border-slate-100 
                         {{ $product->is_expiring_soon ? 'bg-rose-50/50' : ($product->is_low_stock ? 'bg-amber-50/50' : '') }}
                         {{ in_array($product->id, $selectedProducts) ? 'bg-indigo-50' : '' }}">
                         <td class="px-6 py-4 no-print text-center">
                             <input type="checkbox" wire:model.live="selectedProducts" value="{{ $product->id }}" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                         </td>
-                        <td class="px-4 py-4 font-black text-[13px] text-indigo-600 tracking-tight">{{ $product->code }}</td>
+                        <td class="px-3 py-4 text-center text-xs font-bold text-slate-500">
+                            {{ $index + 1 + ($products->currentPage() - 1) * $products->perPage() }}
+                        </td>
                         <td class="px-4 py-3 text-center">
                             @if($product->image)
                                 <div class="relative group inline-block">
@@ -135,20 +137,18 @@
                                     </div>
                                 </div>
                             @else
-                                <button wire:click="openModal({{ $product->id }})" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase underline decoration-2 underline-offset-4">
+                                <button wire:click="openModal({{ $product->id }})" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase underline decoration-2 underline-offset-4 cursor-pointer">
                                     Tải ảnh
                                 </button>
                             @endif
                         </td>
+                        <td class="px-4 py-4 font-black text-[13px] text-indigo-600 tracking-tight">{{ $product->code }}</td>
                         <td class="px-4 py-4">
                             <div class="font-black text-slate-900 text-[13px] uppercase tracking-tight">{{ $product->name }}</div>
                             <div class="text-[10px] text-slate-400 font-bold mt-0.5">VỊ TRÍ: {{ $product->inventory?->warehouse_location ?? ($product->location ?: 'CHƯA XÁC ĐỊNH') }}</div>
-                        </td>
-                        <td class="px-4 py-4 text-[12px] font-bold text-slate-600">{{ $product->brand }}</td>
-                        <td class="px-4 py-4 text-[11px] font-black text-slate-500 italic bg-slate-50/50 rounded">{{ $product->box_spec }}</td>
-                        <td class="px-4 py-4 text-[12px] font-bold text-slate-700 uppercase">{{ $product->unit }}</td>
-                        <td class="px-4 py-4 text-center">
-                            <span class="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-lg text-[11px] font-black border border-purple-100 shadow-sm">{{ $product->batch_number }}</span>
+                            @if($product->brand)
+                                <div class="text-[10px] text-slate-500 font-bold">HÃNG SX: {{ $product->brand }}</div>
+                            @endif
                         </td>
                         <td class="px-4 py-4 text-center">
                             <span class="px-3 py-1.5 rounded-xl text-[13px] font-black shadow-sm border
@@ -156,6 +156,13 @@
                                 {{ number_format($product->inventory?->quantity ?? 0) }}
                                 @if($product->is_low_stock) ⚠️ @endif
                             </span>
+                        </td>
+                        <td class="px-4 py-4 text-[12px] font-bold text-slate-700 uppercase">{{ $product->unit }}</td>
+                        <td class="px-4 py-4 text-center text-[12px] font-bold text-slate-600">
+                            {{ number_format($product->min_stock) }}
+                        </td>
+                        <td class="px-4 py-4 text-[12px] text-slate-500 italic max-w-xs truncate">
+                            {{ $product->description ?: '-' }}
                         </td>
                         <td class="px-4 py-4">
                             @if($product->status === 'active')
@@ -166,8 +173,8 @@
                         </td>
                         <td class="px-4 py-4 text-right no-print">
                             <div class="flex items-center justify-end gap-1">
-                                <button wire:click="openModal({{ $product->id }})" class="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="Sửa">📝</button>
-                                <button wire:confirm="Xoá nguyên vật liệu này?" wire:click="delete({{ $product->id }})" class="p-2 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" title="Xoá">🗑️</button>
+                                <button wire:click="openModal({{ $product->id }})" class="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all cursor-pointer" title="Sửa">📝</button>
+                                <button wire:confirm="Xoá nguyên vật liệu này?" wire:click="delete({{ $product->id }})" class="p-2 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer" title="Xoá">🗑️</button>
                             </div>
                         </td>
                     </tr>
@@ -277,12 +284,22 @@
                                 @error('expiry_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Trạng thái</label>
+                                <select wire:model="status" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                    <option value="active">Đang hoạt động</option>
+                                    <option value="inactive">Ngừng sử dụng</option>
+                                </select>
                                 @error('status') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Tồn tối thiểu</label>
                                 <input type="number" wire:model="min_stock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('min_stock') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700">Ghi chú (Description)</label>
+                                <textarea wire:model="description" rows="2" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="Nhập ghi chú hoặc mô tả vật tư..."></textarea>
+                                @error('description') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             @if ($errors->any())
                                 <div class="col-span-2 bg-rose-50 p-3 rounded-lg border border-rose-200 mt-2">

@@ -34,7 +34,10 @@ class StockTransferForm extends Component
 
     public function addItem()
     {
-        $this->items[] = ['product_code' => '', 'quantity' => 1];
+        $this->items[] = [
+            'product_code' => '',
+            'quantity' => 1
+        ];
     }
 
     public function removeItem($index)
@@ -108,8 +111,6 @@ class StockTransferForm extends Component
             ]);
 
             foreach ($this->items as $itemData) {
-                // Lấy sản phẩm ở nhà hiện tại (dùng product_code là code của Product hoặc Material)
-                // Giả định product_code là trường 'code' trong bảng products
                 $productCode = $itemData['product_code'];
                 if (str_contains($productCode, ' - ')) {
                     $productCode = trim(explode(' - ', $productCode)[0]);
@@ -120,7 +121,6 @@ class StockTransferForm extends Component
                     throw new \Exception("Mã sản phẩm/vật tư {$productCode} không tồn tại trong nhà hiện tại.");
                 }
 
-                // Trừ tồn kho nhà hiện tại
                 $inventory = Inventory::firstOrCreate(
                     ['product_id' => $product->id],
                     ['quantity' => 0]
@@ -132,7 +132,6 @@ class StockTransferForm extends Component
 
                 $inventory->decrement('quantity', $itemData['quantity']);
 
-                // Ghi nhận transaction
                 InventoryTransaction::create([
                     'product_id' => $product->id,
                     'type' => 'transfer_out',
@@ -143,7 +142,6 @@ class StockTransferForm extends Component
                     'created_by' => auth()->id(),
                 ]);
 
-                // Lưu item
                 StockTransferItem::create([
                     'stock_transfer_id' => $transfer->id,
                     'product_code' => $product->code,
@@ -153,34 +151,27 @@ class StockTransferForm extends Component
 
             DB::commit();
 
-            // 2. Chuyển kết nối sang nhà đích để cộng tồn kho và tạo sản phẩm nếu cần
+            // 2. Chuyển kết nối sang nhà đích để cộng tồn kho
             $this->processTargetHouse($transfer, $this->to_house);
 
-            // 3. Phát thông báo chuyển kho tự động sang kênh chat chung đồng bộ
+            // 3. Gửi thông báo chat (bọc trong try-catch riêng để không treo app)
             try {
                 $senderName = auth()->user()->name ?? 'Thủ kho';
                 $senderId = auth()->id();
-                
                 $fromHouseName = $currentHouse == 1 ? 'Hóc Môn' : ($currentHouse == 2 ? 'Hậu Nghĩa' : ($currentHouse == 3 ? 'Cần Giờ' : 'Số 4'));
                 $toHouseName = $this->to_house == 1 ? 'Hóc Môn' : ($this->to_house == 2 ? 'Hậu Nghĩa' : ($this->to_house == 3 ? 'Cần Giờ' : 'Số 4'));
-                
+
                 $itemDetails = [];
                 foreach ($this->items as $itemData) {
-                    $productCode = $itemData['product_code'];
-                    if (str_contains($productCode, ' - ')) {
-                        $productCode = trim(explode(' - ', $productCode)[0]);
-                    }
-                    $p = Product::where('code', $productCode)->first();
-                    $pName = $p ? $p->name : $productCode;
-                    $itemDetails[] = "{$itemData['quantity']}x {$pName}";
+                    $pCode = str_contains($itemData['product_code'], ' - ') ? trim(explode(' - ', $itemData['product_code'])[0]) : $itemData['product_code'];
+                    $p = Product::where('code', $pCode)->first();
+                    $itemDetails[] = "{$itemData['quantity']}x " . ($p ? $p->name : $pCode);
                 }
-                $itemsListString = implode(', ', $itemDetails);
-                
-                $systemMsg = "🚚 [ĐIỀU CHUYỂN KHO] Đã chuyển thành công từ kho {$fromHouseName} sang kho {$toHouseName} các mặt hàng: {$itemsListString}. Ghi chú: " . ($this->note ?: 'Không có');
-                
+
+                $systemMsg = "🚚 [ĐIỀU CHUYỂN KHO] Đã chuyển thành công từ kho {$fromHouseName} sang kho {$toHouseName}: " . implode(', ', $itemDetails) . ". Ghi chú: " . ($this->note ?: 'Không có');
                 StockTransferList::broadcastMessage($senderName, $systemMsg, 'system', $senderId);
             } catch (\Exception $ex) {
-                // Không để lỗi chat làm gián đoạn luồng chuyển kho chính
+                // Log error but don't fail the request
             }
 
             session()->flash('success', 'Chuyển kho thành công!');
@@ -271,9 +262,12 @@ class StockTransferForm extends Component
         DB::purge('tenant');
     }
 
-    public function updated($name, $value)
+    public function updatedItems($value, $key)
     {
-        // Giữ lại để bắt các sự kiện thay đổi nếu cần thiết sau này
+        if (str_contains($key, 'product_code')) {
+            $index = explode('.', $key)[1];
+            $this->searchProduct($index, $value);
+        }
     }
 
     public function render()

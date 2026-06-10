@@ -14,11 +14,6 @@ class User extends Authenticatable
 
     protected $connection = 'mysql';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'code',
         'name',
@@ -35,21 +30,11 @@ class User extends Authenticatable
         'allowed_houses',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
@@ -57,11 +42,18 @@ class User extends Authenticatable
         'allowed_houses' => 'array',
     ];
 
-    /**
-     * Relationship: Một user có nhiều đơn đặt hàng
-     */
     public function purchaseOrders()
     {
         return $this->hasMany(\App\Models\PurchaseOrder::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(\App\Models\Attendance::class);
+    }
+
+    public function leaveRequests()
+    {
+        return $this->hasMany(\App\Models\LeaveRequest::class);
     }
 }

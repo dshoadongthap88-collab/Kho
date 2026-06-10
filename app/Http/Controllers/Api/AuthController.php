@@ -3,34 +3,42 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    /**
-     * Xác thực người dùng và cấp token (Mobile Login)
-     */
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
+            'identifier' => 'required|string',
+            'password' => 'required',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $identifier = $request->input('identifier');
+        $password = $request->input('password');
+
+        $user = User::where('phone', $identifier)
+            ->orWhere('email', $identifier)
+            ->orWhere('username', $identifier)
+            ->first();
+
+        if (!$user || !Hash::check($password, $user->password)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Email hoặc mật khẩu không chính xác.'
+                'message' => 'So dien thoai/Email hoac mat khau khong chinh xac.',
             ], 401);
         }
 
-        $user = Auth::user();
-        
-        // Xoá tất cả token cũ của thiết bị di động (nếu muốn 1 thiết bị login 1 lúc thì mở dòng này)
-        // $user->tokens()->where('name', 'mobile-app')->delete();
+        if ($user->status !== 'active') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Tai khoan cua ban da bi khoa',
+            ], 403);
+        }
 
-        // Tạo token mới cho App
         $token = $user->createToken('mobile-app')->plainTextToken;
 
         return response()->json([
@@ -39,24 +47,22 @@ class AuthController extends Controller
                 'user' => [
                     'id' => $user->id,
                     'name' => $user->name,
+                    'phone' => $user->phone,
                     'email' => $user->email,
+                    'role' => $user->role,
                 ],
-                'token' => $token
-            ]
+                'token' => $token,
+            ],
         ], 200);
     }
 
-    /**
-     * Đăng xuất và huỷ token hiện tại
-     */
     public function logout(Request $request)
     {
-        // Xóa token đang kích hoạt
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Đăng xuất thành công'
+            'message' => 'Dang xuat thanh cong',
         ], 200);
     }
 }

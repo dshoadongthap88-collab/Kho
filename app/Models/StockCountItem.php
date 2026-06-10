@@ -9,9 +9,12 @@ class StockCountItem extends Model
     protected $fillable = [
         'stock_count_id',
         'product_id',
+        'product_code',
+        'product_name',
+        'unit',
+        'warehouse_location',
         'system_quantity',
         'actual_quantity',
-        'physical_quantity',
         'difference',
         'note',
     ];

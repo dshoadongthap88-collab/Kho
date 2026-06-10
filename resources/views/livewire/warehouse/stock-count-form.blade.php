@@ -33,6 +33,10 @@
             class="px-5 py-2 rounded-lg text-sm font-bold transition {{ $activeTab === 'sync' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50' }}">
             🔄 Đồng bộ tồn kho
         </button>
+        <button wire:click="$set('activeTab', 'chat_ai')"
+            class="px-5 py-2 rounded-lg text-sm font-bold transition {{ $activeTab === 'chat_ai' ? 'bg-purple-700 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50' }}">
+            💬 Chat AI Kiểm kê
+        </button>
     </div>
 
     {{-- ======================== TAB: KIỂM KÊ ======================== --}}
@@ -433,6 +437,81 @@
             .page-break { page-break-after: always; }
         }
     </style>
+    @endif
+
+    {{-- ======================== TAB: CHAT AI KIỂM KÊ ======================== --}}
+    @if($activeTab === 'chat_ai')
+    <div class="bg-white rounded-xl border shadow-sm max-w-4xl mx-auto overflow-hidden">
+        <!-- Header -->
+        <div class="px-6 py-4 bg-purple-50 border-b border-purple-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🤖</span>
+                <div>
+                    <h3 class="text-sm font-bold text-purple-900">Trợ lý Kiểm kê AI (ERP AI Agent)</h3>
+                    <p class="text-[10px] text-purple-600">Đối thoại trực tiếp với AI để lấy danh sách cần kiểm kê và cập nhật số liệu bằng tiếng Việt.</p>
+                </div>
+            </div>
+            @if($currentCountId)
+                @php $activeCount = \App\Models\StockCount::find($currentCountId); @endphp
+                @if($activeCount)
+                <span class="px-2.5 py-1 bg-purple-100 border border-purple-200 text-purple-800 text-xs font-bold rounded-lg flex items-center gap-1.5 animate-pulse">
+                    🎯 Đang ghi nhận phiếu: {{ $activeCount->code }}
+                </span>
+                @endif
+            @endif
+        </div>
+
+        <!-- Message logs -->
+        <div class="p-6 h-[400px] overflow-y-auto space-y-4 bg-slate-50 flex flex-col justify-end">
+            <div class="space-y-4 overflow-y-auto pr-2 flex-1">
+                @foreach($chatMessages as $msg)
+                    <div class="flex {{ $msg['sender'] === 'user' ? 'justify-end' : 'justify-start' }} items-start gap-2.5">
+                        @if($msg['sender'] === 'ai')
+                            <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-bold shrink-0">AI</div>
+                        @endif
+                        <div class="flex flex-col w-full max-w-[450px] leading-1.5 p-4 border-gray-200 rounded-r-xl rounded-bl-xl {{ $msg['sender'] === 'user' ? 'bg-indigo-600 text-white rounded-l-xl rounded-br-xl' : 'bg-white text-gray-800' }} shadow-sm">
+                            <p class="text-sm font-normal whitespace-pre-wrap">{!! \Illuminate\Mail\Markdown::parse($msg['text']) !!}</p>
+                            <span class="text-[10px] font-normal text-right mt-1.5 {{ $msg['sender'] === 'user' ? 'text-indigo-200' : 'text-gray-400' }}">{{ $msg['timestamp'] }}</span>
+                        </div>
+                        @if($msg['sender'] === 'user')
+                            <div class="w-8 h-8 rounded-full bg-indigo-700 text-white flex items-center justify-center text-sm font-bold shrink-0 font-mono">U</div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Quick actions / Prompts -->
+        <div class="px-6 py-3 bg-white border-t border-gray-100 flex flex-wrap gap-2">
+            <span class="text-xs text-gray-400 self-center font-semibold">Gợi ý nhanh:</span>
+            <button wire:click="$set('chatInput', 'Kiểm kê hôm nay'); sendChatMessage();" class="px-3 py-1 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-xs font-bold rounded-lg transition cursor-pointer">
+                📋 Lấy danh sách kiểm kê hôm nay
+            </button>
+            @if($currentCountId)
+                @php $activeCount = \App\Models\StockCount::with('items.product')->find($currentCountId); @endphp
+                @if($activeCount && $activeCount->items->isNotEmpty())
+                    @php $firstItem = $activeCount->items->first(); @endphp
+                    @if($firstItem && $firstItem->product)
+                    <button wire:click="$set('chatInput', '{{ $firstItem->product->code }} còn 15'); sendChatMessage();" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 border text-slate-700 text-xs font-bold rounded-lg transition cursor-pointer">
+                        ✏️ Thử: "{{ $firstItem->product->code }} còn 15"
+                    </button>
+                    @endif
+                @endif
+            @endif
+        </div>
+
+        <!-- Chat input form -->
+        <form wire:submit.prevent="sendChatMessage" class="p-4 bg-white border-t flex gap-3">
+            <input type="text" 
+                wire:model="chatInput"
+                placeholder="Nhập tin nhắn..." 
+                class="flex-1 rounded-xl border-gray-200 text-sm focus:ring-purple-500 focus:border-purple-500 shadow-sm"
+                required>
+            <button type="submit" class="px-6 py-2.5 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-sm font-black transition shadow cursor-pointer flex items-center gap-1">
+                Gửi 🚀
+            </button>
+        </form>
+    </div>
     @endif
 </div>
 

@@ -1,4 +1,4 @@
-<div class="h-full flex flex-col space-y-4" style="font-family: 'Times New Roman', Times, serif;" x-data="{
+﻿<div class="h-full flex flex-col space-y-4" style="font-family: 'Times New Roman', Times, serif;" x-data="{
     activeImportTab: 'excel',
     ocrProgress: 0,
     ocrStatus: '',
@@ -10,7 +10,7 @@
     // Bản đồ sản phẩm phục vụ so khớp trực tiếp trên Trình duyệt
     productsMap: {
         @foreach($products as $p)
-        '{{ strtolower($p->code) }}': { id: {{ $p->id }}, name: '{{ $p->name }}', unit: '{{ $p->unit ?: 'Cái' }}', price: {{ $p->price ?: 0 }}, location: '{{ $p->location ?: '' }}' },
+'{{ strtolower($p->code) }}': { id: {{ $p->id }}, name: '{{ addslashes($p->name) }}', unit: '{{ addslashes($p->unit ?: 'Cái') }}', price: {{ $p->price ?: 0 }}, location: '{{ addslashes($p->location ?: '') }}', box_spec: '{{ addslashes($p->box_spec ?: '') }}', carton_spec: '{{ addslashes($p->carton_spec ?: '') }}' },
         @endforeach
     },
 
@@ -401,7 +401,7 @@
                 batch_number: batchNumber || '',
                 expiry_date: expiryDate || '',
                 warehouse_location: location || '',
-                unit_price: unitPrice || (matchedProduct ? matchedProduct.price : 0)
+                unit_price: matchedProduct ? matchedProduct.price : 0
             });
         });
 

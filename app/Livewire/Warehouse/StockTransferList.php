@@ -6,119 +6,135 @@ use App\Models\StockTransfer;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Config;
 
 class StockTransferList extends Component
 {
     use WithPagination;
 
     public $search = '';
-    public $chatMessage = '';
+    public $selectedTransfers = [];
+    public $showDetailModal = false;
+    public $selectedTransferId = null;
 
-    public static function broadcastMessage($senderName, $message, $type = 'user', $senderId = null)
+    // Thêm hàm này để đảm bảo Livewire theo dõi mảng chính xác
+    public function updatedSelectedTransfers()
     {
-        $currentHouse = session('current_house', 1);
+        // Log hoặc xử lý khi mảng thay đổi nếu cần
+    }
 
-        // Loop qua cả 4 nhà để phát tin nhắn/thông báo đồng bộ
-        for ($h = 1; $h <= 4; $h++) {
-            try {
-                $dbName = $h == 1 ? 'laravel' : 'laravel_' . $h;
-                
-                // Sử dụng lệnh USE của MySQL để chuyển đổi Database.
-                // Nếu DB không tồn tại, câu lệnh sẽ throw exception lập tức và nhảy sang catch,
-                // do đó sẽ KHÔNG bao giờ bị ghi đúp hay ghi nhầm sang DB mặc định (laravel) nhiều lần.
-                DB::statement("USE `{$dbName}`");
-
-                // Tạo bảng tự động nếu chưa tồn tại
-                if (!Schema::hasTable('chat_messages')) {
-                    Schema::create('chat_messages', function ($table) {
-                        $table->id();
-                        $table->string('sender_name');
-                        $table->integer('sender_id')->nullable();
-                        $table->text('message');
-                        $table->string('type')->default('user'); // user, system
-                        $table->timestamps();
-                    });
-                }
-
-                // Ghi nhận tin nhắn
-                DB::table('chat_messages')->insert([
-                    'sender_name' => $senderName,
-                    'sender_id' => $senderId,
-                    'message' => $message,
-                    'type' => $type,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            } catch (\Exception $e) {
-                // Bỏ qua nếu nhà kho chưa được cài đặt CSDL
-            }
+    #[\Livewire\Attributes\Computed]
+    public function selectedTransferDetail()
+    {
+        if (!$this->selectedTransferId) {
+            return null;
         }
+        return StockTransfer::with(['creator', 'items.product'])->find($this->selectedTransferId);
+    }
 
-        // Khôi phục kết nối gốc về nhà hiện tại
-        try {
-            $currentDb = $currentHouse == 1 ? 'laravel' : 'laravel_' . $currentHouse;
-            DB::statement("USE `{$currentDb}`");
-        } catch (\Exception $e) {
-            // Im lặng
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function toggleSelect($id)
+    {
+        $id = (string)$id;
+        if (in_array($id, $this->selectedTransfers)) {
+            $this->selectedTransfers = array_values(array_diff($this->selectedTransfers, [$id]));
+        } else {
+            $this->selectedTransfers[] = $id;
         }
     }
 
-    public function sendMessage()
+    public function selectAll($value)
     {
-        $msg = trim($this->chatMessage);
-        if (empty($msg)) {
+        if ($value) {
+            $this->selectedTransfers = StockTransfer::where('transfer_code', 'like', '%' . $this->search . '%')
+                ->pluck('id')
+                ->map(fn($id) => (string)$id) // Livewire checkbox value thường là string
+                ->toArray();
+        } else {
+            $this->selectedTransfers = [];
+        }
+    }
+
+    public function viewDetail($id)
+    {
+        $this->selectedTransferId = $id;
+        $this->showDetailModal = true;
+    }
+
+    public function closeDetailModal()
+    {
+        $this->showDetailModal = false;
+        $this->selectedTransferId = null;
+    }
+
+    public function printSelected()
+    {
+        if (empty($this->selectedTransfers)) {
             return;
         }
 
-        $senderName = auth()->user()->name ?? 'Nhân viên';
-        $senderId = auth()->id();
+        // Đảm bảo tất cả ID là string để implode hoạt động chính xác
+        $ids = implode(',', array_map('strval', $this->selectedTransfers));
+        $url = route('warehouse.stock-transfer.print-bulk', ['ids' => $ids]);
 
-        self::broadcastMessage($senderName, $msg, 'user', $senderId);
+        $this->dispatch('open-print-window', url: $url);
 
-        $this->chatMessage = '';
+        session()->flash('success', count($this->selectedTransfers) . ' phiếu đã được đưa vào hàng đợi in.');
+        $this->selectedTransfers = [];
+    }
+
+    public function deleteSelected()
+    {
+        if (empty($this->selectedTransfers)) {
+            return;
+        }
+
+        $count = count($this->selectedTransfers);
+
+        // Xóa các items trước để tránh lỗi ràng buộc khóa ngoại
+        DB::table('stock_transfer_items')->whereIn('stock_transfer_id', $this->selectedTransfers)->delete();
+
+        // Xóa các phiếu chuyển kho
+        StockTransfer::whereIn('id', $this->selectedTransfers)->delete();
+
+        session()->flash('success', $count . ' phiếu đã được xóa thành công.');
+        $this->selectedTransfers = [];
+    }
+
+    public function printSingle($id)
+    {
+        $transfer = StockTransfer::with(['creator', 'items.product'])->find($id);
+        if ($transfer) {
+            session()->flash('success', 'Phiếu ' . $transfer->transfer_code . ' đã được đưa vào hàng đợi in.');
+        }
+    }
+
+    public function deleteTransfer($id)
+    {
+        $transfer = StockTransfer::find($id);
+        if ($transfer) {
+            $transferCode = $transfer->transfer_code;
+            $transfer->items()->delete();
+            $transfer->delete();
+
+            session()->flash('success', 'Phiếu ' . $transferCode . ' đã được xóa thành công.');
+            $this->closeDetailModal();
+            $this->resetPage();
+        }
     }
 
     public function render()
     {
-        // Đảm bảo bảng tồn tại ở nhà hiện tại
-        if (!Schema::hasTable('chat_messages')) {
-            try {
-                Schema::create('chat_messages', function ($table) {
-                    $table->id();
-                    $table->string('sender_name');
-                    $table->integer('sender_id')->nullable();
-                    $table->text('message');
-                    $table->string('type')->default('user');
-                    $table->timestamps();
-                });
-            } catch (\Exception $e) {
-                // Im lặng nếu gặp lỗi tạo bảng
-            }
-        }
-
-        $transfers = StockTransfer::with(['creator', 'items'])
+        $transfers = StockTransfer::with(['creator', 'items.product'])
             ->where('transfer_code', 'like', '%' . $this->search . '%')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        // Lấy 30 tin nhắn/thông báo gần nhất
-        $messages = [];
-        try {
-            $messages = DB::table('chat_messages')
-                ->orderBy('created_at', 'desc')
-                ->limit(30)
-                ->get()
-                ->reverse()
-                ->toArray();
-        } catch (\Exception $e) {
-            // Im lặng
-        }
-
         return view('livewire.warehouse.stock-transfer-list', [
-            'transfers' => $transfers,
-            'messages' => $messages
-        ])->layout('components.warehouse-layout', ['title' => 'Lịch sử chuyển kho & Thông báo chung']);
+            'transfers' => $transfers
+        ])->layout('components.warehouse-layout', ['title' => 'Lịch sử chuyển kho']);
     }
 }

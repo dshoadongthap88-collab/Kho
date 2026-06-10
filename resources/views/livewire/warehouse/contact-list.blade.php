@@ -93,6 +93,13 @@
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $isEdit ? 'Chỉnh sửa đối tác' : 'Thêm đối tác mới' }}</h3>
+
+                        @if($errors->any())
+                            <div class="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg font-bold">
+                                ❌ Vui lòng kiểm tra lại các trường thông tin bắt buộc.
+                            </div>
+                        @endif
+
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Tên Khách hàng/NCC</label>

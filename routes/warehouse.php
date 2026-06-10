@@ -33,6 +33,20 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
 
     Route::get('/stock-transfer', \App\Livewire\Warehouse\StockTransferList::class)->name('stock-transfer.index');
     Route::get('/stock-transfer/create', \App\Livewire\Warehouse\StockTransferForm::class)->name('stock-transfer.create');
+    Route::get('/stock-transfer/print/{id}', function($id) {
+        $transfer = \App\Models\StockTransfer::with(['creator', 'items.product'])->findOrFail($id);
+        return view('warehouse.stock-transfer-print', compact('transfer'));
+    })->name('stock-transfer.print');
+    Route::get('/stock-transfer/print-bulk', function() {
+        $ids = request('ids');
+        if (!$ids) return redirect()->route('warehouse.stock-transfer.index')->with('error', 'Không có phiếu nào được chọn');
+
+        $transfers = \App\Models\StockTransfer::with(['creator', 'items.product'])
+            ->whereIn('id', explode(',', $ids))
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return view('warehouse.stock-transfer-print-bulk', compact('transfers'));
+    })->name('stock-transfer.print-bulk');
 
     Route::get('/bom', function () {
         return view('warehouse.bom');

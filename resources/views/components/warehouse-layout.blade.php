@@ -78,6 +78,25 @@
                             <a href="{{ route('warehouse.reports.stock') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo kho</a>
                         </div>
                     </div>
+
+                    <!-- Biểu tượng chuông thông báo -->
+                    <div class="relative group ml-2" x-data="{ open: false }">
+                        <button @click="open = !open" class="relative p-2 rounded-full hover:bg-sky-200 transition-all focus:outline-none">
+                            <span class="text-xl">🔔</span>
+                            <span class="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white ring-2 ring-sky-100">
+                                3
+                            </span>
+                        </button>
+                        <div x-show="open"
+                             @click.away="open = false"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 py-1">
+                            <div class="px-4 py-2 text-xs font-bold text-gray-800 border-b border-gray-100">Thông báo mới</div>
+                            <div class="px-4 py-2 text-xs text-gray-600 hover:bg-gray-100 cursor-pointer">Bạn có tin nhắn mới</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

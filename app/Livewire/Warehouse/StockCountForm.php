@@ -23,9 +23,7 @@ class StockCountForm extends Component
 {
     use WithPagination, WithFileUploads;
 
-    public $activeTab = 'stocktake'; // 'stocktake' | 'sync' | 'daily' | 'periodic'
-
-
+    public $activeTab = 'stocktake'; // 'stocktake' | 'sync' | 'daily' | 'periodic' | 'chat_ai'
 
     // --- Stocktake (Kiểm kê) ---
     public $currentCountId = null;
@@ -33,7 +31,7 @@ class StockCountForm extends Component
     public $countItems = []; // [product_id => actual_quantity, note]
     public $syncResults = [];
 
-    // --- Sync (Đồng bộ tồn kho) ---
+    // --- Sync (Đòng bộ tồn kho) ---
     public $syncCheckResults = [];
     public $syncing = false;
 
@@ -47,6 +45,10 @@ class StockCountForm extends Component
     public $isPrintingMultiple = false;
     public $printBatchItems = [];
     public $printBatchCodes = [];
+
+    // --- Chat AI ---
+    public $chatInput = '';
+    public $chatMessages = [];
 
     protected $listeners = [];
 
@@ -64,6 +66,17 @@ class StockCountForm extends Component
         } catch (\Exception $e) {
             // Bỏ qua nếu có lỗi phát sinh do môi trường khác nhau
         }
+
+        // Khởi tạo Chat AI
+        $this->chatMessages = [
+            [
+                'sender' => 'ai',
+                'text' => "Xin chào! Tôi là Trợ lý AI Kiểm kê kho. Bạn có thể gõ:
+- **\"Kiểm kê hôm nay\"** để tự động tạo/lấy danh sách 10 mã vật tư cần kiểm hôm nay theo vị trí kho.
+- **\"[Mã vật tư] còn [Số lượng]\"** (Ví dụ: `P001 còn 25` hoặc `P002 = 10`) để cập nhật số lượng kiểm thực tế vào hệ thống.",
+                'timestamp' => date('H:i')
+            ]
+        ];
     }
 
     // =====================
@@ -557,5 +570,169 @@ class StockCountForm extends Component
             'stockCounts' => $stockCounts,
             'currentCount' => $currentCount,
         ]);
+    }
+
+    // =====================
+    // CHAT AI FUNCTIONS
+    // =====================
+
+    public function sendChatMessage()
+    {
+        $text = trim($this->chatInput);
+        if (empty($text)) return;
+
+        $this->chatMessages[] = [
+            'sender' => 'user',
+            'text' => $text,
+            'timestamp' => date('H:i')
+        ];
+
+        $this->chatInput = '';
+
+        $this->processAIResponse($text);
+    }
+
+    protected function processAIResponse($text)
+    {
+        $textLower = mb_strtolower($text, 'UTF-8');
+
+        // Case 1: Hỏi kiểm kê hôm nay
+        if (str_contains($textLower, 'kiểm kê hôm nay') || str_contains($textLower, 'kiem ke hom nay') || str_contains($textLower, 'hôm nay kiểm gì') || str_contains($textLower, 'kiem gi hom nay')) {
+            // Kiểm tra xem đã có phiếu kiểm kê hàng ngày (hoặc phiếu pending) của hôm nay chưa
+            $todayCount = StockCount::where('type', 'daily')
+                ->where('status', 'pending')
+                ->whereDate('created_at', date('Y-m-d'))
+                ->orderByDesc('created_at')
+                ->first();
+
+            if (!$todayCount) {
+                // Tạo mới nếu chưa có
+                $this->createDailyStockCount();
+                $todayCount = StockCount::find($this->currentCountId);
+            } else {
+                $this->currentCountId = $todayCount->id;
+                session()->flash('info', "Đang làm việc trên phiếu kiểm kê có sẵn: {$todayCount->code}");
+            }
+
+            if ($todayCount) {
+                $items = StockCountItem::with('product')
+                    ->where('stock_count_id', $todayCount->id)
+                    ->get();
+
+                $reply = "📋 **Danh sách 10 mã cần kiểm kê hôm nay (Phiếu: {$todayCount->code})**:\n\n";
+                $sortedItems = $items->sortBy(function($item) {
+                    return $item->product->location ?? '';
+                });
+
+                foreach ($sortedItems as $index => $item) {
+                    $location = $item->product->location ?? 'Không rõ';
+                    $code = $item->product->code ?? '-';
+                    $name = $item->product->name ?? '-';
+                    $sysQty = number_format($item->system_quantity);
+                    $actualText = $item->actual_quantity !== null ? number_format($item->actual_quantity) : 'Chưa nhập';
+                    
+                    $reply .= ($index + 1) . ". Vị trí **{$location}**: `{$code}` - **{$name}** (Tồn HT: `{$sysQty}`, Thực tế: `{$actualText}`)\n";
+                }
+                
+                $reply .= "\n*Bạn có thể gõ ví dụ: `{$sortedItems->first()->product->code} còn 20` để cập nhật số lượng kiểm đếm.*";
+            } else {
+                $reply = "Không thể khởi tạo phiếu kiểm kê ngày hôm nay. Hãy thử lại.";
+            }
+
+            $this->chatMessages[] = [
+                'sender' => 'ai',
+                'text' => $reply,
+                'timestamp' => date('H:i')
+            ];
+            return;
+        }
+
+        // Case 2: Cập nhật số lượng vật tư "[Mã] còn [Số lượng]"
+        // Regex bắt mã vật tư và số lượng: (mã) còn/co/=/chỉ còn (số lượng)
+        if (preg_match('/([A-Za-z0-9_-]+)\s*(?:còn|con|co|có|=)\s*(\d+(?:\.\d+)?)/iu', $text, $matches)) {
+            $productCode = trim($matches[1]);
+            $qty = floatval($matches[2]);
+
+            // Tìm sản phẩm theo mã
+            $product = Product::whereRaw('LOWER(code) = ?', [strtolower($productCode)])->first();
+
+            if (!$product) {
+                $this->chatMessages[] = [
+                    'sender' => 'ai',
+                    'text' => "❌ Không tìm thấy vật tư nào có mã là `{$productCode}` trên hệ thống.",
+                    'timestamp' => date('H:i')
+                ];
+                return;
+            }
+
+            // Tìm phiếu kiểm kê đang mở
+            $stockCount = $this->currentCountId 
+                ? StockCount::find($this->currentCountId)
+                : StockCount::where('status', 'pending')->orderByDesc('created_at')->first();
+
+            if (!$stockCount) {
+                $this->chatMessages[] = [
+                    'sender' => 'ai',
+                    'text' => "⚠️ Không có phiếu kiểm kê nào đang hoạt động. Bạn hãy gõ **\"Kiểm kê hôm nay\"** để tự động tạo phiếu kiểm kê hàng ngày trước.",
+                    'timestamp' => date('H:i')
+                ];
+                return;
+            }
+
+            $this->currentCountId = $stockCount->id;
+
+            // Tìm item trong phiếu kiểm kê
+            $item = StockCountItem::where('stock_count_id', $stockCount->id)
+                ->where('product_id', $product->id)
+                ->first();
+
+            if (!$item) {
+                // Nếu chưa có trong phiếu (ví dụ phiếu daily giới hạn 10 mã nhưng user muốn kiểm thêm)
+                // Lấy số tồn hiện tại
+                $inventory = Inventory::where('product_id', $product->id)->first();
+                $systemQty = $inventory ? $inventory->quantity : 0;
+
+                $item = StockCountItem::create([
+                    'stock_count_id' => $stockCount->id,
+                    'product_id' => $product->id,
+                    'system_quantity' => $systemQty,
+                    'actual_quantity' => $qty,
+                    'physical_quantity' => 0,
+                    'difference' => $qty - $systemQty,
+                ]);
+
+                $diff = $qty - $systemQty;
+                $reply = "➕ Đã bổ sung vật tư **{$product->name}** (`{$product->code}`) vào phiếu **{$stockCount->code}** và cập nhật:\n";
+                $reply .= "- Tồn hệ thống: **" . number_format($systemQty) . "**\n";
+                $reply .= "- Thực tế: **" . number_format($qty) . "**\n";
+                $reply .= "- Chênh lệch: **" . ($diff > 0 ? '+' : '') . number_format($diff) . "**";
+            } else {
+                // Đã có trong phiếu, cập nhật
+                $item->update([
+                    'actual_quantity' => $qty,
+                    'difference' => $qty - $item->system_quantity,
+                ]);
+
+                $diff = $qty - $item->system_quantity;
+                $reply = "✅ Đã cập nhật kết quả cho **{$product->name}** (`{$product->code}`) trên phiếu **{$stockCount->code}**:\n";
+                $reply .= "- Tồn hệ thống: **" . number_format($item->system_quantity) . "**\n";
+                $reply .= "- Thực tế: **" . number_format($qty) . "**\n";
+                $reply .= "- Chênh lệch: **" . ($diff > 0 ? '+' : '') . number_format($diff) . "**";
+            }
+
+            $this->chatMessages[] = [
+                'sender' => 'ai',
+                'text' => $reply,
+                'timestamp' => date('H:i')
+            ];
+            return;
+        }
+
+        // Mặc định phản hồi hướng dẫn
+        $this->chatMessages[] = [
+            'sender' => 'ai',
+            'text' => "🤖 Tôi không nhận diện được cú pháp của bạn. Xin vui lòng thử lại:\n- Gõ *\"Kiểm kê hôm nay\"* để hiển thị danh sách.\n- Gõ *\"[Mã] còn [Số lượng]\"* (VD: `P001 còn 10`) để cập nhật số lượng.",
+            'timestamp' => date('H:i')
+        ];
     }
 }

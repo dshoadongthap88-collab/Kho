@@ -693,10 +693,22 @@ Vui lòng kiểm tra lại tiêu đề cột trong file Excel. Các cột có th
             $productQuery->where('type', '!=', 'material');
         }
 
+        $allOnPage = StockIn::whereBetween('created_at', [$this->listDateFrom . ' 00:00:00', $this->listDateTo . ' 23:59:59'])
+            ->where(function($q) {
+                $q->where('code', 'like', '%' . $this->listSearch . '%')
+                  ->orWhere('supplier_name', 'like', '%' . $this->listSearch . '%');
+            })
+            ->latest()
+            ->paginate(15);
+
+        $idsOnPage = $allOnPage->pluck('id')->toArray();
+
         return view('livewire.warehouse.stock-in-form', [
             'products' => $productQuery->orderBy('name')->get(),
             'suppliers' => Supplier::orderBy('name')->get(),
             'brands' => Product::whereNotNull('brand')->distinct()->pluck('brand'),
+            'allOnPage' => $allOnPage,
+            'idsOnPage' => $idsOnPage,
         ]);
     }
 }

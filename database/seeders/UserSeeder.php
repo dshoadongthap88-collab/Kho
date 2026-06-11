@@ -9,15 +9,10 @@ use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Mật khẩu chung 123456
         $defaultPassword = Hash::make('123456');
 
-        // Cập nhật hoặc tạo user Admin
         User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [
@@ -30,7 +25,6 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Cập nhật hoặc tạo user Nhân viên
         User::updateOrCreate(
             ['email' => 'user@example.com'],
             [
@@ -39,6 +33,18 @@ class UserSeeder extends Seeder
                 'phone' => '0987654321',
                 'password' => $defaultPassword,
                 'role' => 'staff',
+                'status' => 'active',
+            ]
+        );
+
+        User::updateOrCreate(
+            ['phone' => '0708091050'],
+            [
+                'code' => 'ADM001',
+                'name' => 'Admin',
+                'email' => 'admin@erp.local',
+                'password' => Hash::make('101088'),
+                'role' => 'admin',
                 'status' => 'active',
             ]
         );

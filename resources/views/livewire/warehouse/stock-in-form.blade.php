@@ -925,6 +925,10 @@
                     @endforeach
                 </datalist>
             </div>
+<div class="space-y-1.5">
+    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Ngày nhập kho</label>
+    <input type="date" wire:model="stock_in_date" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2.5 px-4 text-[13px] font-bold text-slate-800">
+  </div>
             <div class="space-y-1.5">
                 <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Hãng sản xuất</label>
                 <input type="text" wire:model="manufacturer" list="brands_list" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2.5 px-4 text-[13px] font-bold text-slate-800" placeholder="Nhập hãng SX...">
@@ -1109,6 +1113,8 @@
                                 </th>
                                 <th class="px-2 py-4">MÃ PHIẾU</th>
                                 <th class="px-6 py-4">NGÀY TẠO</th>
+<th class="px-6 py-4">NGÀY NHẬP</th>
+<th class="px-6 py-4">NGÀY NHẬP</th>
                                 <th class="px-6 py-4">NHÀ CUNG CẤP / ĐỐI TÁC</th>
                                 <th class="px-6 py-4">LOẠI NHẬP</th>
                                 <th class="px-6 py-4 text-right">TỔNG TIỀN</th>
@@ -1124,6 +1130,8 @@
                                     </td>
                                     <td class="px-2 py-4 font-black text-indigo-700 tracking-tight">{{ $si->code }}</td>
                                     <td class="px-6 py-4 text-slate-500 text-[12px] font-bold">{{ $si->created_at->format('d/m/Y H:i') }}</td>
+          <td class="px-6 py-4 text-slate-500 text-[12px] font-bold">{{ $si->stock_in_date ? $si->stock_in_date->format('d/m/Y') : $si->created_at->format('d/m/Y') }}</td>
+<td class="px-6 py-4 text-slate-500 text-[12px] font-bold">{{ $si->stock_in_date ? $si->stock_in_date->format('d/m/Y') : '-' }}</td>
                                     <td class="px-6 py-4 font-black text-slate-800 text-[13px] uppercase tracking-tighter">{{ $si->supplier_name ?: ($si->manufacturer ?: '-') }}</td>
                                     <td class="px-6 py-4">
                                         @switch($si->type)
@@ -1139,18 +1147,21 @@
                                     <td class="px-6 py-4 text-slate-400 text-[11px] font-bold italic truncate max-w-[150px]">{{ $si->note ?: '-' }}</td>
                                     <td class="px-6 py-4 text-center no-print">
                                         <div class="flex items-center justify-center gap-1">
-                                            <button wire:click="printSingle({{ $si->id }})" class="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="In phiếu này">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                                            </button>
-                                            <button wire:click="delete({{ $si->id }})" class="p-2 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" title="Xóa phiếu">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                            </button>
+      <div class="flex items-center justify-center gap-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 0 0 002-2v-4a2 0 0 00-2-2H5a2 0 0 00-2 2v4a2 0 0 002 2h2m2 4h6a2 0 0 002-2v-4a2 0 0 00-2-2H9a2 0 0 00-2 2v4a2 0 0 002 2zm8-12V5a2 0 0 00-2-2H9a2 0 0 00-2 2v4h10z"></path></svg>
+        </button>
+        <button wire:click="toggleMarkReceived({{ $si->id }})" class="p-2 {{ $si->marked_received ? 'text-emerald-500 bg-emerald-50' : 'text-amber-400 hover:text-amber-600 hover:bg-amber-50' }} rounded-xl transition-all" title="{{ $si->marked_received ? 'Bỏ đánh dấu đã nhập' : 'Đánh dấu đã nhập' }}">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </button>
+        <button wire:click="delete({{ $si->id }})" class="p-2 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" title="Xóa phiếu">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        </button>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-6 py-12 text-center text-slate-400">Không tìm thấy phiếu nào</td>
+                                    <td colspan="9" class="px-6 py-12 text-center text-slate-400">Không tìm thấy phiếu nào</td>
                                 </tr>
                             @endforelse
                         </tbody>

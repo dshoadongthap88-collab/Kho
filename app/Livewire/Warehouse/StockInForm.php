@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Livewire\Warehouse;
 
@@ -31,6 +31,8 @@ class StockInForm extends Component
     public $note = '';
     public $type = 'purchase_produced';
 
+    public $stock_in_date = '';
+    public $marked_received = false;
     // Modal tạo nhanh sản phẩm
     public $showProductModal = false;
     public $newPCode = '';
@@ -50,6 +52,7 @@ class StockInForm extends Component
     {
         $this->listDateFrom = now()->startOfMonth()->format('Y-m-d');
         $this->listDateTo = now()->format('Y-m-d');
+        $this->stock_in_date = now()->format('Y-m-d');
 
         if (empty($this->items)) {
             $this->addItem();
@@ -315,6 +318,8 @@ class StockInForm extends Component
                 'manufacturer' => $this->manufacturer,
                 'type' => $this->type,
                 'status' => 'completed',
+            'stock_in_date' => $this->stock_in_date,
+            'marked_received' => $this->marked_received,
                 'note' => $this->note,
                 'created_by' => auth()->id(),
             ]);
@@ -411,7 +416,7 @@ class StockInForm extends Component
 
             session()->flash('success', 'Nhập kho thành công! Các sản phẩm mới đã được tự động thêm vào Danh mục vật tư.');
             $this->dispatch('show-success-effect');
-            $this->reset(['items', 'supplier_name', 'manufacturer', 'note']);
+        $this->reset(['items', 'supplier_name', 'manufacturer', 'note', 'stock_in_date', 'marked_received']);
             $this->addItem();
         });
     }
@@ -487,6 +492,13 @@ class StockInForm extends Component
 
         session()->flash('success', 'Đã xóa ' . count($this->selectedIds) . ' phiếu và giảm trừ tồn kho tương ứng.');
         $this->selectedIds = [];
+    }
+
+    public function toggleMarkReceived($id)
+    {
+        $stockIn = \App\Models\StockIn::findOrFail($id);
+        $stockIn->update(['marked_received' => !$stockIn->marked_received]);
+        $this->dispatch('show-success-effect');
     }
 
     public function importExcelData()
@@ -712,3 +724,6 @@ Vui lòng kiểm tra lại tiêu đề cột trong file Excel. Các cột có th
         ]);
     }
 }
+
+
+

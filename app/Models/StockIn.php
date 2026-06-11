@@ -15,6 +15,15 @@ class StockIn extends Model
         'status',
         'note',
         'created_by',
+        'stock_in_date',
+        'marked_received',
+        'received_at',
+    ];
+
+    protected $casts = [
+        'stock_in_date' => 'date',
+        'marked_received' => 'boolean',
+        'received_at' => 'datetime',
     ];
 
     public function creator()

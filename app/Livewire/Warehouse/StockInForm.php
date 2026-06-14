@@ -89,6 +89,7 @@ class StockInForm extends Component
             'expiry_date' => '',
             'warehouse_location' => '',
             'quantity' => 1,
+		'unit' => 'Cái',
             'unit_price' => 0,
             'vat_rate' => 0,
             'total_amount' => 0
@@ -266,6 +267,7 @@ class StockInForm extends Component
                 'expiry_date' => '',
                 'warehouse_location' => $product?->location ?: '',
                 'quantity' => 1,
+		'unit' => 'Cái',
                 'unit_price' => $product?->price ?: 0,
                 'vat_rate' => 0,
                 'total_amount' => $product?->price ?: 0
@@ -416,7 +418,7 @@ class StockInForm extends Component
 
             session()->flash('success', 'Nhập kho thành công! Các sản phẩm mới đã được tự động thêm vào Danh mục vật tư.');
             $this->dispatch('show-success-effect');
-        $this->reset(['items', 'supplier_name', 'manufacturer', 'note', 'stock_in_date', 'marked_received']);
+        $this->reset(['items', 'marked_received']);
             $this->addItem();
         });
     }

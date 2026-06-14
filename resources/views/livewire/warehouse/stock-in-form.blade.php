@@ -1,4 +1,4 @@
-﻿<div class="h-full flex flex-col space-y-4" style="font-family: 'Times New Roman', Times, serif;" x-data="{
+<div class="h-full flex flex-col space-y-4" x-data="{
     activeImportTab: 'excel',
     ocrProgress: 0,
     ocrStatus: '',
@@ -425,7 +425,7 @@
 
         const lines = ocrText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-        // Tìm dòng tiêu đề bảng (có chứa \"Mã hàng\" / \"Tên hàng\" / \"Số lượng\")
+        // Tìm dòng tiêu đề bảng (có chứa 'Mã hàng' / 'Tên hàng' / 'Số lượng')
         let headerLineIdx = -1;
         let colPositions = { code: -1, name: -1, unit: -1, qty: -1 };
 
@@ -507,7 +507,7 @@
             if (!numStr) return '';
 
             // Nếu có cả dấu phẩy và dấu chấm → giả định dấu chấm là decimal, phẩy là nghìn separator
-            // VD: \"1.234,56\" → 1234.56 (VN) hoặc \"1,234.56\" → 1234.56 (US)
+            // VD: '1.234,56' → 1234.56 (VN) hoặc '1,234.56' → 1234.56 (US)
             let hasComma = numStr.includes(',');
             let hasDot = numStr.includes('.');
 

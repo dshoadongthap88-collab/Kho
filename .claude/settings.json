@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($loginPage = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/login\" -UseBasicParsing -SessionVariable s1; $token = [regex]::Match\\($loginPage.Content, 'name=\"_token\" value=\"\\([^\"]+\\)\"'\\).Groups[1].Value; Write-Host \"Token: $token\"; $resp = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/login\" -Method POST -UseBasicParsing -WebSession $s1 -Body @{_token=$token; identifier=\"0708091050\"; password=\"wrongpass\"}; Write-Host \"Status: $\\($resp.StatusCode\\)\"; Write-Host \"Has identifier value: $\\($resp.Content -match 'value=\"\"'\\)\"; Write-Host \"Identifier field: $\\($resp.Content | Select-String 'name=.identifier.' | Select-Object -First 1\\)\"; Write-Host \"--- Errors ---\"; $resp.Content | Select-String 'login_error' | Select-Object -First 1)",
+      "PowerShell(.\\\\vendor\\\\bin\\\\pest --no-coverage 2>&1)",
+      "PowerShell(.\\\\vendor\\\\bin\\\\phpunit --no-coverage 2>&1)",
+      "PowerShell(git add app/Livewire/Warehouse/StockInForm.php app/Models/StockIn.php \"resources/views/livewire/warehouse/stock-in-form.blade.php\" \"database/migrations/2026_06_11_020426_add_stock_in_features_to_stock_ins_table.php\" 2>&1)",
+      "PowerShell(git commit -m $msg 2>&1)",
+      "PowerShell(git push origin main 2>&1)",
+      "PowerShell(php -r \"echo password_verify\\('101088', '\\\\$2y\\\\$10\\\\$0DZET8CvdMWsA6BQR82KfeTjtCAwbHBChI1mYd3EHCy8sWBYPlJZq'\\) ? 'MATCH' : 'NO MATCH';\" 2>&1)",
+      "PowerShell(php _check_pw.php 2>&1)",
+      "PowerShell(php _check_users.php 2>&1)",
+      "PowerShell(php -r \"require 'vendor/autoload.php'; require 'bootstrap/app.php'; \\\\$app->make\\(Illuminate\\\\Contracts\\\\Console\\\\Kernel::class\\)->bootstrap\\(\\); \\\\$users = \\\\App\\\\Models\\\\User::all\\(['phone','email','status']\\); echo 'count=' . \\\\$users->count\\(\\) . PHP_EOL; foreach\\(\\\\$users as \\\\$u\\) echo \\\\$u->phone . ' | ' . \\\\$u->email . ' | ' . \\\\$u->status . PHP_EOL;\" 2>&1)",
+      "PowerShell(php artisan migrate:status 2>&1)",
+      "PowerShell(php artisan db:seed --class=UserSeeder 2>&1)",
+      "PowerShell(php _diag_login.php 2>&1)",
+      "PowerShell(php artisan db:seed --class=UserSeeder 2>&1; $s = New-Object Microsoft.PowerShell.Commands.WebRequestSession; $p = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/login\" -UseBasicParsing -SessionVariable s; $t = [regex]::Match\\($p.Content, 'name=\"_token\" value=\"\\([^\"]+\\)\"'\\).Groups[1].Value; $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/login\" -Method POST -UseBasicParsing -WebSession $s -Body @{_token=$t; identifier=\"0708091050\"; password=\"101088\"}; Write-Host \"Status=$\\($r.StatusCode\\)\"; Write-Host \"Has error: $\\($r.Content -match 'login_error'\\)\"; Write-Host \"Has house: $\\($r.Content -match 'Chọn Ngôi Nhà|select-house'\\)\"; Write-Host \"Title: $\\($r.Content | Select-String '<title>' | Select-Object -First 1\\)\")",
+      "PowerShell(Get-Process -Name \"php\" -ErrorAction SilentlyContinue)",
+      "PowerShell(netstat -ano)",
+      "PowerShell(cd d:\\\\Project; php -r \"require 'vendor/autoload.php'; \\\\$app = require 'bootstrap/app.php'; \\\\$kernel = \\\\$app->make\\(Illuminate\\\\Contracts\\\\Console\\\\Kernel::class\\); \\\\$kernel->bootstrap\\(\\); \\\\$u = App\\\\Models\\\\User::where\\('phone','0708091050'\\)->first\\(\\); if\\(\\\\$u\\){echo \\\\\"EXISTS id=\\\\$u->id phone=\\\\$u->phone role=\\\\$u->role status=\\\\$u->status\\\\n\\\\\"; \\\\$ok = Hash::check\\('101088', \\\\$u->password\\); echo \\\\\"Password check: \\\\\".\\(\\\\$ok?'OK':'FAIL'\\).\\\\\"\\\\n\\\\\"; } else { echo \\\\\"NOT FOUND\\\\n\\\\\"; }\")",
+      "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $app=require '\\\\''bootstrap/app.php'\\\\''; $k=$app->make\\(Illuminate\\\\\\\\Contracts\\\\\\\\Console\\\\\\\\Kernel::class\\); $k->bootstrap\\(\\); $u=App\\\\\\\\Models\\\\\\\\User::where\\('\\\\''phone'\\\\'','\\\\''0708091050'\\\\''\\)->first\\(\\); echo $u ? '\\\\''EXISTS id='\\\\''.$u->id.'\\\\'' phone='\\\\''.$u->phone.'\\\\'' role='\\\\''.$u->role.'\\\\'' status='\\\\''.$u->status.\"\\\\nPasswordOK=\".\\(Hash::check\\('\\\\''101088'\\\\'',$u->password\\)?'\\\\''YES'\\\\'':'\\\\''NO'\\\\''\\).\"\\\\n\" : '\\\\''NOT_FOUND\\\\n'\\\\'';')",
+      "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $app=require '\\\\''bootstrap/app.php'\\\\''; $k=$app->make\\(Illuminate\\\\\\\\Contracts\\\\\\\\Console\\\\\\\\Kernel::class\\); $k->bootstrap\\(\\); $u=App\\\\\\\\Models\\\\\\\\User::where\\('\\\\''phone'\\\\'','\\\\''0708091050'\\\\''\\)->first\\(\\); echo '\\\\''remember_token='\\\\''.\\($u->remember_token?:'\\\\''NULL'\\\\''\\).\"\\\\n\"; echo '\\\\''email_verified_at='\\\\''.\\($u->email_verified_at?:'\\\\''NULL'\\\\''\\).\"\\\\n\"; $cols = Illuminate\\\\\\\\Support\\\\\\\\Facades\\\\\\\\Schema::getColumnListing\\('\\\\''users'\\\\''\\); echo '\\\\''Columns: '\\\\''.implode\\('\\\\'','\\\\'',$cols\\).\"\\\\n\";')",
+      "Bash(curl -s -c /tmp/cookies.txt -b /tmp/cookies.txt http://127.0.0.1:8000/login)",
+      "Bash(curl -s -c /tmp/cookies.txt -b /tmp/cookies.txt -L -w \"\\\\nHTTP_CODE: %{http_code}\\\\nFINAL_URL: %{url_effective}\\\\n\" -d \"_token=etbVbf1fh97Gn7OHzVMRbG0B0kEzffQzOoz4EIL9&identifier=0708091050&password=101088&remember=off\" http://127.0.0.1:8000/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -c /tmp/cookies2.txt -b /tmp/cookies2.txt -L -d \"_token=test&identifier=0708091050&password=101088&remember=off\" http://127.0.0.1:8000/login)",
+      "Bash(curl -s -c /tmp/cookies3.txt -b /tmp/cookies3.txt http://127.0.0.1:8000/login)",
+      "Bash(curl -s -c /tmp/cookies3.txt -b /tmp/cookies3.txt -L -d \"_token=$\\(curl -s -c /tmp/cookies3.txt -b /tmp/cookies3.txt http://127.0.0.1:8000/login)",
+      "PowerShell(Start-Process \"http://127.0.0.1:8000/login\")",
+      "PowerShell($path = \"d:\\\\Project\\\\app\\\\Livewire\\\\Warehouse\\\\StockInForm.php\"; $content = [System.IO.File]::ReadAllText\\($path, [System.Text.Encoding]::UTF8\\); $old = \"`$this->reset\\(['items', 'supplier_name', 'manufacturer', 'note', 'stock_in_date', 'marked_received']\\);\"; $new = \"`$this->reset\\(['items', 'marked_received']\\);\"; if \\($content.Contains\\($old\\)\\) { $content = $content.Replace\\($old, $new\\); [System.IO.File]::WriteAllText\\($path, $content, \\(New-Object System.Text.UTF8Encoding $false\\)\\); Write-Output \"FIXED: Removed stock_in_date, supplier_name, manufacturer, note from reset\" } else { Write-Output \"NOT FOUND: old string not in file\" })",
+      "Bash(php -l app/Livewire/Warehouse/StockInForm.php)",
+      "Bash(sed -i \"s/'quantity' => 1,/'quantity' => 1,\\\\n\\\\t\\\\t'unit' => 'Cải',/\" app/Livewire/Warehouse/StockInForm.php)",
+      "Bash(sed -n '77,96p' app/Livewire/Warehouse/StockInForm.php)",
+      "Bash(sed -i \"s/'unit' => 'Cải',/'unit' => 'Cái',/\" app/Livewire/Warehouse/StockInForm.php)",
+      "Bash(sed -n \"88,90p\" app/Livewire/Warehouse/StockInForm.php)"
+    ]
+  }
+}

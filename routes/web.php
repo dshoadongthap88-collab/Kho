@@ -43,6 +43,13 @@ Route::middleware('auth')->group(function () {
             Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
         });
 
+        // HR House Routes (Quản trị & Phân quyền)
+        Route::middleware('admin')->prefix('hr')->name('hr.')->group(function () {
+            Route::get('/projects', \App\Livewire\Hr\ProjectManager::class)->name('projects');
+            Route::get('/permissions', \App\Livewire\Hr\PermissionManager::class)->name('permissions');
+            Route::get('/global-report', \App\Livewire\Hr\GlobalReport::class)->name('global-report');
+        });
+
         require __DIR__.'/warehouse.php';
     });
 });

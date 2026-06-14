@@ -77,6 +77,20 @@
                             <a href="{{ route('warehouse.reports.stock') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo kho</a>
                         </div>
                     </div>
+                    <!-- Module HR -->
+                    @if(Auth::check() && Auth::user()->role === 'admin')
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-purple-200 group-hover:text-purple-950 flex items-center gap-1 {{ request()->routeIs('hr.*') ? 'bg-purple-200 text-purple-950 shadow-inner' : 'text-purple-900' }}">
+                            ⭐ NGÔI NHÀ HR
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="{{ route('hr.projects') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Quản lý Dự án (Ngôi nhà)</a>
+                            <a href="{{ route('hr.permissions') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Phân quyền Hệ thống</a>
+                            <a href="{{ route('hr.global-report') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Báo cáo Tổng hợp</a>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -85,7 +99,7 @@
                 @auth
                     <div class="relative group">
                         <button class="flex items-center gap-2 px-3 py-2 rounded-md bg-sky-200 hover:bg-sky-300 transition duration-150 text-sm font-bold text-sky-950">
-                            <span class="bg-sky-600 px-2 py-0.5 rounded text-xs text-white border border-sky-700">Dự án {{ session('current_house', 1) == 2 ? 'Hậu Nghĩa' : (session('current_house', 1) == 3 ? 'Cần Giờ' : 'Hóc Môn') }}</span>
+                            <span class="bg-sky-600 px-2 py-0.5 rounded text-xs text-white border border-sky-700">{{ \App\Models\Project::find(session('current_house', 1))?->name ?? 'Dự án' }}</span>
                             <span>👤</span>
                             <span>{{ Auth::user()->role === 'admin' ? 'Admin' : 'Nhân viên' }} - {{ Auth::user()->name }}</span>
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>

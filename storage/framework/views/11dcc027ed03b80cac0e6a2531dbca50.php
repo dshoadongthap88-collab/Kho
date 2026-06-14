@@ -64,51 +64,52 @@
         </div>
 
         <div class="text-center mb-8 mt-20">
-            <p class="text-lg text-slate-600 font-medium">Chào mừng, <span class="font-bold text-sky-700">{{ Auth::user()->name }}</span>! Vui lòng chọn chi nhánh làm việc.</p>
+            <p class="text-lg text-slate-600 font-medium">Chào mừng, <span class="font-bold text-sky-700"><?php echo e(Auth::user()->name); ?></span>! Vui lòng chọn chi nhánh làm việc.</p>
         </div>
 
         <div class="flex flex-wrap justify-center gap-5 max-w-7xl w-full">
-            @foreach ($projects as $project)
-                @php
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $projects; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $project): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                <?php
                     $isAllowed = in_array($project->id, $allowedHouses);
                     $icon = ['🏢', '🏪', '🏭', '🏬', '🏰', '🏠', '🏨'][$project->id % 7];
                     $isHR = $project->id == 5; // Highlight HR house
-                @endphp
+                ?>
                 
-                <div class="house-card glass-panel rounded-2xl p-5 relative overflow-hidden cursor-pointer group {{ $isAllowed ? '' : 'locked' }}"
-                     @if($isAllowed) onclick="openPinModal({{ $project->id }}, '{{ addslashes($project->name) }}')" @endif>
+                <div class="house-card glass-panel rounded-2xl p-5 relative overflow-hidden cursor-pointer group <?php echo e($isAllowed ? '' : 'locked'); ?>"
+                     <?php if($isAllowed): ?> onclick="openPinModal(<?php echo e($project->id); ?>, '<?php echo e(addslashes($project->name)); ?>')" <?php endif; ?>>
                     
                     <!-- Decorative gradient for allowed houses -->
-                    @if($isAllowed)
-                        <div class="absolute inset-0 bg-gradient-to-br {{ $isHR ? 'from-purple-500/10 to-pink-500/10' : 'from-sky-500/10 to-blue-500/10' }} opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    @endif
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isAllowed): ?>
+                        <div class="absolute inset-0 bg-gradient-to-br <?php echo e($isHR ? 'from-purple-500/10 to-pink-500/10' : 'from-sky-500/10 to-blue-500/10'); ?> opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                     <div class="relative z-10 flex flex-col items-center">
-                        <div class="w-16 h-16 rounded-2xl {{ $isHR ? 'bg-purple-100 text-purple-600' : 'bg-sky-100 text-sky-600' }} flex items-center justify-center mb-4 shadow-inner border border-white">
+                        <div class="w-16 h-16 rounded-2xl <?php echo e($isHR ? 'bg-purple-100 text-purple-600' : 'bg-sky-100 text-sky-600'); ?> flex items-center justify-center mb-4 shadow-inner border border-white">
                             <span class="text-3xl">
-                                {{ $isHR ? '⭐' : $icon }}
+                                <?php echo e($isHR ? '⭐' : $icon); ?>
+
                             </span>
                         </div>
                         
-                        <h2 class="text-lg font-bold mb-2 text-center text-slate-800 leading-tight">{{ $project->name }}</h2>
+                        <h2 class="text-lg font-bold mb-2 text-center text-slate-800 leading-tight"><?php echo e($project->name); ?></h2>
                         
-                        @if($isAllowed)
-                            <div class="mt-2 px-3 py-1 rounded-full {{ $isHR ? 'bg-purple-100 border-purple-200 text-purple-700' : 'bg-emerald-100 border-emerald-200 text-emerald-700' }} border text-xs font-bold">
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isAllowed): ?>
+                            <div class="mt-2 px-3 py-1 rounded-full <?php echo e($isHR ? 'bg-purple-100 border-purple-200 text-purple-700' : 'bg-emerald-100 border-emerald-200 text-emerald-700'); ?> border text-xs font-bold">
                                 Sẵn sàng truy cập
                             </div>
-                        @else
+                        <?php else: ?>
                             <div class="mt-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-500 text-xs font-medium flex items-center gap-1">
                                 <span>🔒</span> Không có quyền
                             </div>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
                 </div>
-            @endforeach
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
         </div>
         
         <div class="mt-12 text-center">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
+            <form action="<?php echo e(route('logout')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
                 <button type="submit" class="text-slate-500 hover:text-sky-600 font-medium transition-colors text-sm underline underline-offset-4">
                     Đăng xuất tài khoản
                 </button>
@@ -132,7 +133,7 @@
             </div>
 
             <form id="verifyForm" onsubmit="verifyHouse(event)">
-                @csrf
+                <?php echo csrf_field(); ?>
                 <input type="hidden" id="houseId" name="house_id">
                 
                 <div class="mb-6">
@@ -188,11 +189,11 @@
             const password = document.getElementById('password').value;
             
             try {
-                const response = await fetch('{{ route("tenant.verify-house") }}', {
+                const response = await fetch('<?php echo e(route("tenant.verify-house")); ?>', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
                     },
                     body: JSON.stringify({ house_id: houseId, password: password })
                 });
@@ -224,3 +225,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH D:\Project\resources\views/tenant/select.blade.php ENDPATH**/ ?>

@@ -11,15 +11,16 @@ class TenantController extends Controller
     public function selectHouse()
     {
         $user = Auth::user();
-        $allowedHouses = $user->allowed_houses ?? [1]; // Default to house 1 if null
+        $allowedHouses = $user->allowed_houses ?? []; // Default empty
+        $projects = \App\Models\Project::all();
         
-        return view('tenant.select', compact('allowedHouses'));
+        return view('tenant.select', compact('allowedHouses', 'projects'));
     }
 
     public function verifyHouse(Request $request)
     {
         $request->validate([
-            'house_id' => 'required|integer|in:1,2,3,4',
+            'house_id' => 'required|integer|exists:projects,id',
             'password' => 'required|string',
         ]);
 
@@ -44,6 +45,14 @@ class TenantController extends Controller
 
         // Store selected house in session
         session(['current_house' => $request->house_id]);
+
+        // Redirect to HR Module if House ID 5 is selected
+        if ((int)$request->house_id === 5) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('hr.projects')
+            ]);
+        }
 
         return response()->json([
             'success' => true,

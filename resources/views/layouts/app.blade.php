@@ -18,6 +18,7 @@
                 </a>
 
                 <div class="hidden md:flex items-center gap-1">
+                    @if(session('current_house') != 5)
                     <!-- Module 1: NCC/KH -->
                     <a href="{{ route('warehouse.contacts') }}" class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 hover:bg-sky-200 hover:text-sky-950 {{ request()->routeIs('warehouse.contacts') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                         1. NCC/KH
@@ -76,20 +77,22 @@
                             <a href="{{ route('warehouse.reports.transaction-detail') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50 {{ request()->routeIs('warehouse.reports.transaction-detail') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo chi tiết giao dịch</a>
                             <a href="{{ route('warehouse.reports.stock') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo kho</a>
                         </div>
-                    </div>
+                    @else
                     <!-- Module HR -->
                     @if(Auth::check() && Auth::user()->role === 'admin')
                     <div class="relative group">
                         <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-purple-200 group-hover:text-purple-950 flex items-center gap-1 {{ request()->routeIs('hr.*') ? 'bg-purple-200 text-purple-950 shadow-inner' : 'text-purple-900' }}">
-                            ⭐ NGÔI NHÀ HR
+                            ⭐ NGÔI NHÀ HR (TRUNG TÂM ADMIN)
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
-                            <a href="{{ route('hr.projects') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Quản lý Dự án (Ngôi nhà)</a>
+                            <a href="{{ route('hr.dashboard') }}" class="block px-4 py-2 text-sm text-purple-700 font-bold hover:bg-purple-50">🎛️ Bảng Điều Khiển</a>
+                            <a href="{{ route('hr.projects') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Quản lý Dự án (Ngôi nhà)</a>
                             <a href="{{ route('hr.permissions') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Phân quyền Hệ thống</a>
                             <a href="{{ route('hr.global-report') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Báo cáo Tổng hợp</a>
                         </div>
                     </div>
+                    @endif
                     @endif
                 </div>
             </div>
@@ -109,7 +112,7 @@
                                 <div class="font-semibold text-gray-800">{{ Auth::user()->name }}</div>
                             </div>
 
-                            @if(Auth::user()->role === 'admin' && session('current_house', 1) == 1)
+                            @if(Auth::user()->role === 'admin' && session('current_house', 1) == 5)
                                 <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 text-left">👥 Quản lý nhân viên</a>
                             @endif
 

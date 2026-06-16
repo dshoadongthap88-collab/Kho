@@ -11,7 +11,7 @@
                 <option value="both">Cả hai</option>
             </select>
         </div>
-        <button wire:click="openModal" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+        <button wire:click="openModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
             <span>➕</span> Thêm đối tác
         </button>
     </div>

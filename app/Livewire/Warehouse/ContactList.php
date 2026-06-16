@@ -5,6 +5,7 @@ namespace App\Livewire\Warehouse;
 use App\Models\Supplier;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 use Illuminate\Validation\Rule;
 
 class ContactList extends Component
@@ -16,6 +17,9 @@ class ContactList extends Component
     public $showModal = false;
     public $isEdit = false;
     public $contactId;
+
+    public $selectedContacts = [];
+    public $selectAll = false;
 
     // Form fields
     public $name;
@@ -46,6 +50,46 @@ class ContactList extends Component
     public function updatedSearch()
     {
         $this->resetPage();
+    }
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedContacts = $this->getContactsQuery()->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedContacts = [];
+        }
+    }
+
+    #[On('trigger-print')]
+    public function printContacts()
+    {
+        if (empty($this->selectedContacts)) {
+            session()->flash('error', 'Vui lòng chọn ít nhất 1 đối tác để in!');
+            return;
+        }
+        
+        $ids = implode(',', $this->selectedContacts);
+        $this->dispatch('open-print-url', url: route('warehouse.contacts.print', ['ids' => $ids]));
+    }
+
+    private function getContactsQuery()
+    {
+        $contacts = Supplier::query();
+
+        if (!empty($this->search)) {
+            $contacts->where(function($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('phone', 'like', '%' . $this->search . '%')
+                  ->orWhere('contact_person', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        if ($this->filterType) {
+            $contacts->where('type', $this->filterType);
+        }
+
+        return $contacts;
     }
 
     public function openModal($id = null)
@@ -121,22 +165,7 @@ class ContactList extends Component
 
     public function render()
     {
-        $contacts = Supplier::query();
-
-        // Chỉ áp dụng filter tìm kiếm nếu có giá trị search
-        if (!empty($this->search)) {
-            $contacts->where(function($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('phone', 'like', '%' . $this->search . '%')
-                  ->orWhere('contact_person', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        if ($this->filterType) {
-            $contacts->where('type', $this->filterType);
-        }
-
-        $contacts = $contacts->latest()->paginate(15);
+        $contacts = $this->getContactsQuery()->latest()->paginate(15);
 
         return view('livewire.warehouse.contact-list', [
             'contacts' => $contacts

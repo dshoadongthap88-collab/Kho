@@ -46,12 +46,12 @@
             <div class="flex gap-2 bg-slate-100 p-2 rounded-lg border border-slate-300">
                 <button type="button"
                         wire:click="setFilterMode('all')"
-                        class="px-4 py-2 text-xs font-bold uppercase rounded {{ $filterMode === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-300' }}">
+                        class="px-4 py-2 text-xs font-bold uppercase rounded <?php echo e($filterMode === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-300'); ?>">
                     Tất cả
                 </button>
                 <button type="button"
                         wire:click="setFilterMode('low_stock')"
-                        class="px-4 py-2 text-xs font-bold uppercase rounded {{ $filterMode === 'low_stock' ? 'bg-orange-600 text-white' : 'bg-white text-slate-600 border border-slate-300' }}">
+                        class="px-4 py-2 text-xs font-bold uppercase rounded <?php echo e($filterMode === 'low_stock' ? 'bg-orange-600 text-white' : 'bg-white text-slate-600 border border-slate-300'); ?>">
                     Sắp hết tồn
                 </button>
             </div>
@@ -59,19 +59,19 @@
         </div>
 
         <div class="flex items-center gap-2">
-            @if(count($selectedIds) > 0)
-                <div wire:key="bulk-actions-container" class="flex items-center gap-1.5 pr-2 border-r border-slate-300 mr-1 py-1">
-                    <span class="text-[10px] font-black text-indigo-700 bg-indigo-50 px-2 py-1 rounded border border-indigo-100">CHỌN: {{ count($selectedIds) }}</span>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($selectedIds) > 0): ?>
+                <div <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'bulk-actions-container'; ?>wire:key="bulk-actions-container" class="flex items-center gap-1.5 pr-2 border-r border-slate-300 mr-1 py-1">
+                    <span class="text-[10px] font-black text-indigo-700 bg-indigo-50 px-2 py-1 rounded border border-indigo-100">CHỌN: <?php echo e(count($selectedIds)); ?></span>
                     
-                    @if(count($selectedIds) === 1)
-                        <button wire:key="btn-edit-selected" type="button" 
-                                wire:click="openModal({{ $selectedIds[0] }})" 
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($selectedIds) === 1): ?>
+                        <button <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'btn-edit-selected'; ?>wire:key="btn-edit-selected" type="button" 
+                                wire:click="openModal(<?php echo e($selectedIds[0]); ?>)" 
                                 class="flex items-center gap-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
                             <span>✏️</span> SỬA
                         </button>
-                    @endif
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                    <button wire:key="btn-delete-selected" type="button" 
+                    <button <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'btn-delete-selected'; ?>wire:key="btn-delete-selected" type="button" 
                             onclick="confirm('Xác nhận xóa các vật tư đã chọn?') || event.stopImmediatePropagation()"
                             wire:click="deleteSelected" 
                             wire:loading.attr="disabled"
@@ -81,7 +81,7 @@
                         XÓA
                     </button>
 
-                    <button wire:key="btn-print-selected" type="button" 
+                    <button <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'btn-print-selected'; ?>wire:key="btn-print-selected" type="button" 
                             wire:click="printLabels" 
                             wire:loading.attr="disabled"
                             class="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-black text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
@@ -90,7 +90,7 @@
                         IN
                     </button>
                 </div>
-            @endif
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
             <button type="button" wire:click="printAll" wire:loading.attr="disabled" class="bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
                 <span>🖨️</span> IN FILE PDF
@@ -106,29 +106,32 @@
 
     <!-- Toast Notifications -->
     <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
-        @if (session()->has('message'))
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('message')): ?>
             <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show" x-transition.opacity.duration.500ms
                  class="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-xl shadow-lg border border-emerald-200 font-black text-[13px] flex items-center gap-2 pointer-events-auto">
                 <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                {{ session('message') }}
-            </div>
-        @endif
+                <?php echo e(session('message')); ?>
 
-        @if (session()->has('warning'))
+            </div>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('warning')): ?>
             <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 6000)" x-show="show" x-transition.opacity.duration.500ms
                  class="bg-amber-50 text-amber-600 px-6 py-3 rounded-xl shadow-lg border border-amber-200 font-black text-[13px] flex items-center gap-2 pointer-events-auto">
                 <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                {{ session('warning') }}
-            </div>
-        @endif
+                <?php echo e(session('warning')); ?>
 
-        @if (session()->has('error'))
+            </div>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('error')): ?>
             <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 4000)" x-show="show" x-transition.opacity.duration.500ms
                  class="bg-rose-50 text-rose-600 px-6 py-3 rounded-xl shadow-lg border border-rose-200 font-black text-[13px] flex items-center gap-2 pointer-events-auto">
                 <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                {{ session('error') }}
+                <?php echo e(session('error')); ?>
+
             </div>
-        @endif
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm overflow-hidden border">
@@ -136,8 +139,9 @@
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
                     <th class="px-6 py-4 w-10 text-center no-print">
-                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
-                               {{ count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
+                        <input type="checkbox" wire:click="toggleSelectAll([<?php echo e(implode(',', $allProductIdsOnPage)); ?>])" 
+                               <?php echo e(count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : ''); ?>
+
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
                     <th class="px-3 py-4 text-[11px] font-black uppercase tracking-tighter text-slate-500">Mã vật tư</th>
@@ -156,105 +160,108 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-                @forelse($products as $product)
-                    <tr wire:key="product-{{ $product->id }}" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors {{ in_array((string)$product->id, $selectedIds) ? 'bg-indigo-50/50' : '' }}">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                    <tr <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'product-'.e($product->id).''; ?>wire:key="product-<?php echo e($product->id); ?>" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors <?php echo e(in_array((string)$product->id, $selectedIds) ? 'bg-indigo-50/50' : ''); ?>">
                         <td class="px-6 py-4 text-center no-print">
-                            <input type="checkbox" wire:model.live="selectedIds" value="{{ $product->id }}" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                            <input type="checkbox" wire:model.live="selectedIds" value="<?php echo e($product->id); ?>" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
-                        <td class="px-4 py-3 font-mono text-sm text-blue-600">{{ $product->code }}</td>
+                        <td class="px-4 py-3 font-mono text-sm text-blue-600"><?php echo e($product->code); ?></td>
                         <td class="px-4 py-3 text-center">
-                            @if($product->image)
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->image): ?>
                                 <div class="relative group inline-block">
-                                    <img src="{{ asset('storage/' . $product->image) }}" 
+                                    <img src="<?php echo e(asset('storage/' . $product->image)); ?>" 
                                          alt="Img" 
                                          class="w-12 h-12 object-cover rounded shadow-sm border cursor-zoom-in transition-transform hover:scale-110" 
-                                         @click="lightboxUrl = '{{ asset('storage/' . $product->image) }}'; showLightbox = true">
+                                         @click="lightboxUrl = '<?php echo e(asset('storage/' . $product->image)); ?>'; showLightbox = true">
                                     <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded transition-opacity pointer-events-none">
                                         <span class="text-white text-[10px]">🔍</span>
                                     </div>
                                 </div>
-                            @else
-                                <button wire:click="openModal({{ $product->id }})" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase underline decoration-2 underline-offset-4">
+                            <?php else: ?>
+                                <button wire:click="openModal(<?php echo e($product->id); ?>)" class="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase underline decoration-2 underline-offset-4">
                                     Tải ảnh
                                 </button>
-                            @endif
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
-                        <td class="px-4 py-3 text-[11px] font-black text-gray-800 uppercase tracking-tight">{{ $product->name }}</td>
+                        <td class="px-4 py-3 text-[11px] font-black text-gray-800 uppercase tracking-tight"><?php echo e($product->name); ?></td>
                         <td class="px-4 py-3">
-                            @if($product->type === 'product_produced')
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->type === 'product_produced'): ?>
                                 <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs">SX</span>
-                            @elseif($product->type === 'product_purchased')
+                            <?php elseif($product->type === 'product_purchased'): ?>
                                 <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">Mua</span>
-                            @endif
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
-                        <td class="px-4 py-3 text-gray-600">{{ $product->brand }}</td>
-                        <td class="px-4 py-3 text-gray-600 italic">{{ $product->box_spec }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ $product->carton_spec }}</td>
-                        <td class="px-4 py-3 text-sm font-semibold text-purple-700">{{ $product->batch_number }}</td>
-                        <td class="px-4 py-3 text-sm {{ $product->is_expiring_soon ? 'text-red-600 font-bold' : 'text-gray-600' }}">
-                            {{ $product->expiry_date ? $product->expiry_date->format('d/m/Y') : '-' }}
+                        <td class="px-4 py-3 text-gray-600"><?php echo e($product->brand); ?></td>
+                        <td class="px-4 py-3 text-gray-600 italic"><?php echo e($product->box_spec); ?></td>
+                        <td class="px-4 py-3 text-gray-600"><?php echo e($product->carton_spec); ?></td>
+                        <td class="px-4 py-3 text-sm font-semibold text-purple-700"><?php echo e($product->batch_number); ?></td>
+                        <td class="px-4 py-3 text-sm <?php echo e($product->is_expiring_soon ? 'text-red-600 font-bold' : 'text-gray-600'); ?>">
+                            <?php echo e($product->expiry_date ? $product->expiry_date->format('d/m/Y') : '-'); ?>
+
                         </td>
                         <td class="px-4 py-3 text-center">
                             <span class="px-2 py-1 rounded-full text-xs font-bold 
-                                {{ $product->is_low_stock ? 'bg-orange-600 text-white' : (($product->inventory?->quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500') }}">
-                                {{ number_format($product->inventory?->quantity ?? 0) }}
-                                @if($product->is_low_stock) ⚠️ @endif
+                                <?php echo e($product->is_low_stock ? 'bg-orange-600 text-white' : (($product->inventory?->quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500')); ?>">
+                                <?php echo e(number_format($product->inventory?->quantity ?? 0)); ?>
+
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->is_low_stock): ?> ⚠️ <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-gray-600 font-bold">{{ $product->inventory?->warehouse_location ?? $product->location }}</td>
+                        <td class="px-4 py-3 text-gray-600 font-bold"><?php echo e($product->inventory?->warehouse_location ?? $product->location); ?></td>
                         <td class="px-4 py-3">
-                            @if($product->status === 'active')
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->status === 'active'): ?>
                                 <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Đang kinh doanh</span>
-                            @else
+                            <?php else: ?>
                                 <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Ngừng kinh doanh</span>
-                            @endif
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
                         <td class="px-4 py-2 text-center">
                             <input type="number" 
-                                   wire:model.defer="minStocks.{{ $product->id }}"
+                                   wire:model.defer="minStocks.<?php echo e($product->id); ?>"
                                    class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-2 py-1 transition-all text-center shadow-inner placeholder-slate-400"
                                    placeholder="0">
                         </td>
                     </tr>
-                @empty
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                      <tr>
                         <td colspan="11" class="px-4 py-8 text-center text-gray-500">Không tìm thấy vật tư nào.</td>
                     </tr>
-                @endforelse
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </tbody>
         </table>
         <div class="px-4 py-3 bg-gray-50 border-t">
-            {{ $products->links() }}
+            <?php echo e($products->links()); ?>
+
         </div>
     </div>
 
     <!-- Modal -->
-    @if($showModal)
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showModal): ?>
         <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="$set('showModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-y-auto max-h-[85vh] shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $isEdit ? 'Chỉnh sửa vật tư' : 'Thêm vật tư mới' }}</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4"><?php echo e($isEdit ? 'Chỉnh sửa vật tư' : 'Thêm vật tư mới'); ?></h3>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="col-span-2 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mb-2">
                                 <label class="block text-[11px] font-black text-indigo-900 uppercase tracking-widest mb-3">📸 Hình ảnh vật tư</label>
                                 <div class="flex items-center gap-6">
                                     <div class="relative group">
-                                        @if ($image)
-                                            <img src="{{ $image->temporaryUrl() }}" class="h-24 w-24 object-cover rounded-xl border-2 border-white shadow-md ring-2 ring-indigo-200">
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($image): ?>
+                                            <img src="<?php echo e($image->temporaryUrl()); ?>" class="h-24 w-24 object-cover rounded-xl border-2 border-white shadow-md ring-2 ring-indigo-200">
                                             <button wire:click="$set('image', null)" class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-1 shadow-lg hover:bg-rose-600 transition-colors">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                             </button>
-                                        @elseif ($productId && ($currentProduct = \App\Models\Product::find($productId)) && $currentProduct->image)
-                                            <img src="{{ asset('storage/' . $currentProduct->image) }}" class="h-24 w-24 object-cover rounded-xl border-2 border-white shadow-md ring-2 ring-slate-200">
-                                        @else
+                                        <?php elseif($productId && ($currentProduct = \App\Models\Product::find($productId)) && $currentProduct->image): ?>
+                                            <img src="<?php echo e(asset('storage/' . $currentProduct->image)); ?>" class="h-24 w-24 object-cover rounded-xl border-2 border-white shadow-md ring-2 ring-slate-200">
+                                        <?php else: ?>
                                             <div class="h-24 w-24 bg-white border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400 group-hover:border-indigo-400 group-hover:text-indigo-400 transition-all">
                                                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                                 <span class="text-[9px] font-black mt-1 uppercase">Chưa có ảnh</span>
                                             </div>
-                                        @endif
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </div>
                                     <div class="flex-1">
                                         <div class="relative">
@@ -271,17 +278,38 @@
                                         </div>
                                     </div>
                                 </div>
-                                @error('image') <span class="text-rose-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['image'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-rose-500 text-[10px] font-bold mt-1 block"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Mã vật tư</label>
                                 <input type="text" wire:model="code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                @error('code') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['code'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Tên vật tư</label>
                                 <input type="text" wire:model="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-2 flex gap-4 my-2">
                                 <label class="block text-sm font-medium text-gray-700 items-center flex">Phân loại gốc:</label>
@@ -297,55 +325,118 @@
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Hãng sản xuất</label>
                                 <input type="text" wire:model="brand" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                @error('brand') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['brand'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Số lượng</label>
                                 <input type="text" inputmode="numeric" wire:model.lazy="quantity" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="0">
-                                @error('quantity') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['quantity'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">QC Hộp (loại chai/hộp...)</label>
                                 <input type="text" wire:model="box_spec" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="VD: Chai 500ml">
-                                @error('box_spec') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['box_spec'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">QC Thùng (ghi tay)</label>
                                 <input type="text" wire:model="carton_spec" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="VD: 24 chai/thùng">
-                                @error('carton_spec') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['carton_spec'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                              <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Vị trí</label>
                                 <input type="text" wire:model="location" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                @error('location') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['location'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Mã Code NCC (Không bắt buộc)</label>
                                 <input type="text" wire:model="batch_number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                @error('batch_number') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['batch_number'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Hạn sử dụng</label>
                                 <input type="date" wire:model="expiry_date" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                @error('expiry_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['expiry_date'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
-                                @error('status') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['status'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Tồn tối thiểu</label>
                                 <input type="text" inputmode="numeric" wire:model.lazy="min_stock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="0">
-                                @error('min_stock') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['min_stock'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
-                            @if ($errors->any())
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
                                 <div class="col-span-2 bg-rose-50 p-3 rounded-lg border border-rose-200 mt-2">
                                     <ul class="list-disc list-inside">
-                                        @foreach ($errors->all() as $error)
-                                            <li class="text-rose-600 text-[11px] font-black uppercase">{{ $error }}</li>
-                                        @endforeach
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                            <li class="text-rose-600 text-[11px] font-black uppercase"><?php echo e($error); ?></li>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                     </ul>
                                 </div>
-                            @endif
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-2">
@@ -370,10 +461,10 @@
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     <!-- Import Modal -->
-    @if($showImportModal)
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showImportModal): ?>
         <div class="fixed inset-0 z-50 overflow-y-auto">
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
@@ -389,7 +480,14 @@
                         <div class="mt-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Chọn tệp của bạn</label>
                             <input type="file" wire:model="excelFile" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                            @error('excelFile') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['excelFile'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
 
                         <div wire:loading wire:target="excelFile" class="mt-2 text-sm text-blue-600">
@@ -407,7 +505,7 @@
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     <style>
         @media print {
@@ -465,7 +563,8 @@
         <div style="text-align: center; margin-bottom: 25px;">
             <h2 style="font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; margin: 0;">BẢNG DANH MỤC VẬT TƯ</h2>
             <p style="font-size: 13px; font-style: italic; margin-top: 6px;">
-                Ngày {{ now()->format('d') }} tháng {{ now()->format('m') }} năm {{ now()->format('Y') }}
+                Ngày <?php echo e(now()->format('d')); ?> tháng <?php echo e(now()->format('m')); ?> năm <?php echo e(now()->format('Y')); ?>
+
             </p>
         </div>
 
@@ -482,23 +581,23 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($printItems as $index => $item)
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $printItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                 <tr>
-                    <td style="text-align: center;">{{ $index + 1 }}</td>
-                    <td style="font-family: monospace; text-transform: uppercase;">{{ $item->code }}</td>
-                    <td style="font-weight: bold;">{{ $item->name }}</td>
-                    <td>{{ $item->brand ?? '-' }}</td>
-                    <td style="text-align: center; font-weight: bold;">{{ number_format($item->inventory?->quantity ?? 0) }}</td>
-                    <td style="text-align: center;">{{ $item->location ?? '-' }}</td>
+                    <td style="text-align: center;"><?php echo e($index + 1); ?></td>
+                    <td style="font-family: monospace; text-transform: uppercase;"><?php echo e($item->code); ?></td>
+                    <td style="font-weight: bold;"><?php echo e($item->name); ?></td>
+                    <td><?php echo e($item->brand ?? '-'); ?></td>
+                    <td style="text-align: center; font-weight: bold;"><?php echo e(number_format($item->inventory?->quantity ?? 0)); ?></td>
+                    <td style="text-align: center;"><?php echo e($item->location ?? '-'); ?></td>
                 </tr>
-                @endforeach
-                {{-- Thêm hàng trống nếu ít hơn 8 dòng --}}
-                @for($i = count($printItems); $i < max(8, count($printItems)); $i++)
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php for($i = count($printItems); $i < max(8, count($printItems)); $i++): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                 <tr>
                     <td style="text-align: center; color: transparent;">_</td>
                     <td></td><td></td><td></td><td></td><td></td>
                 </tr>
-                @endfor
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endfor; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             </tbody>
         </table>
 
@@ -508,7 +607,7 @@
                 <p style="font-weight: bold; text-transform: uppercase;">Người lập phiếu</p>
                 <p style="font-size: 11px; font-style: italic;">(Ký, ghi rõ họ tên)</p>
                 <div style="height: 80px;"></div>
-                <p style="font-weight: bold; text-transform: uppercase;">{{ auth()->user()->name ?? '........................' }}</p>
+                <p style="font-weight: bold; text-transform: uppercase;"><?php echo e(auth()->user()->name ?? '........................'); ?></p>
             </div>
             <div style="width: 45%;">
                 <p style="font-weight: bold; text-transform: uppercase;">Quản lý kho</p>
@@ -519,15 +618,24 @@
         </div>
 
         <div style="text-align: right; margin-top: 30px; font-size: 10px; font-style: italic; color: #666;">
-            In lúc: {{ now()->format('d/m/Y H:i') }}
+            In lúc: <?php echo e(now()->format('d/m/Y H:i')); ?>
+
         </div>
     </div>
 
-    @script
+        <?php
+        $__scriptKey = '2485275746-0';
+        ob_start();
+    ?>
     <script>
         $wire.on('trigger-print', () => {
             setTimeout(() => { window.print(); }, 500);
         });
     </script>
-    @endscript
+        <?php
+        $__output = ob_get_clean();
+
+        \Livewire\store($this)->push('scripts', $__output, $__scriptKey)
+    ?>
 </div>
+<?php /**PATH D:\Project\resources\views/livewire/warehouse/product-catalog.blade.php ENDPATH**/ ?>

@@ -15,6 +15,18 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return view('warehouse.customer-management');
     })->name('contacts')->middleware('permission:contacts');
 
+    Route::get('/contacts/print', function() {
+        $ids = request('ids');
+        if (!$ids) {
+            return redirect()->route('warehouse.contacts')->with('error', 'Không có đối tác nào được chọn để in.');
+        }
+
+        $contacts = \App\Models\Supplier::whereIn('id', explode(',', $ids))->get();
+        // Since we need to know what type it is to show the right title:
+        // Or we can just let the view handle it based on the items.
+        return view('warehouse.contacts-print', compact('contacts'));
+    })->name('contacts.print');
+
     Route::get('/inventory', function () {
         return view('warehouse.inventory');
     })->name('inventory')->middleware('permission:inventory');

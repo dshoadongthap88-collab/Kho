@@ -12,7 +12,7 @@
                 <option value="internal">Nội bộ</option>
             </select>
         </div>
-        <button wire:click="openModal" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+        <button wire:click="openModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
             <span>➕</span> Thêm đối tác
         </button>
     </div>
@@ -20,6 +20,12 @@
     @if (session()->has('message'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
             {{ session('message') }}
+        </div>
+    @endif
+    
+    @if (session()->has('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {{ session('error') }}
         </div>
     @endif
 
@@ -34,6 +40,9 @@
                     <th class="px-4 py-3">Người liên hệ</th>
                     <th class="px-4 py-3">Email</th>
                     <th class="px-4 py-3 text-left">Bộ phận</th>
+                    <th class="px-4 py-3 text-center">
+                        <input type="checkbox" wire:model.live="selectAll" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                    </th>
                     <th class="px-4 py-3">Tình trạng</th>
                     <th class="px-4 py-3 text-right">Thao tác</th>
                 </tr>
@@ -60,6 +69,9 @@
                         <td class="px-4 py-3 text-left text-gray-600 font-medium">
                             {{ $contact->department ?? '-' }}
                         </td>
+                        <td class="px-4 py-3 text-center">
+                            <input type="checkbox" wire:model="selectedContacts" value="{{ $contact->id }}" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                        </td>
                         <td class="px-4 py-3">
                             @if($contact->status === 'active')
                                 <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Hoạt động</span>
@@ -74,7 +86,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">Chưa có dữ liệu đối tác.</td>
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">Chưa có dữ liệu đối tác.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -165,8 +177,15 @@
                             Huỷ
                         </button>
                     </div>
-                </div>
             </div>
         </div>
     @endif
+
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('open-print-url', (event) => {
+                window.open(event.url, '_blank');
+            });
+        });
+    </script>
 </div>

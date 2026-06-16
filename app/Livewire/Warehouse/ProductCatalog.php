@@ -304,6 +304,35 @@ class ProductCatalog extends Component
         $this->dispatch('trigger-print');
     }
 
+    public function printAll()
+    {
+        $this->printItems = Product::query()
+            ->with(['inventory'])
+            ->where(function($q) {
+                $q->where('type', '!=', 'material')
+                  ->orWhereNull('type');
+            })
+            ->where(function($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('code', 'like', '%' . $this->search . '%')
+                  ->orWhere('brand', 'like', '%' . $this->search . '%')
+                  ->orWhere('batch_number', 'like', '%' . $this->search . '%');
+            })
+            ->when($this->dateFrom, function($q) {
+                $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
+            })
+            ->when($this->dateTo, function($q) {
+                $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
+            })
+            ->when($this->filterMode === 'low_stock', function($q) {
+                return $this->applyLowStockFilter($q);
+            })
+            ->orderBy('products.created_at', 'desc')
+            ->get();
+
+        $this->dispatch('trigger-print');
+    }
+
     public function importExcel()
     {
         $this->validate([

@@ -292,24 +292,51 @@ class StockInForm extends Component
                           (!empty($item['product_search']) && str_contains($item['product_search'], ' - '));
 
             if (!$hasProduct) {
-                $this->addError("items.{$index}.product_search", 'Vui lòng chọn vật tư hoặc nhập mã/tên vật tư hợp lệ (định dạng: Mã - Tên).');
+                $errorMsg = 'Vui lòng chọn vật tư hoặc nhập mã/tên vật tư hợp lệ (định dạng: Mã - Tên) ở dòng số ' . ($index + 1);
+                $this->addError("items.{$index}.product_search", $errorMsg);
+                $this->dispatch('show-error-effect', message: $errorMsg);
                 return;
             }
         }
 
-        $this->validate([
-            'items.*.quantity' => 'required|numeric|min:0.0001',
-            'supplier_name' => 'nullable|string',
-            'items.*.batch_number' => 'nullable|string',
-            'items.*.expiry_date' => 'nullable|date',
-            'items.*.warehouse_location' => 'nullable|string',
-            'items.*.unit_price' => 'nullable|numeric|min:0',
-        ], [
-            'items.*.quantity.required' => 'Vui lòng nhập số lượng.',
-            'items.*.quantity.min' => 'Số lượng phải lớn hơn 0.',
-            'items.*.expiry_date.date' => 'Hạn dùng không đúng định dạng ngày.',
-            'items.*.unit_price.numeric' => 'Đơn giá phải là số.',
-        ]);
+        // Tiền xử lý dữ liệu trước khi validate (để tránh lỗi validate do chuỗi rỗng)
+        foreach ($this->items as &$item) {
+            if (isset($item['expiry_date']) && trim($item['expiry_date']) === '') {
+                // Nếu hạn dùng bị bỏ trống, mặc định 365 ngày kể từ ngày nhập
+                $baseDate = !empty($this->stock_in_date) ? $this->stock_in_date : date('Y-m-d');
+                $item['expiry_date'] = date('Y-m-d', strtotime($baseDate . ' + 365 days'));
+            }
+            if (isset($item['batch_number']) && trim($item['batch_number']) === '') {
+                $item['batch_number'] = null; // null để nullable pass
+            }
+            if (isset($item['warehouse_location']) && trim($item['warehouse_location']) === '') {
+                $item['warehouse_location'] = null;
+            }
+            if (isset($item['unit_price']) && trim($item['unit_price']) === '') {
+                $item['unit_price'] = 0;
+            }
+        }
+        unset($item);
+
+        try {
+            $this->validate([
+                'items.*.quantity' => 'required|numeric|min:0.0001',
+                'supplier_name' => 'nullable|string',
+                'items.*.batch_number' => 'nullable|string',
+                'items.*.expiry_date' => 'nullable|date',
+                'items.*.warehouse_location' => 'nullable|string',
+                'items.*.unit_price' => 'nullable|numeric|min:0',
+            ], [
+                'items.*.quantity.required' => 'Vui lòng nhập số lượng.',
+                'items.*.quantity.min' => 'Số lượng phải lớn hơn 0.',
+                'items.*.expiry_date.date' => 'Hạn dùng không đúng định dạng ngày.',
+                'items.*.unit_price.numeric' => 'Đơn giá phải là số.',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $firstError = collect($e->errors())->flatten()->first();
+            $this->dispatch('show-error-effect', message: $firstError);
+            throw $e;
+        }
 
         $service = app(InventoryService::class);
 
@@ -516,11 +543,11 @@ class StockInForm extends Component
             $data = \Maatwebsite\Excel\Facades\Excel::toArray(new \stdClass(), $this->excelFile);
             if (!empty($data) && isset($data[0])) {
                 $rows = $data[0];
-                $header = array_shift($rows);
                 
                 // Khởi tạo chỉ số cột
                 $indices = [
                     'code' => null,
+                    'name' => null,
                     'quantity' => null,
                     'batch_number' => null,
                     'expiry_date' => null,
@@ -541,64 +568,109 @@ class StockInForm extends Component
                     return $str;
                 };
 
-                foreach ($header as $index => $colName) {
-                    if (empty($colName)) continue;
-                    $norm = $normalize($colName);
-                    
-                    if (str_contains($norm, 'masanpham') || str_contains($norm, 'mavattu') || str_contains($norm, 'code') || $norm === 'ma') {
-                        $indices['code'] = $index;
-                    } elseif (str_contains($norm, 'soluong') || str_contains($norm, 'quantity') || str_contains($norm, 'sl') || $norm === 'qty') {
-                        $indices['quantity'] = $index;
-                    } elseif (str_contains($norm, 'solo') || str_contains($norm, 'batch') || str_contains($norm, 'macodencc')) {
-                        $indices['batch_number'] = $index;
-                    } elseif (str_contains($norm, 'handung') || str_contains($norm, 'hansudung') || str_contains($norm, 'expiry')) {
-                        $indices['expiry_date'] = $index;
-                    } elseif (str_contains($norm, 'vitri') || str_contains($norm, 'location')) {
-                        $indices['warehouse_location'] = $index;
-                    } elseif (str_contains($norm, 'dongia') || str_contains($norm, 'price') || str_contains($norm, 'unitprice')) {
-                        $indices['unit_price'] = $index;
+                $parseQuantity = function($val) {
+                    if (is_numeric($val)) return floatval($val);
+                    $val = trim((string)$val);
+                    if ($val === '' || $val === '-') return '';
+                    $val = preg_replace('/[^\d.,]/', '', $val);
+                    if (str_contains($val, ',') && str_contains($val, '.')) {
+                        $lastComma = strrpos($val, ',');
+                        $lastDot = strrpos($val, '.');
+                        if ($lastComma > $lastDot) {
+                            $val = str_replace('.', '', $val);
+                            $val = str_replace(',', '.', $val);
+                        } else {
+                            $val = str_replace(',', '', $val);
+                        }
+                    } elseif (str_contains($val, ',')) {
+                        $parts = explode(',', $val);
+                        if (count($parts) == 2 && (strlen($parts[1]) == 2 || strlen($parts[1]) == 3)) {
+                            $val = str_replace(',', '.', $val);
+                        } else {
+                            $val = str_replace(',', '', $val);
+                        }
+                    }
+                    return floatval($val);
+                };
+
+                // Tìm dòng tiêu đề động (quét 15 dòng đầu tiên)
+                $headerRowIndex = 0;
+                $bestMatchCount = 0;
+                $bestIndices = [];
+
+                // Quét 15 dòng đầu tiên để tìm dòng chứa tiêu đề
+                foreach (array_slice($rows, 0, 15) as $rowIndex => $potentialHeader) {
+                    $currentIndices = [
+                        'code' => null, 'name' => null, 'quantity' => null,
+                        'batch_number' => null, 'expiry_date' => null,
+                        'warehouse_location' => null, 'unit_price' => null
+                    ];
+                    $matchCount = 0;
+
+                    foreach ($potentialHeader as $colIndex => $colName) {
+                        if (empty($colName)) continue;
+                        $norm = $normalize($colName);
+                        
+                        if ($currentIndices['code'] === null && (str_contains($norm, 'masanpham') || str_contains($norm, 'mavattu') || str_contains($norm, 'code') || $norm === 'ma' || str_contains($norm, 'mahh') || str_contains($norm, 'mavt') || str_contains($norm, 'item'))) {
+                            $currentIndices['code'] = $colIndex; $matchCount++;
+                        } elseif ($currentIndices['name'] === null && (str_contains($norm, 'tensanpham') || str_contains($norm, 'tenvattu') || str_contains($norm, 'name') || $norm === 'ten' || $norm === 'hanghoa' || str_contains($norm, 'tenhh') || str_contains($norm, 'tenvt') || str_contains($norm, 'mota') || str_contains($norm, 'description'))) {
+                            $currentIndices['name'] = $colIndex; $matchCount++;
+                        } elseif ($currentIndices['quantity'] === null && (str_contains($norm, 'soluong') || str_contains($norm, 'quantity') || str_contains($norm, 'sl') || $norm === 'qty' || str_contains($norm, 'thucnhan') || str_contains($norm, 'khoiluong') || str_contains($norm, 'kl'))) {
+                            $currentIndices['quantity'] = $colIndex; $matchCount++;
+                        } elseif ($currentIndices['batch_number'] === null && (str_contains($norm, 'solo') || str_contains($norm, 'batch') || str_contains($norm, 'macodencc') || str_contains($norm, 'lo'))) {
+                            $currentIndices['batch_number'] = $colIndex; $matchCount++;
+                        } elseif ($currentIndices['expiry_date'] === null && (str_contains($norm, 'handung') || str_contains($norm, 'hansudung') || str_contains($norm, 'expiry') || str_contains($norm, 'hsd'))) {
+                            $currentIndices['expiry_date'] = $colIndex; $matchCount++;
+                        } elseif ($currentIndices['warehouse_location'] === null && (str_contains($norm, 'vitri') || str_contains($norm, 'location') || str_contains($norm, 'kho'))) {
+                            $currentIndices['warehouse_location'] = $colIndex; $matchCount++;
+                        } elseif ($currentIndices['unit_price'] === null && (str_contains($norm, 'dongia') || str_contains($norm, 'price') || str_contains($norm, 'unitprice') || str_contains($norm, 'gia'))) {
+                            $currentIndices['unit_price'] = $colIndex; $matchCount++;
+                        }
+                    }
+
+                    if ($matchCount > $bestMatchCount) {
+                        $bestMatchCount = $matchCount;
+                        $bestIndices = $currentIndices;
+                        $headerRowIndex = $rowIndex;
                     }
                 }
 
-                // Kiểm tra các cột bắt buộc sau khi đã map
-                $missing = [];
-                if ($indices['code'] === null) {
-                    $missing[] = 'Mã vật tư (Mã sản phẩm, Mã vặt tư, Code, Mã)';
-                }
-                if ($indices['quantity'] === null) {
-                    $missing[] = 'Số lượng (Số lượng, Quantity, SL, Qty)';
-                }
+                $indices = $bestIndices;
 
-                if (!empty($missing)) {
-                    throw new \Exception('File Excel thiếu các cột bắt buộc: ' . implode(', ', $missing) . '.
+                // Loại bỏ dòng tiêu đề và các dòng trước đó
+                $rows = array_slice($rows, $headerRowIndex + 1);
 
-Vui lòng kiểm tra lại tiêu đề cột trong file Excel. Các cột có thể dùng:
-- Mã sản phẩm / Mã vật tư / Mã NCC / Code / Mã
-- Tên vật tư / Tên sản phẩm / Tên
-- Số lượng / Quantity / SL / Qty
-- Số lô / Batch / Lô / Mã Code NCC
-- Hạn dùng / HSD / Expiry / Hạn sử dụng
-- Vị trí / Location / Kho / Vị trí kho
-- Đơn giá / Đơn giá nhập / Unit Price / Price');
+                // Loại bỏ dòng trống cuối cùng nếu có trước khi thêm dữ liệu mới
+                $lastIndex = count($this->items) - 1;
+                if ($lastIndex >= 0 && empty($this->items[$lastIndex]['product_id']) && empty($this->items[$lastIndex]['new_code'])) {
+                    unset($this->items[$lastIndex]);
+                    $this->items = array_values($this->items);
                 }
-
-                // Xóa các dòng trống hiện tại
-                $this->items = [];
 
                 foreach ($rows as $row) {
-                    $codeVal = isset($row[$indices['code']]) ? trim($row[$indices['code']]) : '';
-                    if (empty($codeVal)) continue;
+                    $codeVal = isset($indices['code']) && isset($row[$indices['code']]) ? trim($row[$indices['code']]) : '';
+                    $nameVal = isset($indices['name']) && isset($row[$indices['name']]) ? trim($row[$indices['name']]) : '';
+                    $qtyRaw = isset($indices['quantity']) && isset($row[$indices['quantity']]) ? $row[$indices['quantity']] : '';
+                    $qtyVal = $parseQuantity($qtyRaw);
+                    
+                    if (empty($codeVal) && empty($nameVal) && empty($qtyVal)) continue;
 
                     // Thử tìm sản phẩm
-                    $product = Product::where('code', $codeVal)
-                        ->orWhere('name', 'like', $codeVal)
-                        ->first();
+                    $product = null;
+                    if (!empty($codeVal)) {
+                        $product = Product::where('code', $codeVal)->first();
+                    }
+                    if (!$product && (!empty($codeVal) || !empty($nameVal))) {
+                        $searchTerm = !empty($codeVal) ? $codeVal : $nameVal;
+                        $product = Product::where('code', $searchTerm)
+                            ->orWhere('name', 'like', '%' . $searchTerm . '%')
+                            ->first();
+                    }
 
-                    $qtyVal = isset($row[$indices['quantity']]) ? floatval($row[$indices['quantity']]) : '';
-                    $batchVal = isset($row[$indices['batch_number']]) ? trim($row[$indices['batch_number']]) : '';
+                    $batchVal = isset($indices['batch_number']) && isset($row[$indices['batch_number']]) ? trim($row[$indices['batch_number']]) : '';
                     
                     $expiryVal = '';
-                    if (isset($row[$indices['expiry_date']])) {
+                    if (isset($indices['expiry_date']) && isset($row[$indices['expiry_date']])) {
                         $dateStr = trim($row[$indices['expiry_date']]);
                         if (!empty($dateStr)) {
                             try {
@@ -607,19 +679,25 @@ Vui lòng kiểm tra lại tiêu đề cột trong file Excel. Các cột có th
                         }
                     }
 
-                    $locationVal = isset($row[$indices['warehouse_location']]) ? trim($row[$indices['warehouse_location']]) : '';
-                    $priceVal = isset($row[$indices['unit_price']]) ? floatval($row[$indices['unit_price']]) : ($product?->price ?? 0);
+                    // Nếu hạn dùng trống, mặc định 365 ngày từ ngày nhập kho hiện tại
+                    if (empty($expiryVal)) {
+                        $baseDate = !empty($this->stock_in_date) ? $this->stock_in_date : date('Y-m-d');
+                        $expiryVal = date('Y-m-d', strtotime($baseDate . ' + 365 days'));
+                    }
+
+                    $locationVal = isset($indices['warehouse_location']) && isset($row[$indices['warehouse_location']]) ? trim($row[$indices['warehouse_location']]) : '';
+                    $priceVal = isset($indices['unit_price']) && isset($row[$indices['unit_price']]) ? floatval($row[$indices['unit_price']]) : ($product?->price ?? 0);
 
                     $newCode = '';
                     $newName = '';
                     if (!$product) {
                         $newCode = $codeVal;
-                        $newName = $codeVal; // Lấy tạm mã làm tên khi nhập Excel chỉ có mã
+                        $newName = !empty($nameVal) ? $nameVal : $codeVal;
                     }
 
                     $this->items[] = [
                         'product_id' => $product?->id ?? '',
-                        'product_search' => $product ? ($product->code . ' - ' . $product->name) : ($newCode . ' - ' . $newName),
+                        'product_search' => $product ? ($product->code . ' - ' . $product->name) : ($newCode . ($newName ? ' - ' . $newName : '')),
                         'new_code' => $newCode,
                         'new_name' => $newName,
                         'batch_number' => $batchVal,
@@ -648,7 +726,13 @@ Vui lòng kiểm tra lại tiêu đề cột trong file Excel. Các cột có th
 
     public function importParsedData($rows)
     {
-        $this->items = [];
+        // Loại bỏ dòng trống cuối cùng nếu có trước khi thêm dữ liệu mới
+        $lastIndex = count($this->items) - 1;
+        if ($lastIndex >= 0 && empty($this->items[$lastIndex]['product_id']) && empty($this->items[$lastIndex]['new_code']) && empty($this->items[$lastIndex]['product_search'])) {
+            unset($this->items[$lastIndex]);
+            $this->items = array_values($this->items);
+        }
+
         foreach ($rows as $row) {
             // Chỉ lấy thông tin vật tư dữ liệu thực tế có nội dung trong ảnh
             if (empty($row['code']) && empty($row['scanned_name']) && empty($row['quantity'])) {
@@ -677,9 +761,9 @@ Vui lòng kiểm tra lại tiêu đề cột trong file Excel. Các cột có th
                 'product_search' => $product ? ($product->code . ' - ' . $product->name) : ($newCode . ' - ' . $newName),
                 'new_code' => $newCode,
                 'new_name' => $newName,
-                'batch_number' => $row['batch_number'] ?? '',
-                'expiry_date' => $row['expiry_date'] ?? '',
-                'warehouse_location' => $row['warehouse_location'] ?? ($product?->location ?? ''),
+                'batch_number' => '', // Không lấy dữ liệu khác theo yêu cầu
+                'expiry_date' => '',
+                'warehouse_location' => '', 
                 'quantity' => $qtyVal,
                 'unit' => !empty($row['unit']) ? trim($row['unit']) : ($product?->unit ?: ($product?->box_spec ?: ($product?->carton_spec ?: 'Cái'))),
                 'unit_price' => $priceVal,

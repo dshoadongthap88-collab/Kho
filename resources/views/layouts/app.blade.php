@@ -89,6 +89,7 @@
                             <a href="{{ route('hr.dashboard') }}" class="block px-4 py-2 text-sm text-purple-700 font-bold hover:bg-purple-50">🎛️ Bảng Điều Khiển</a>
                             <a href="{{ route('hr.projects') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Quản lý Dự án (Ngôi nhà)</a>
                             <a href="{{ route('hr.permissions') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Phân quyền Hệ thống</a>
+                            <a href="{{ route('hr.notifications') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Quản lý Thông báo</a>
                             <a href="{{ route('hr.global-report') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Báo cáo Tổng hợp</a>
                         </div>
                     </div>

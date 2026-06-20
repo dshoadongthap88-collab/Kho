@@ -3,6 +3,8 @@
 namespace App\Livewire\Warehouse;
 
 use App\Models\Product;
+use App\Models\Project;
+use App\Models\User;
 use App\Models\Inventory;
 use App\Models\InventoryTransaction;
 use App\Models\StockTransfer;
@@ -13,22 +15,27 @@ use Livewire\Component;
 
 class StockTransferForm extends Component
 {
-    public $to_house = 2; // Default to house 2
+    public $to_project_id = null;
     public $note = '';
+    public $sender_phone = '';
+    public $receiver_id = null;
+    public $receiver_phone = '';
     public $items = [];
-    public $available_houses = [1, 2, 3, 4];
+    public $available_projects = [];
+    public $users = [];
     public $searchQuery = ''; // Search query for autocomplete
     public $searchResults = []; // Search results for autocomplete
-    public $activeIndex = null; // Currently active input index
 
     public function mount()
     {
-        $current = session('current_house', 1);
-        $this->available_houses = array_filter($this->available_houses, fn($h) => $h != $current);
-        if (!empty($this->available_houses)) {
-            $this->to_house = reset($this->available_houses);
+        $currentHouse = session('current_house', 1);
+        $this->available_projects = Project::where('id', '!=', $currentHouse)->get();
+        if ($this->available_projects->isNotEmpty()) {
+            $this->to_project_id = $this->available_projects->first()->id;
         }
-        
+        $this->users = User::all();
+        $this->sender_phone = auth()->user()->phone ?? '';
+
         $this->addItem();
     }
 
@@ -36,7 +43,10 @@ class StockTransferForm extends Component
     {
         $this->items[] = [
             'product_code' => '',
-            'quantity' => 1
+            'quantity' => 1,
+            'stock' => 0,
+            'location' => '',
+            'note' => ''
         ];
     }
 
@@ -46,66 +56,127 @@ class StockTransferForm extends Component
         $this->items = array_values($this->items);
     }
 
-    public function searchProduct($index, $value)
+    public function updatedSearchQuery($value)
     {
-        $this->activeIndex = $index;
         if (empty($value)) {
             $this->searchResults = [];
             return;
         }
 
-        $products = Product::where('code', 'like', "%{$value}%")
+        $products = Product::with('inventory')->where('code', 'like', "%{$value}%")
             ->orWhere('name', 'like', "%{$value}%")
-            ->limit(10)
-            ->get(['code', 'name', 'unit']);
+            ->limit(15)
+            ->get();
 
         $this->searchResults = $products->map(function ($p) {
+            $qty = $p->inventory ? $p->inventory->quantity : 0;
             return [
                 'code' => $p->code,
-                'label' => "{$p->code} - {$p->name}",
+                'name' => $p->name,
                 'unit' => $p->unit,
+                'stock' => $qty,
             ];
         })->toArray();
     }
 
-    public function selectProduct($index, $productCode)
+    public function addSelectedProduct($productCode)
     {
-        $this->items[$index]['product_code'] = $productCode;
+        $product = Product::with('inventory')->where('code', $productCode)->first();
+        $stock = $product && $product->inventory ? $product->inventory->quantity : 0;
+        $location = $product ? ($product->inventory?->warehouse_location ?? $product->location ?? '') : '';
+
+        $exists = false;
+        foreach ($this->items as $index => $item) {
+            if ($item['product_code'] === $productCode) {
+                $this->items[$index]['quantity']++;
+                $exists = true;
+                break;
+            }
+        }
+        
+        if (!$exists) {
+            $lastIndex = count($this->items) - 1;
+            if ($lastIndex >= 0 && empty($this->items[$lastIndex]['product_code'])) {
+                $this->items[$lastIndex]['product_code'] = $productCode;
+                $this->items[$lastIndex]['quantity'] = 1;
+                $this->items[$lastIndex]['stock'] = $stock;
+                $this->items[$lastIndex]['location'] = $location;
+            } else {
+                $this->items[] = [
+                    'product_code' => $productCode,
+                    'quantity' => 1,
+                    'stock' => $stock,
+                    'location' => $location,
+                    'note' => ''
+                ];
+            }
+        }
+        
+        $this->searchQuery = '';
         $this->searchResults = [];
-        $this->activeIndex = null;
     }
 
-    public function clearSearch()
+    public function updated($property, $value)
     {
-        $this->searchResults = [];
-        $this->activeIndex = null;
+        if (str_starts_with($property, 'items.') && str_ends_with($property, '.product_code')) {
+            $index = explode('.', $property)[1];
+            $productCode = $value;
+            if (str_contains($productCode, ' - ')) {
+                $productCode = trim(explode(' - ', $productCode)[0]);
+            }
+            $product = Product::with('inventory')->where('code', $productCode)->first();
+            if ($product) {
+                $this->items[$index]['stock'] = $product->inventory ? $product->inventory->quantity : 0;
+                $this->items[$index]['location'] = $product->inventory?->warehouse_location ?? $product->location ?? '';
+            } else {
+                $this->items[$index]['stock'] = 0;
+                $this->items[$index]['location'] = '';
+            }
+        }
+    }
+
+    public function updatedReceiverId($value)
+    {
+        $user = User::find($value);
+        if ($user) {
+            $this->receiver_phone = $user->phone ?? '';
+        } else {
+            $this->receiver_phone = '';
+        }
     }
 
     public function save()
     {
         $this->validate([
-            'to_house' => 'required|in:1,2,3,4',
+            'to_project_id' => 'required',
+            'sender_phone' => 'nullable|string',
+            'receiver_id' => 'required',
+            'receiver_phone' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_code' => 'required|string',
             'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.location' => 'nullable|string',
+            'items.*.note' => 'nullable|string',
         ]);
 
         $currentHouse = session('current_house', 1);
-        if ($currentHouse == $this->to_house) {
-            session()->flash('error', 'Không thể chuyển kho cho chính nhà hiện tại.');
+        if ($currentHouse == $this->to_project_id) {
+            session()->flash('error', 'Không thể chuyển kho cho chính chi nhánh hiện tại.');
             return;
         }
 
         try {
             DB::beginTransaction();
 
-            // 1. Tạo phiếu chuyển kho ở nhà hiện tại
             $transfer = StockTransfer::create([
                 'transfer_code' => 'TF-' . date('Ymd') . '-' . rand(1000, 9999),
                 'transfer_date' => now(),
-                'from_house' => $currentHouse,
-                'to_house' => $this->to_house,
-                'status' => 'completed',
+                'from_project_id' => $currentHouse,
+                'to_project_id' => $this->to_project_id,
+                'sender_phone' => $this->sender_phone,
+                'receiver_id' => $this->receiver_id,
+                'receiver_phone' => $this->receiver_phone,
+                'status' => 'pending',
                 'note' => $this->note,
                 'created_by' => auth()->id(),
             ]);
@@ -138,7 +209,7 @@ class StockTransferForm extends Component
                     'quantity' => -$itemData['quantity'],
                     'reference_type' => StockTransfer::class,
                     'reference_id' => $transfer->id,
-                    'note' => "Chuyển sang nhà số {$this->to_house}",
+                    'note' => "Chuyển đi, chờ chi nhánh nhận xác nhận",
                     'created_by' => auth()->id(),
                 ]);
 
@@ -146,127 +217,39 @@ class StockTransferForm extends Component
                     'stock_transfer_id' => $transfer->id,
                     'product_code' => $product->code,
                     'quantity' => $itemData['quantity'],
+                    'location' => $itemData['location'] ?? null,
+                    'note' => $itemData['note'] ?? null,
                 ]);
             }
 
             DB::commit();
 
-            // 2. Chuyển kết nối sang nhà đích để cộng tồn kho
-            $this->processTargetHouse($transfer, $this->to_house);
-
-            // 3. Gửi thông báo chat (bọc trong try-catch riêng để không treo app)
             try {
                 $senderName = auth()->user()->name ?? 'Thủ kho';
                 $senderId = auth()->id();
-                $fromHouseName = $currentHouse == 1 ? 'Hóc Môn' : ($currentHouse == 2 ? 'Hậu Nghĩa' : ($currentHouse == 3 ? 'Cần Giờ' : 'Số 4'));
-                $toHouseName = $this->to_house == 1 ? 'Hóc Môn' : ($this->to_house == 2 ? 'Hậu Nghĩa' : ($this->to_house == 3 ? 'Cần Giờ' : 'Số 4'));
+                
+                $fromProject = Project::find($currentHouse);
+                $toProject = Project::find($this->to_project_id);
+                $fromProjectName = $fromProject ? $fromProject->name : 'Chi nhánh gửi';
+                $toProjectName = $toProject ? $toProject->name : 'Chi nhánh nhận';
 
-                $itemDetails = [];
-                foreach ($this->items as $itemData) {
-                    $pCode = str_contains($itemData['product_code'], ' - ') ? trim(explode(' - ', $itemData['product_code'])[0]) : $itemData['product_code'];
-                    $p = Product::where('code', $pCode)->first();
-                    $itemDetails[] = "{$itemData['quantity']}x " . ($p ? $p->name : $pCode);
-                }
-
-                $systemMsg = "🚚 [ĐIỀU CHUYỂN KHO] Đã chuyển thành công từ kho {$fromHouseName} sang kho {$toHouseName}: " . implode(', ', $itemDetails) . ". Ghi chú: " . ($this->note ?: 'Không có');
-                StockTransferList::broadcastMessage($senderName, $systemMsg, 'system', $senderId);
+                $systemMsg = "🔔 [CHUYỂN KHO] Kho {$fromProjectName} vừa tạo phiếu chuyển hàng tới Kho {$toProjectName}. Mã phiếu: {$transfer->transfer_code}";
+                
+                \App\Models\ChatMessage::create([
+                    'user_id' => $senderId,
+                    'type' => 'system',
+                    'content' => $systemMsg,
+                    'is_read' => false,
+                ]);
             } catch (\Exception $ex) {
-                // Log error but don't fail the request
             }
 
-            session()->flash('success', 'Chuyển kho thành công!');
+            session()->flash('success', 'Tạo phiếu chuyển kho thành công! Đang chờ chi nhánh nhận xác nhận.');
             return redirect()->route('warehouse.stock-transfer.index');
 
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Lỗi: ' . $e->getMessage());
-        }
-    }
-
-    private function processTargetHouse($transfer, $targetHouse)
-    {
-        // Lưu trữ connection cũ
-        $oldDb = Config::get('database.connections.tenant.database');
-        
-        // Cấu hình connection mới
-        $newDb = $targetHouse == 1 ? 'laravel' : 'laravel_' . $targetHouse;
-        Config::set('database.connections.tenant.database', $newDb);
-        DB::purge('tenant');
-
-        try {
-            DB::beginTransaction();
-
-            foreach ($this->items as $itemData) {
-                $productCode = $itemData['product_code'];
-                if (str_contains($productCode, ' - ')) {
-                    $productCode = trim(explode(' - ', $productCode)[0]);
-                }
-
-                // Lấy sản phẩm từ connection của nhà đích
-                $targetProduct = Product::where('code', $productCode)->first();
-                
-                if (!$targetProduct) {
-                    // Tự động tạo sản phẩm nếu chưa có
-                    // Chuyển kết nối về nhà nguồn để lấy data
-                    Config::set('database.connections.tenant.database', $oldDb);
-                    DB::purge('tenant');
-                    $sourceProduct = Product::where('code', $productCode)->first();
-                    
-                    // Chuyển lại connection về nhà đích
-                    Config::set('database.connections.tenant.database', $newDb);
-                    DB::purge('tenant');
-
-                    $targetProduct = Product::create([
-                        'code' => $sourceProduct->code,
-                        'name' => $sourceProduct->name,
-                        'unit' => $sourceProduct->unit,
-                        'price' => $sourceProduct->price,
-                        'category_id' => $sourceProduct->category_id, // category_id có thể bị sai nếu bảng categories không đồng bộ
-                        'type' => $sourceProduct->type,
-                        'status' => $sourceProduct->status,
-                        'min_stock' => $sourceProduct->min_stock ?? 0,
-                    ]);
-                }
-
-                // Cộng tồn kho nhà đích
-                $targetInventory = Inventory::firstOrCreate(
-                    ['product_id' => $targetProduct->id],
-                    ['quantity' => 0]
-                );
-
-                $targetInventory->increment('quantity', $itemData['quantity']);
-
-                // Ghi nhận transaction ở nhà đích
-                InventoryTransaction::create([
-                    'product_id' => $targetProduct->id,
-                    'type' => 'transfer_in',
-                    'quantity' => $itemData['quantity'],
-                    'note' => "Nhận từ nhà số " . session('current_house', 1) . " (Phiếu: {$transfer->transfer_code})",
-                    // 'reference_type' => StockTransfer::class, // Không dùng reference vì phiếu này không nằm trong DB của nhà đích
-                    // 'reference_id' => $transfer->id,
-                    'created_by' => auth()->id(), // Tạm dùng user hiện tại
-                ]);
-            }
-
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            // Khôi phục connection trước khi throw
-            Config::set('database.connections.tenant.database', $oldDb);
-            DB::purge('tenant');
-            throw new \Exception("Lỗi khi xử lý ở nhà nhận: " . $e->getMessage());
-        }
-
-        // Khôi phục connection
-        Config::set('database.connections.tenant.database', $oldDb);
-        DB::purge('tenant');
-    }
-
-    public function updatedItems($value, $key)
-    {
-        if (str_contains($key, 'product_code')) {
-            $index = explode('.', $key)[1];
-            $this->searchProduct($index, $value);
         }
     }
 

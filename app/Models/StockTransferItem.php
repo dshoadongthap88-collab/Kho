@@ -16,6 +16,7 @@ class StockTransferItem extends Model
         'product_name',
         'quantity',
         'unit',
+        'location',
         'note',
     ];
 

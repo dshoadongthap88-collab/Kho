@@ -445,7 +445,11 @@
                 const codeIdx = rawNorm.search(/ma\s*(hang|vat\s*tu|sp|hh|vt)/);
                 const nameIdx = rawNorm.search(/ten\s*(hang|vat\s*tu|sp|hh|vt)/);
                 const unitIdx = rawNorm.search(/don\s*vi|d\.?v\.?t/);
-                const qtyIdx  = rawNorm.search(/so\s*luong|sl\s*nhan/);
+                
+                let qtyIdx  = rawNorm.search(/so\s*luong\s*nhan|sl\s*nhan/);
+                if (qtyIdx === -1) {
+                    qtyIdx = rawNorm.search(/so\s*luong|sl/);
+                }
 
                 // Kiểm tra bắt buộc: phải tìm thấy cột Mã và Số lượng
                 if (codeIdx === -1 || qtyIdx === -1) {
@@ -667,29 +671,30 @@
             lines.push({ y: Number(y), items: lineItems, normStr, rawStr: fullStr });
         });
 
-        // Tìm dòng tiêu đề
-        let headerLineIdx = -1;
+        // Tìm cao độ (Y) của dòng tiêu đề
+        let headerY = null;
         for (let i = 0; i < lines.length; i++) {
             let s = lines[i].normStr;
-            if (
-                (s.includes('mahang') || s.includes('mavattu') || s.includes('masp') || s.includes('mavt') || s.includes('mahh')) &&
-                (s.includes('tenhang') || s.includes('tenvattu') || s.includes('tensp') || s.includes('tenvt') || s.includes('tenhh'))
-            ) {
-                headerLineIdx = i;
+            if (s.includes('mahang') || s.includes('mavattu') || s.includes('masp') || s.includes('mavt') || s.includes('mahh') ||
+                s.includes('tenhang') || s.includes('tenvattu') || s.includes('tensp') || s.includes('tenvt') || s.includes('tenhh')) {
+                headerY = lines[i].y;
                 break;
             }
         }
 
-        if (headerLineIdx === -1) return null; 
+        if (headerY === null) return null; 
+
+        // Thu thập toàn bộ các từ nằm trong dải băng ngang của tiêu đề (+/- 18px)
+        let headerItems = items.filter(it => Math.abs(it.transform[5] - headerY) < 18);
+        headerItems.sort((a, b) => a.transform[4] - b.transform[4]);
 
         // Gộp các chữ liền kề trong dòng tiêu đề với ngưỡng scale-invariant
-        let headerItems = lines[headerLineIdx].items;
         let mergedHeaders = [];
         let curHeader = null;
         
         let avgWidth = headerItems.length > 0 ? headerItems.reduce((acc, it) => acc + (it.size || 6), 0) / headerItems.length : 6;
         if (avgWidth < 1) avgWidth = 6;
-        let mergeThreshold = avgWidth * 3.5; 
+        let mergeThreshold = Math.max(avgWidth * 3.5, 25); 
         
         for (let it of headerItems) {
             if (!curHeader) {
@@ -721,14 +726,13 @@
             if (!colBounds.code && (nText.includes('mahang') || nText.includes('mavattu') || nText.includes('masp') || nText.includes('mavt') || nText.includes('mahh'))) colBounds.code = mergedHeaders[i];
             else if (!colBounds.name && (nText.includes('tenhang') || nText.includes('tenvattu') || nText.includes('tensp') || nText.includes('tenvt') || nText.includes('tenhh'))) colBounds.name = mergedHeaders[i];
             else if (!colBounds.unit && (nText.includes('donvi') || nText.includes('dvt'))) colBounds.unit = mergedHeaders[i];
-            else if (nText.includes('soluongnhan')) colBounds.quantity = mergedHeaders[i];
-            else if (!colBounds.quantity && (nText.includes('soluong') || nText.includes('sl'))) colBounds.quantity = mergedHeaders[i];
+            else if (nText.includes('soluongnhan') || nText.includes('slnhan')) colBounds.quantity = mergedHeaders[i];
+            else if (!colBounds.quantity && (nText.includes('soluong') || nText.includes('sl')) && !nText.includes('giao')) colBounds.quantity = mergedHeaders[i];
         }
 
         if (!colBounds.code && !colBounds.name) return null;
 
         let colsData = { code: [], name: [], unit: [], quantity: [] };
-        let headerY = lines[headerLineIdx].y;
         
         items.forEach(it => {
             let x = it.transform[4];
@@ -796,9 +800,17 @@
         let parsed = [];
 
         rows.forEach(r => {
-            let sortAndJoin = (arr) => arr.sort((a, b) => yDirection === 1 ? b.y - a.y : a.y - b.y).map(i => i.text).join(' ').trim();
+            let sortAndJoin = (arr) => arr.sort((a, b) => {
+                if (Math.abs(a.y - b.y) > 5) {
+                    return yDirection === 1 ? b.y - a.y : a.y - b.y;
+                }
+                return a.x - b.x;
+            }).map(i => i.text).join(' ').trim();
 
             let codeVal = sortAndJoin(r.codeItems);
+            // Loại bỏ số thứ tự (STT) nếu bị dính vào mã hàng hoá
+            codeVal = codeVal.replace(/^\d+\s+/, '').trim();
+            
             let nameVal = sortAndJoin(r.nameItems);
             let unitVal = sortAndJoin(r.unitItems);
             let qtyRaw = sortAndJoin(r.quantityItems);
@@ -886,6 +898,14 @@
 
                 </div>
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('error')): ?>
+                <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-2xl font-bold flex items-center gap-2 border border-red-200 animate-in fade-in slide-in-from-top-2">
+                    <span>❌</span> <?php echo e(session('error')); ?>
+
+                </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
 
             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
                 <div class="mb-4 p-4 bg-rose-50 text-rose-700 rounded-2xl font-bold border border-rose-200 animate-in fade-in slide-in-from-top-2">
@@ -1031,7 +1051,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                 <tr class="bg-indigo-50/50">
                                     <td colspan="6" class="px-6 py-4 text-right font-black text-slate-500 uppercase tracking-widest text-[11px]">Tổng số lượng:</td>
                                     <td class="px-4 py-4 text-right font-black text-indigo-900 text-[16px] underline decoration-double">
-                                        <?php echo e(number_format(collect($items)->sum('quantity'))); ?>
+                                        <?php echo e(number_format(collect($items)->sum(fn($item) => (float)($item['quantity'] ?? 0)))); ?>
 
                                     </td>
                                 </tr>
@@ -1122,8 +1142,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                 </th>
                                 <th class="px-2 py-4">MÃ PHIẾU</th>
                                 <th class="px-6 py-4">NGÀY TẠO</th>
-<th class="px-6 py-4">NGÀY NHẬP</th>
-<th class="px-6 py-4">NGÀY NHẬP</th>
+                                <th class="px-6 py-4">NGÀY NHẬP</th>
                                 <th class="px-6 py-4">NHÀ CUNG CẤP / ĐỐI TÁC</th>
                                 <th class="px-6 py-4">LOẠI NHẬP</th>
                                 <th class="px-6 py-4 text-right">TỔNG TIỀN</th>
@@ -1140,7 +1159,6 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                     <td class="px-2 py-4 font-black text-indigo-700 tracking-tight"><?php echo e($si->code); ?></td>
                                     <td class="px-6 py-4 text-slate-500 text-[12px] font-bold"><?php echo e($si->created_at->format('d/m/Y H:i')); ?></td>
           <td class="px-6 py-4 text-slate-500 text-[12px] font-bold"><?php echo e($si->stock_in_date ? $si->stock_in_date->format('d/m/Y') : $si->created_at->format('d/m/Y')); ?></td>
-<td class="px-6 py-4 text-slate-500 text-[12px] font-bold"><?php echo e($si->stock_in_date ? $si->stock_in_date->format('d/m/Y') : '-'); ?></td>
                                     <td class="px-6 py-4 font-black text-slate-800 text-[13px] uppercase tracking-tighter"><?php echo e($si->supplier_name ?: ($si->manufacturer ?: '-')); ?></td>
                                     <td class="px-6 py-4">
                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php switch($si->type):
@@ -1231,6 +1249,12 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                     <div :class="ocrMaximized ? 'flex-1 overflow-y-auto' : ''">
                         <!-- Tab 1: Nhập từ Excel/CSV -->
                         <div x-show="activeImportTab === 'excel'" class="p-6 space-y-4">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('error')): ?>
+                                <div class="p-3 bg-red-100 text-red-800 rounded-lg text-xs font-bold border border-red-200">
+                                    ❌ <?php echo e(session('error')); ?>
+
+                                </div>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         <div class="p-3.5 bg-emerald-50 text-emerald-850 rounded-lg text-xs font-semibold leading-relaxed border border-emerald-100">
                             ✨ <span class="font-extrabold text-emerald-950">Giải pháp đồng bộ cột linh hoạt:</span> Anh/chị có thể sắp xếp thứ tự các cột Excel tùy ý! Hệ thống sẽ quét dòng tiêu đề để bóc tách thông tin tự động. 
                             Những cột nào không tìm thấy hoặc trống thông tin sẽ được <span class="font-black text-orange-700 underline">báo màu cam</span> trên bảng nhập để anh/chị bổ sung nhanh chóng.
@@ -1320,10 +1344,10 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                     <table class="w-full text-left text-xs border-collapse">
                                         <thead>
                                             <tr class="bg-slate-800 font-black border-b border-slate-700 text-white uppercase tracking-widest text-[10px]">
-                                                <th class="p-3 w-40 text-center">Mã vật tư</th>
-                                                <th class="p-3 text-left">Tên vật tư</th>
+                                                <th class="p-3 w-40 text-center">Mã vật tư (Mã HH)</th>
+                                                <th class="p-3 text-left">Tên vật tư (Tên HH)</th>
                                                 <th class="p-3 w-28 text-center">ĐVT</th>
-                                                <th class="p-3 w-28 text-center">Số lượng</th>
+                                                <th class="p-3 w-28 text-center">Số lượng (Nhận)</th>
                                                 <th class="p-3 text-center w-10"></th>
                                             </tr>
                                         </thead>
@@ -1614,41 +1638,33 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
     <!-- PHẦN IN CHI TIẾT HÀNG LOẠT (Nhập kho) -->
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($printItems) > 0): ?>
-    <div class="hidden print:block fixed inset-0 bg-white z-[9999]">
+    <div class="hidden print:block absolute top-0 left-0 w-full bg-white z-[9999]">
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $printItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pItem): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
         <div class="print-page p-8 bg-white" style="font-family: 'Times New Roman', serif; min-height: 297mm; page-break-after: always;">
             
-            <div style="text-align: center; margin-bottom: 16px;">
-                <h1 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin: 0;">CÔNG TY CPĐT VÀ THI CÔNG HẠ TẦNG VINALPHA</h1>
-            </div>
-            <div class="flex justify-between items-start mb-6 border-b-2 border-slate-900 pb-4">
-                <div>
-                    <h1 class="text-xl font-black uppercase">CÔNG TY TNHH SANE</h1>
-                    <p class="text-[11px] font-bold">Khu công nghiệp Đức Hòa 1, Long An</p>
-                </div>
-                <div class="text-right">
-                    <h2 class="text-2xl font-black text-slate-900 uppercase">PHIẾU NHẬP KHO</h2>
-                    <p class="text-sm font-bold mt-1">Số: <span class="text-indigo-700"><?php echo e($pItem->code); ?></span></p>
-                </div>
+            <div style="text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #0f172a;">
+                <h2 class="text-3xl font-black text-slate-900 uppercase tracking-widest">PHIẾU NHẬP KHO</h2>
+                <p class="text-sm font-bold mt-2">Số: <span class="text-indigo-700"><?php echo e($pItem->code); ?></span></p>
+                <p class="text-sm font-bold mt-1">Ngày nhập kho: <?php echo e($pItem->stock_in_date ? $pItem->stock_in_date->format('d/m/Y') : $pItem->created_at->format('d/m/Y')); ?></p>
             </div>
 
-            <div class="grid grid-cols-2 gap-8 mb-8">
-                <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đơn vị giao hàng</p>
-                    <p class="font-black text-slate-800 text-lg uppercase"><?php echo e($pItem->supplier_name ?: ($pItem->manufacturer ?: 'N/A')); ?></p>
-                </div>
-                <div class="text-right">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ngày nhập kho</p>
-                    <p class="font-black text-slate-800"><?php echo e($pItem->created_at->format('d/m/Y')); ?></p>
-                </div>
+            <div class="mb-6">
+                <p class="text-[12px] font-black text-slate-500 uppercase tracking-widest">Đơn vị giao hàng / Đối tác</p>
+                <p class="font-black text-slate-800 text-lg uppercase"><?php echo e($pItem->supplier_name ?: ($pItem->manufacturer ?: 'N/A')); ?></p>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($pItem->note): ?>
+                <p class="text-[12px] font-black text-slate-500 uppercase tracking-widest mt-2">Ghi chú</p>
+                <p class="font-bold text-slate-800 text-sm"><?php echo e($pItem->note); ?></p>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
 
-            <table class="w-full border-collapse border-2 border-slate-900 mb-6">
+            <table class="w-full border-collapse border-2 border-slate-900 mb-8">
                 <thead>
                     <tr class="bg-slate-100 uppercase text-[10px] font-black">
                         <th class="border border-slate-900 px-2 py-2 text-center w-10">STT</th>
                         <th class="border border-slate-900 px-2 py-2 text-left">Tên vật tư / Quy cách</th>
-                        <th class="border border-slate-900 px-2 py-2 text-center w-16">Mã Code NCC</th>
+                        <th class="border border-slate-900 px-2 py-2 text-center w-16">Mã Code N</th>
+                        <th class="border border-slate-900 px-2 py-2 text-center w-24">Hạn dùng</th>
+                        <th class="border border-slate-900 px-2 py-2 text-center w-20">Kệ / Vị trí</th>
                         <th class="border border-slate-900 px-2 py-2 text-center w-16">ĐVT</th>
                         <th class="border border-slate-900 px-2 py-2 text-right w-20">Số lượng</th>
                     </tr>
@@ -1658,26 +1674,28 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                     <tr>
                         <td class="border border-slate-900 px-2 py-2 text-center"><?php echo e($idx + 1); ?></td>
                         <td class="border border-slate-900 px-2 py-2 font-bold"><?php echo e($ii->product->name); ?> (<?php echo e($ii->product->code); ?>)</td>
-                        <td class="border border-slate-900 px-2 py-2 text-center"><?php echo e($ii->batch_number); ?></td>
+                        <td class="border border-slate-900 px-2 py-2 text-center"><?php echo e($ii->batch_number ?: '-'); ?></td>
+                        <td class="border border-slate-900 px-2 py-2 text-center"><?php echo e($ii->expiry_date ? \Carbon\Carbon::parse($ii->expiry_date)->format('d/m/Y') : '-'); ?></td>
+                        <td class="border border-slate-900 px-2 py-2 text-center font-bold"><?php echo e($ii->warehouse_location ?: '-'); ?></td>
                         <td class="border border-slate-900 px-2 py-2 text-center"><?php echo e($ii->product->unit); ?></td>
-                        <td class="border border-slate-900 px-2 py-2 text-right font-bold"><?php echo e(number_format($ii->quantity)); ?></td>
+                        <td class="border border-slate-900 px-2 py-2 text-right font-black"><?php echo e(is_numeric($ii->quantity) && floor($ii->quantity) == $ii->quantity ? number_format($ii->quantity, 0, ',', '.') : number_format($ii->quantity, 2, ',', '.')); ?></td>
                     </tr>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 </tbody>
             </table>
 
-            <div class="grid grid-cols-3 gap-4 text-center mt-12">
-                <div>
-                    <p class="font-bold text-xs uppercase">Người giao hàng</p>
-                    <p class="text-[9px] italic">(Ký, ghi rõ họ tên)</p>
+            <div style="display: flex; justify-content: space-between; margin-top: 40px; text-align: center; font-size: 14px; font-weight: bold;">
+                <div style="width: 33%;">
+                    <p>THỦ KHO</p>
+                    <p style="font-style: italic; font-weight: normal; font-size: 12px; margin-top: 4px;">(Ký, ghi rõ họ tên)</p>
                 </div>
-                <div>
-                    <p class="font-bold text-xs uppercase">Người nhận</p>
-                    <p class="text-[9px] italic">(Ký, ghi rõ họ tên)</p>
+                <div style="width: 33%;">
+                    <p>QUẢN LÝ KHO</p>
+                    <p style="font-style: italic; font-weight: normal; font-size: 12px; margin-top: 4px;">(Ký, ghi rõ họ tên)</p>
                 </div>
-                <div>
-                    <p class="font-bold text-xs uppercase">Thủ kho</p>
-                    <p class="text-[9px] italic">(Ký, ghi rõ họ tên)</p>
+                <div style="width: 33%;">
+                    <p>KTSC</p>
+                    <p style="font-style: italic; font-weight: normal; font-size: 12px; margin-top: 4px;">(Ký, ghi rõ họ tên)</p>
                 </div>
             </div>
         </div>
@@ -1733,7 +1751,13 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                         if (effect.parentNode) effect.parentNode.removeChild(effect);
                     }, 500);
                 }
-            }, 2500);
+            }, 1000);
+        });
+
+        $wire.on('show-error-effect', (data) => {
+            let msg = Array.isArray(data) ? data[0].message : (data.message || data);
+            alert('LỖI LƯU PHIẾU: ' + msg + '\n\nVui lòng kiểm tra lại dữ liệu (có thể có dòng bị trống số lượng). Trình duyệt sẽ tự động cuộn lên để bạn xem lỗi!');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     </script>
         <?php

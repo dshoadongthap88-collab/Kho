@@ -45,9 +45,11 @@ Route::middleware('auth')->group(function () {
 
         // HR House Routes (Quản trị & Phân quyền)
         Route::middleware('admin')->prefix('hr')->name('hr.')->group(function () {
+            Route::get('/dashboard', \App\Livewire\Hr\HrDashboard::class)->name('dashboard');
             Route::get('/projects', \App\Livewire\Hr\ProjectManager::class)->name('projects');
             Route::get('/permissions', \App\Livewire\Hr\PermissionManager::class)->name('permissions');
             Route::get('/global-report', \App\Livewire\Hr\GlobalReport::class)->name('global-report');
+            Route::get('/notifications', \App\Livewire\Hr\NotificationManager::class)->name('notifications');
         });
 
         require __DIR__.'/warehouse.php';

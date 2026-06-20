@@ -79,24 +79,22 @@
                         </div>
                     </div>
 
-                    <!-- Biểu tượng chuông thông báo -->
-                    <div class="relative group ml-2" x-data="{ open: false }">
-                        <button @click="open = !open" class="relative p-2 rounded-full hover:bg-sky-200 transition-all focus:outline-none">
-                            <span class="text-xl">🔔</span>
-                            <span class="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white ring-2 ring-sky-100">
-                                3
+                    <!-- Module 6: CHAT KHO -->
+                    <?php
+                        $lastRead = auth()->user()->last_read_chat_at ?? '2000-01-01 00:00:00';
+                        $unreadCount = \App\Models\ChatMessage::where('created_at', '>', $lastRead)
+                            ->where('user_id', '!=', auth()->id())
+                            ->count();
+                    ?>
+                    <a href="<?php echo e(route('warehouse.chat')); ?>" class="ml-2 px-3 py-2 rounded-md text-sm font-bold transition duration-150 relative <?php echo e(request()->routeIs('warehouse.chat') ? 'bg-sky-200 text-sky-950 shadow-inner' : ($unreadCount > 0 ? 'text-red-600 bg-red-100 hover:bg-red-200 animate-pulse' : 'text-sky-900 hover:bg-sky-200 hover:text-sky-950')); ?>">
+                        6. CHAT KHO
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($unreadCount > 0): ?>
+                            <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white ring-2 ring-sky-100">
+                                <?php echo e($unreadCount > 9 ? '9+' : $unreadCount); ?>
+
                             </span>
-                        </button>
-                        <div x-show="open"
-                             @click.away="open = false"
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 py-1">
-                            <div class="px-4 py-2 text-xs font-bold text-gray-800 border-b border-gray-100">Thông báo mới</div>
-                            <div class="px-4 py-2 text-xs text-gray-600 hover:bg-gray-100 cursor-pointer">Bạn có tin nhắn mới</div>
-                        </div>
-                    </div>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    </a>
                 </div>
             </div>
 

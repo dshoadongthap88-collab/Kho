@@ -1,49 +1,60 @@
-# 🚚 CẤU HÌNH CHUYỂN KHO (STOCK TRANSFER)
+# CẤU HÌNH CHUYỂN KHO (ĐÃ CHỐT)
 
-Tài liệu hướng dẫn nghiệp vụ và đặc tả tính năng của phân hệ **Chuyển kho giữa các Dự án/Chi nhánh** trong hệ thống Quản lý Kho.
+*Tài liệu này lưu trữ cấu hình cố định của Module Chuyển Kho sau khi đã hoàn thiện lập trình.*
 
----
+## 1. Thông tin chung
+- **Mã phiếu**: Tự động sinh (Định dạng: `TF-YYYYMMDD-XXXX`).
+- **Chi nhánh gửi (Từ Chi nhánh)**: Liên kết động với danh sách Dự án (Projects). Tự động lấy Chi nhánh hiện tại mà User đang thao tác.
+- **Chi nhánh nhận (Đến Chi nhánh)**: Liên kết động với danh sách Dự án (Projects). Cho phép chọn danh sách các nhà khác với nhà hiện tại.
 
-## 📌 1. Yêu cầu Nghiệp vụ
-* **Mục tiêu:** Hỗ trợ điều chuyển vật tư, thiết bị giữa các địa điểm dự án (ví dụ: Dự án Hóc Môn, Dự án Hậu Nghĩa, Dự án Cần Giờ...) một cách nhanh chóng, chính xác.
-* **Quy trình hoạt động:**
-  1. Thủ kho tại Nhà kho nguồn (ví dụ: Hóc Môn) lập **Phiếu chuyển kho**.
-  2. Chọn Nhà kho đích cần chuyển đến.
-  3. Chọn các vật tư cần chuyển đi từ **Danh sách vật tư hiện đang có tồn kho thực tế** tại kho nguồn.
-  4. Sau khi hoàn tất, hệ thống tự động:
-     * **Trừ tồn kho** tại kho nguồn (Hóc Môn) và ghi nhận giao dịch `transfer_out`.
-     * **Cộng tồn kho** tương ứng tại kho đích (Hậu Nghĩa/Cần Giờ...) và ghi nhận giao dịch `transfer_in`. Nếu kho đích chưa có mã vật tư này, hệ thống sẽ tự động đồng bộ và khởi tạo mới danh mục vật tư ở kho đích để đảm bảo tính toàn vẹn.
+## 2. Thông tin nhân sự (Liên kết Module HR)
+- **Người gửi**: Tự động lấy tên User đang tạo phiếu, kèm theo Số điện thoại.
+- **Người nhận**: Lấy từ danh sách User hệ thống (Module HR), tự động hiển thị Số điện thoại tương ứng khi chọn.
 
----
+## 3. Quản lý chi tiết vật tư
+Đã tích hợp **Thanh tìm kiếm nhanh (Global Search)** ngay trên bảng danh sách vật tư.
+Khi tìm kiếm sẽ hiển thị cả Tên, Mã, ĐVT và **Số lượng tồn kho (Realtime)** để người dùng chọn nhanh.
 
-## ⚙️ 2. Đặc tả Kỹ thuật & Các tính năng
+Các cột trong bảng chi tiết:
+1. **STT**: Sử dụng bộ đếm tự động ($loop->iteration).
+2. **Mã & Tên vật tư**: Nhập tay hoặc chọn bằng Datalist (Danh sách xổ xuống thông minh có tích hợp tìm kiếm).
+3. **Số lượng tồn**: Tự động truy xuất từ dữ liệu Tồn kho của Chi nhánh gửi ngay khi chọn mặt hàng.
+4. **Số lượng xuất**: User nhập (kiểm tra không được vượt quá số lượng tồn).
+5. **Vị trí**: Tự động lấy từ vị trí tồn kho (hoặc danh mục) của mặt hàng đó.
+6. **Ghi chú mặt hàng**: Ghi chú tự do.
+7. **Nút Xóa dòng**: Dành cho giao diện nhập liệu.
 
-### 🔹 Xem chi tiết phiếu chuyển kho (Danh sách)
-* Tại màn hình danh sách lịch sử chuyển kho, **cột Mã Phiếu** được thiết kế để có thể nhấp vào (clickable). 
-* Khi người dùng nhấp vào **Mã phiếu đã chuyển**, hệ thống sẽ tự động bật một Popup/Modal hiển thị ngay lập tức tất cả thông tin chi tiết của phiếu chuyển kho đó. 
-* **Thông tin chi tiết bao gồm:** Ngày chuyển, người lập, từ kho nào đến kho nào, ghi chú, cùng với danh sách đầy đủ mã vật tư, tên vật tư, số lượng và đơn vị tính đã được điều chuyển.
+## 4. Quy trình nghiệp vụ tự động (2 Bước)
 
-### 🔹 Đặc tả Kỹ thuật của Ô Chọn Vật Tư Thông Minh
-Để hạn chế tối đa thao tác nhập tay và tránh sai sót mã vật tư, mục **"Mã vật tư / sản phẩm"** trong bảng chi tiết chuyển kho được cấu hình như sau:
+### Bước 1: Gửi đi (Pending)
+- **Hành động**: Kho gửi lập phiếu và bấm Hoàn tất.
+- **Hệ thống xử lý**:
+  - Tự động trừ số lượng tồn kho tại Kho gửi.
+  - Sinh lịch sử giao dịch (InventoryTransaction) loại "transfer_out".
+  - Phiếu ở trạng thái **Chờ xác nhận**.
+  - 🔔 Hệ thống tự động gửi **Chuông thông báo chat** tới thủ kho / người dùng ở Chi nhánh nhận.
 
-### 🔹 Nguồn Dữ Liệu Tồn Kho (Data Source)
-* Chỉ truy vấn và hiển thị các vật tư có số lượng tồn kho thực tế lớn hơn `0` tại nhà kho hiện tại (`quantity > 0`).
-* **Truy vấn tối ưu:**
-  ```php
-  $products = Product::whereHas('inventory', function ($q) {
-      $q->where('quantity', '>', 0);
-  })->get(['code', 'name', 'unit']);
-  ```
+### Bước 2: Nhận hàng (Completed)
+- **Hành động**: Kho nhận vào màn hình danh sách, kiểm tra và bấm "Xác nhận nhận hàng".
+- **Hệ thống xử lý**:
+  - Chuyển database connection sang Chi nhánh nhận để xử lý.
+  - Tự động sao chép thông tin Vật tư (Product catalog) nếu Chi nhánh nhận chưa từng có mã này.
+  - Tự động **Cộng số lượng tồn kho** vào kho của Chi nhánh nhận.
+  - Sinh lịch sử giao dịch (InventoryTransaction) loại "transfer_in" tại Chi nhánh nhận.
+  - Đổi trạng thái phiếu thành **Hoàn thành**.
 
-### 🔹 Trải Nghiệm Người Dùng (UI/UX)
-* Sử dụng thẻ `<datalist>` HTML5 kết hợp Livewire đem lại khả năng phản hồi cực nhanh, hỗ trợ cả thiết bị di động và máy tính:
-  * **Tìm kiếm song song:** Cho phép người dùng gõ tìm kiếm theo **Mã vật tư** hoặc **Tên vật tư** đều được.
-  * **Định dạng hiển thị:** `[Mã Vật Tư] - [TÊN VẬT TƯ]` (ví dụ: `VAP01035 - Kích thủy lực dùng hơi khí nén 50T`).
-  * **Tự động tách mã:** Khi người dùng click chọn một vật tư từ danh sách gợi ý, hệ thống sẽ tự động phân tách phần chuỗi và chỉ lưu trữ đúng **Mã Vật Tư** (`code`) vào ô nhập liệu để hoàn tất quy trình lưu trữ chuẩn xác.
-
----
-
-## 🛠️ 3. Danh sách các Tệp nguồn liên quan
-* **Livewire Component:** [StockTransferForm.php](file:///d:/Project/app/Livewire/Warehouse/StockTransferForm.php)
-* **Blade View:** [stock-transfer-form.blade.php](file:///d:/Project/resources/views/livewire/warehouse/stock-transfer-form.blade.php)
-* **Tài liệu đặc tả:** [cau_hinh_chuyen_kho.md](file:///d:/Project/docs/cau_hinh_chuyen_kho.md)
+## 5. Cấu hình Mẫu In (Phiếu Chuyển Kho Nội Bộ)
+Hỗ trợ chức năng in 1 phiếu trực tiếp và chức năng **In hàng loạt** (In nhiều phiếu).
+- **Tiêu đề in**: 
+  - Tên Công ty: CÔNG TY CP ĐẦU TƯ VÀ HẠ TẦNG V-ALPHA
+  - Dự án: [Tên chi nhánh hiện tại]
+  - Tiêu đề: PHIẾU CHUYỂN KHO NỘI BỘ
+- **Thông tin Header (Layout 2 cột đối xứng ngang nhau)**:
+  - (Cột trái) Ngày chuyển  ---  *(Dòng trống để cân bằng)* (Cột phải)
+  - (Cột trái) Từ Chi nhánh  ---  Đến Chi nhánh (Cột phải)
+  - (Cột trái) Người gửi (+SĐT)  ---  Người nhận (+SĐT) (Cột phải)
+- **Chân trang chữ ký**: Bố cục 3 cột cân đối:
+  - **Người Gửi** (Khoảng trống ký)
+  - **Người Nhận** (Khoảng trống ký)
+  - **Người Phê Duyệt** (Khoảng trống ký)
+*(Đã loại bỏ chữ "Ký và ghi rõ họ tên" và cột "Thủ kho" theo yêu cầu).*

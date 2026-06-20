@@ -113,4 +113,6 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
     // Stock Recovery Report Routes
     Route::get('/stock-recovery-report', \App\Livewire\Warehouse\StockRecoveryReportList::class)->name('stock-recovery-report')->middleware('permission:stock_recovery');
 
+    // Module 6: CHAT KHO
+    Route::get('/chat', \App\Livewire\Warehouse\WarehouseChat::class)->name('chat');
 });

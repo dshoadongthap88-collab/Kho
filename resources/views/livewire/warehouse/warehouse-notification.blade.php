@@ -28,7 +28,7 @@
             @forelse($this->messages as $msg)
                 <div class="px-4 py-3 text-xs border-b border-gray-50 last:border-none {{ !$msg->is_read ? 'bg-sky-50' : '' }}">
                     <div class="flex justify-between items-start mb-1">
-                        <span class="font-bold text-gray-800">{{ $msg->sender_name }}</span>
+                        <span class="font-bold text-gray-800">{{ $msg->title ?? 'Hệ thống' }}</span>
                         <span class="text-[9px] text-gray-400">{{ \Carbon\Carbon::parse($msg->created_at)->diffForHumans() }}</span>
                     </div>
                     <p class="text-gray-600 leading-relaxed">{{ $msg->message }}</p>

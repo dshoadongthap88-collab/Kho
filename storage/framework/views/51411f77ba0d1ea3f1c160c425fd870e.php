@@ -1,5 +1,5 @@
 <div class="p-6 max-w-7xl mx-auto" x-data="{
-    selected: @entangle('selectedTransfers').live,
+    selected: <?php if ((object) ('selectedTransfers') instanceof \Livewire\WireDirective) : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('selectedTransfers'->value()); ?>')<?php echo e('selectedTransfers'->hasModifier('live') ? '.live' : ''); ?><?php else : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('selectedTransfers'); ?>')<?php endif; ?>.live,
     toggle(id) {
         if (!Array.isArray(this.selected)) {
             this.selected = [];
@@ -19,13 +19,13 @@
         }
     }
 }">
-    {{-- Grid Layout --}}
+    
     <div class="grid grid-cols-1 gap-6">
 
-        {{-- Table Card --}}
+        
         <div class="space-y-6">
 
-            {{-- Header Card --}}
+            
             <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div class="absolute inset-0 bg-white/5 backdrop-blur-3xl -z-10"></div>
                 <div>
@@ -33,28 +33,28 @@
                     <p class="text-sm text-indigo-100 mt-1">Lập phiếu, chuyển đổi và theo dõi hàng hóa tự động trừ tồn kho giữa các Dự án</p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('warehouse.stock-transfer.create') }}"
+                    <a href="<?php echo e(route('warehouse.stock-transfer.create')); ?>"
                         class="bg-white text-indigo-800 px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-indigo-50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
                         <span>➕</span> Tạo Phiếu Chuyển Kho
                     </a>
                 </div>
             </div>
 
-            {{-- Flash Messages --}}
-            @if(session('success'))
+            
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
                 <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-3 text-sm shadow-sm">
                     <span class="text-xl">✅</span>
-                    <span class="font-medium">{{ session('success') }}</span>
+                    <span class="font-medium"><?php echo e(session('success')); ?></span>
                 </div>
-            @endif
-            @if(session('error'))
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('error')): ?>
                 <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl flex items-center gap-3 text-sm shadow-sm">
                     <span class="text-xl">❌</span>
-                    <span class="font-medium">{{ session('error') }}</span>
+                    <span class="font-medium"><?php echo e(session('error')); ?></span>
                 </div>
-            @endif
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-            {{-- Filter & Search Card --}}
+            
             <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex items-center gap-3">
                 <div class="relative flex-1">
                     <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">🔍</span>
@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            {{-- Action Bar (Hành động hàng loạt) --}}
+            
             <div class="bg-indigo-600 rounded-2xl p-3 shadow-xl flex items-center justify-between mb-4 transition-all" :class="selected.length > 0 ? 'opacity-100' : 'opacity-70'">
                 <div class="flex items-center gap-2 text-white text-sm font-bold">
                     <span class="bg-white text-indigo-600 px-2 py-0.5 rounded-full text-xs font-black" x-text="selected.length"></span>
@@ -84,7 +84,7 @@
                 </div>
             </div>
 
-            {{-- Table Card --}}
+            
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
@@ -101,85 +101,91 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            @forelse($transfers as $transfer)
-                                <tr wire:key="transfer-{{ $transfer->id }}" class="hover:bg-indigo-50/30 transition-all" :class="selected.includes('{{ $transfer->id }}') ? 'bg-indigo-50/50' : ''">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $transfers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $transfer): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                <tr <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'transfer-'.e($transfer->id).''; ?>wire:key="transfer-<?php echo e($transfer->id); ?>" class="hover:bg-indigo-50/30 transition-all" :class="selected.includes('<?php echo e($transfer->id); ?>') ? 'bg-indigo-50/50' : ''">
                                     <td class="px-5 py-4 cursor-pointer hover:bg-indigo-100 transition-colors group">
                                         <div class="flex items-center gap-3">
                                             <input type="checkbox"
-                                                   @click.stop="toggle('{{ $transfer->id }}')"
-                                                   :checked="selected.includes('{{ $transfer->id }}')"
+                                                   @click.stop="toggle('<?php echo e($transfer->id); ?>')"
+                                                   :checked="selected.includes('<?php echo e($transfer->id); ?>')"
                                                    class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
-                                            <div class="font-mono font-black text-indigo-700 text-sm tracking-tight group-hover:text-indigo-900 cursor-pointer" wire:click="viewDetail({{ $transfer->id }})">
-                                                {{ $transfer->transfer_code }}
+                                            <div class="font-mono font-black text-indigo-700 text-sm tracking-tight group-hover:text-indigo-900 cursor-pointer" wire:click="viewDetail(<?php echo e($transfer->id); ?>)">
+                                                <?php echo e($transfer->transfer_code); ?>
+
                                             </div>
                                         </div>
-                                        @if($transfer->note)
-                                            <div class="text-xs text-gray-400 mt-1 italic max-w-xs truncate">📝 {{ $transfer->note }}</div>
-                                        @endif
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($transfer->note): ?>
+                                            <div class="text-xs text-gray-400 mt-1 italic max-w-xs truncate">📝 <?php echo e($transfer->note); ?></div>
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </td>
                                     <td class="px-5 py-4 text-center">
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 text-xs font-black border border-amber-200">
-                                            🏡 {{ $transfer->fromProject?->name ?? '—' }}
+                                            🏡 <?php echo e($transfer->fromProject?->name ?? '—'); ?>
+
                                         </span>
                                     </td>
                                     <td class="px-5 py-4 text-center">
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 text-xs font-black border border-sky-200">
-                                            🏡 {{ $transfer->toProject?->name ?? '—' }}
+                                            🏡 <?php echo e($transfer->toProject?->name ?? '—'); ?>
+
                                         </span>
                                     </td>
                                     <td class="px-5 py-4 text-center font-bold text-gray-800">
                                         <span class="bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-full text-xs font-black">
-                                            {{ $transfer->items->count() }} mặt hàng
+                                            <?php echo e($transfer->items->count()); ?> mặt hàng
                                         </span>
                                     </td>
                                     <td class="px-5 py-4 text-gray-600 font-medium">
-                                        {{ $transfer->transfer_date->format('d/m/Y') }}
+                                        <?php echo e($transfer->transfer_date->format('d/m/Y')); ?>
+
                                     </td>
                                     <td class="px-5 py-4 text-gray-600 font-medium">
-                                        {{ $transfer->creator?->name ?? '—' }}
+                                        <?php echo e($transfer->creator?->name ?? '—'); ?>
+
                                     </td>
                                     <td class="px-5 py-4">
-                                        @if($transfer->status === 'completed')
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($transfer->status === 'completed'): ?>
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
                                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                                 ✔ Đã Trừ Tồn
                                             </span>
-                                        @else
+                                        <?php else: ?>
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-black">
                                                 ⏳ Đang Xử Lý
                                             </span>
-                                        @endif
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </td>
                                     <td class="px-5 py-4 text-center">
-                                        <button wire:click="viewDetail({{ $transfer->id }})" type="button" class="text-indigo-600 hover:text-indigo-900 transition-colors" title="Xem Chi Tiết">
+                                        <button wire:click="viewDetail(<?php echo e($transfer->id); ?>)" type="button" class="text-indigo-600 hover:text-indigo-900 transition-colors" title="Xem Chi Tiết">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                         </button>
                                     </td>
                                 </tr>
-                            @empty
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 <tr>
                                     <td colspan="10" class="text-center py-16 text-gray-400">
                                         <div class="text-5xl mb-3">📦</div>
                                         <div class="text-sm font-semibold">Chưa có giao dịch chuyển kho nào được thực hiện</div>
                                     </td>
                                 </tr>
-                            @endforelse
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </tbody>
                     </table>
                 </div>
 
-                {{-- Pagination --}}
-                @if($transfers->hasPages())
+                
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($transfers->hasPages()): ?>
                     <div class="px-5 py-4 bg-gray-50 border-t border-gray-100">
-                        {{ $transfers->links() }}
+                        <?php echo e($transfers->links()); ?>
+
                     </div>
-                @endif
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </div>
     </div>
 
-    {{-- Detail Modal --}}
-    @if($showDetailModal && $this->selectedTransferDetail)
+    
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showDetailModal && $this->selectedTransferDetail): ?>
         <div class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-data @keydown.escape.window="$wire.closeDetailModal()">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="$wire.closeDetailModal()"></div>
@@ -191,7 +197,7 @@
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <h3 class="text-xl font-black text-gray-900 uppercase tracking-tight" id="modal-title">Chi Tiết Phiếu Chuyển Kho</h3>
-                                <p class="text-sm text-gray-500">Mã phiếu: <span class="font-mono font-bold text-indigo-600">{{ $this->selectedTransferDetail->transfer_code }}</span></p>
+                                <p class="text-sm text-gray-500">Mã phiếu: <span class="font-mono font-bold text-indigo-600"><?php echo e($this->selectedTransferDetail->transfer_code); ?></span></p>
                             </div>
                             <button wire:click="closeDetailModal()" class="text-gray-400 hover:text-gray-500">
                                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -201,17 +207,18 @@
                         <div class="grid grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-xl">
                             <div>
                                 <p class="text-[10px] uppercase font-bold text-gray-400">Ngày chuyển</p>
-                                <p class="text-sm font-semibold text-gray-800">{{ $this->selectedTransferDetail->transfer_date?->format('d/m/Y H:i') ?? '—' }}</p>
+                                <p class="text-sm font-semibold text-gray-800"><?php echo e($this->selectedTransferDetail->transfer_date?->format('d/m/Y H:i') ?? '—'); ?></p>
                             </div>
                             <div>
                                 <p class="text-[10px] uppercase font-bold text-gray-400">Người lập</p>
-                                <p class="text-sm font-semibold text-gray-800">{{ $this->selectedTransferDetail->creator?->name ?? '—' }}</p>
+                                <p class="text-sm font-semibold text-gray-800"><?php echo e($this->selectedTransferDetail->creator?->name ?? '—'); ?></p>
                             </div>
                             <div>
                                 <p class="text-[10px] uppercase font-bold text-gray-400">Từ Chi nhánh</p>
                                 <p class="text-sm font-semibold text-gray-800">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded bg-amber-50 text-amber-800 text-xs font-black border border-amber-200">
-                                        🏡 {{ $this->selectedTransferDetail->fromProject?->name ?? '—' }}
+                                        🏡 <?php echo e($this->selectedTransferDetail->fromProject?->name ?? '—'); ?>
+
                                     </span>
                                 </p>
                             </div>
@@ -219,18 +226,19 @@
                                 <p class="text-[10px] uppercase font-bold text-gray-400">Đến Chi nhánh</p>
                                 <p class="text-sm font-semibold text-gray-800">
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 text-xs font-black border border-sky-200">
-                                        🏡 {{ $this->selectedTransferDetail->toProject?->name ?? '—' }}
+                                        🏡 <?php echo e($this->selectedTransferDetail->toProject?->name ?? '—'); ?>
+
                                     </span>
                                 </p>
                             </div>
                         </div>
 
-                        @if($this->selectedTransferDetail->note)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($this->selectedTransferDetail->note): ?>
                             <div class="mb-6">
                                 <p class="text-[10px] uppercase font-bold text-gray-400 mb-1">Ghi chú</p>
-                                <p class="text-sm text-gray-700 italic bg-yellow-50 p-3 rounded-lg border border-yellow-100">{{ $this->selectedTransferDetail->note }}</p>
+                                <p class="text-sm text-gray-700 italic bg-yellow-50 p-3 rounded-lg border border-yellow-100"><?php echo e($this->selectedTransferDetail->note); ?></p>
                             </div>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                         <div>
                             <p class="text-[10px] uppercase font-bold text-gray-400 mb-2">Danh sách mặt hàng</p>
@@ -247,33 +255,33 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-100">
-                                        @foreach($this->selectedTransferDetail->items ?? [] as $item)
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $this->selectedTransferDetail->items ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                                             <tr class="hover:bg-gray-50">
-                                                <td class="px-4 py-2 font-mono font-bold">{{ $item->product?->code ?? '—' }}</td>
-                                                <td class="px-4 py-2">{{ $item->product?->name ?? '—' }}</td>
-                                                <td class="px-4 py-2 text-center font-bold">{{ $item->quantity }}</td>
-                                                <td class="px-4 py-2 text-center">{{ $item->product?->unit ?? '—' }}</td>
-                                                <td class="px-4 py-2 text-center">{{ $item->location ?? '—' }}</td>
-                                                <td class="px-4 py-2">{{ $item->note ?? '—' }}</td>
+                                                <td class="px-4 py-2 font-mono font-bold"><?php echo e($item->product?->code ?? '—'); ?></td>
+                                                <td class="px-4 py-2"><?php echo e($item->product?->name ?? '—'); ?></td>
+                                                <td class="px-4 py-2 text-center font-bold"><?php echo e($item->quantity); ?></td>
+                                                <td class="px-4 py-2 text-center"><?php echo e($item->product?->unit ?? '—'); ?></td>
+                                                <td class="px-4 py-2 text-center"><?php echo e($item->location ?? '—'); ?></td>
+                                                <td class="px-4 py-2"><?php echo e($item->note ?? '—'); ?></td>
                                             </tr>
-                                        @endforeach
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end gap-3">
-                        @if($this->selectedTransferDetail->status === 'pending' && $this->selectedTransferDetail->to_project_id == $currentHouse)
-                            <button type="button" wire:click="confirmTransfer({{ $this->selectedTransferDetail->id }})" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-white bg-green-600 border border-green-600 rounded-md shadow-sm hover:bg-green-700 focus:outline-none sm:ml-3">
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($this->selectedTransferDetail->status === 'pending' && $this->selectedTransferDetail->to_project_id == $currentHouse): ?>
+                            <button type="button" wire:click="confirmTransfer(<?php echo e($this->selectedTransferDetail->id); ?>)" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-white bg-green-600 border border-green-600 rounded-md shadow-sm hover:bg-green-700 focus:outline-none sm:ml-3">
                                 ✅ Xác nhận nhận hàng
                             </button>
-                        @endif
-                        @if($this->selectedTransferDetail->status === 'pending')
-                        <button type="button" wire:click="deleteTransfer({{ $this->selectedTransferDetail->id }})" onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu chuyển kho này?')" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-white bg-red-600 border border-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none sm:ml-3">
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($this->selectedTransferDetail->status === 'pending'): ?>
+                        <button type="button" wire:click="deleteTransfer(<?php echo e($this->selectedTransferDetail->id); ?>)" onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu chuyển kho này?')" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-white bg-red-600 border border-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none sm:ml-3">
                             🗑️ Xóa
                         </button>
-                        @endif
-                        <a href="{{ route('warehouse.stock-transfer.print', $this->selectedTransferDetail->id) }}" target="_blank" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-indigo-700 bg-indigo-100 border border-indigo-200 rounded-md shadow-sm hover:bg-indigo-200 focus:outline-none">
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        <a href="<?php echo e(route('warehouse.stock-transfer.print', $this->selectedTransferDetail->id)); ?>" target="_blank" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-indigo-700 bg-indigo-100 border border-indigo-200 rounded-md shadow-sm hover:bg-indigo-200 focus:outline-none">
                             🖨️ In
                         </a>
                         <button type="button" wire:click="closeDetailModal()" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none">
@@ -283,11 +291,11 @@
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 </div>
 
 <script>
     window.addEventListener('open-print-window', event => {
         window.open(event.detail.url, '_blank');
     });
-</script>
+</script><?php /**PATH D:\Project\resources\views/livewire/warehouse/stock-transfer-list.blade.php ENDPATH**/ ?>

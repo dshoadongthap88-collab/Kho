@@ -9,6 +9,8 @@ class ChatMessage extends Model
 {
     use HasFactory;
 
+    protected $connection = 'mysql';
+
     protected $fillable = [
         'user_id',
         'recipient_id',
@@ -16,6 +18,7 @@ class ChatMessage extends Model
         'content',
         'attachment_path',
         'is_read',
+        'reply_to_id',
     ];
 
     protected $casts = [
@@ -31,4 +34,10 @@ class ChatMessage extends Model
     {
         return $this->belongsTo(User::class, 'recipient_id');
     }
+
+    public function repliedMessage()
+    {
+        return $this->belongsTo(ChatMessage::class, 'reply_to_id');
+    }
+
 }

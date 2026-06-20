@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>In Phiếu Chuyển Kho - {{ $transfer->transfer_code }}</title>
+    <title>In Phiếu Chuyển Kho - <?php echo e($transfer->transfer_code); ?></title>
     <style>
         body { font-family: "Times New Roman", Times, serif; line-height: 1.6; color: #000; margin: 0; padding: 0; }
         .page { width: 210mm; min-height: 297mm; padding: 20mm; margin: 10mm auto; background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; position: relative; }
@@ -36,36 +36,37 @@
 <body>
     <div class="btn-container no-print">
         <button class="no-print-btn" onclick="window.print()">🖨️ In Phiếu</button>
-        <a href="{{ route('warehouse.stock-transfer.index') }}" class="cancel-btn">❌ Hủy in</a>
+        <a href="<?php echo e(route('warehouse.stock-transfer.index')); ?>" class="cancel-btn">❌ Hủy in</a>
     </div>
 
     <div class="page">
         <div class="company-name">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ HẠ TẦNG V-ALPHA</div>
-        <div class="project-name">Dự án: {{ $transfer->fromProject?->name ?? 'Nội bộ' }}</div>
+        <div class="project-name">Dự án: <?php echo e($transfer->fromProject?->name ?? 'Nội bộ'); ?></div>
         
         <div class="header">
             <h1>PHIẾU CHUYỂN KHO NỘI BỘ</h1>
-            <p>Mã phiếu: <strong>{{ $transfer->transfer_code }}</strong></p>
+            <p>Mã phiếu: <strong><?php echo e($transfer->transfer_code); ?></strong></p>
         </div>
 
         <div class="info-section">
             <div class="left-col">
-                <div class="info-item"><span class="info-label">Ngày chuyển:</span> {{ $transfer->transfer_date?->format('d/m/Y H:i') }}</div>
-                <div class="info-item"><span class="info-label">Từ Chi nhánh:</span> {{ $transfer->fromProject?->name ?? '—' }}</div>
-                <div class="info-item"><span class="info-label">Người gửi:</span> {{ $transfer->creator?->name ?? '—' }} {{ $transfer->sender_phone ? '('.$transfer->sender_phone.')' : '' }}</div>
+                <div class="info-item"><span class="info-label">Ngày chuyển:</span> <?php echo e($transfer->transfer_date?->format('d/m/Y H:i')); ?></div>
+                <div class="info-item"><span class="info-label">Từ Chi nhánh:</span> <?php echo e($transfer->fromProject?->name ?? '—'); ?></div>
+                <div class="info-item"><span class="info-label">Người gửi:</span> <?php echo e($transfer->creator?->name ?? '—'); ?> <?php echo e($transfer->sender_phone ? '('.$transfer->sender_phone.')' : ''); ?></div>
             </div>
             <div class="right-col">
                 <div class="info-item">&nbsp;</div>
-                <div class="info-item"><span class="info-label">Đến Chi nhánh:</span> {{ $transfer->toProject?->name ?? '—' }}</div>
-                <div class="info-item"><span class="info-label">Người nhận:</span> {{ $transfer->receiver?->name ?? '—' }} {{ $transfer->receiver_phone ? '('.$transfer->receiver_phone.')' : '' }}</div>
+                <div class="info-item"><span class="info-label">Đến Chi nhánh:</span> <?php echo e($transfer->toProject?->name ?? '—'); ?></div>
+                <div class="info-item"><span class="info-label">Người nhận:</span> <?php echo e($transfer->receiver?->name ?? '—'); ?> <?php echo e($transfer->receiver_phone ? '('.$transfer->receiver_phone.')' : ''); ?></div>
             </div>
         </div>
 
-        @if($transfer->note)
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($transfer->note): ?>
             <div style="margin-bottom: 20px; font-size: 15px;">
-                <span class="info-label" style="font-weight: bold; width: 120px; display: inline-block;">Ghi chú:</span> {{ $transfer->note }}
+                <span class="info-label" style="font-weight: bold; width: 120px; display: inline-block;">Ghi chú:</span> <?php echo e($transfer->note); ?>
+
             </div>
-        @endif
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <table class="table">
             <thead>
@@ -80,17 +81,17 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($transfer->items as $index => $item)
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $transfer->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                     <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td class="font-mono">{{ $item->product_code }}</td>
-                        <td class="text-left">{{ $item->product?->name ?? '—' }}</td>
-                        <td>{{ $item->quantity }}</td>
-                        <td>{{ $item->product?->unit ?? '—' }}</td>
-                        <td>{{ $item->location ?? '' }}</td>
-                        <td class="text-left">{{ $item->note ?? '' }}</td>
+                        <td><?php echo e($index + 1); ?></td>
+                        <td class="font-mono"><?php echo e($item->product_code); ?></td>
+                        <td class="text-left"><?php echo e($item->product?->name ?? '—'); ?></td>
+                        <td><?php echo e($item->quantity); ?></td>
+                        <td><?php echo e($item->product?->unit ?? '—'); ?></td>
+                        <td><?php echo e($item->location ?? ''); ?></td>
+                        <td class="text-left"><?php echo e($item->note ?? ''); ?></td>
                     </tr>
-                @endforeach
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             </tbody>
         </table>
 
@@ -111,3 +112,4 @@
     </div>
 </body>
 </html>
+<?php /**PATH D:\Project\resources\views/warehouse/stock-transfer-print.blade.php ENDPATH**/ ?>

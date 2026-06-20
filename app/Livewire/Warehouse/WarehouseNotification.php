@@ -3,7 +3,8 @@
 namespace App\Livewire\Warehouse;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\DB;
+use App\Models\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class WarehouseNotification extends Component
 {
@@ -21,9 +22,11 @@ class WarehouseNotification extends Component
     public function markAsRead()
     {
         try {
-            DB::table('chat_messages')
-                ->where('is_read', false)
-                ->update(['is_read' => true, 'updated_at' => now()]);
+            if (Auth::check()) {
+                Notification::where('user_id', Auth::id())
+                    ->where('is_read', false)
+                    ->update(['is_read' => true, 'updated_at' => now()]);
+            }
         } catch (\Exception $e) {
             // Ignore error
         }
@@ -32,7 +35,8 @@ class WarehouseNotification extends Component
     public function getUnreadCountProperty()
     {
         try {
-            return DB::table('chat_messages')
+            if (!Auth::check()) return 0;
+            return Notification::where('user_id', Auth::id())
                 ->where('is_read', false)
                 ->count();
         } catch (\Exception $e) {
@@ -43,7 +47,8 @@ class WarehouseNotification extends Component
     public function getMessagesProperty()
     {
         try {
-            return DB::table('chat_messages')
+            if (!Auth::check()) return collect([]);
+            return Notification::where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
                 ->get();

@@ -22,6 +22,7 @@
                         <option value="import">Nhập kho</option>
                         <option value="export">Xuất kho</option>
                         <option value="adjust">Điều chỉnh</option>
+                        <option value="transfer">Chuyển kho</option>
                     </select>
                 </div>
                 <button type="button" wire:click="exportExcel" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer">
@@ -75,12 +76,16 @@
                         'export' => 'bg-amber-50 text-amber-700 border-amber-100',
                         'adjust' => 'bg-blue-50 text-blue-700 border-blue-100',
                         'reserve' => 'bg-purple-50 text-purple-700 border-purple-100',
+                        'transfer_in' => 'bg-teal-50 text-teal-700 border-teal-100',
+                        'transfer_out' => 'bg-orange-50 text-orange-700 border-orange-100',
                     ];
                     $typeLabels = [
                         'import' => '📥 Nhập',
                         'export' => '📤 Xuất',
                         'adjust' => '⚙️ Đ/chỉnh',
                         'reserve' => '🔒 Giữ',
+                        'transfer_in' => '🚚 Nhập chuyển',
+                        'transfer_out' => '🚚 Xuất chuyển',
                     ];
                 @endphp
                 <tr class="hover:bg-gray-50 transition-colors">

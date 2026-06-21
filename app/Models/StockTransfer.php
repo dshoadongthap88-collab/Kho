@@ -21,6 +21,7 @@ class StockTransfer extends Model
         'receiver_phone',
         'status',
         'note',
+        'reject_reason',
         'created_by',
         'confirmed_by',
         'confirmed_at',

@@ -43,6 +43,8 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return view('warehouse.stock-count');
     })->name('stock-count')->middleware('permission:stock-count');
 
+    Route::get('/settings/warehouses', \App\Livewire\Warehouse\WarehouseManager::class)->name('settings.warehouses');
+
     Route::get('/stock-transfer', \App\Livewire\Warehouse\StockTransferList::class)->name('stock-transfer.index');
     Route::get('/stock-transfer/create', \App\Livewire\Warehouse\StockTransferForm::class)->name('stock-transfer.create');
     Route::get('/stock-transfer/print/{id}', function($id) {
@@ -109,6 +111,11 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
 
     // ODO Management Route
     Route::get('/odo-manager', \App\Livewire\Warehouse\OdoManager::class)->name('odo-manager');
+
+    // Module 4: THEO DÕI BẢO DƯỠNG
+    Route::get('/maintenance-dashboard', \App\Livewire\Warehouse\MaintenanceDashboard::class)->name('maintenance-dashboard');
+    Route::get('/maintenance-rules', \App\Livewire\Warehouse\MaintenanceRuleManager::class)->name('maintenance-rules');
+    Route::get('/asset-odo-log', \App\Livewire\Warehouse\AssetOdoLog::class)->name('asset-odo-log');
 
     // Stock Recovery Report Routes
     Route::get('/stock-recovery-report', \App\Livewire\Warehouse\StockRecoveryReportList::class)->name('stock-recovery-report')->middleware('permission:stock_recovery');

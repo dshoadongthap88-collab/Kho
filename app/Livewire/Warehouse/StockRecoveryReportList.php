@@ -151,13 +151,15 @@ class StockRecoveryReportList extends Component
             'recoveryNumber',
             'stockOutIdForm',
             'productId',
-            'quantity' => 1,
+            'quantity',
             'unit',
             'recoveryDate',
-            'statusForm' => 'pending',
+            'statusForm',
             'notes',
             'editingRecovery',
         ]);
+        $this->quantity = 1;
+        $this->statusForm = 'pending';
         $this->recoveryDate = now()->format('Y-m-d');
     }
 

@@ -1,17 +1,17 @@
 <div>
     {{-- Flash Messages --}}
     @if(session('success'))
-    <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl flex items-center gap-3 shadow-sm">
+    <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl flex items-center gap-3 shadow-sm no-print">
         <span class="text-xl">✅</span> <span class="font-semibold text-sm">{!! session('success') !!}</span>
     </div>
     @endif
     @if(session('error'))
-    <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl flex items-center gap-3 shadow-sm">
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl flex items-center gap-3 shadow-sm no-print">
         <span class="text-xl">❌</span> <span class="font-semibold text-sm">{{ session('error') }}</span>
     </div>
     @endif
     @if(session('info'))
-    <div class="mb-4 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl flex items-center gap-3 shadow-sm">
+    <div class="mb-4 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl flex items-center gap-3 shadow-sm no-print">
         <span class="text-xl">ℹ️</span> <span class="font-semibold text-sm">{{ session('info') }}</span>
     </div>
     @endif
@@ -44,11 +44,17 @@
     <div>
         {{-- Nếu đang có phiếu kiểm kê đang mở --}}
         @if($currentCount)
-        <div class="bg-white rounded-xl shadow border mb-6">
-            <div class="px-5 py-4 border-b flex items-center justify-between">
+        <div class="bg-white rounded-xl shadow border print:border-none print:shadow-none print:mb-0 mb-6">
+            <div class="px-5 py-4 border-b print:border-none flex items-center justify-between">
                 <div>
-                    <h2 class="text-base font-black text-indigo-800 uppercase">📋 Phiếu kiểm kê: {{ $currentCount->code }}</h2>
-                    <p class="text-xs text-gray-400 mt-0.5">Nhập số lượng kiểm đếm thực tế vào cột "Thực tế". Hệ thống sẽ tính chênh lệch tự động.</p>
+                    <div class="hidden print:block mb-6">
+                        <div style="font-size: 16px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; text-align: left; color: black;">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ HẠ TẦNG V-ALPHA</div>
+                        <div style="font-size: 14px; margin-bottom: 20px; font-style: italic; text-align: left; color: black;">Dự án: {{ \App\Models\Project::find(session('current_house', 1))?->name ?? 'Nội bộ' }}</div>
+                    </div>
+                    <h2 class="text-base font-black text-indigo-800 uppercase print:text-xl print:text-black">📋 PHIẾU KIỂM KÊ KHO</h2>
+                    <p class="text-sm font-bold text-gray-500 mt-1">Mã phiếu: {{ $currentCount->code }}</p>
+                    <p class="text-xs text-gray-400 mt-0.5 no-print">Nhập số lượng kiểm đếm thực tế vào cột "Thực tế". Hệ thống sẽ tính chênh lệch tự động.</p>
+                    <p class="text-xs text-gray-400 hidden print:block mt-1">Ngày in: {{ now()->format('d/m/Y H:i') }}</p>
                 </div>
                 <div class="flex gap-2 no-print">
                     <button onclick="window.print()"
@@ -76,7 +82,8 @@
                             <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Vị trí</th>
                             <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">TÊN VẬT TƯ / MÃ VẬT TƯ</th>
                             <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Tồn hệ thống</th>
-                            <th class="px-4 py-3 text-center text-[10px] font-bold text-yellow-600 uppercase">Thực tế (Nhập)</th>
+                            <th class="px-4 py-3 text-center text-[10px] font-bold text-yellow-600 uppercase no-print">Thực tế (Nhập)</th>
+                            <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase hidden print:table-cell">Thực tế</th>
                             <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Chênh lệch</th>
                             <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase no-print">Ghi chú</th>
                         </tr>
@@ -97,6 +104,9 @@
                                     class="w-24 text-center border border-yellow-300 rounded-lg px-2 py-1 text-sm font-bold focus:ring-yellow-500 focus:border-yellow-500 bg-yellow-50"
                                     placeholder="0">
                             </td>
+                            <td class="px-4 py-2 text-center font-black text-indigo-600 hidden print:table-cell">
+                                {{ $item->actual_quantity !== null ? number_format($item->actual_quantity) : '' }}
+                            </td>
                             <td class="px-4 py-2 text-center text-sm font-black 
                                 {{ $item->difference < 0 ? 'text-red-600' : ($item->difference > 0 ? 'text-green-600' : 'text-gray-400') }}">
                                 @if($item->actual_quantity !== null)
@@ -110,6 +120,22 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Chữ ký (Chỉ hiện khi in) --}}
+            <div class="hidden print:grid grid-cols-3 text-center mt-12 gap-4 pb-10">
+                <div>
+                    <p class="font-bold text-sm text-black">Thủ kho</p>
+                    <p class="text-[10px] italic text-gray-500">(Ký, ghi rõ họ tên)</p>
+                </div>
+                <div>
+                    <p class="font-bold text-sm text-black">Nhân viên kiểm kê</p>
+                    <p class="text-[10px] italic text-gray-500">(Ký, ghi rõ họ tên)</p>
+                </div>
+                <div>
+                    <p class="font-bold text-sm text-black">Quản lý kho</p>
+                    <p class="text-[10px] italic text-gray-500">(Ký, ghi rõ họ tên)</p>
+                </div>
             </div>
         </div>
         @else
@@ -132,7 +158,7 @@
         @endif
 
         {{-- Lịch sử phiếu kiểm kê --}}
-        <div class="bg-white rounded-xl shadow border overflow-hidden">
+        <div class="bg-white rounded-xl shadow border overflow-hidden no-print">
             <div class="px-5 py-3 border-b flex flex-wrap justify-between items-center gap-4">
                 <div class="flex items-center gap-3">
                     <h3 class="text-sm font-bold text-gray-700">Lịch sử phiếu kiểm kê</h3>
@@ -385,7 +411,14 @@
 
             <div class="space-y-12">
                 @foreach($printBatchCodes as $code)
-                <div class="border-b-4 border-double border-gray-300 pb-8 last:border-0">
+                @php
+                    $currentProject = \App\Models\Project::find(session('current_house', 1));
+                    $projectName = $currentProject ? $currentProject->name : 'Nội bộ';
+                @endphp
+                <div class="border-b-4 border-double border-gray-300 pb-8 last:border-0 print:border-none">
+                    <div style="font-size: 16px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; text-align: left; color: black;">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ HẠ TẦNG V-ALPHA</div>
+                    <div style="font-size: 14px; margin-bottom: 20px; font-style: italic; text-align: left; color: black;">Dự án: {{ $projectName }}</div>
+                    
                     <div class="flex justify-between items-end mb-4">
                         <div>
                             <h2 class="text-xl font-black text-gray-900">PHIẾU KIỂM KÊ KHO</h2>
@@ -423,6 +456,22 @@
                             @endforeach
                         </tbody>
                     </table>
+                    
+                    {{-- Chữ ký (Cho In hàng loạt) --}}
+                    <div class="grid grid-cols-3 text-center mt-12 gap-4 pb-10">
+                        <div>
+                            <p class="font-bold text-sm text-black">Thủ kho</p>
+                            <p class="text-[10px] italic text-gray-500">(Ký, ghi rõ họ tên)</p>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-black">Nhân viên kiểm kê</p>
+                            <p class="text-[10px] italic text-gray-500">(Ký, ghi rõ họ tên)</p>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-black">Quản lý kho</p>
+                            <p class="text-[10px] italic text-gray-500">(Ký, ghi rõ họ tên)</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="page-break"></div>
                 @endforeach
@@ -518,10 +567,11 @@
 {{-- Print Styles --}}
 <style>
     @media print {
+        @page { margin: 0; size: auto; }
         .no-print, header, nav, aside, footer { display: none !important; }
-        body { background: white !important; margin: 0; padding: 20px; }
-        .shadow, .border { box-shadow: none !important; border: 1px solid #eee !important; }
-        table { width: 100% !important; border-collapse: collapse !important; }
+        body { background: white !important; margin: 0; padding: 10mm; }
+        .shadow, .border { box-shadow: none !important; border: none !important; }
+        table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #ddd !important; }
         th, td { border: 1px solid #ddd !important; padding: 8px !important; text-align: left; }
         th { background-color: #f9f9f9 !important; -webkit-print-color-adjust: exact; }
         .bg-blue-50, .bg-green-50, .bg-indigo-50 { background-color: white !important; }

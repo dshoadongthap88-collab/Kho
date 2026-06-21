@@ -144,6 +144,14 @@
                                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                                 ✔ Đã Trừ Tồn
                                             </span>
+                                        @elseif($transfer->status === 'rejected')
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-black">
+                                                ❌ Từ Chối
+                                            </span>
+                                        @elseif($transfer->status === 'reverted')
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-gray-800 text-xs font-black">
+                                                ↩️ Đã Hủy
+                                            </span>
                                         @else
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-black">
                                                 ⏳ Đang Xử Lý
@@ -232,6 +240,13 @@
                             </div>
                         @endif
 
+                        @if($this->selectedTransferDetail->status === 'rejected' && $this->selectedTransferDetail->reject_reason)
+                            <div class="mb-6">
+                                <p class="text-[10px] uppercase font-bold text-rose-400 mb-1">Lý do từ chối</p>
+                                <p class="text-sm text-rose-700 italic bg-rose-50 p-3 rounded-lg border border-rose-100">{{ $this->selectedTransferDetail->reject_reason }}</p>
+                            </div>
+                        @endif
+
                         <div>
                             <p class="text-[10px] uppercase font-bold text-gray-400 mb-2">Danh sách mặt hàng</p>
                             <div class="overflow-x-auto border border-gray-100 rounded-xl">
@@ -262,23 +277,48 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end gap-3">
-                        @if($this->selectedTransferDetail->status === 'pending' && $this->selectedTransferDetail->to_project_id == $currentHouse)
-                            <button type="button" wire:click="confirmTransfer({{ $this->selectedTransferDetail->id }})" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-white bg-green-600 border border-green-600 rounded-md shadow-sm hover:bg-green-700 focus:outline-none sm:ml-3">
-                                ✅ Xác nhận nhận hàng
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col gap-3" x-data="{ showReject: false }">
+                        <div x-show="showReject" class="w-full mb-2 p-3 border border-rose-200 bg-rose-50 rounded-lg">
+                            <label class="block text-sm font-bold text-rose-800 mb-2">Lý do từ chối (bắt buộc):</label>
+                            <select wire:model="rejectReason" class="w-full border border-rose-300 rounded-md shadow-sm focus:border-rose-500 focus:ring-rose-500 text-sm mb-2 p-2">
+                                <option value="">-- Chọn lý do --</option>
+                                <option value="Sai số lượng">Sai số lượng</option>
+                                <option value="Sai vật tư">Sai vật tư</option>
+                                <option value="Không đúng kho nhận">Không đúng kho nhận</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                            <div class="flex justify-end gap-2">
+                                <button type="button" @click="showReject = false" class="px-3 py-1.5 text-xs font-bold text-gray-600 bg-white border border-gray-300 rounded-md">Đóng</button>
+                                <button type="button" wire:click="submitReject()" class="px-3 py-1.5 text-xs font-bold text-white bg-rose-600 rounded-md hover:bg-rose-700">Xác nhận Từ chối</button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-3 w-full" x-show="!showReject">
+                            @if($this->selectedTransferDetail->status === 'pending' && $this->selectedTransferDetail->to_project_id == $currentHouse)
+                                <button type="button" @click="showReject = true" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-rose-600 bg-white border border-rose-600 rounded-md shadow-sm hover:bg-rose-50 focus:outline-none">
+                                    ❌ Từ chối
+                                </button>
+                                <button type="button" wire:click="confirmTransfer({{ $this->selectedTransferDetail->id }})" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-white bg-green-600 border border-green-600 rounded-md shadow-sm hover:bg-green-700 focus:outline-none">
+                                    ✅ Xác nhận nhận hàng
+                                </button>
+                            @endif
+                            @if($this->selectedTransferDetail->status === 'completed' && $this->selectedTransferDetail->to_project_id == $currentHouse)
+                                <button type="button" wire:click="revertTransfer({{ $this->selectedTransferDetail->id }})" onclick="return confirm('Hành động này sẽ TRỪ lại tồn kho của bạn và CỘNG lại cho kho gửi. Bạn có chắc chắn?')" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-orange-600 bg-white border border-orange-600 rounded-md shadow-sm hover:bg-orange-50 focus:outline-none">
+                                    ↩️ Hủy nhập (Hoàn tác)
+                                </button>
+                            @endif
+                            @if($this->selectedTransferDetail->status === 'pending')
+                            <button type="button" wire:click="deleteTransfer({{ $this->selectedTransferDetail->id }})" onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu chuyển kho này?')" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-white bg-red-600 border border-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none">
+                                🗑️ Xóa
                             </button>
-                        @endif
-                        @if($this->selectedTransferDetail->status === 'pending')
-                        <button type="button" wire:click="deleteTransfer({{ $this->selectedTransferDetail->id }})" onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu chuyển kho này?')" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-white bg-red-600 border border-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none sm:ml-3">
-                            🗑️ Xóa
-                        </button>
-                        @endif
-                        <a href="{{ route('warehouse.stock-transfer.print', $this->selectedTransferDetail->id) }}" target="_blank" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-indigo-700 bg-indigo-100 border border-indigo-200 rounded-md shadow-sm hover:bg-indigo-200 focus:outline-none">
-                            🖨️ In
-                        </a>
-                        <button type="button" wire:click="closeDetailModal()" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none">
-                            Đóng
-                        </button>
+                            @endif
+                            <a href="{{ route('warehouse.stock-transfer.print', $this->selectedTransferDetail->id) }}" target="_blank" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-indigo-700 bg-indigo-100 border border-indigo-200 rounded-md shadow-sm hover:bg-indigo-200 focus:outline-none">
+                                🖨️ In
+                            </a>
+                            <button type="button" wire:click="closeDetailModal()" class="inline-flex justify-center items-center px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none">
+                                Đóng
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

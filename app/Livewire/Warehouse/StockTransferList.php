@@ -19,6 +19,7 @@ class StockTransferList extends Component
     public $selectedTransfers = [];
     public $showDetailModal = false;
     public $selectedTransferId = null;
+    public $rejectReason = '';
 
     public function updatedSelectedTransfers()
     {
@@ -144,7 +145,7 @@ class StockTransferList extends Component
         }
     }
 
-    private function updateSourceHouseStatus($transfer)
+    private function updateSourceHouseStatus($transfer, $action = 'confirm', $reason = null)
     {
         $sourceHouse = $transfer->from_project_id;
         $oldDb = Config::get('database.connections.tenant.database');
@@ -154,25 +155,94 @@ class StockTransferList extends Component
             Config::set('database.connections.tenant.database', $newDb);
             DB::purge('tenant');
 
-            $sourceTransfer = StockTransfer::where('transfer_code', $transfer->transfer_code)->first();
+            $sourceTransfer = StockTransfer::with('items')->where('transfer_code', $transfer->transfer_code)->first();
             if ($sourceTransfer) {
-                $sourceTransfer->update([
-                    'status' => 'completed',
-                    'confirmed_by' => auth()->id(),
-                    'confirmed_at' => now(),
-                ]);
+                if ($action === 'confirm') {
+                    // Trừ tồn kho nguồn
+                    foreach ($sourceTransfer->items as $itemData) {
+                        $sourceProduct = Product::where('code', $itemData->product_code)->first();
+                        if ($sourceProduct) {
+                            $sourceInventory = Inventory::firstOrCreate(
+                                ['product_id' => $sourceProduct->id],
+                                ['quantity' => 0]
+                            );
+                            $sourceInventory->decrement('quantity', $itemData->quantity);
+
+                            InventoryTransaction::create([
+                                'product_id' => $sourceProduct->id,
+                                'type' => 'transfer_out',
+                                'quantity' => -$itemData->quantity,
+                                'reference_type' => StockTransfer::class,
+                                'reference_id' => $sourceTransfer->id,
+                                'note' => "Chi nhánh nhận đã xác nhận",
+                                'created_by' => auth()->id(),
+                            ]);
+                        }
+                    }
+
+                    $sourceTransfer->update([
+                        'status' => 'completed',
+                        'confirmed_by' => auth()->id(),
+                        'confirmed_at' => now(),
+                    ]);
+                } elseif ($action === 'reject') {
+                    $sourceTransfer->update([
+                        'status' => 'rejected',
+                        'reject_reason' => $reason,
+                        'cancelled_by' => auth()->id(),
+                        'cancelled_at' => now(),
+                    ]);
+                } elseif ($action === 'revert') {
+                    // Cộng lại tồn kho nguồn
+                    foreach ($sourceTransfer->items as $itemData) {
+                        $sourceProduct = Product::where('code', $itemData->product_code)->first();
+                        if ($sourceProduct) {
+                            $sourceInventory = Inventory::firstOrCreate(
+                                ['product_id' => $sourceProduct->id],
+                                ['quantity' => 0]
+                            );
+                            $sourceInventory->increment('quantity', $itemData->quantity);
+
+                            InventoryTransaction::create([
+                                'product_id' => $sourceProduct->id,
+                                'type' => 'transfer_in',
+                                'quantity' => $itemData->quantity,
+                                'reference_type' => StockTransfer::class,
+                                'reference_id' => $sourceTransfer->id,
+                                'note' => "Hoàn tác xuất chuyển kho",
+                                'created_by' => auth()->id(),
+                            ]);
+                        }
+                    }
+
+                    $sourceTransfer->update([
+                        'status' => 'reverted',
+                        'cancelled_by' => auth()->id(),
+                        'cancelled_at' => now(),
+                    ]);
+                }
             }
 
             // Gửi thông báo lại cho chi nhánh gửi
             try {
                 $senderId = auth()->id();
-                $systemMsg = "✅ [CHUYỂN KHO] Phiếu {$transfer->transfer_code} đã được chi nhánh nhận XÁC NHẬN thành công.";
-                \App\Models\ChatMessage::create([
-                    'user_id' => $senderId,
-                    'type' => 'system',
-                    'content' => $systemMsg,
-                    'is_read' => false,
-                ]);
+                $systemMsg = "";
+                if ($action === 'confirm') {
+                    $systemMsg = "✅ [CHUYỂN KHO] Phiếu {$transfer->transfer_code} đã được chi nhánh nhận XÁC NHẬN thành công.";
+                } elseif ($action === 'reject') {
+                    $systemMsg = "❌ [CHUYỂN KHO] Phiếu {$transfer->transfer_code} đã bị chi nhánh nhận TỪ CHỐI. Lý do: {$reason}";
+                } elseif ($action === 'revert') {
+                    $systemMsg = "⚠️ [CHUYỂN KHO] Phiếu {$transfer->transfer_code} đã bị chi nhánh nhận HỦY NHẬP (Hoàn tác).";
+                }
+                
+                if ($systemMsg) {
+                    \App\Models\ChatMessage::create([
+                        'user_id' => $senderId,
+                        'type' => 'system',
+                        'content' => $systemMsg,
+                        'is_read' => false,
+                    ]);
+                }
             } catch (\Exception $ex) { }
 
         } catch (\Exception $e) {
@@ -181,6 +251,112 @@ class StockTransferList extends Component
 
         Config::set('database.connections.tenant.database', $oldDb);
         DB::purge('tenant');
+    }
+
+    public function submitReject()
+    {
+        $this->validate(['rejectReason' => 'required']);
+        $this->rejectTransfer($this->selectedTransferId, $this->rejectReason);
+        $this->rejectReason = '';
+    }
+
+    public function rejectTransfer($id, $reason)
+    {
+        $transfer = StockTransfer::find($id);
+        if (!$transfer) return;
+
+        if ($transfer->status !== 'pending') {
+            session()->flash('error', 'Phiếu này đã được xử lý.');
+            return;
+        }
+
+        $currentHouse = session('current_house', 1);
+        if ($transfer->to_project_id != $currentHouse) {
+            session()->flash('error', 'Bạn không có quyền từ chối phiếu này.');
+            return;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $transfer->update([
+                'status' => 'rejected',
+                'reject_reason' => $reason,
+                'cancelled_by' => auth()->id(),
+                'cancelled_at' => now(),
+            ]);
+
+            DB::commit();
+
+            $this->updateSourceHouseStatus($transfer, 'reject', $reason);
+
+            session()->flash('success', 'Đã từ chối phiếu chuyển kho.');
+            $this->closeDetailModal();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Lỗi: ' . $e->getMessage());
+        }
+    }
+
+    public function revertTransfer($id)
+    {
+        $transfer = StockTransfer::with('items')->find($id);
+        if (!$transfer) return;
+
+        if ($transfer->status !== 'completed') {
+            session()->flash('error', 'Chỉ có thể hủy nhập phiếu đã hoàn thành.');
+            return;
+        }
+
+        $currentHouse = session('current_house', 1);
+        if ($transfer->to_project_id != $currentHouse) {
+            session()->flash('error', 'Bạn không có quyền hủy nhập phiếu này.');
+            return;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($transfer->items as $itemData) {
+                $targetProduct = Product::where('code', $itemData->product_code)->first();
+                if ($targetProduct) {
+                    $targetInventory = Inventory::firstOrCreate(
+                        ['product_id' => $targetProduct->id],
+                        ['quantity' => 0]
+                    );
+
+                    $targetInventory->decrement('quantity', $itemData->quantity);
+
+                    InventoryTransaction::create([
+                        'product_id' => $targetProduct->id,
+                        'type' => 'transfer_out',
+                        'quantity' => -$itemData->quantity,
+                        'note' => "Hoàn tác nhận chuyển kho (Phiếu: {$transfer->transfer_code})",
+                        'reference_type' => StockTransfer::class,
+                        'reference_id' => $transfer->id,
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+            }
+
+            $transfer->update([
+                'status' => 'reverted',
+                'cancelled_by' => auth()->id(),
+                'cancelled_at' => now(),
+            ]);
+
+            DB::commit();
+
+            $this->updateSourceHouseStatus($transfer, 'revert');
+
+            session()->flash('success', 'Đã hủy nhập (hoàn tác) thành công.');
+            $this->closeDetailModal();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Lỗi: ' . $e->getMessage());
+        }
     }
 
     public function printSelected()

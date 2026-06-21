@@ -45,7 +45,11 @@ class TransactionDetailReport extends Component
             ->whereBetween('created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59']);
 
         if ($this->filterType) {
-            $query->where('type', $this->filterType);
+            if ($this->filterType === 'transfer') {
+                $query->whereIn('type', ['transfer_in', 'transfer_out']);
+            } else {
+                $query->where('type', $this->filterType);
+            }
         }
 
         if ($this->filterProduct) {
@@ -77,7 +81,11 @@ class TransactionDetailReport extends Component
             ->whereBetween('created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59']);
 
         if ($this->filterType) {
-            $query->where('type', $this->filterType);
+            if ($this->filterType === 'transfer') {
+                $query->whereIn('type', ['transfer_in', 'transfer_out']);
+            } else {
+                $query->where('type', $this->filterType);
+            }
         }
 
         if ($this->filterProduct) {

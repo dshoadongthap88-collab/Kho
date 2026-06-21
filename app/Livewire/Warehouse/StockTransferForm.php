@@ -201,18 +201,6 @@ class StockTransferForm extends Component
                     throw new \Exception("Sản phẩm {$product->name} ({$product->code}) không đủ tồn kho (Hiện có: {$inventory->quantity}).");
                 }
 
-                $inventory->decrement('quantity', $itemData['quantity']);
-
-                InventoryTransaction::create([
-                    'product_id' => $product->id,
-                    'type' => 'transfer_out',
-                    'quantity' => -$itemData['quantity'],
-                    'reference_type' => StockTransfer::class,
-                    'reference_id' => $transfer->id,
-                    'note' => "Chuyển đi, chờ chi nhánh nhận xác nhận",
-                    'created_by' => auth()->id(),
-                ]);
-
                 StockTransferItem::create([
                     'stock_transfer_id' => $transfer->id,
                     'product_code' => $product->code,

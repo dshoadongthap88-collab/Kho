@@ -3,15 +3,34 @@
     <style>
         @media print {
             @page { size: A4 landscape; margin: 10mm; }
-            nav, .sidebar-toolbar, button, a, .no-print, input, select { display: none !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            nav, .sidebar-toolbar, button, a, .no-print, input[type="date"], select { display: none !important; }
             .bg-white { box-shadow: none !important; border: none !important; }
             body { background: white !important; font-size: 10pt; }
-            .grid-cols-3, .grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            .grid-cols-3 { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 1rem; }
+            .grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 1rem; }
             .chart-container { page-break-inside: avoid; }
+            .apexcharts-toolbar { display: none !important; }
         }
     </style>
 
-    <div class="flex justify-between items-center mb-6">
+    @php
+        $currentHouse = session('current_house', 1);
+        if ($currentHouse == 2) {
+            $projectName = 'HẬU NGHĨA';
+        } elseif ($currentHouse == 3) {
+            $projectName = 'CẦN GIỜ';
+        } else {
+            $projectName = 'HÓC MÔN';
+        }
+    @endphp
+
+    <div class="hidden print:block text-center mb-6 border-b-2 border-black pb-4">
+        <h1 class="text-2xl font-black uppercase text-black">BÁO CÁO TỔNG HỢP KHO - DỰ ÁN {{ $projectName }}</h1>
+        <p class="text-sm font-bold text-slate-800 mt-1">Giai đoạn: {{ date('d/m/Y', strtotime($dateFrom)) }} - {{ date('d/m/Y', strtotime($dateTo)) }}</p>
+    </div>
+
+    <div class="flex justify-between items-center mb-6 no-print">
         <div class="flex gap-4 items-end bg-white p-3 rounded-xl border shadow-sm">
             <div>
                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Từ ngày</label>
@@ -85,7 +104,7 @@
             }
          }">
         
-        <div class="lg:col-span-2 mb-2 no-print">
+        <div class="lg:col-span-2 mb-2">
             <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight border-l-4 border-red-600 pl-4 mb-4">Hệ thống Cảnh báo & Phân tích thông minh</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 @forelse($warnings as $warn)
@@ -108,9 +127,60 @@
             </div>
         </div>
 
-        <div class="lg:col-span-2 mt-8 mb-2 border-l-4 border-indigo-600 pl-4 no-print">
+        <div class="lg:col-span-2 mt-8 mb-2 border-l-4 border-indigo-600 pl-4">
             <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight">Phân tích Xuất kho chuyên sâu</h2>
             <p class="text-xs text-gray-400 font-medium italic">Thống kê theo Nhân viên lãnh, Mã tài sản tiêu thụ và Vật tư xuất kho</p>
+        </div>
+
+        <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- Thống kê chung -->
+            <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-indigo-600 uppercase mb-1">Tổng mã tài sản xuất</p>
+                    <p class="text-2xl font-black text-indigo-700">{{ number_format($totalAssets) }} <span class="text-sm font-normal">mã</span></p>
+                </div>
+                <div class="text-3xl">🏗️</div>
+            </div>
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-teal-600 uppercase mb-1">Tổng số vật tư xuất</p>
+                    <p class="text-2xl font-black text-teal-700">{{ number_format($totalMaterials) }} <span class="text-sm font-normal">đơn vị</span></p>
+                </div>
+                <div class="text-3xl">📦</div>
+            </div>
+
+            <!-- Cảnh báo dự đoán -->
+            <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 shadow-sm relative">
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-xs font-bold text-purple-600 uppercase flex items-center gap-1"><span>📈</span> Dự đoán đặt hàng (Sử dụng vượt Tồn Kho)</p>
+                    <button wire:click="autoCreatePurchasePlan" onclick="confirm('Hệ thống sẽ tự động tạo Kế hoạch mua hàng cho các mã này và gửi thông báo cho Ngôi nhà HR. Bạn có chắc chắn?') || event.stopImmediatePropagation()" class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-bold rounded shadow-sm transition">
+                        Tự động lập KH Mua hàng
+                    </button>
+                </div>
+                @if($predictiveStocks->count() > 0)
+                    <ul class="text-sm text-purple-900 space-y-1">
+                    @foreach($predictiveStocks as $stock)
+                        <li>- <b>{{ $stock->name }}</b> ({{ $stock->code }}): Đã xuất <b>{{ number_format($stock->total_out) }}</b> > Tồn <b>{{ number_format($stock->current_stock) }}</b></li>
+                    @endforeach
+                    </ul>
+                @else
+                    <p class="text-sm text-purple-700 italic mt-2">Không có mã nào có rủi ro thiếu hụt trong chu kỳ này.</p>
+                @endif
+            </div>
+
+            <!-- Cảnh báo Dead stock -->
+            <div class="bg-stone-50 border border-stone-300 rounded-xl p-4 shadow-sm">
+                <p class="text-xs font-bold text-stone-600 uppercase mb-2 flex items-center gap-1"><span>🕸️</span> Cảnh báo không sử dụng > 300 ngày</p>
+                @if($deadStocks->count() > 0)
+                    <ul class="text-sm text-stone-900 space-y-1">
+                    @foreach($deadStocks as $stock)
+                        <li>- <b>{{ $stock->name }}</b> ({{ $stock->code }}): Tồn đọng <b>{{ number_format($stock->quantity) }}</b> (cập nhật cuối {{ $stock->updated_at->format('d/m/Y') }})</li>
+                    @endforeach
+                    </ul>
+                @else
+                    <p class="text-sm text-stone-700 italic">Hệ thống luân chuyển tốt, không có hàng tồn đọng lâu.</p>
+                @endif
+            </div>
         </div>
 
         <div class="bg-white p-4 rounded-xl shadow-sm border">

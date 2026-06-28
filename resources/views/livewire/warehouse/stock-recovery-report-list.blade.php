@@ -6,7 +6,7 @@
             .print-only { display: block !important; }
             nav, h1 { display: none !important; }
             main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-            @page { size: A4 landscape; margin: 10mm; }
+            @page { size: A4 landscape; margin: 0; }
         }
     </style>
 
@@ -265,16 +265,18 @@
     @endif
 
     <!-- PRINT TEMPLATE -->
-    <div class="hidden print:block fixed inset-0 bg-white z-[9999] w-full">
+    <div class="hidden print:block absolute inset-0 bg-white z-[9999] w-full" style="min-height: 100vh;">
         @php
             $printList = $isPrintingSelected ? collect($recoveries)->whereIn('id', $selectedIds) : ($printingRecoveryId ? collect($recoveries)->where('id', $printingRecoveryId) : $recoveries);
+            $firstRecovery = $printList->first();
         @endphp
-        @foreach($printList as $recovery)
-        <div style="font-family: 'Times New Roman', serif; padding: 15mm; page-break-after: always; width: 100%;">
+        
+        @if($printList->count() > 0)
+        <div style="font-family: 'Times New Roman', serif; padding: 15mm; width: 100%;">
             <!-- Header -->
             <div class="mb-4 text-left">
                 <div class="font-bold uppercase" style="font-size: 18px; letter-spacing: 1px; color: black;">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI CÔNG HẠ TẦNG V-ALPHA</div>
-                <div class="font-bold uppercase mt-1" style="font-size: 16px; color: black;">DỰ ÁN: {{ mb_strtoupper($recovery->stockOut?->project_name ?? (session('current_house', 1) == 2 ? 'HẬU NGHĨA' : (session('current_house', 1) == 3 ? 'CẦN GIỜ' : 'HÓC MÔN')), 'UTF-8') }}</div>
+                <div class="font-bold uppercase mt-1" style="font-size: 16px; color: black;">DỰ ÁN: {{ mb_strtoupper($firstRecovery->stockOut?->project_name ?? (session('current_house', 1) == 2 ? 'HẬU NGHĨA' : (session('current_house', 1) == 3 ? 'CẦN GIỜ' : 'HÓC MÔN')), 'UTF-8') }}</div>
             </div>
             <div style="border-bottom: 2px solid #000; margin-bottom: 20px;"></div>
 
@@ -282,36 +284,8 @@
             <div class="text-center mb-6">
                 <h2 class="text-2xl font-bold uppercase tracking-widest text-black">PHIẾU THU HỒI PHẾ PHẨM</h2>
                 <p class="italic text-[13px] mt-1">
-                    Ngày {{ $recovery->recovery_date->format('d') }}
-                    tháng {{ $recovery->recovery_date->format('m') }}
-                    năm {{ $recovery->recovery_date->format('Y') }}
+                    Ngày {{ now()->format('d') }} tháng {{ now()->format('m') }} năm {{ now()->format('Y') }}
                 </p>
-            </div>
-
-            <!-- Info -->
-            <div style="margin-bottom: 20px;" class="text-[14px]">
-                <table class="w-full">
-                    <tr>
-                        <td class="font-bold w-32 pb-1">Số thu hồi:</td>
-                        <td class="pb-1 font-mono uppercase font-semibold">{{ $recovery->recovery_number }}</td>
-                    </tr>
-                    <tr>
-                        <td class="font-bold pb-1">Số PX:</td>
-                        <td class="pb-1 font-mono">{{ $recovery->stockOut?->code ?? 'Không liên kết' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="font-bold pb-1">Trạng thái:</td>
-                        <td class="pb-1 uppercase">
-                            @switch($recovery->status)
-                                @case('pending') Đang chờ @break
-                                @case('approved') Đã duyệt @break
-                                @case('completed') Đã thu hồi @break
-                                @case('cancelled') Đã hủy @break
-                            @endswitch
-                        </td>
-                    </tr>
-
-                </table>
             </div>
 
             <!-- Table -->
@@ -319,25 +293,33 @@
                 <thead>
                     <tr class="bg-gray-100">
                         <th class="border border-black px-2 py-2 w-10 text-center font-bold">STT</th>
+                        <th class="border border-black px-2 py-2 text-left w-24 font-bold">Số thu hồi</th>
+                        <th class="border border-black px-2 py-2 text-left w-24 font-bold">Số PX</th>
                         <th class="border border-black px-2 py-2 text-left w-24 font-bold">Mã Vật Tư</th>
                         <th class="border border-black px-2 py-2 text-left font-bold">TÊN VẬT TƯ</th>
                         <th class="border border-black px-2 py-2 text-center w-24 font-bold">SL Thu Hồi</th>
-                        <th class="border border-black px-2 py-2 text-center w-20 font-bold">ĐVT</th>
+                        <th class="border border-black px-2 py-2 text-center w-16 font-bold">ĐVT</th>
+                        <th class="border border-black px-2 py-2 text-center w-24 font-bold">Ngày TH</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @foreach($printList as $index => $recovery)
                     <tr>
-                        <td class="border border-black px-2 py-2 text-center">1</td>
+                        <td class="border border-black px-2 py-2 text-center">{{ $index + 1 }}</td>
+                        <td class="border border-black px-2 py-2 font-mono uppercase">{{ $recovery->recovery_number }}</td>
+                        <td class="border border-black px-2 py-2 font-mono">{{ $recovery->stockOut?->code ?? '' }}</td>
                         <td class="border border-black px-2 py-2 font-mono uppercase">{{ $recovery->product?->code ?? '' }}</td>
                         <td class="border border-black px-2 py-2 font-semibold">{{ $recovery->product?->name ?? '' }}</td>
                         <td class="border border-black px-2 py-2 text-center font-bold">{{ number_format($recovery->quantity, 2) }}</td>
                         <td class="border border-black px-2 py-2 text-center">{{ $recovery->unit ?? '' }}</td>
+                        <td class="border border-black px-2 py-2 text-center">{{ $recovery->recovery_date->format('d/m/Y') }}</td>
                     </tr>
+                    @endforeach
                 </tbody>
             </table>
 
             <!-- Footer / Signatures -->
-            <div class="grid grid-cols-3 gap-4 text-center mt-8 mb-8">
+            <div class="grid grid-cols-4 gap-4 text-center mt-8 mb-8">
                 <div>
                     <p class="font-bold text-[14px]">Bộ Phận An Ninh</p>
                     <p class="text-[12px] italic">(Ký, ghi rõ họ tên)</p>
@@ -356,13 +338,19 @@
                     <div style="height: 100px;"></div>
                     <p class="font-bold uppercase text-[14px]">........................</p>
                 </div>
+                <div>
+                    <p class="font-bold text-[14px]">Trưởng ca</p>
+                    <p class="text-[12px] italic">(Ký, ghi rõ họ tên)</p>
+                    <div style="height: 100px;"></div>
+                    <p class="font-bold uppercase text-[14px]">........................</p>
+                </div>
             </div>
 
             <div class="text-right mt-12 mb-4 text-[11px] italic text-gray-500">
                 In lúc: {{ date('d/m/Y H:i') }}
             </div>
         </div>
-        @endforeach
+        @endif
     </div>
 </div>
 

@@ -12,3 +12,9 @@
 | 27/06/2026 | NVL-003 | Nước sốt BBQ Hàn Quốc | lít | 1 | 0 | 1 | Đã đặt | Tự động đề xuất do tồn kho (0) <= tồn tối thiểu (0) |
 | 27/06/2026 | NVL-004 | Khoai tây tươi Đà Lạt | kg | 1 | 0 | 1 | Đã đặt | Tự động đề xuất do tồn kho (0) <= tồn tối thiểu (0) |
 | 27/06/2026 | NVL-005 | Dầu đậu nành | lít | 1 | 1 | 0 | Đủ hàng | Đã đủ hàng (phiếu nhập SI-20260627-0001) |
+
+
+## Chốt sổ ngày 28/06/2026 13:22:58
+| Ngày ĐX | Mã VT | Tên Vật Tư | ĐVT | SL Đề Xuất | Đã Giao | Còn Thiếu | Trạng Thái | Ghi Chú |
+|---------|--------|------------|-----|-------------|---------|------------|------------|----------|
+| 28/06/2026 | SP-DEMO-005 | Sản phẩm demo 5 | cái | 600 | 0 | 600 | Đã đặt | Tự động đề xuất do tồn kho (556.00) <= tồn tối thiểu (600) |

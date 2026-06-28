@@ -52,6 +52,7 @@
                         </th>
                         <th class="px-4 py-3">Ngày ĐX</th>
                         <th class="px-4 py-3">Mã & Tên Vật Tư</th>
+                        <th class="px-4 py-3 text-right">Tồn Kho</th>
                         <th class="px-4 py-3 text-right">SL Đề Xuất</th>
                         <th class="px-4 py-3 text-right">Đã Giao</th>
                         <th class="px-4 py-3 text-right text-rose-600">Còn Thiếu</th>
@@ -74,6 +75,9 @@
                             <td class="px-4 py-3 font-medium text-slate-900">
                                 <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs mr-1">{{ $plan->product->code }}</span>
                                 {{ $plan->product->name }}
+                            </td>
+                            <td class="px-4 py-3 text-right font-bold text-slate-600">
+                                {{ number_format($plan->product->inventory->quantity ?? 0, 0) }}
                             </td>
                             <td class="px-4 py-3 text-right">
                                 @if($plan->status !== 'completed')
@@ -117,7 +121,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-4 py-8 text-center text-slate-500 font-medium">Chưa có kế hoạch mua hàng nào.</td>
+                            <td colspan="10" class="px-4 py-8 text-center text-slate-500 font-medium">Chưa có kế hoạch mua hàng nào.</td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -27,7 +27,7 @@ class StockOutForm extends Component
     ];
     public $receiver_name = '';
     public $receiver_contact = '';
-    public $note = '';
+    public $note = 'BẢO DƯỠNG ĐỊNH KỲ';
     public $type = 'repair';
     public $asset_code = '';
     public $project_name = '';
@@ -36,7 +36,7 @@ class StockOutForm extends Component
     public $km_number = '';
     public $operating_hours = '';
     public $device_name = '';
-    public $department = '';
+    public $department = 'TỔ ĐỘI KTSC VINALPHA';
     public $warehouse_keeper = '';
     public $supervisor_qltb = '';
     public $supervisor_ca = '';

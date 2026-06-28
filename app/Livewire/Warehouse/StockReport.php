@@ -6,6 +6,9 @@ use App\Models\InventoryTransaction;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Inventory;
+use App\Models\PurchasePlan;
+use App\Models\Notification;
+use App\Models\User;
 use Livewire\Component;
 
 class StockReport extends Component
@@ -54,17 +57,17 @@ class StockReport extends Component
     public function getReceiverData()
     {
         $data = \App\Models\StockOut::join('stock_out_items', 'stock_outs.id', '=', 'stock_out_items.stock_out_id')
-            ->selectRaw('receiver_name, SUM(quantity) as total_qty')
-            ->whereNotNull('receiver_name')
-            ->where('receiver_name', '!=', '')
+            ->selectRaw('receiver_contact, SUM(quantity) as total_qty')
+            ->whereNotNull('receiver_contact')
+            ->where('receiver_contact', '!=', '')
             ->whereBetween('stock_outs.created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59'])
-            ->groupBy('receiver_name')
+            ->groupBy('receiver_contact')
             ->orderByDesc('total_qty')
             ->take(10)
             ->get();
 
         return [
-            'labels' => $data->pluck('receiver_name')->toArray(),
+            'labels' => $data->pluck('receiver_contact')->toArray(),
             'series' => [['name' => 'Số lượng lãnh', 'data' => $data->pluck('total_qty')->map(fn($q) => (float)$q)->toArray()]]
         ];
     }
@@ -254,17 +257,23 @@ class StockReport extends Component
         $warnings = [];
 
         // 1. Cảnh báo tài sản tiêu thụ vật tư lớn nhất
-        $topAsset = \App\Models\StockOut::join('stock_out_items', 'stock_outs.id', '=', 'stock_out_items.stock_out_id')
+        $topAssets = \App\Models\StockOut::join('stock_out_items', 'stock_outs.id', '=', 'stock_out_items.stock_out_id')
             ->selectRaw('asset_code, SUM(quantity) as total_qty')
             ->whereNotNull('asset_code')->where('asset_code', '!=', '')
             ->whereBetween('stock_outs.created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59'])
-            ->groupBy('asset_code')->orderByDesc('total_qty')->first();
+            ->groupBy('asset_code')->orderByDesc('total_qty')->take(10)->get();
         
-        if ($topAsset && $topAsset->total_qty > 0) {
+        if ($topAssets->count() > 0) {
+            $content = "<ul class='list-disc pl-4 space-y-1 mt-2'>";
+            foreach ($topAssets as $index => $asset) {
+                $content .= "<li>#" . ($index + 1) . " - Mã tài sản <b>{$asset->asset_code}</b>: <b>" . number_format($asset->total_qty) . "</b> đơn vị</li>";
+            }
+            $content .= "</ul>";
+
             $warnings[] = [
                 'type' => 'danger',
-                'title' => 'Tài sản tiêu thụ cao nhất',
-                'content' => "Mã tài sản <b>{$topAsset->asset_code}</b> đã tiêu thụ <b>" . number_format($topAsset->total_qty) . "</b> đơn vị vật tư trong kỳ. Cần kiểm tra định kỳ bảo trì.",
+                'title' => 'Top 10 Tài sản tiêu thụ vật tư',
+                'content' => "Danh sách tài sản tiêu thụ vật tư nhiều nhất cần kiểm tra bảo trì:" . $content,
                 'icon' => '⚠️'
             ];
         }
@@ -289,22 +298,83 @@ class StockReport extends Component
         }
 
         // 3. Cảnh báo nhân viên lãnh hàng nhiều nhất
-        $topReceiver = \App\Models\StockOut::join('stock_out_items', 'stock_outs.id', '=', 'stock_out_items.stock_out_id')
-            ->selectRaw('receiver_name, SUM(quantity) as total_qty')
-            ->whereNotNull('receiver_name')->where('receiver_name', '!=', '')
+        $topReceivers = \App\Models\StockOut::join('stock_out_items', 'stock_outs.id', '=', 'stock_out_items.stock_out_id')
+            ->selectRaw('receiver_contact, SUM(quantity) as total_qty')
+            ->whereNotNull('receiver_contact')->where('receiver_contact', '!=', '')
             ->whereBetween('stock_outs.created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59'])
-            ->groupBy('receiver_name')->orderByDesc('total_qty')->first();
+            ->groupBy('receiver_contact')->orderByDesc('total_qty')->take(10)->get();
 
-        if ($topReceiver) {
+        if ($topReceivers->count() > 0) {
+            $content = "<ul class='list-disc pl-4 space-y-1 mt-2'>";
+            foreach ($topReceivers as $index => $receiver) {
+                $content .= "<li>#" . ($index + 1) . " - <b>{$receiver->receiver_contact}</b>: <b>" . number_format($receiver->total_qty) . "</b> vật tư</li>";
+            }
+            $content .= "</ul>";
+
             $warnings[] = [
                 'type' => 'info',
-                'title' => 'Nhân viên lãnh hàng nhiều nhất',
-                'content' => "Nhân viên <b>{$topReceiver->receiver_name}</b> đã lãnh tổng cộng <b>" . number_format($topReceiver->total_qty) . "</b> vật tư. Kiểm tra mục đích sử dụng nếu cần.",
+                'title' => 'Top 10 Nhân viên lãnh hàng',
+                'content' => "Danh sách nhân viên nhận nhiều vật tư nhất trong kỳ:" . $content,
                 'icon' => '👤'
             ];
         }
 
         return $warnings;
+    }
+
+    public function autoCreatePurchasePlan()
+    {
+        $predictiveStocks = \App\Models\StockOutItem::join('products', 'stock_out_items.product_id', '=', 'products.id')
+            ->join('inventories', 'products.id', '=', 'inventories.product_id')
+            ->selectRaw('products.id as product_id, products.name, products.code, SUM(stock_out_items.quantity) as total_out, inventories.quantity as current_stock')
+            ->whereBetween('stock_out_items.created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59'])
+            ->groupBy('products.id', 'products.name', 'products.code', 'inventories.quantity')
+            ->havingRaw('SUM(stock_out_items.quantity) >= inventories.quantity')
+            ->get();
+
+        $count = 0;
+        $itemsList = [];
+
+        foreach ($predictiveStocks as $stock) {
+            $existing = PurchasePlan::where('product_id', $stock->product_id)
+                ->whereNotIn('status', ['completed'])
+                ->first();
+
+            if (!$existing) {
+                // Đề xuất mua số lượng = Lượng xuất - Tồn (hoặc mặc định là 1 nếu bằng nhau)
+                $diff = $stock->total_out - $stock->current_stock;
+                $proposed = $diff > 0 ? $diff : 1;
+
+                PurchasePlan::create([
+                    'product_id' => $stock->product_id,
+                    'proposed_quantity' => $proposed,
+                    'status' => 'pending',
+                    'notes' => 'Tự động đề xuất từ Báo Cáo Kho (Xuất ' . $stock->total_out . ' vượt Tồn ' . $stock->current_stock . ')',
+                ]);
+                $count++;
+                $itemsList[] = "{$stock->name} (SL: $proposed)";
+            }
+        }
+
+        if ($count > 0) {
+            // Gửi thông báo tới HR (admin)
+            $admins = User::where('role', 'admin')->get();
+            $message = "Hệ thống vừa tự động lập kế hoạch mua hàng cho $count vật tư đang thiếu hụt trong kho: " . implode(', ', $itemsList);
+
+            foreach ($admins as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'system',
+                    'title' => 'Tự động Đề Xuất Mua Hàng',
+                    'message' => $message,
+                    'is_read' => false,
+                ]);
+            }
+
+            session()->flash('message', "Đã tự động lập kế hoạch mua hàng cho $count mã vật tư và gửi thông báo tới Ngôi nhà HR.");
+        } else {
+            session()->flash('error', 'Không có vật tư nào cần tạo đề xuất mua hàng (hoặc đã có kế hoạch đang chờ xử lý).');
+        }
     }
 
     public function render()
@@ -317,9 +387,40 @@ class StockReport extends Component
             ->whereBetween('created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59'])
             ->first();
 
+        // 1. Tổng mã tài sản
+        $totalAssets = \App\Models\StockOut::whereBetween('created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59'])
+            ->whereNotNull('asset_code')->where('asset_code', '!=', '')
+            ->distinct('asset_code')->count('asset_code');
+            
+        // 2. Tổng vật tư
+        $totalMaterials = \App\Models\StockOutItem::join('stock_outs', 'stock_outs.id', '=', 'stock_out_items.stock_out_id')
+            ->whereBetween('stock_outs.created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59'])
+            ->sum('quantity');
+
+        // 3. Dự đoán đặt hàng
+        $predictiveStocks = \App\Models\StockOutItem::join('products', 'stock_out_items.product_id', '=', 'products.id')
+            ->join('inventories', 'products.id', '=', 'inventories.product_id')
+            ->selectRaw('products.name, products.code, SUM(stock_out_items.quantity) as total_out, inventories.quantity as current_stock')
+            ->whereBetween('stock_out_items.created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59'])
+            ->groupBy('products.id', 'products.name', 'products.code', 'inventories.quantity')
+            ->havingRaw('SUM(stock_out_items.quantity) >= inventories.quantity')
+            ->orderByDesc('total_out')->take(5)->get();
+
+        // 4. Dead stock (Hơn 300 ngày)
+        $deadStockLimit = now()->subDays(300);
+        $deadStocks = \App\Models\Inventory::join('products', 'inventories.product_id', '=', 'products.id')
+            ->select('products.name', 'products.code', 'inventories.quantity', 'inventories.updated_at')
+            ->where('inventories.quantity', '>', 0)
+            ->where('inventories.updated_at', '<', $deadStockLimit)
+            ->orderBy('inventories.quantity', 'desc')->take(5)->get();
+
         return view('livewire.warehouse.stock-report', [
             'summary' => $summary,
             'warnings' => $this->getWarnings(),
+            'totalAssets' => $totalAssets,
+            'totalMaterials' => $totalMaterials,
+            'predictiveStocks' => $predictiveStocks,
+            'deadStocks' => $deadStocks,
         ]);
     }
 }

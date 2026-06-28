@@ -22,6 +22,7 @@
                     <tr>
                         <th class="px-4 py-3">Thời Gian</th>
                         <th class="px-4 py-3">Mã & Tên Vật Tư</th>
+                        <th class="px-4 py-3 text-right">SL Đề Xuất</th>
                         <th class="px-4 py-3 text-center">Trạng Thái Mới</th>
                         <th class="px-4 py-3 text-right">SL Đã Giao Mới</th>
                         <th class="px-4 py-3">Ghi Chú & Nguồn Thay Đổi</th>
@@ -39,6 +40,9 @@
                                 @else
                                     <span class="text-rose-500 italic">Dữ liệu đã bị xóa</span>
                                 @endif
+                            </td>
+                            <td class="px-4 py-3 text-right font-bold text-sky-600">
+                                {{ $history->purchasePlan ? number_format($history->purchasePlan->proposed_quantity, 0) : '-' }}
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if($history->new_status === 'pending')
@@ -68,7 +72,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-slate-500 font-medium">Chưa có lịch sử thay đổi nào.</td>
+                            <td colspan="7" class="px-4 py-8 text-center text-slate-500 font-medium">Chưa có lịch sử thay đổi nào.</td>
                         </tr>
                     @endforelse
                 </tbody>

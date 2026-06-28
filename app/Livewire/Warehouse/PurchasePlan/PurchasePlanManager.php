@@ -50,7 +50,7 @@ class PurchasePlanManager extends Component
 
     public function getFilteredPlans()
     {
-        return PurchasePlan::with('product')
+        return PurchasePlan::with(['product', 'product.inventory'])
             ->where('is_archived', false)
             ->when($this->search, function($q) {
                 $q->whereHas('product', function($q2) {

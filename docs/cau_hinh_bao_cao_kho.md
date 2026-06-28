@@ -32,3 +32,9 @@ Tài liệu này quy định các yêu cầu và loại biểu đồ cần sử 
     - Vàng/Cam: Hàng đang tiến tới mức cận date hoặc lưu kho khá lâu so với chu kỳ.
     - Đỏ: Hàng quá hạn (Expired) hoặc hàng tồn đọng mốc (Dead stock).
   - Cung cấp hành động tức thời: Click vào ô màu Đỏ/Cam để hiển thị danh sách các Lô hàng (Batch) cần thanh lý hoặc xuất tiêu huỷ / xuất trước (FIFO).
+
+## 5. Thống kê Nhân viên lãnh hàng nhiều nhất
+- **Mục đích**: Cảnh báo hoặc thống kê top nhân viên nhận số lượng vật tư nhiều nhất trong kỳ, giúp rà soát định mức và mục đích sử dụng.
+- **Yêu cầu dữ liệu**:
+  - Dữ liệu được trích xuất từ **Phiếu xuất kho**.
+  - **Thông tin tên nhân viên**: Sử dụng trực tiếp từ cột **"Người nhận" (receiver_contact)** trên phiếu xuất kho.

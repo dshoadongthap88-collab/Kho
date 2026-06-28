@@ -54,32 +54,47 @@
 
                     <!-- Module 4: THEO DÕI BẢO DƯỠNG -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.maintenance-dashboard') || request()->routeIs('warehouse.maintenance-rules') || request()->routeIs('warehouse.asset-odo-log') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.maintenance-*') || request()->routeIs('warehouse.asset-odo-log') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             4. THEO DÕI BẢO DƯỠNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-72 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
-                            <a href="{{ route('warehouse.asset-odo-log') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Cập nhật giờ Odo hàng ngày</a>
-                            <a href="{{ route('warehouse.maintenance-rules') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Định mức bảo dưỡng</a>
-                            <a href="{{ route('warehouse.maintenance-dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">Kế hoạch bảo dưỡng (Dashboard)</a>
+                            <a href="{{ route('warehouse.maintenance-dashboard') }}" class="block px-4 py-2 text-sm text-indigo-700 hover:bg-indigo-50 border-t border-slate-50 font-bold">1. Dashboard Tổng Quan</a>
+                            <a href="{{ route('warehouse.asset-odo-log') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">2. Cập nhật giờ Odo hàng ngày</a>
+                            <a href="{{ route('warehouse.maintenance-rules') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">3. Cấp bảo dưỡng và chu kỳ</a>
+                            <a href="{{ route('warehouse.maintenance-tracking') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">4. Bảng theo dõi bảo dưỡng tự động</a>
+                            <a href="{{ route('warehouse.maintenance-plans') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">5. Lập kế hoạch bảo dưỡng</a>
+                            <a href="{{ route('warehouse.maintenance-tickets') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">6. Phiếu thực hiện bảo dưỡng</a>
                         </div>
                     </div>
 
-                    <!-- Module 5: BÁO CÁO -->
-                    <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.purchase-*') || request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
-                            5. BÁO CÁO
+                    <!-- Module 5: KẾ HOẠCH & MUA HÀNG -->
+                    <div class="relative group ml-2">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('purchase-plan*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
+                            5. KẾ HOẠCH & MUA HÀNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
-                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
-                            <a href="{{ route('warehouse.purchase-request') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Phiếu đề xuất mua hàng</a>
+                        <div class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left z-50">
+                            <a href="{{ route('purchase-plan') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 font-bold text-indigo-700 hover:bg-indigo-50">1. Quản lý Kế hoạch</a>
+                            <a href="{{ route('purchase-plan.history') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">2. Lịch sử mua hàng</a>
+                        </div>
+                    </div>
+
+                    <!-- Module 6: BÁO CÁO -->
+                    <div class="relative group ml-2">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.purchase-*') || request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports') || request()->routeIs('purchase-request') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
+                            6. BÁO CÁO
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left z-50">
+                            <a href="{{ route('purchase-request') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Phiếu đề xuất mua hàng (Cũ)</a>
                             <a href="{{ route('warehouse.delivery-note') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Nhu cầu NVL</a>
                             <a href="{{ route('warehouse.reports.transaction-detail') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50 {{ request()->routeIs('warehouse.reports.transaction-detail') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo chi tiết giao dịch</a>
                             <a href="{{ route('warehouse.reports.stock') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo kho</a>
                         </div>
                     </div>
 
-                    <!-- Module 6: CHAT KHO -->
+                    <!-- Module 7: CHAT KHO -->
                     @php
                         $lastRead = auth()->user()->last_read_chat_at ?? '2000-01-01 00:00:00';
                         $unreadCount = \App\Models\ChatMessage::where('created_at', '>', $lastRead)
@@ -87,7 +102,7 @@
                             ->count();
                     @endphp
                     <a href="{{ route('warehouse.chat') }}" class="ml-2 px-3 py-2 rounded-md text-sm font-bold transition duration-150 relative {{ request()->routeIs('warehouse.chat') ? 'bg-sky-200 text-sky-950 shadow-inner' : ($unreadCount > 0 ? 'text-red-600 bg-red-100 hover:bg-red-200 animate-pulse' : 'text-sky-900 hover:bg-sky-200 hover:text-sky-950') }}">
-                        6. CHAT KHO
+                        7. CHAT KHO
                         @if($unreadCount > 0)
                             <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white ring-2 ring-sky-100">
                                 {{ $unreadCount > 9 ? '9+' : $unreadCount }}

@@ -15,21 +15,29 @@ class MaintenanceRuleManager extends Component
 
     // Form fields
     public $ruleId;
+    public $rule_code;
+    public $name;
     public $machine_type;
     public $category;
     public $cycle_km = 0;
     public $cycle_hours = 0;
     public $cycle_months = 0;
     public $content;
+    public $estimated_time = 0;
+    public $notes;
     public $material_needed_raw = ''; // text nhập liệu cách nhau bởi dấu phẩy
 
     protected $rules = [
+        'rule_code' => 'required|string|max:100',
+        'name' => 'required|string|max:255',
         'machine_type' => 'required|string|max:100',
         'category' => 'required|string|max:100',
         'cycle_km' => 'required|numeric|min:0',
         'cycle_hours' => 'required|numeric|min:0',
         'cycle_months' => 'required|integer|min:0',
         'content' => 'nullable|string',
+        'estimated_time' => 'nullable|numeric|min:0',
+        'notes' => 'nullable|string',
     ];
 
     public function updatingSearch()
@@ -54,12 +62,16 @@ class MaintenanceRuleManager extends Component
     public function resetForm()
     {
         $this->ruleId = null;
+        $this->rule_code = '';
+        $this->name = '';
         $this->machine_type = '';
         $this->category = '';
         $this->cycle_km = 0;
         $this->cycle_hours = 0;
         $this->cycle_months = 0;
         $this->content = '';
+        $this->estimated_time = 0;
+        $this->notes = '';
         $this->material_needed_raw = '';
     }
 
@@ -69,12 +81,16 @@ class MaintenanceRuleManager extends Component
         $rule = MaintenanceRule::findOrFail($id);
         
         $this->ruleId = $rule->id;
+        $this->rule_code = $rule->rule_code;
+        $this->name = $rule->name;
         $this->machine_type = $rule->machine_type;
         $this->category = $rule->category;
         $this->cycle_km = $rule->cycle_km;
         $this->cycle_hours = $rule->cycle_hours;
         $this->cycle_months = $rule->cycle_months;
         $this->content = $rule->content;
+        $this->estimated_time = $rule->estimated_time;
+        $this->notes = $rule->notes;
         $this->material_needed_raw = implode(', ', $rule->material_needed ?? []);
 
         $this->isModalOpen = true;
@@ -90,12 +106,16 @@ class MaintenanceRuleManager extends Component
         MaintenanceRule::updateOrCreate(
             ['id' => $this->ruleId],
             [
+                'rule_code' => $this->rule_code,
+                'name' => $this->name,
                 'machine_type' => $this->machine_type,
                 'category' => $this->category,
                 'cycle_km' => $this->cycle_km,
                 'cycle_hours' => $this->cycle_hours,
                 'cycle_months' => $this->cycle_months,
                 'content' => $this->content,
+                'estimated_time' => $this->estimated_time,
+                'notes' => $this->notes,
                 'material_needed' => array_values($materials),
                 'created_by' => auth()->user()->name ?? 'System',
             ]

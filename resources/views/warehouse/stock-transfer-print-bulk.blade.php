@@ -71,13 +71,13 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th style="width: 50px;">STT</th>
-                    <th style="width: 150px;">Mã Vật Tư</th>
-                    <th>Tên Vật Tư</th>
-                    <th style="width: 100px;">Số Lượng</th>
-                    <th style="width: 80px;">ĐVT</th>
-                    <th style="width: 100px;">Vị Trí</th>
-                    <th style="width: 120px;">Ghi chú</th>
+                    <th style="width: 5%;">STT</th>
+                    <th style="width: 15%;">Mã Vật Tư</th>
+                    <th style="width: 35%;">Tên Vật Tư</th>
+                    <th style="width: 10%;">Số Lượng</th>
+                    <th style="width: 8%;">ĐVT</th>
+                    <th style="width: 12%;">Vị Trí</th>
+                    <th style="width: 15%;">Ghi chú</th>
                 </tr>
             </thead>
             <tbody>

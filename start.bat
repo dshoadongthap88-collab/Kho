@@ -12,4 +12,4 @@ start "Vite Dev Server" cmd /c "npm run dev"
 echo.
 echo [3/3] Dang khoi dong Laravel Artisan Serve...
 echo Nhan Ctrl+C de dung server
-php artisan serve  --port=8000
+php artisan serve  --port=8001

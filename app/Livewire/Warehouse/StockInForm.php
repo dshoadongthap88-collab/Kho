@@ -441,6 +441,33 @@ class StockInForm extends Component
                 if (!empty($productUpdates)) {
                     Product::where('id', $productId)->update($productUpdates);
                 }
+
+                // Tự động cập nhật Kế hoạch mua hàng (PurchasePlan)
+                $pendingPlans = \App\Models\PurchasePlan::where('product_id', $productId)
+                    ->whereNotIn('status', ['completed'])
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+                
+                $remainingQty = $item['quantity'];
+                foreach ($pendingPlans as $plan) {
+                    if ($remainingQty <= 0) break;
+                    
+                    $needed = $plan->proposed_quantity - $plan->delivered_quantity;
+                    if ($needed > 0) {
+                        $fill = min($needed, $remainingQty);
+                        $plan->delivered_quantity += $fill;
+                        $remainingQty -= $fill;
+                        
+                        if ($plan->delivered_quantity >= $plan->proposed_quantity) {
+                            $plan->status = 'completed';
+                            $plan->notes = 'Đã đủ hàng (phiếu nhập ' . $stockIn->code . ')';
+                        } else {
+                            $plan->status = 'partial';
+                            $plan->notes = 'Đã nhận một phần (phiếu nhập ' . $stockIn->code . ')';
+                        }
+                        $plan->save();
+                    }
+                }
             }
 
             session()->flash('success', 'Nhập kho thành công! Các sản phẩm mới đã được tự động thêm vào Danh mục vật tư.');

@@ -54,11 +54,12 @@
 
                     <!-- Module 4: THEO DÕI BẢO DƯỠNG -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.maintenance-*') || request()->routeIs('warehouse.asset-*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('maintenance.*') || request()->routeIs('warehouse.maintenance-*') || request()->routeIs('warehouse.asset-*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             4. THEO DÕI BẢO DƯỠNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-72 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="{{ route('maintenance.index') }}" class="block px-4 py-2 text-sm text-gray-700 font-bold bg-sky-50 hover:bg-sky-100 border-b border-sky-100">TRANG CHỦ ERP BẢO DƯỠNG</a>
                             <a href="{{ route('warehouse.odo-manager') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Cập nhật giờ odo hàng ngày</a>
                             <a href="{{ route('warehouse.asset-bom-manager') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Định mức bảo dưỡng</a>
                             <a href="{{ route('warehouse.maintenance-form') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50">Kế hoạch bảo dưỡng</a>

@@ -43,6 +43,31 @@ Route::middleware('auth')->group(function () {
             Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
         });
 
+        // Maintenance rules, tickets, plans...
+        Route::get('/maintenance-rules', \App\Livewire\Warehouse\MaintenanceRuleManager::class)->name('maintenance-rules');
+        Route::get('/maintenance-tracking', \App\Livewire\Warehouse\MaintenanceTracking::class)->name('maintenance-tracking');
+        Route::get('/maintenance-plans', \App\Livewire\Warehouse\MaintenancePlanManager::class)->name('maintenance-plans');
+        Route::get('/maintenance-tickets', \App\Livewire\Warehouse\MaintenanceTicketManager::class)->name('maintenance-tickets');
+        Route::get('/maintenance-dashboard', \App\Livewire\Warehouse\MaintenanceDashboard::class)->name('maintenance-dashboard');
+        
+        // Purchase Plan Module
+        Route::get('/purchase-plan', function () {
+            return view('warehouse.purchase-plan');
+        })->name('purchase-plan');
+        
+        Route::get('/purchase-plan/print', function (Illuminate\Http\Request $request) {
+            $ids = explode(',', $request->query('ids', ''));
+            $plans = \App\Models\PurchasePlan::with('product')->whereIn('id', $ids)->get();
+            return view('warehouse.purchase-plan-print', compact('plans'));
+        })->name('purchase-plan.print');
+        
+        Route::get('/purchase-plan/history', function () {
+            return view('warehouse.purchase-plan-history');
+        })->name('purchase-plan.history');
+
+        // Module Báo Cáo
+        Route::get('/purchase-request', \App\Livewire\Warehouse\PurchaseOrderList::class)->name('purchase-request');
+
         // HR House Routes (Quản trị & Phân quyền)
         Route::middleware('admin')->prefix('hr')->name('hr.')->group(function () {
             Route::get('/dashboard', \App\Livewire\Hr\HrDashboard::class)->name('dashboard');
@@ -51,6 +76,11 @@ Route::middleware('auth')->group(function () {
             Route::get('/global-report', \App\Livewire\Hr\GlobalReport::class)->name('global-report');
             Route::get('/notifications', \App\Livewire\Hr\NotificationManager::class)->name('notifications');
         });
+
+        // Maintenance ERP Route
+        Route::get('/maintenance', function () {
+            return view('pages.maintenance.index');
+        })->name('maintenance.index');
 
         require __DIR__.'/warehouse.php';
     });

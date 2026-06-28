@@ -11,6 +11,8 @@ class MaintenanceRule extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'rule_code',
+        'name',
         'machine_type',
         'category',
         'cycle_km',
@@ -18,6 +20,8 @@ class MaintenanceRule extends Model
         'cycle_months',
         'content',
         'material_needed',
+        'estimated_time',
+        'notes',
         'created_by',
     ];
 

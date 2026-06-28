@@ -29,10 +29,11 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã Cấp</th>
+                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tên Cấp</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Loại Thiết Bị</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Hạng Mục</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Chu Kỳ Km</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Chu Kỳ Giờ Máy</th>
+                        <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Chu Kỳ Giờ</th>
                         <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Chu Kỳ Tháng</th>
                         <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Vật Tư Cần Thay</th>
                         <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
@@ -41,9 +42,10 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($rules as $rule)
                         <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-indigo-600">{{ $rule->rule_code }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{ $rule->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ $rule->machine_type }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-indigo-600">{{ $rule->category }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-orange-600">{{ $rule->cycle_km > 0 ? number_format($rule->cycle_km) . ' km' : '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold text-blue-600">{{ $rule->cycle_hours > 0 ? number_format($rule->cycle_hours) . ' giờ' : '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{{ $rule->cycle_months > 0 ? $rule->cycle_months . ' tháng' : '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">
@@ -95,6 +97,19 @@
                             <div class="space-y-4">
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
+                                        <label class="block text-sm font-medium text-gray-700">Mã Cấp Bảo Dưỡng <span class="text-red-500">*</span></label>
+                                        <input type="text" wire:model="rule_code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="VD: BD250, BD500">
+                                        @error('rule_code') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Tên Cấp Bảo Dưỡng <span class="text-red-500">*</span></label>
+                                        <input type="text" wire:model="name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="VD: Bảo dưỡng cấp 1">
+                                        @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
                                         <label class="block text-sm font-medium text-gray-700">Loại Thiết Bị <span class="text-red-500">*</span></label>
                                         <input type="text" wire:model="machine_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="VD: Máy Xúc, Xe Lu...">
                                         @error('machine_type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -134,6 +149,11 @@
                                     <div class="col-span-3 text-xs text-gray-500 mt-1 italic">
                                         * Đặt giá trị 0 nếu hạng mục không phụ thuộc vào chỉ số đó. (Ví dụ: Thay nhớt chỉ cần 5000km hoặc 200 giờ máy thì đặt Tháng = 0)
                                     </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Thời gian dự kiến (Giờ)</label>
+                                    <input type="number" step="0.5" wire:model="estimated_time" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 </div>
 
                                 <div>

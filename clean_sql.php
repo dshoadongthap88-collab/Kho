@@ -1,0 +1,1 @@
+<?php $lines = file('D:\Project\database\backup_laravel_2026-06-11_utf8.sql'); $start = false; $out = []; foreach($lines as $line) { if(strpos($line, '-- MySQL dump') === 0) $start = true; if($start) $out[] = $line; } file_put_contents('D:\Project\database\backup_clean.sql', implode('', $out));

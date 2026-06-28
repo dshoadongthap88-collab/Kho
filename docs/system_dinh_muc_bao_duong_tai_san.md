@@ -139,3 +139,120 @@ Dựa trên kết quả tính toán tự động từ hệ thống, dưới đâ
   * Số giờ còn lại: **Cực kỳ khẩn cấp - chỉ còn 50 giờ hoạt động!** (Đề xuất phát phiếu yêu cầu bảo dưỡng ngay lập tức).
   * Công việc: Thay thế 20 Lít dầu `15W40`, thay Lọc dầu máy phát và Lọc nhiên liệu Cummins.
   * **Cảnh báo tuổi thọ:** Máy phát điện đã sử dụng **12 năm**, yêu cầu kỹ thuật viên đo đạc mức độ cách điện của cuộn dây phát trước khi chạy thử tải sau bảo dưỡng.
+
+---
+
+## 6. QUY TRÌNH & CẤU TRÚC ERP QUẢN LÝ BẢO DƯỠNG
+
+### 6.1. Thông tin thiết bị
+
+| Mã TS | Tên Thiết Bị | ODO Hiện Tại | Giờ Máy Hiện Tại | Số Ca Hôm Nay | Chu Kỳ BD | ODO BD Gần Nhất | Giờ Máy BD Gần Nhất | Trạng Thái |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| TS001 | Xe Cẩu 25T | 200 | 200 | 1 | 250h | 0 | 0 | Hoạt động |
+
+### 6.2. Cập nhật tự động hàng ngày
+**Công thức:**
+Mỗi ngày hệ thống tự động chạy lúc 00:00:
+* `ODO mới = ODO cũ + (Số Ca × 8)`
+* `Giờ máy mới = Giờ máy cũ + (Số Ca × 8)`
+
+**Ví dụ:**
+
+| Ngày | ODO | Giờ Máy | Số Ca |
+| :--- | :--- | :--- | :--- |
+| 01/06 | 200 | 200 | 1 |
+| 02/06 | 208 | 208 | 1 |
+| 03/06 | 224 | 224 | 2 |
+| 04/06 | 232 | 232 | 1 |
+
+*Lưu ý: Số ca được điều phối cập nhật thủ công cuối ngày.*
+
+### 6.3. Thiết lập linh hoạt
+Cho phép cấu hình (không cố định 8 giờ):
+
+| Thiết bị | Giờ/Ca |
+| :--- | :--- |
+| Xe tải | 8 |
+| Máy phát điện | 12 |
+| Xe nâng | 6 |
+
+**Công thức:**
+`Giờ máy tăng = Số Ca × Giờ/Ca`
+
+### 6.4. Tự động sinh kế hoạch bảo dưỡng
+Mỗi thiết bị có chu kỳ riêng:
+
+| Thiết bị | Chu kỳ |
+| :--- | :--- |
+| Xe tải | 250h |
+| Xe cẩu | 500h |
+| Máy phát điện | 1000h |
+
+**Điều kiện sinh phiếu tự động:**
+* `Giờ máy hiện tại - Giờ máy BD gần nhất >= Chu kỳ`
+HOẶC
+* `ODO hiện tại - ODO BD gần nhất >= Chu kỳ`
+=> Tự động tạo phiếu bảo dưỡng.
+
+### 6.5. Dashboard cảnh báo
+Hệ thống tự động hiển thị:
+
+**Đến hạn (Màu đỏ)**
+| Mã TS | Thiết Bị | Giờ Máy | Chu Kỳ |
+| :--- | :--- | :--- | :--- |
+| TS001 | Xe Cẩu 25T | 500 | 500 |
+
+**Sắp đến hạn (Màu vàng - Còn dưới 20 giờ)**
+| Mã TS | Thiết Bị | Hiện Tại | Đến Hạn |
+| :--- | :--- | :--- | :--- |
+| TS002 | Xe Tải | 485 | 500 |
+
+### 6.6. Xác nhận bảo dưỡng
+Khi kỹ thuật hoàn thành:
+1. Chọn "Hoàn thành bảo dưỡng"
+2. Nhập:
+   * Ngày bảo dưỡng
+   * Nội dung
+   * Vật tư thay thế
+   * Chi phí
+
+Hệ thống tự động cập nhật:
+* `Giờ máy BD gần nhất = Giờ máy hiện tại`
+* `ODO BD gần nhất = ODO hiện tại`
+
+### 6.7. Lưu lịch sử bảo dưỡng
+Bảng riêng (Dữ liệu này không được ghi đè):
+
+| Số Phiếu | Mã TS | Ngày BD | ODO | Giờ Máy | Nội Dung | Chi Phí |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| BD001 | TS001 | 01/06/2026 | 500 | 500 | Thay dầu | 2.000.000 |
+| BD002 | TS001 | 01/08/2026 | 1000 | 1000 | Thay lọc dầu | 1.500.000 |
+
+### 6.8. Tự động tính lần bảo dưỡng tiếp theo
+Sau khi hoàn thành bảo dưỡng:
+`Mốc tiếp theo = Giờ Máy hiện tại + Chu Kỳ`
+
+*Ví dụ:*
+* BD tại 500h
+* Chu kỳ 250h
+=> Bảo dưỡng tiếp theo: 750h
+
+### 6.9. Báo cáo quản lý thiết bị
+* Thiết bị sắp bảo dưỡng
+* Thiết bị quá hạn bảo dưỡng
+* Chi phí bảo dưỡng theo tháng
+* Chi phí bảo dưỡng theo thiết bị
+* Top 10 thiết bị tốn chi phí nhất
+* Tổng giờ hoạt động theo tháng
+* Tổng ODO theo tháng
+* Lịch sử bảo dưỡng theo mã tài sản
+
+### Cấu trúc ERP nên có
+1. Danh mục thiết bị 
+2. Cập nhật ca làm việc
+3. Nhật ký ODO - Giờ máy
+4. Kế hoạch bảo dưỡng
+5. Phiếu bảo dưỡng
+6. Lịch sử bảo dưỡng
+7. Dashboard cảnh báo
+8. Báo cáo thiết bị

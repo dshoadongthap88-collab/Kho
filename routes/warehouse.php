@@ -113,8 +113,11 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
     Route::get('/odo-manager', \App\Livewire\Warehouse\OdoManager::class)->name('odo-manager');
 
     // Module 4: THEO DÕI BẢO DƯỠNG
-    Route::get('/maintenance-dashboard', \App\Livewire\Warehouse\MaintenanceDashboard::class)->name('maintenance-dashboard');
+    Route::get('/maintenance-dashboard', \App\Livewire\Warehouse\MaintenanceReport::class)->name('maintenance-dashboard');
+    Route::get('/maintenance-tracking', \App\Livewire\Warehouse\MaintenanceTracking::class)->name('maintenance-tracking');
     Route::get('/maintenance-rules', \App\Livewire\Warehouse\MaintenanceRuleManager::class)->name('maintenance-rules');
+    Route::get('/maintenance-plans', \App\Livewire\Warehouse\MaintenancePlanManager::class)->name('maintenance-plans');
+    Route::get('/maintenance-tickets', \App\Livewire\Warehouse\MaintenanceTicketManager::class)->name('maintenance-tickets');
     Route::get('/asset-odo-log', \App\Livewire\Warehouse\AssetOdoLog::class)->name('asset-odo-log');
 
     // Stock Recovery Report Routes

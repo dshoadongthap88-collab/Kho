@@ -20,6 +20,15 @@ class Asset extends Model
         'manufacturer',
         'installation_date',
         'status',
+        'lifetime_odo',
+        'lifetime_hours',
+        'cycle_odo',
+        'cycle_hours',
+        'hours_per_shift',
+        'maintenance_cycle_hours',
+        'maintenance_cycle_odo',
+        'last_maintenance_hours',
+        'last_maintenance_odo',
     ];
 
     public function oilBoms()

@@ -10,8 +10,15 @@ class MaintenanceTicket extends Model
     use HasFactory;
 
     protected $fillable = [
-        'ticket_code', 'asset_id', 'maintenance_date', 'type',
-        'description', 'status', 'created_by'
+        'ticket_code', 'asset_id', 'maintenance_rule_id', 'maintenance_date', 'type',
+        'maintenance_odo', 'description', 'materials_used', 'staff_name',
+        'inspector', 'result', 'image_before', 'image_after', 'notes',
+        'status', 'created_by', 'replaced_materials', 'total_cost'
+    ];
+
+    protected $casts = [
+        'replaced_materials' => 'array',
+        'maintenance_date' => 'date',
     ];
 
     public function asset()

@@ -42,6 +42,7 @@ class AssetBomManager extends Component
     public $edit_asset_code = '';
     public $edit_name = '';
     public $edit_department = '';
+    public $bomItems = [];
 
     protected $queryString = ['search'];
 
@@ -158,7 +159,19 @@ class AssetBomManager extends Component
         $this->edit_asset_code = $asset->asset_code;
         $this->edit_name = $asset->name;
         $this->edit_department = $asset->department;
+        $this->bomItems = json_decode($asset->bom_details ?? '[]', true);
         $this->showEditModal = true;
+    }
+
+    public function addBomItem()
+    {
+        $this->bomItems[] = ['name' => '', 'quantity' => ''];
+    }
+
+    public function removeBomItem($index)
+    {
+        unset($this->bomItems[$index]);
+        $this->bomItems = array_values($this->bomItems);
     }
 
     public function updateAsset()
@@ -178,6 +191,7 @@ class AssetBomManager extends Component
             'asset_code' => $this->edit_asset_code,
             'name' => $this->edit_name,
             'department' => $this->edit_department,
+            'bom_details' => json_encode($this->bomItems)
         ]);
 
         $this->initFields();

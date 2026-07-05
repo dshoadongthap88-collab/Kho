@@ -6,8 +6,8 @@
             <div class="flex items-center">
                 <label for="autoCronToggle" class="flex items-center cursor-pointer">
                     <div class="relative">
-                        <input type="checkbox" id="autoCronToggle" class="sr-only" wire:model.live="autoCronEnabled" wire:click="toggleAutoCron">
-                        <div class="block bg-gray-300 w-10 h-6 rounded-full {{ $autoCronEnabled ? 'bg-blue-500' : '' }}"></div>
+                        <input type="checkbox" id="autoCronToggle" class="sr-only" wire:model.live="autoCronEnabled">
+                        <div class="block w-10 h-6 rounded-full transition-colors {{ $autoCronEnabled ? 'bg-emerald-500' : 'bg-rose-500' }}"></div>
                         <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform {{ $autoCronEnabled ? 'translate-x-4' : '' }}"></div>
                     </div>
                     <div class="ml-3 text-gray-700 font-medium">Auto Cron (00:01)</div>

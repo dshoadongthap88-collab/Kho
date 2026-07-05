@@ -26,9 +26,8 @@ class DailyOdoManager extends Component
         $this->loadRecords();
     }
 
-    public function toggleAutoCron()
+    public function updatedAutoCronEnabled()
     {
-        $this->autoCronEnabled = !$this->autoCronEnabled;
         Setting::setVal('auto_daily_odo_enabled', $this->autoCronEnabled ? 'true' : 'false');
         session()->flash('message', 'Đã ' . ($this->autoCronEnabled ? 'bật' : 'tắt') . ' tính năng tạo ODO tự động.');
     }

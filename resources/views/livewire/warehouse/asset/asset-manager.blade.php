@@ -60,6 +60,54 @@
                         </select>
                     </div>
                 </div>
+
+                <!-- Định mức vật tư (BOM) -->
+                <div class="mt-6 pt-4 border-t border-slate-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-black text-slate-700 uppercase tracking-tight">⚙️ Định mức vật tư bảo dưỡng (BOM)</h4>
+                        <button type="button" wire:click="addBomItem" class="text-xs font-bold text-indigo-700 bg-indigo-100 px-3 py-1.5 rounded-lg hover:bg-indigo-200 transition shadow-sm flex items-center gap-1">
+                            + Thêm vật tư
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        @if(count($bomItems) == 0)
+                            <div class="text-sm text-slate-500 italic text-center py-6 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                                Chưa có vật tư nào. Nhấp "Thêm vật tư" để khai báo các loại dầu/lọc.
+                            </div>
+                        @else
+                            @foreach($bomItems as $index => $item)
+                            <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm" wire:key="bom-item-{{ $index }}">
+                                <div class="flex-1 space-y-1">
+                                    <input type="text" wire:model.defer="bomItems.{{ $index }}.name" placeholder="Tên vật tư (VD: Dầu 15W40...)" class="w-full text-sm px-3 py-2 rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 font-bold" list="common-materials-am">
+                                </div>
+                                <div class="w-32 space-y-1">
+                                    <input type="text" wire:model.defer="bomItems.{{ $index }}.quantity" placeholder="Số lượng/Đơn vị" class="w-full text-sm px-3 py-2 rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 text-center font-bold text-indigo-700">
+                                </div>
+                                <button type="button" wire:click="removeBomItem({{ $index }})" class="mt-1 text-rose-500 hover:text-rose-700 p-2 bg-white rounded-lg shadow-sm border border-slate-200 hover:bg-rose-50 transition" title="Xóa">
+                                    ✕
+                                </button>
+                            </div>
+                            @endforeach
+                        @endif
+                    </div>
+                    <datalist id="common-materials-am">
+                        <option value="Dầu động cơ 15W-40">
+                        <option value="Dầu động cơ 20W-50">
+                        <option value="Dầu cầu hộp số 80W-90">
+                        <option value="Dầu cầu hộp số 85W-140">
+                        <option value="Dầu thủy lực AW 68">
+                        <option value="Dầu thủy lực AW 46">
+                        <option value="Mỡ bôi trơn EP2">
+                        <option value="Lọc nhớt động cơ">
+                        <option value="Lọc nhiên liệu (thô)">
+                        <option value="Lọc nhiên liệu (tinh)">
+                        <option value="Lọc gió (trong)">
+                        <option value="Lọc gió (ngoài)">
+                        <option value="Lọc thủy lực">
+                        <option value="Lọc nước làm mát">
+                    </datalist>
+                </div>
             </div>
             <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-xl">
                 <button wire:click="closeForm" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200 transition">Hủy bỏ</button>

@@ -179,7 +179,12 @@
                                 </button>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-[11px] font-black text-gray-800 uppercase tracking-tight">{{ $product->name }}</td>
+                        <td class="px-4 py-3 text-[11px] font-black text-gray-800 uppercase tracking-tight">
+                            {{ $product->name }}
+                            @if($product->category)
+                                <div class="text-[9px] text-gray-500 mt-1 uppercase">{{ $product->category->name }}</div>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             @if($product->type === 'product_produced')
                                 <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs">SX</span>
@@ -282,6 +287,16 @@
                                 <label class="block text-sm font-medium text-gray-700">Tên vật tư</label>
                                 <input type="text" wire:model="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Danh mục</label>
+                                <select wire:model="category_id" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white">
+                                    <option value="">-- Chọn danh mục --</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('category_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-2 flex gap-4 my-2">
                                 <label class="block text-sm font-medium text-gray-700 items-center flex">Phân loại gốc:</label>

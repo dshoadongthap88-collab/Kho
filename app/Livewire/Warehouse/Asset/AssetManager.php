@@ -23,6 +23,7 @@ class AssetManager extends Component
     public $asset_code;
     public $name;
     public $department;
+    public $bomItems = [];
     public $machine_type;
     public $model;
     public $serial_number;
@@ -66,6 +67,7 @@ class AssetManager extends Component
         $this->asset_code = $asset->asset_code;
         $this->name = $asset->name;
         $this->department = $asset->department;
+        $this->bomItems = json_decode($asset->bom_details ?? '[]', true);
         $this->machine_type = $asset->machine_type;
         $this->model = $asset->model;
         $this->serial_number = $asset->serial_number;
@@ -75,6 +77,17 @@ class AssetManager extends Component
         
         $this->isFormOpen = true;
         $this->isEditing = true;
+    }
+
+    public function addBomItem()
+    {
+        $this->bomItems[] = ['name' => '', 'quantity' => ''];
+    }
+
+    public function removeBomItem($index)
+    {
+        unset($this->bomItems[$index]);
+        $this->bomItems = array_values($this->bomItems);
     }
 
     public function save()
@@ -96,6 +109,7 @@ class AssetManager extends Component
             'manufacturer' => $this->manufacturer,
             'installation_date' => $this->installation_date ?: null,
             'status' => $this->status,
+            'bom_details' => json_encode($this->bomItems),
         ];
 
         if ($this->isEditing) {

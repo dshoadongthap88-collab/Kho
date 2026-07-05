@@ -7,6 +7,10 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return redirect()->route('warehouse.inventory');
     });
 
+    Route::get('/categories', \App\Livewire\Warehouse\CategoryManager::class)
+        ->name('categories')
+        ->middleware('permission:product-catalog'); // Use same permission as product catalog for now
+
     Route::get('/product-catalog', \App\Livewire\Warehouse\ProductCatalog::class)
         ->name('product-catalog')
         ->middleware('permission:product-catalog');
@@ -97,9 +101,8 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return view('warehouse.asset.dashboard');
     })->name('asset-dashboard');
 
-    Route::get('/asset-manager', function () {
-        return view('warehouse.asset.manager');
-    })->name('asset-manager');
+    Route::get('/asset-manager', \App\Livewire\Warehouse\AssetMaintenanceErp::class)
+        ->name('asset-manager');
 
     Route::get('/asset-bom-manager', function () {
         return view('warehouse.asset.bom-manager');

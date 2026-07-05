@@ -47,6 +47,7 @@
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="{{ route('warehouse.categories') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">DANH MỤC PHÂN LOẠI</a>
                             <a href="{{ route('warehouse.product-catalog') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">DANH MỤC VẬT TƯ</a>
                             <a href="{{ route('warehouse.asset-manager') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">DANH MỤC THIẾT BỊ & TÀI SẢN</a>
                         </div>
@@ -54,28 +55,50 @@
 
                     <!-- Module 4: THEO DÕI BẢO DƯỠNG -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('maintenance.*') || request()->routeIs('warehouse.maintenance-*') || request()->routeIs('warehouse.asset-*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.asset-manager') || request()->routeIs('maintenance.*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             4. THEO DÕI BẢO DƯỠNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-72 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
-                            <a href="{{ route('maintenance.index') }}" class="block px-4 py-2 text-sm text-gray-700 font-bold bg-sky-50 hover:bg-sky-100 border-b border-sky-100">TRANG CHỦ ERP BẢO DƯỠNG</a>
-                            <a href="{{ route('warehouse.odo-manager') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Cập nhật giờ odo hàng ngày</a>
-                            <a href="{{ route('warehouse.asset-bom-manager') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Định mức bảo dưỡng</a>
-                            <a href="{{ route('warehouse.maintenance-form') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50">Kế hoạch bảo dưỡng</a>
+                            <a href="{{ route('warehouse.asset-manager') }}" class="block px-4 py-2 text-sm text-gray-700 font-bold bg-sky-50 hover:bg-sky-100 border-b border-sky-100">TRANG CHỦ TỔNG HỢP (7 IN 1)</a>
+                            <a href="{{ route('warehouse.asset-manager', ['activeTab' => 'odo-manager']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Cập nhật giờ ODO hàng ngày</a>
+                            <a href="{{ route('warehouse.asset-manager', ['activeTab' => 'bom-manager']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Định mức bảo dưỡng (BOM)</a>
+                            <a href="{{ route('warehouse.asset-manager', ['activeTab' => 'ticket-list']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50">Phiếu bảo dưỡng & Lịch</a>
+                            <a href="{{ route('warehouse.asset-manager', ['activeTab' => 'shift-log']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50">Giao ca / Nhật ký</a>
                         </div>
                     </div>
 
-                    <!-- Module 5: BÁO CÁO -->
+                    <!-- Module 5: KẾ HOẠCH & MUA HÀNG -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.purchase-*') || request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
-                            5. BÁO CÁO
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.purchase-*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
+                            5. KẾ HOẠCH & MUA HÀNG
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="{{ route('purchase-plan') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Kế hoạch mua hàng</a>
+                            <a href="{{ route('purchase-request') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Đề xuất mua vật tư</a>
+                            <a href="{{ route('purchase-plan.history') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Lịch sử kế hoạch</a>
+                        </div>
+                    </div>
+
+                    <!-- Module 6: BÁO CÁO -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports.*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
+                            6. BÁO CÁO
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
                             <a href="{{ route('warehouse.reports.transaction-detail') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.transaction-detail') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo chi tiết giao dịch</a>
                             <a href="{{ route('warehouse.reports.stock') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo kho</a>
                         </div>
+                    </div>
+                    
+                    <!-- Module 7: CHAT KHO -->
+                    <div class="relative group">
+                        <a href="{{ route('warehouse.chat') }}" class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 hover:bg-sky-200 hover:text-sky-950 {{ request()->routeIs('warehouse.chat') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
+                            7. CHAT KHO
+                        </a>
+                    </div>
                     @else
                     <!-- Module HR -->
                     @if(Auth::check() && Auth::user()->role === 'admin')
@@ -137,7 +160,8 @@
         <h1 class="text-2xl font-black text-slate-900 mb-1 uppercase tracking-tight no-print" style="font-family: 'Times New Roman', Times, serif;">
             {{ mb_strtoupper($title ?? '') }}
         </h1>
-        {{ $slot }}
+        {{ $slot ?? '' }}
+        @yield('content')
     </main>
 
     @livewireScripts

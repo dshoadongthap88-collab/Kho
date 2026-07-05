@@ -35,6 +35,7 @@ class ProductCatalog extends Component
     public $carton_spec;
     public $status = 'active';
     public $location;
+    public $category_id;
     public $batch_number;
     public $expiry_date;
     public $quantity;
@@ -60,6 +61,7 @@ class ProductCatalog extends Component
             'box_spec' => 'nullable|string|max:255',
             'carton_spec' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive',
+            'category_id' => 'nullable|exists:categories,id',
             'location' => 'nullable|string|max:255',
             'batch_number' => 'nullable|string|max:255',
             'expiry_date' => 'nullable|date',
@@ -129,7 +131,7 @@ class ProductCatalog extends Component
     public function openModal($id = null)
     {
         $this->resetValidation();
-        $this->reset(['code', 'name', 'brand', 'box_spec', 'carton_spec', 'status', 'location', 'quantity', 'productId', 'image', 'type']);
+        $this->reset(['code', 'name', 'brand', 'box_spec', 'carton_spec', 'status', 'location', 'quantity', 'productId', 'image', 'type', 'category_id']);
         
         if ($id) {
             $this->isEdit = true;
@@ -142,6 +144,7 @@ class ProductCatalog extends Component
             $this->carton_spec = $product->carton_spec;
             $this->status = $product->status;
             $this->location = $product->location;
+            $this->category_id = $product->category_id;
             $this->batch_number = $product->batch_number;
             $this->expiry_date = $product->expiry_date?->format('Y-m-d');
             $this->quantity = $product->inventory?->quantity ?? 0;
@@ -189,6 +192,7 @@ class ProductCatalog extends Component
                     'box_spec' => $this->box_spec,
                     'carton_spec' => $this->carton_spec,
                     'status' => $this->status,
+                    'category_id' => $this->category_id ?: null,
                     'location' => $this->location,
                     'batch_number' => $this->batch_number ?: '',
                     'expiry_date' => $this->expiry_date ?: null,
@@ -224,6 +228,7 @@ class ProductCatalog extends Component
                     'box_spec' => $this->box_spec,
                     'carton_spec' => $this->carton_spec,
                     'status' => $this->status,
+                    'category_id' => $this->category_id ?: null,
                     'location' => $this->location,
                     'batch_number' => $this->batch_number ?: '',
                     'expiry_date' => $this->expiry_date ?: null,
@@ -418,8 +423,11 @@ class ProductCatalog extends Component
             }
         }
 
+        $categories = \App\Models\Category::where('status', 'active')->orderBy('name')->get();
+
         return view('livewire.warehouse.product-catalog', [
             'products' => $products,
+            'categories' => $categories,
             'allProductIdsOnPage' => $products->pluck('id')->toArray()
         ]);
     }

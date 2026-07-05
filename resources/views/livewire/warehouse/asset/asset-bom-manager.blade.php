@@ -670,6 +670,54 @@
                                 <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Bộ phận sử dụng</label>
                                 <input type="text" wire:model.defer="edit_department" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white" />
                             </div>
+                            
+                            <!-- Định mức vật tư (BOM) -->
+                            <div class="mt-4 pt-4 border-t border-slate-200">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-tight">⚙️ Định mức vật tư (BOM)</h4>
+                                    <button type="button" wire:click="addBomItem" class="text-[11px] font-bold text-sky-700 bg-sky-100 px-2 py-1 rounded hover:bg-sky-200 transition shadow-sm">
+                                        + Thêm vật tư
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                    @if(count($bomItems) == 0)
+                                        <div class="text-xs text-slate-400 italic text-center py-3 bg-slate-50 rounded-lg border border-dashed border-slate-300">
+                                            Chưa có vật tư bảo dưỡng nào được thiết lập.
+                                        </div>
+                                    @else
+                                        @foreach($bomItems as $index => $item)
+                                        <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200" wire:key="bom-item-{{ $index }}">
+                                            <div class="flex-1">
+                                                <input type="text" wire:model.defer="bomItems.{{ $index }}.name" placeholder="Tên vật tư (VD: Dầu 15W40...)" class="w-full text-xs px-2 py-1.5 rounded border border-slate-200 focus:ring-1 focus:ring-sky-500 font-medium" list="common-materials">
+                                            </div>
+                                            <div class="w-28">
+                                                <input type="text" wire:model.defer="bomItems.{{ $index }}.quantity" placeholder="SL/Đơn vị (VD: 15 Lít)" class="w-full text-xs px-2 py-1.5 rounded border border-slate-200 focus:ring-1 focus:ring-sky-500 text-center font-bold text-sky-800">
+                                            </div>
+                                            <button type="button" wire:click="removeBomItem({{ $index }})" class="text-rose-500 hover:text-rose-700 p-1 bg-white rounded shadow-sm border border-slate-100 hover:bg-rose-50 transition" title="Xóa">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    @endif
+                                </div>
+                                <datalist id="common-materials">
+                                    <option value="Dầu động cơ 15W-40">
+                                    <option value="Dầu động cơ 20W-50">
+                                    <option value="Dầu cầu hộp số 80W-90">
+                                    <option value="Dầu cầu hộp số 85W-140">
+                                    <option value="Dầu thủy lực AW 68">
+                                    <option value="Dầu thủy lực AW 46">
+                                    <option value="Mỡ bôi trơn EP2">
+                                    <option value="Lọc nhớt động cơ">
+                                    <option value="Lọc nhiên liệu (thô)">
+                                    <option value="Lọc nhiên liệu (tinh)">
+                                    <option value="Lọc gió (trong)">
+                                    <option value="Lọc gió (ngoài)">
+                                    <option value="Lọc thủy lực">
+                                    <option value="Lọc nước làm mát">
+                                </datalist>
+                            </div>
                         </div>
                     </div>
                     <div class="bg-slate-50 px-6 py-3 sm:flex sm:flex-row-reverse gap-2">

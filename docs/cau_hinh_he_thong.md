@@ -9,7 +9,12 @@ Toàn bộ hệ thống quản lý ERP Kho & Thiết bị của tất cả các 
 3. **DANH MỤC VẬT TƯ** (Phân loại, Vật tư tiêu hao, Vật tư phụ tùng)
 4. **THEO DÕI BẢO DƯỠNG**
    - *Đây là Trung tâm điều hành thiết bị (Trang chủ tổng hợp 7 in 1)*
-   - Bao gồm các sub-module: Cập nhật giờ ODO hàng ngày, Định mức bảo dưỡng (BOM động bằng JSON), Phiếu bảo dưỡng & Lịch, Giao ca / Nhật ký.
+   - Menu Dropdown (Cố định tuyệt đối không thay đổi):
+     1. TRANG CHỦ TỔNG HỢP (7 IN 1)
+     2. Cập nhật giờ ODO hàng ngày
+     3. Định mức bảo dưỡng (BOM)
+     4. Phiếu bảo dưỡng & Lịch
+     5. Giao ca / Nhật ký
 5. **KẾ HOẠCH & MUA HÀNG** (Lập kế hoạch mua hàng, Đề xuất vật tư)
 6. **BÁO CÁO** (Báo cáo chi tiết giao dịch, Báo cáo tồn kho tổng hợp)
 7. **CHAT KHO** (Trao đổi nội bộ hệ thống)

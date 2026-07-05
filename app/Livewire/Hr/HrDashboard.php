@@ -13,7 +13,7 @@ class HrDashboard extends Component
     public function render()
     {
         $stats = [
-            'total_projects' => Project::count(),
+            'total_projects' => \App\Models\House::count(),
             'total_users' => User::count(),
         ];
         

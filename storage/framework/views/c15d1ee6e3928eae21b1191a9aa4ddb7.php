@@ -22,6 +22,7 @@
                     <tr>
                         <th class="px-4 py-3">Thời Gian</th>
                         <th class="px-4 py-3">Mã & Tên Vật Tư</th>
+                        <th class="px-4 py-3 text-right">SL Đề Xuất</th>
                         <th class="px-4 py-3 text-center">Trạng Thái Mới</th>
                         <th class="px-4 py-3 text-right">SL Đã Giao Mới</th>
                         <th class="px-4 py-3">Ghi Chú & Nguồn Thay Đổi</th>
@@ -40,6 +41,10 @@
                                 <?php else: ?>
                                     <span class="text-rose-500 italic">Dữ liệu đã bị xóa</span>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </td>
+                            <td class="px-4 py-3 text-right font-bold text-sky-600">
+                                <?php echo e($history->purchasePlan ? number_format($history->purchasePlan->proposed_quantity, 0) : '-'); ?>
+
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($history->new_status === 'pending'): ?>
@@ -71,7 +76,7 @@
                         </tr>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-slate-500 font-medium">Chưa có lịch sử thay đổi nào.</td>
+                            <td colspan="7" class="px-4 py-8 text-center text-slate-500 font-medium">Chưa có lịch sử thay đổi nào.</td>
                         </tr>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </tbody>

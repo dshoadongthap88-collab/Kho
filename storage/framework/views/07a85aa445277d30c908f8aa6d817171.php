@@ -53,6 +53,7 @@
                         </th>
                         <th class="px-4 py-3">Ngày ĐX</th>
                         <th class="px-4 py-3">Mã & Tên Vật Tư</th>
+                        <th class="px-4 py-3 text-right">Tồn Kho</th>
                         <th class="px-4 py-3 text-right">SL Đề Xuất</th>
                         <th class="px-4 py-3 text-right">Đã Giao</th>
                         <th class="px-4 py-3 text-right text-rose-600">Còn Thiếu</th>
@@ -75,6 +76,10 @@
                             <td class="px-4 py-3 font-medium text-slate-900">
                                 <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs mr-1"><?php echo e($plan->product->code); ?></span>
                                 <?php echo e($plan->product->name); ?>
+
+                            </td>
+                            <td class="px-4 py-3 text-right font-bold text-slate-600">
+                                <?php echo e(number_format($plan->product->inventory->quantity ?? 0, 0)); ?>
 
                             </td>
                             <td class="px-4 py-3 text-right">
@@ -120,7 +125,7 @@
                         </tr>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <tr>
-                            <td colspan="9" class="px-4 py-8 text-center text-slate-500 font-medium">Chưa có kế hoạch mua hàng nào.</td>
+                            <td colspan="10" class="px-4 py-8 text-center text-slate-500 font-medium">Chưa có kế hoạch mua hàng nào.</td>
                         </tr>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </tbody>

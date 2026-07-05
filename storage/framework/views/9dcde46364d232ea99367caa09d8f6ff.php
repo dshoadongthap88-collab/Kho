@@ -88,9 +88,7 @@
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left z-50">
-                            <a href="<?php echo e(route('purchase-request')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Phiếu đề xuất mua hàng (Cũ)</a>
-                            <a href="<?php echo e(route('warehouse.delivery-note')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Nhu cầu NVL</a>
-                            <a href="<?php echo e(route('warehouse.reports.transaction-detail')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50 <?php echo e(request()->routeIs('warehouse.reports.transaction-detail') ? 'bg-slate-100 font-bold' : ''); ?>">Báo cáo chi tiết giao dịch</a>
+                            <a href="<?php echo e(route('warehouse.reports.transaction-detail')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 <?php echo e(request()->routeIs('warehouse.reports.transaction-detail') ? 'bg-slate-100 font-bold' : ''); ?>">Báo cáo chi tiết giao dịch</a>
                             <a href="<?php echo e(route('warehouse.reports.stock')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 <?php echo e(request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : ''); ?>">Báo cáo kho</a>
                         </div>
                     </div>
@@ -130,7 +128,7 @@
                             </div>
 
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->role === 'admin' && session('current_house', 1) == 5): ?>
-                                <a href="<?php echo e(route('admin.users.index')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 text-left">👥 Quản lý nhân viên</a>
+                                <a href="<?php echo e(route('hr.users.index')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 text-left">👥 Quản lý nhân viên</a>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                             <form method="POST" action="<?php echo e(route('logout')); ?>" class="border-t border-gray-100 mt-1 text-left">

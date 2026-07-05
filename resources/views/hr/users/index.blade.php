@@ -82,7 +82,7 @@
                             <td class="px-4 py-3 text-gray-600">{{ $user->username ?? $user->email ?? '-' }}</td>
                             <td class="px-4 py-3 text-gray-400 text-xl leading-none tracking-widest mt-1 inline-block">******</td>
                             <td class="px-4 py-3 text-center" @click.stop>
-                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');" class="inline-block">
+                                <form action="{{ route('hr.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');" class="inline-block">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors" title="Xóa" {{ $user->id === auth()->id() ? 'disabled' : '' }}>
@@ -204,32 +204,15 @@
                         
                         <div class="space-y-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
                             @php
-                                $moduleGroups = [
-                                    '1. Thông tin NCC/KH' => [
-                                        'contacts' => 'Quản lý thông tin Đối tác/Khách hàng'
-                                    ],
-                                    '2. Kho' => [
-                                        'stock-in' => 'Nhập kho',
-                                        'stock-out' => 'Xuất kho',
-                                        'inventory' => 'Tồn kho',
-                                        'stock-count' => 'Kiểm kê kho'
-                                    ],
-                                    '3. Vật tư & BOM' => [
-                                        'product-catalog' => 'Danh mục vật tư',
-                                        'material-names' => 'Danh mục Tên NVL',
-                                        'bom' => 'BOM - Định mức mã tài sản'
-                                    ],
-                                    '4. Tổng hợp' => [
-                                        'purchase-request' => 'Phiếu đề xuất mua hàng',
-                                        'delivery-note' => 'Biên bản giao nhận',
-                                        'reports_transaction' => 'Báo cáo chi tiết giao dịch',
-                                        'reports_stock' => 'Báo cáo kho'
-                                    ],
-                                    '5. Giao hàng' => [
-                                        'customer-debt' => 'Công nợ khách hàng',
-                                        'delivery-report' => 'Báo cáo giao hàng'
-                                    ]
-                                ];
+                                // Nhóm các module theo group_name
+                                $dbModules = \App\Models\SystemModule::where('is_active', true)->get()->groupBy('group_name');
+                                $moduleGroups = [];
+                                foreach ($dbModules as $groupName => $modules) {
+                                    $moduleGroups[$groupName] = [];
+                                    foreach ($modules as $module) {
+                                        $moduleGroups[$groupName][$module->route_name] = $module->label;
+                                    }
+                                }
                             @endphp
                             
                             <div class="h-64 overflow-y-auto custom-scrollbar pr-2 space-y-4">
@@ -325,7 +308,7 @@
                 openCreate() {
                     this.isEdit = false;
                     this.showPassword = false;
-                    this.formAction = '{{ route('admin.users.store') }}';
+                    this.formAction = '{{ route('hr.users.store') }}';
                     this.formData = {
                         id: '',
                         code: '',
@@ -342,7 +325,7 @@
                 editUser(user) {
                     this.isEdit = true;
                     this.showPassword = false;
-                    this.formAction = `/admin/users/${user.id}`;
+                    this.formAction = `/hr/users/${user.id}`;
                     this.formData = {
                         id: user.id,
                         code: user.code || '',

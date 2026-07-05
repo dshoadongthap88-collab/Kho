@@ -87,6 +87,7 @@
                         <div class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
                             <a href="{{ route('hr.dashboard') }}" class="block px-4 py-2 text-sm text-purple-700 font-bold hover:bg-purple-50">🎛️ Bảng Điều Khiển</a>
                             <a href="{{ route('hr.projects') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Quản lý Dự án (Ngôi nhà)</a>
+                            <a href="{{ route('hr.modules') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Cấu hình Module</a>
                             <a href="{{ route('hr.permissions') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Phân quyền Hệ thống</a>
                             <a href="{{ route('hr.notifications') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Quản lý Thông báo</a>
                             <a href="{{ route('hr.global-report') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Báo cáo Tổng hợp</a>
@@ -113,7 +114,7 @@
                             </div>
 
                             @if(Auth::user()->role === 'admin' && session('current_house', 1) == 5)
-                                <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 text-left">👥 Quản lý nhân viên</a>
+                                <a href="{{ route('hr.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 text-left">👥 Quản lý nhân viên</a>
                             @endif
 
                             <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100 mt-1 text-left">

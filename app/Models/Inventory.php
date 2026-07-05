@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\BelongsToHouse;
 use Illuminate\Database\Eloquent\Model;
 
 class Inventory extends Model
 {
+    use \App\Traits\BelongsToHouse;
     protected $fillable = [
         'product_id',
         'quantity',

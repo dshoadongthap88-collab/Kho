@@ -30,17 +30,8 @@ class TenantMiddleware
             return redirect()->route('tenant.select-house');
         }
 
-        // Configure the database for the current house
-        $dbName = 'laravel'; // Default for house 1
-        if ($currentHouse > 1) {
-            $dbName = 'laravel_' . $currentHouse;
-        }
-
-        Config::set('database.connections.tenant.database', $dbName);
-        DB::purge('tenant');
-        
-        // Set tenant as default connection so all models use it automatically
-        Config::set('database.default', 'tenant');
+        // Hệ thống sử dụng Shared Database, không switch connection nữa
+        // Chỉ cần đảm bảo Global Scope (BelongsToHouse) hoạt động là đủ phân tách dữ liệu
 
         return $next($request);
     }

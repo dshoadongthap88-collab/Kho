@@ -1,27 +1,27 @@
 <?php if (isset($component)) { $__componentOriginalc9242005886028143da563f7b99f0c87 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalc9242005886028143da563f7b99f0c87 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.warehouse-layout','data' => ['title' => 'Phiếu đề xuất mua hàng']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.warehouse-layout','data' => ['title' => 'Xuất kho']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
 <?php $component->withName('warehouse-layout'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['title' => 'Phiếu đề xuất mua hàng']); ?>
+<?php $component->withAttributes(['title' => 'Xuất kho']); ?>
 <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
 
     <?php
 $__split = function ($name, $params = []) {
     return [$name, $params];
 };
-[$__name, $__params] = $__split('warehouse.purchase-order-list', []);
+[$__name, $__params] = $__split('warehouse.stock-out-form', []);
 
 $__keyOuter = $__key ?? null;
 
 $__key = null;
 $__componentSlots = [];
 
-$__key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-1164673694-0', $__key);
+$__key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3905225824-0', $__key);
 
 $__html = app('livewire')->mount($__name, $__params, $__key, $__componentSlots);
 
@@ -46,4 +46,4 @@ unset($__split);
 <?php $component = $__componentOriginalc9242005886028143da563f7b99f0c87; ?>
 <?php unset($__componentOriginalc9242005886028143da563f7b99f0c87); ?>
 <?php endif; ?>
-<?php /**PATH D:\Project\resources\views/warehouse/purchase-request.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\Project\resources\views/warehouse/stock-out.blade.php ENDPATH**/ ?>

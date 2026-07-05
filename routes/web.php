@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
 
         // Admin Routes
         Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-            Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
+            // (Đã chuyển qua HR)
         });
 
         // Maintenance rules, tickets, plans...
@@ -73,8 +73,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/dashboard', \App\Livewire\Hr\HrDashboard::class)->name('dashboard');
             Route::get('/projects', \App\Livewire\Hr\ProjectManager::class)->name('projects');
             Route::get('/permissions', \App\Livewire\Hr\PermissionManager::class)->name('permissions');
+            Route::get('/modules', \App\Livewire\Hr\SystemModuleManager::class)->name('modules');
             Route::get('/global-report', \App\Livewire\Hr\GlobalReport::class)->name('global-report');
             Route::get('/notifications', \App\Livewire\Hr\NotificationManager::class)->name('notifications');
+            Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['create', 'show', 'edit']);
         });
 
         // Maintenance ERP Route

@@ -28,6 +28,7 @@ class User extends Authenticatable
         'hire_date',
         'permissions',
         'allowed_houses',
+        'current_house_id',
     ];
 
     protected $hidden = [

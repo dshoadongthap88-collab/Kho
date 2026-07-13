@@ -121,6 +121,14 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
     Route::get('/maintenance-rules', \App\Livewire\Warehouse\MaintenanceRuleManager::class)->name('maintenance-rules');
     Route::get('/maintenance-plans', \App\Livewire\Warehouse\MaintenancePlanManager::class)->name('maintenance-plans');
     Route::get('/maintenance-tickets', \App\Livewire\Warehouse\MaintenanceTicketManager::class)->name('maintenance-tickets');
+    Route::get('/maintenance-tickets/print', function() {
+        $ids = request('ids');
+        if (!$ids) {
+            return redirect()->route('warehouse.maintenance-tickets')->with('error', 'Không có phiếu nào được chọn.');
+        }
+        $tickets = \App\Models\MaintenanceTicket::with(['asset', 'items.product'])->whereIn('id', explode(',', $ids))->get();
+        return view('warehouse.maintenance.print-tickets', compact('tickets'));
+    })->name('maintenance-tickets.print');
     Route::get('/asset-odo-log', \App\Livewire\Warehouse\AssetOdoLog::class)->name('asset-odo-log');
 
     // Stock Recovery Report Routes

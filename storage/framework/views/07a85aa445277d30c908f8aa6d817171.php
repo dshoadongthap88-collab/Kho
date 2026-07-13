@@ -74,12 +74,12 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap"><?php echo e($plan->created_at->format('d/m/Y')); ?></td>
                             <td class="px-4 py-3 font-medium text-slate-900">
-                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs mr-1"><?php echo e($plan->product->code); ?></span>
-                                <?php echo e($plan->product->name); ?>
+                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs mr-1"><?php echo e($plan->product?->code ?? 'N/A'); ?></span>
+                                <?php echo e($plan->product?->name ?? 'Vật tư đã bị xóa'); ?>
 
                             </td>
                             <td class="px-4 py-3 text-right font-bold text-slate-600">
-                                <?php echo e(number_format($plan->product->inventory->quantity ?? 0, 0)); ?>
+                                <?php echo e(number_format($plan->product?->inventory?->quantity ?? 0, 0)); ?>
 
                             </td>
                             <td class="px-4 py-3 text-right">

@@ -35,8 +35,8 @@
                             <td class="px-4 py-3 whitespace-nowrap text-slate-500"><?php echo e($history->created_at->format('d/m/Y H:i:s')); ?></td>
                             <td class="px-4 py-3 font-medium text-slate-900">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($history->purchasePlan): ?>
-                                    <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs mr-1"><?php echo e($history->purchasePlan->product->code); ?></span>
-                                    <?php echo e($history->purchasePlan->product->name); ?>
+                                    <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs mr-1"><?php echo e($history->purchasePlan->product?->code ?? 'N/A'); ?></span>
+                                    <?php echo e($history->purchasePlan->product?->name ?? 'Vật tư đã bị xóa'); ?>
 
                                 <?php else: ?>
                                     <span class="text-rose-500 italic">Dữ liệu đã bị xóa</span>

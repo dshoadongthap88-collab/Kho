@@ -38,6 +38,11 @@ class Asset extends Model
         return $this->hasMany(AssetOilBom::class);
     }
 
+    public function maintenanceBoms()
+    {
+        return $this->hasMany(MaintenanceBom::class);
+    }
+
     public function meterReadings()
     {
         return $this->hasMany(AssetMeterReading::class);

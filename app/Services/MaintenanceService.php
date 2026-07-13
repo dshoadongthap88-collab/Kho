@@ -65,6 +65,7 @@ class MaintenanceService
         }
 
         $needsMaintenance = false;
+        $maintenanceRuleId = null;
 
         // Check by ODO (Số giờ còn lại <= 0)
         if ($asset->maintenance_cycle_odo > 0) {
@@ -73,18 +74,25 @@ class MaintenanceService
             
             if ($hoursRemaining <= 0) {
                 $needsMaintenance = true;
+                $targetCycle = floor($asset->current_odo / $asset->maintenance_cycle_odo) * $asset->maintenance_cycle_odo;
+                if ($targetCycle > 0) {
+                    // Cấp bảo dưỡng, ví dụ: 250h, 500h, 1000h
+                    $maintenanceRuleId = $targetCycle . 'h';
+                }
             }
         }
 
         if ($needsMaintenance) {
             return MaintenanceTicket::create([
-                'ticket_code'      => 'MT-' . strtoupper(Str::random(6)),
-                'asset_id'         => $asset->id,
-                'maintenance_date' => now(), // Date it was triggered
-                'type'             => 'auto_generated',
-                'description'      => 'Tự động tạo phiếu bảo dưỡng do thiết bị đã đến hạn.',
-                'status'           => 'pending',
-                'created_by'       => null, // System generated
+                'ticket_code'         => 'MT-' . strtoupper(Str::random(6)),
+                'asset_id'            => $asset->id,
+                'maintenance_rule_id' => $maintenanceRuleId,
+                'maintenance_date'    => now(), // Date it was triggered
+                'maintenance_odo'     => $asset->current_odo,
+                'type'                => 'auto_generated',
+                'description'         => 'Tự động tạo phiếu bảo dưỡng do thiết bị đã đến hạn ' . ($maintenanceRuleId ? "($maintenanceRuleId)." : "."),
+                'status'              => 'pending',
+                'created_by'          => null, // System generated
             ]);
         }
 

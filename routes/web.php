@@ -84,6 +84,11 @@ Route::middleware('auth')->group(function () {
             return view('pages.maintenance.index');
         })->name('maintenance.index');
 
+        // Maintenance BOM
+        Route::get('/maintenance-boms', \App\Livewire\Maintenance\MaintenanceBomList::class)->name('maintenance-boms.index');
+        Route::get('/maintenance-boms/create', \App\Livewire\Maintenance\MaintenanceBomForm::class)->name('maintenance-boms.create');
+        Route::get('/maintenance-boms/{bomId}/edit', \App\Livewire\Maintenance\MaintenanceBomForm::class)->name('maintenance-boms.edit');
+
         require __DIR__.'/warehouse.php';
     });
 });

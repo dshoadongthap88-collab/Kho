@@ -4,25 +4,21 @@ namespace App\Livewire\Warehouse\Asset;
 
 use Livewire\Component;
 use App\Models\Asset;
+use App\Models\Product;
+use App\Models\MaintenanceBom;
+use App\Models\MaintenanceBomItem;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Str;
 
 class AssetBomManager extends Component
 {
     use WithPagination;
     use WithFileUploads;
 
-    public $search = '';
+    // Old inline binding properties are removed as we now use multi-cycle BOM
     
-    // Arrays for bulk edit
-    public $engine_oil_caps = [];
-    public $hydraulic_oil_caps = [];
-    public $engine_oil_filters = [];
-    public $hydraulic_filters = [];
-    public $air_filters = [];
-    public $maintenance_cycles = [];
-
-    // Fields for adding new asset
+    // Thêm thiết bị nhanhfor adding new asset
     public $isAddingAsset = false;
     public $new_asset_code = '';
     public $new_name = '';
@@ -31,6 +27,7 @@ class AssetBomManager extends Component
     // Checkbox selections
     public $selectedIds = [];
     public $selectAll = false;
+    public $search = '';
 
     // Excel import/export
     public $showImportModal = false;
@@ -42,7 +39,17 @@ class AssetBomManager extends Component
     public $edit_asset_code = '';
     public $edit_name = '';
     public $edit_department = '';
-    public $bomItems = [];
+    
+    // New multi-cycle BOM properties
+    public $bomItemsByCycle = [
+        '250' => [],
+        '500' => [],
+        '1000' => [],
+        '2000' => [],
+        '4000' => []
+    ];
+    public $activeCycleTab = '250';
+    public $availableProducts = [];
 
     protected $queryString = ['search'];
 
@@ -55,20 +62,13 @@ class AssetBomManager extends Component
 
     public function mount()
     {
+        $this->availableProducts = Product::orderBy('name')->get()->toArray();
         $this->initFields();
     }
 
     public function initFields()
     {
-        $assets = Asset::all();
-        foreach ($assets as $asset) {
-            $this->engine_oil_caps[$asset->id] = $asset->engine_oil_cap;
-            $this->hydraulic_oil_caps[$asset->id] = $asset->hydraulic_oil_cap;
-            $this->engine_oil_filters[$asset->id] = $asset->engine_oil_filter;
-            $this->hydraulic_filters[$asset->id] = $asset->hydraulic_filter;
-            $this->air_filters[$asset->id] = $asset->air_filter;
-            $this->maintenance_cycles[$asset->id] = $asset->maintenance_cycle;
-        }
+        // Removed old property initialization since inline edit is removed
     }
 
     public function updatedSelectAll($value)
@@ -88,24 +88,7 @@ class AssetBomManager extends Component
         }
     }
 
-    public function saveBoms()
-    {
-        foreach ($this->engine_oil_caps as $id => $val) {
-            $asset = Asset::find($id);
-            if ($asset) {
-                $asset->update([
-                    'engine_oil_cap' => $this->engine_oil_caps[$id] ?? null,
-                    'hydraulic_oil_cap' => $this->hydraulic_oil_caps[$id] ?? null,
-                    'engine_oil_filter' => $this->engine_oil_filters[$id] ?? null,
-                    'hydraulic_filter' => $this->hydraulic_filters[$id] ?? null,
-                    'air_filter' => $this->air_filters[$id] ?? null,
-                    'maintenance_cycle' => $this->maintenance_cycles[$id] ?? null,
-                ]);
-            }
-        }
-        
-        session()->flash('message', 'Đã lưu tất cả định mức mã tài sản thành công.');
-    }
+    // saveBoms() removed because we now edit BOMs via modal per asset
 
     public function toggleAddAsset()
     {
@@ -134,13 +117,6 @@ class AssetBomManager extends Component
             'status' => 'active'
         ]);
 
-        $this->engine_oil_caps[$asset->id] = '';
-        $this->hydraulic_oil_caps[$asset->id] = '';
-        $this->engine_oil_filters[$asset->id] = '';
-        $this->hydraulic_filters[$asset->id] = '';
-        $this->air_filters[$asset->id] = '';
-        $this->maintenance_cycles[$asset->id] = '';
-
         $this->isAddingAsset = false;
         session()->flash('message', 'Đã thêm thiết bị mới thành công.');
     }
@@ -159,19 +135,59 @@ class AssetBomManager extends Component
         $this->edit_asset_code = $asset->asset_code;
         $this->edit_name = $asset->name;
         $this->edit_department = $asset->department;
-        $this->bomItems = json_decode($asset->bom_details ?? '[]', true);
+        
+        // Reset BOMs
+        $this->bomItemsByCycle = [
+            '250' => [], '500' => [], '1000' => [], '2000' => [], '4000' => []
+        ];
+        $this->activeCycleTab = '250';
+
+        // Load existing Maintenance BOMs for this asset
+        $boms = MaintenanceBom::with('items.product')->where('asset_id', $asset->id)->get();
+        
+        foreach ($boms as $bom) {
+            $cycle = (string)$bom->cycle;
+            if (!isset($this->bomItemsByCycle[$cycle])) {
+                $this->bomItemsByCycle[$cycle] = [];
+            }
+            
+            foreach ($bom->items as $item) {
+                $this->bomItemsByCycle[$cycle][] = [
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'backup_quantity' => $item->backup_quantity,
+                    'note' => $item->note,
+                ];
+            }
+        }
+        
         $this->showEditModal = true;
     }
 
-    public function addBomItem()
+    public function setActiveCycleTab($cycle)
     {
-        $this->bomItems[] = ['name' => '', 'quantity' => ''];
+        $this->activeCycleTab = $cycle;
     }
 
-    public function removeBomItem($index)
+    public function addBomItem($cycle)
     {
-        unset($this->bomItems[$index]);
-        $this->bomItems = array_values($this->bomItems);
+        if (!isset($this->bomItemsByCycle[$cycle])) {
+            $this->bomItemsByCycle[$cycle] = [];
+        }
+        $this->bomItemsByCycle[$cycle][] = [
+            'product_id' => '', 
+            'quantity' => 1,
+            'backup_quantity' => 0,
+            'note' => ''
+        ];
+    }
+
+    public function removeBomItem($cycle, $index)
+    {
+        if (isset($this->bomItemsByCycle[$cycle][$index])) {
+            unset($this->bomItemsByCycle[$cycle][$index]);
+            $this->bomItemsByCycle[$cycle] = array_values($this->bomItemsByCycle[$cycle]);
+        }
     }
 
     public function updateAsset()
@@ -191,8 +207,49 @@ class AssetBomManager extends Component
             'asset_code' => $this->edit_asset_code,
             'name' => $this->edit_name,
             'department' => $this->edit_department,
-            'bom_details' => json_encode($this->bomItems)
+            // 'bom_details' is no longer used, we store in related tables
         ]);
+
+        // Save BOMs by cycle
+        foreach ($this->bomItemsByCycle as $cycle => $items) {
+            // Check if there are valid items for this cycle
+            $validItems = array_filter($items, function($item) {
+                return !empty($item['product_id']);
+            });
+
+            if (count($validItems) > 0) {
+                // Find or create MaintenanceBom
+                $bom = MaintenanceBom::firstOrCreate(
+                    [
+                        'asset_id' => $asset->id,
+                        'cycle' => $cycle,
+                    ],
+                    [
+                        'bom_code' => 'MBOM-' . strtoupper(Str::random(8)),
+                        'maintenance_level' => $cycle . ' giờ',
+                        'created_by' => auth()->id() ?? 1,
+                    ]
+                );
+
+                // Delete old items and insert new
+                $bom->items()->delete();
+                foreach ($validItems as $item) {
+                    MaintenanceBomItem::create([
+                        'maintenance_bom_id' => $bom->id,
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'] ?? 0,
+                        'backup_quantity' => $item['backup_quantity'] ?? 0,
+                        'note' => $item['note'] ?? '',
+                    ]);
+                }
+            } else {
+                // If cycle has no items, delete the BOM if it exists
+                $existingBom = MaintenanceBom::where('asset_id', $asset->id)->where('cycle', $cycle)->first();
+                if ($existingBom) {
+                    $existingBom->delete(); // cascading deletes items
+                }
+            }
+        }
 
         $this->initFields();
         $this->showEditModal = false;
@@ -465,19 +522,9 @@ class AssetBomManager extends Component
             });
         }
 
-        $assets = $assetsQuery->orderBy('asset_code', 'asc')->paginate(15);
-
-        // Ensure arrays are initialized for edit binding
-        foreach ($assets as $asset) {
-            if (!isset($this->engine_oil_caps[$asset->id])) {
-                $this->engine_oil_caps[$asset->id] = $asset->engine_oil_cap;
-                $this->hydraulic_oil_caps[$asset->id] = $asset->hydraulic_oil_cap;
-                $this->engine_oil_filters[$asset->id] = $asset->engine_oil_filter;
-                $this->hydraulic_filters[$asset->id] = $asset->hydraulic_filter;
-                $this->air_filters[$asset->id] = $asset->air_filter;
-                $this->maintenance_cycles[$asset->id] = $asset->maintenance_cycle;
-            }
-        }
+        $assets = $assetsQuery->with(['maintenanceBoms.items.product'])
+                              ->orderBy('asset_code', 'asc')
+                              ->paginate(15);
 
         return view('livewire.warehouse.asset.asset-bom-manager', compact('assets'));
     }

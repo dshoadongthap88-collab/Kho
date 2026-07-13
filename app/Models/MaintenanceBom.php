@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\BelongsToHouse;
 use Illuminate\Database\Eloquent\Model;
 
 class MaintenanceBom extends Model
@@ -10,6 +11,7 @@ class MaintenanceBom extends Model
     use HasFactory;
 
     protected $fillable = [
+        'house_id',
         'bom_code',
         'asset_id',
         'maintenance_level',

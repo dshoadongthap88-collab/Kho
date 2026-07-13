@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\BelongsToHouse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -11,6 +12,7 @@ class AssetDailyOdo extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'house_id',
         'reading_date',
         'shifts_count',
         'asset_id',

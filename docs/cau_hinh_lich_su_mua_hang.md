@@ -18,3 +18,12 @@
 | Ngày ĐX | Mã VT | Tên Vật Tư | ĐVT | SL Đề Xuất | Đã Giao | Còn Thiếu | Trạng Thái | Ghi Chú |
 |---------|--------|------------|-----|-------------|---------|------------|------------|----------|
 | 28/06/2026 | SP-DEMO-005 | Sản phẩm demo 5 | cái | 600 | 0 | 600 | Đã đặt | Tự động đề xuất do tồn kho (556.00) <= tồn tối thiểu (600) |
+
+
+## Chốt sổ ngày 25/07/2026 02:25:31
+| Ngày ĐX | Mã VT | Tên Vật Tư | ĐVT | SL Đề Xuất | Đã Giao | Còn Thiếu | Trạng Thái | Ghi Chú |
+|---------|--------|------------|-----|-------------|---------|------------|------------|----------|
+| 05/07/2026 | N/A | Sản phẩm đã xóa | Cái | 10 | 0 | 10 | Đã đặt | Đề xuất thủ công |
+| 05/07/2026 | TPH1 | Test Product House 1 | pcs | 1 | 0 | 1 | Đã đặt | Tự động đề xuất do tồn kho (0) <= tồn tối thiểu (0) |
+| 18/07/2026 | VAP2017 | Súng bắn Bulong 1/2 inch (KC-3600), Kocu | Cái | 7 | 0 | 7 | Đã đặt | Tự động đề xuất do tồn kho (7.00) <= tồn tối thiểu (7) |
+| 18/07/2026 | VAP1807 | Chốt răng gầu máy xúc XE215C | Cái | 120 | 0 | 120 | Đã đặt | Tự động đề xuất do tồn kho (119.00) <= tồn tối thiểu (120) |

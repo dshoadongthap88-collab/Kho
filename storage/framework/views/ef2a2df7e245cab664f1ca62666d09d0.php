@@ -90,7 +90,8 @@
                         </button>
                         <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
                             <a href="<?php echo e(route('warehouse.reports.transaction-detail')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 <?php echo e(request()->routeIs('warehouse.reports.transaction-detail') ? 'bg-slate-100 font-bold' : ''); ?>">Báo cáo chi tiết giao dịch</a>
-                            <a href="<?php echo e(route('warehouse.reports.stock')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 <?php echo e(request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : ''); ?>">Báo cáo kho</a>
+                            <a href="<?php echo e(route('warehouse.reports.daily')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 <?php echo e(request()->routeIs('warehouse.reports.daily') ? 'bg-slate-100 font-bold' : ''); ?>">Báo Cáo Ngày</a>
+                            <a href="<?php echo e(route('warehouse.reports.stock')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 <?php echo e(request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : ''); ?>">Báo Cáo Kho Tổng Hợp</a>
                         </div>
                     </div>
                     

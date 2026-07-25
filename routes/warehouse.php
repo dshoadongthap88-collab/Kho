@@ -88,6 +88,49 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return view('warehouse.stock-report');
     })->name('reports.stock')->middleware('permission:reports_stock');
 
+    Route::get('/reports/daily', \App\Livewire\Warehouse\Reports\DailyReport::class)->name('reports.daily');
+    
+    Route::get('/reports/daily/print', function() {
+        $date = request('date', now()->format('Y-m-d'));
+        $parsedDate = \Carbon\Carbon::parse($date);
+        
+        $stockInCount = \App\Models\StockInItem::whereHas('stockIn', function($q) use ($parsedDate) {
+            $q->whereDate('stock_in_date', $parsedDate);
+        })->distinct('product_id')->count('product_id');
+
+        $stockOutCount = \App\Models\StockOutItem::whereHas('stockOut', function($q) use ($parsedDate) {
+            $q->whereDate('created_at', $parsedDate);
+        })->distinct('product_id')->count('product_id');
+
+        $stockTransferCount = \App\Models\StockTransferItem::whereHas('stockTransfer', function($q) use ($parsedDate) {
+            $q->whereDate('transfer_date', $parsedDate);
+        })->distinct('product_id')->count('product_id');
+
+        $stockRecoveryCount = \App\Models\StockRecovery::whereDate('recovery_date', $parsedDate)
+            ->distinct('product_id')
+            ->count('product_id');
+
+        $totalStockOutOrders = \App\Models\StockOut::whereDate('created_at', $parsedDate)->count();
+
+        $assetExportCount = \App\Models\StockOut::whereDate('created_at', $parsedDate)
+            ->whereNotNull('asset_code')
+            ->where('asset_code', '!=', '')
+            ->distinct('asset_code')
+            ->count('asset_code');
+
+        $reportData = [
+            'stockInCount' => $stockInCount,
+            'stockOutCount' => $stockOutCount,
+            'stockTransferCount' => $stockTransferCount,
+            'stockRecoveryCount' => $stockRecoveryCount,
+            'totalStockOutOrders' => $totalStockOutOrders,
+            'assetExportCount' => $assetExportCount,
+            'materialExportCount' => $stockOutCount,
+        ];
+
+        return view('warehouse.reports.daily-report-print', compact('reportData', 'date'));
+    })->name('reports.daily.print');
+
     Route::get('/customer-debt', function () {
         return view('warehouse.customer-debt');
     })->name('customer-debt')->middleware('permission:customer-debt');

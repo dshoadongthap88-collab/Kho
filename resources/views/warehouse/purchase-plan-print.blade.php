@@ -15,10 +15,10 @@
         .text-right { text-align: right; }
         .footer { margin-top: 50px; display: flex; justify-content: space-between; }
         .signature { text-align: center; width: 30%; }
-        @page { size: auto; margin: 10mm 15mm; } /* Hide browser headers/footers in Chrome by adjusting margins */
+        @page { size: auto; margin: 0; } /* Hide browser headers/footers */
         @media print {
             .no-print { display: none; }
-            body { padding: 0; margin: 0; }
+            body { padding: 15mm; margin: 0; }
         }
     </style>
 </head>
@@ -28,15 +28,35 @@
         <button onclick="window.location.href='{{ route('purchase-plan') }}'" style="padding: 8px 16px; background: #ccc; cursor: pointer;">Đóng</button>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
-        <div style="font-weight: bold; font-size: 16px;">
+    <div style="margin-bottom: 20px;">
+        <div style="font-weight: bold; font-size: 18px; text-transform: uppercase;">PHÒNG KỸ THUẬT SỮA CHỮA</div>
+        <div style="font-weight: bold; font-size: 14px;">
             DỰ ÁN: {{ session('current_house', 1) == 2 ? 'HẬU NGHĨA' : (session('current_house', 1) == 3 ? 'CẦN GIỜ' : 'HÓC MÔN') }}
         </div>
-        <div class="header" style="text-align: center; margin-bottom: 0;">
-            <div class="title" style="font-size: 24px; font-weight: bold; text-transform: uppercase; margin: 10px 0;">PHIẾU ĐỀ XUẤT MUA HÀNG</div>
-            <div>Ngày in: {{ now()->format('d/m/Y H:i') }}</div>
-        </div>
-        <div style="width: 150px;"></div> <!-- Spacer for flex alignment -->
+    </div>
+
+    <div class="header" style="text-align: center; margin-bottom: 30px;">
+        <div class="title" style="font-size: 24px; font-weight: bold; text-transform: uppercase; margin: 10px 0;">PHIẾU ĐỀ XUẤT MUA HÀNG</div>
+        @php
+            $houseId = session('current_house', 1);
+            $housePrefix = $houseId == 2 ? 'HN' : ($houseId == 3 ? 'CG' : 'HM');
+            $dateStr = now()->format('dmY');
+            
+            $cacheKey = 'print_po_seq_' . $houseId . '_' . $dateStr;
+            $sessionKey = 'po_num_' . md5(request()->fullUrl());
+            
+            if (!session()->has($sessionKey)) {
+                $count = cache()->increment($cacheKey);
+                cache()->put($cacheKey, $count, now()->endOfDay());
+                session()->put($sessionKey, $count);
+            } else {
+                $count = session()->get($sessionKey);
+            }
+            
+            $poNumber = 'PO_' . $housePrefix . '_' . $dateStr . '_' . str_pad($count, 2, '0', STR_PAD_LEFT);
+        @endphp
+        <div style="font-size: 16px;">Số PO: <strong>{{ $poNumber }}</strong></div>
+        <div style="font-style: italic; margin-top: 5px;">Ngày in: {{ now()->format('d/m/Y H:i') }}</div>
     </div>
 
     <table>
@@ -62,16 +82,28 @@
                         ->latest('id')
                         ->with('purchaseOrder.supplier')
                         ->first();
-                    $supplierName = $latestPoItem && $latestPoItem->purchaseOrder && $latestPoItem->purchaseOrder->supplier 
-                                    ? $latestPoItem->purchaseOrder->supplier->name 
-                                    : '';
+                        
+                    if ($latestPoItem && $latestPoItem->purchaseOrder && $latestPoItem->purchaseOrder->supplier) {
+                        $supplierName = $latestPoItem->purchaseOrder->supplier->name;
+                    } else {
+                        $latestStockInItem = \App\Models\StockInItem::where('product_id', $plan->product_id)
+                            ->whereHas('stockIn', function($q) {
+                                $q->whereNotNull('supplier_name')->where('supplier_name', '!=', '');
+                            })
+                            ->latest('id')
+                            ->with('stockIn')
+                            ->first();
+                        $supplierName = $latestStockInItem && $latestStockInItem->stockIn 
+                                        ? $latestStockInItem->stockIn->supplier_name 
+                                        : '';
+                    }
                 @endphp
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="text-center">{{ $plan->product->code }}</td>
-                    <td>{{ $plan->product->name }}</td>
-                    <td class="text-center">{{ $plan->product->unit ?? 'Cái' }}</td>
-                    <td class="text-right">{{ number_format($plan->product->inventory?->quantity ?? 0, 0) }}</td>
+                    <td class="text-center">{{ $plan->product?->code }}</td>
+                    <td>{{ $plan->product?->name }}</td>
+                    <td class="text-center">{{ $plan->product?->unit ?? 'Cái' }}</td>
+                    <td class="text-right">{{ number_format($plan->product?->inventory?->quantity ?? 0, 0) }}</td>
                     <td class="text-right">{{ number_format($plan->proposed_quantity, 0) }}</td>
                     <td class="text-center">
                         @if($plan->status === 'pending') Đề xuất

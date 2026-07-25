@@ -238,9 +238,9 @@ class PurchasePlanManager extends Component
             $markdown .= sprintf(
                 "| %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",
                 $plan->created_at->format('d/m/Y'),
-                $plan->product->code,
-                $plan->product->name,
-                $plan->product->unit ?? 'Cái',
+                $plan->product?->code ?? 'N/A',
+                $plan->product?->name ?? 'Sản phẩm đã xóa',
+                $plan->product?->unit ?? 'Cái',
                 number_format($plan->proposed_quantity, 0),
                 number_format($plan->delivered_quantity, 0),
                 number_format($missing, 0),

@@ -121,6 +121,6 @@ class NotificationManager extends Component
         return view('livewire.hr.notification-manager', [
             'notifications' => $notifications,
             'users' => $users,
-        ])->layout('components.warehouse-layout', ['title' => 'Quản lý Thông báo']);
+        ])->layout('layouts.app', ['title' => 'Quản lý Thông báo']);
     }
 }

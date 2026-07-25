@@ -38,3 +38,12 @@ Tài liệu này quy định các yêu cầu và loại biểu đồ cần sử 
 - **Yêu cầu dữ liệu**:
   - Dữ liệu được trích xuất từ **Phiếu xuất kho**.
   - **Thông tin tên nhân viên**: Sử dụng trực tiếp từ cột **"Người nhận" (receiver_contact)** trên phiếu xuất kho.
+
+## 6. Báo Cáo Ngày (Daily Report)
+- **Mục đích**: Cung cấp bức tranh toàn cảnh về các giao dịch kho diễn ra trong một ngày cụ thể.
+- **Nội dung báo cáo**:
+  - **Tổng hợp giao dịch vật tư**: Tổng số lượng mã vật tư đã thực hiện giao dịch trong ngày, bao gồm số lượng mã đã **Nhập kho**, **Xuất kho**, **Chuyển kho**, và **Thu hồi**.
+  - **Thống kê đơn hàng**: Tổng số đơn xuất kho trong 1 ngày.
+  - **Phân loại xuất kho**: Thống kê chi tiết đã xuất bao nhiêu mã **Tài sản** và bao nhiêu mã **Vật tư** cho dự án.
+- **Yêu cầu Phiếu in (Print/Export)**:
+  - Khi người dùng in báo cáo, **Phiếu in phải thể hiện rõ tên nhân viên đang đăng nhập** (người xuất/in báo cáo) đối với dự án hiện tại, để đảm bảo minh bạch thông tin người lập báo cáo.

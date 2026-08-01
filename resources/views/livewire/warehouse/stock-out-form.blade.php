@@ -1,10 +1,20 @@
 <div style="font-family: 'Times New Roman', Times, serif;">
     <style>
         @media print {
+            body { font-family: 'Times New Roman', Times, serif; }
+            /* Căn giữa A5/A4, tối ưu lề */
             @page {
                 size: A4 landscape;
-                margin: 5mm; /* Khổ ngang A4 lề sạch đẹp */
+                margin: 5mm; 
             }
+            body, html {
+                margin: 0;
+                padding: 0;
+                background-color: white !important;
+            }
+            .print-table { page-break-inside: auto; }
+            .print-table tr { page-break-inside: avoid; page-break-after: auto; }
+            .signatures-section { page-break-inside: avoid; }
             nav, .sidebar-toolbar, button, a, .no-print {
                 display: none !important;
             }
@@ -390,17 +400,13 @@
                 <div class="grid grid-cols-12 items-center mb-3">
                     <!-- Logo & Company Name (Inline side-by-side) -->
                     <div class="col-span-5 flex items-center gap-3">
-                        <!-- Gold logo symbol + Vinalpha text below it -->
-                        <div class="flex flex-col items-center min-w-[55px]">
-                            <svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15.5h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-                            </svg>
-                            <span class="text-[8px] font-black text-blue-900 leading-none mt-1 tracking-tighter">VINALPHA</span>
+                        <!-- Image Logo -->
+                        <div class="flex flex-col items-center min-w-[65px]">
+                            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/v-alpha-logo.png'))) }}" alt="V-ALPHA Logo" class="w-12 h-auto object-contain">
                         </div>
                         <!-- Company Name & Department -->
                         <div class="text-left font-bold text-slate-800 leading-tight">
-                            <p class="text-[9px] uppercase tracking-wide">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI</p>
-                            <p class="text-[9px] uppercase tracking-wide">CÔNG HẠ TẦNG V-ALPHA</p>
+                            <p class="text-[9.5px] uppercase tracking-wide">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI CÔNG HẠ TẦNG V- ALPHA</p>
                             <p class="text-[8px] uppercase tracking-tight text-slate-600 mt-1">PHÒNG KỸ THUẬT SỬA CHỮA</p>
                         </div>
                     </div>
@@ -469,7 +475,7 @@
                 </table>
 
                 <!-- Items Table -->
-                <table class="w-full border-collapse border-2 border-black text-[11px] mb-3">
+                <table class="print-table w-full border-collapse border-2 border-black text-[11px] mb-3">
                     <thead>
                         <tr class="bg-gray-100 text-center font-bold">
                             <th class="border border-black px-1 py-1 w-8">STT</th>
@@ -503,7 +509,10 @@
                                 </tr>
                             @endif
                         @endforeach
-                        @for($i = $validCount; $i < 8; $i++)
+                        @php 
+                            $minRows = max(8, ceil($validCount / 8) * 8); 
+                        @endphp
+                        @for($i = $validCount; $i < $minRows; $i++)
                             <tr>
                                 <td class="border border-black px-1 py-2 text-center font-bold">{{ $i + 1 }}</td>
                                 <td class="border border-black px-2 py-2"></td>
@@ -519,7 +528,7 @@
                 </table>
 
                 <!-- Footer Signatures Section (5 Signatures from left to right) -->
-                <div class="grid grid-cols-5 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
+                <div class="signatures-section grid grid-cols-5 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
                     <div>
                         <p>Nv vận hành</p>
                         <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
@@ -698,17 +707,13 @@
             <div class="grid grid-cols-12 items-center mb-3">
                 <!-- Logo & Company Name (Inline side-by-side) -->
                 <div class="col-span-5 flex items-center gap-3">
-                    <!-- Gold logo symbol + Vinalpha text below it -->
-                    <div class="flex flex-col items-center min-w-[55px]">
-                        <svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15.5h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-                        </svg>
-                        <span class="text-[8px] font-black text-blue-900 leading-none mt-1 tracking-tighter">VINALPHA</span>
+                    <!-- Image Logo -->
+                    <div class="flex flex-col items-center min-w-[65px]">
+                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/v-alpha-logo.png'))) }}" alt="V-ALPHA Logo" class="w-12 h-auto object-contain">
                     </div>
                     <!-- Company Name & Department -->
                     <div class="text-left font-bold text-slate-800 leading-tight">
-                        <p class="text-[9px] uppercase tracking-wide">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI</p>
-                        <p class="text-[9px] uppercase tracking-wide">CÔNG HẠ TẦNG V-ALPHA</p>
+                        <p class="text-[9.5px] uppercase tracking-wide">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI CÔNG HẠ TẦNG V- ALPHA</p>
                         <p class="text-[8px] uppercase tracking-tight text-slate-600 mt-1">PHÒNG KỸ THUẬT SỬA CHỮA</p>
                     </div>
                 </div>
@@ -779,7 +784,7 @@
             </table>
 
             <!-- Items Table -->
-            <table class="w-full border-collapse border-2 border-black text-[11px] mb-3">
+            <table class="print-table w-full border-collapse border-2 border-black text-[11px] mb-3">
                 <thead>
                     <tr class="bg-gray-100 text-center font-bold">
                         <th class="border border-black px-1 py-1 w-8">STT</th>
@@ -809,7 +814,11 @@
                         <td class="border border-black px-2 py-1.5">{{ $ii->item_note ?: '' }}</td>
                     </tr>
                     @endforeach
-                    @for($i = count($pItem->items); $i < 8; $i++)
+                    @php
+                        $validCount = count($pItem->items);
+                        $minRows = max(8, ceil($validCount / 8) * 8);
+                    @endphp
+                    @for($i = $validCount; $i < $minRows; $i++)
                     <tr>
                         <td class="border border-black px-1 py-2 text-center font-bold">{{ $i + 1 }}</td>
                         <td class="border border-black px-2 py-2"></td>
@@ -825,7 +834,7 @@
             </table>
 
             <!-- Footer Signatures Section (5 Signatures) -->
-            <div class="grid grid-cols-5 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
+            <div class="signatures-section grid grid-cols-5 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
                 <div>
                     <p>Nv vận hành</p>
                     <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>

@@ -84,6 +84,28 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         return view('warehouse.transaction-detail-report');
     })->name('reports.transaction-detail')->middleware('permission:reports_transaction');
 
+    Route::get('/reports/transaction-detail/print', function() {
+        $ids = request('ids');
+        if (!$ids) {
+            return redirect()->route('warehouse.reports.transaction-detail')->with('error', 'Không có giao dịch nào được chọn để in.');
+        }
+
+        $transactions = \App\Models\InventoryTransaction::with(['product', 'creator', 'reference'])
+            ->whereIn('id', explode(',', $ids))
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $assetCodesCount = $transactions->filter(function($tx) {
+            return $tx->reference && isset($tx->reference->asset_code) && !empty($tx->reference->asset_code);
+        })->pluck('reference.asset_code')->unique()->count();
+
+        $productCodesCount = $transactions->filter(function($tx) {
+            return $tx->product_id;
+        })->pluck('product_id')->unique()->count();
+
+        return view('warehouse.transaction-detail-print', compact('transactions', 'assetCodesCount', 'productCodesCount'));
+    })->name('reports.transaction-detail.print');
+
     Route::get('/reports/stock', function () {
         return view('warehouse.stock-report');
     })->name('reports.stock')->middleware('permission:reports_stock');

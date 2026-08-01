@@ -36,7 +36,7 @@ class StockOutForm extends Component
     public $km_number = '';
     public $operating_hours = '';
     public $device_name = '';
-    public $department = 'TỔ ĐỘI KTSC VINALPHA';
+    public $department = 'BCH VINALPHA';
     public $warehouse_keeper = '';
     public $supervisor_qltb = '';
     public $supervisor_ca = '';
@@ -125,15 +125,15 @@ class StockOutForm extends Component
 
         // Tải thông tin người ký tự động từ lần gần nhất
         $lastStockOut = \App\Models\StockOut::latest()->first();
-        if ($lastStockOut) {
-            $this->warehouse_keeper = session('last_warehouse_keeper', $lastStockOut->warehouse_keeper ?? '');
-            $this->supervisor_qltb = session('last_supervisor_qltb', $lastStockOut->supervisor_qltb ?? '');
-            $this->supervisor_ca = session('last_supervisor_ca', $lastStockOut->supervisor_ca ?? '');
-        } else {
-            $this->warehouse_keeper = session('last_warehouse_keeper', '');
-            $this->supervisor_qltb = session('last_supervisor_qltb', '');
-            $this->supervisor_ca = session('last_supervisor_ca', '');
-        }
+        
+        $this->warehouse_keeper = session('last_warehouse_keeper', $lastStockOut->warehouse_keeper ?? 'ĐẶNG HỮU HÒA');
+        $this->supervisor_qltb = session('last_supervisor_qltb', $lastStockOut->supervisor_qltb ?? 'LÊ HOÀNG NAM');
+        $this->supervisor_ca = session('last_supervisor_ca', $lastStockOut->supervisor_ca ?? 'LÊ ĐÌNH HƯƠNG');
+
+        // Dự phòng nếu giá trị cũ rỗng
+        if (empty($this->warehouse_keeper)) $this->warehouse_keeper = 'ĐẶNG HỮU HÒA';
+        if (empty($this->supervisor_qltb)) $this->supervisor_qltb = 'LÊ HOÀNG NAM';
+        if (empty($this->supervisor_ca)) $this->supervisor_ca = 'LÊ ĐÌNH HƯƠNG';
 
         if (empty($this->items)) {
             if ($this->type !== 'production') {

@@ -39,6 +39,16 @@ class TransactionDetailReport extends Component
         $this->dateTo = now()->format('Y-m-d');
     }
 
+    public function printSelected()
+    {
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'Vui lòng chọn ít nhất 1 giao dịch để in báo cáo.');
+            return;
+        }
+
+        return redirect()->route('warehouse.reports.transaction-detail.print', ['ids' => implode(',', $this->selectedIds)]);
+    }
+
     public function exportExcel()
     {
         $query = InventoryTransaction::with(['product', 'creator'])

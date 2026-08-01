@@ -30,11 +30,17 @@
                     <span wire:loading wire:target="exportExcel" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                     Excel
                 </button>
-                <button type="button" onclick="window.print()" class="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-black text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer">
+                <button type="button" wire:click="printSelected" class="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-black text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer">
                     <span class="text-sm">📄</span> IN BÁO CÁO
                 </button>
             </div>
         </div>
+        
+        @if (session()->has('error'))
+            <div class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg text-xs font-bold">
+                {{ session('error') }}
+            </div>
+        @endif
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border overflow-hidden">

@@ -21,9 +21,19 @@
 
 
     <div class="flex flex-wrap items-center justify-between gap-4 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex flex-wrap items-center gap-3">
+        <!-- Tabs -->
+        <div class="flex bg-slate-100 p-1 rounded-lg w-full mb-2">
+            <button wire:click="switchTab('materials')" class="flex-1 py-2 text-sm font-bold uppercase rounded-md transition-all {{ $activeTab === 'materials' ? 'bg-white text-indigo-600 shadow' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50' }}">
+                Danh Mục Vật Tư
+            </button>
+            <button wire:click="switchTab('equipments')" class="flex-1 py-2 text-sm font-bold uppercase rounded-md transition-all {{ $activeTab === 'equipments' ? 'bg-white text-indigo-600 shadow' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50' }}">
+                Danh Mục Thiết Bị
+            </button>
+        </div>
+        
+        <div class="flex items-center gap-2 w-full overflow-x-auto pb-1 hide-scrollbar">
             <!-- Date Filter Standard -->
-            <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-inner focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
+            <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-inner focus-within:ring-2 focus-within:ring-indigo-100 transition-all h-[38px] shrink-0">
                 <div class="flex items-center gap-2">
                     <label class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Từ ngày</label>
                     <input type="date" wire:model.live="dateFrom" class="text-[12px] border-none bg-transparent focus:ring-0 p-0 font-bold text-slate-700">
@@ -36,37 +46,23 @@
             </div>
 
             <!-- Search Standard -->
-            <div class="relative w-64">
-                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm tên, mã, hãng..." class="w-full pl-9 pr-3 py-2 text-[12px] font-bold rounded-lg border-slate-200 focus:ring-indigo-500 shadow-sm transition-all bg-slate-50 focus:bg-white">
+            <div class="relative w-64 h-[38px] shrink-0">
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm tên, mã, hãng..." class="w-full h-full pl-9 pr-3 py-2 text-[12px] font-bold rounded-lg border border-slate-200 focus:ring-indigo-500 shadow-sm transition-all bg-slate-50 focus:bg-white">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
             </div>
 
-            <div class="flex gap-2 bg-slate-100 p-2 rounded-lg border border-slate-300">
-                <button type="button"
-                        wire:click="setFilterMode('all')"
-                        class="px-4 py-2 text-xs font-bold uppercase rounded {{ $filterMode === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border border-slate-300' }}">
-                    Tất cả
-                </button>
-                <button type="button"
-                        wire:click="setFilterMode('low_stock')"
-                        class="px-4 py-2 text-xs font-bold uppercase rounded {{ $filterMode === 'low_stock' ? 'bg-orange-600 text-white' : 'bg-white text-slate-600 border border-slate-300' }}">
-                    Sắp hết tồn
-                </button>
-            </div>
+            <div class="w-px h-6 bg-slate-200 mx-1 shrink-0"></div>
 
-        </div>
-
-        <div class="flex items-center gap-2">
             @if(count($selectedIds) > 0)
-                <div wire:key="bulk-actions-container" class="flex items-center gap-1.5 pr-2 border-r border-slate-300 mr-1 py-1">
-                    <span class="text-[10px] font-black text-indigo-700 bg-indigo-50 px-2 py-1 rounded border border-indigo-100">CHỌN: {{ count($selectedIds) }}</span>
+                <div wire:key="bulk-actions-container" class="flex items-center gap-1.5 pr-2 border-r border-slate-300 mr-1 h-[38px] shrink-0">
+                    <span class="text-[10px] font-black text-indigo-700 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 flex items-center h-full">CHỌN: {{ count($selectedIds) }}</span>
                     
                     @if(count($selectedIds) === 1)
                         <button wire:key="btn-edit-selected" type="button" 
                                 wire:click="openModal({{ $selectedIds[0] }})" 
-                                class="flex items-center gap-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
+                                class="flex items-center justify-center gap-1 px-3 h-full bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
                             <span>✏️</span> SỬA
                         </button>
                     @endif
@@ -75,7 +71,7 @@
                             onclick="confirm('Xác nhận xóa các vật tư đã chọn?') || event.stopImmediatePropagation()"
                             wire:click="deleteSelected" 
                             wire:loading.attr="disabled"
-                            class="flex items-center gap-1 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
+                            class="flex items-center justify-center gap-1 px-3 h-full bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
                         <span wire:loading.remove wire:target="deleteSelected">🗑️</span>
                         <span wire:loading wire:target="deleteSelected" class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                         XÓA
@@ -84,7 +80,7 @@
                     <button wire:key="btn-print-selected" type="button" 
                             wire:click="printLabels" 
                             wire:loading.attr="disabled"
-                            class="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-black text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
+                            class="flex items-center justify-center gap-1 px-3 h-full bg-slate-800 hover:bg-black text-white rounded-lg text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer">
                         <span wire:loading.remove wire:target="printLabels">📄</span>
                         <span wire:loading wire:target="printLabels" class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                         IN
@@ -92,15 +88,43 @@
                 </div>
             @endif
 
-            <button type="button" wire:click="printAll" wire:loading.attr="disabled" class="bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
+            @if($activeTab === 'materials')
+            <div class="flex gap-1 bg-slate-100 p-1 rounded-lg border border-slate-300 h-[38px] shrink-0">
+                <button type="button"
+                        wire:click="setFilterMode('all')"
+                        class="px-3 h-full text-[11px] font-black uppercase rounded {{ $filterMode === 'all' ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-600 hover:bg-slate-50' }}">
+                    Tất cả
+                </button>
+                <button type="button"
+                        wire:click="setFilterMode('low_stock')"
+                        class="px-3 h-full text-[11px] font-black uppercase rounded {{ $filterMode === 'low_stock' ? 'bg-orange-600 text-white shadow' : 'bg-white text-slate-600 hover:bg-slate-50' }}">
+                    Sắp hết tồn
+                </button>
+            </div>
+            @endif
+
+            <button type="button" wire:click="openModal" class="h-[38px] shrink-0 bg-gradient-to-r from-blue-600 to-blue-700 font-black hover:from-blue-700 hover:to-blue-800 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
+                <span>➕</span> THÊM MỚI
+            </button>
+            <button type="button" wire:click="printAll" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
                 <span>🖨️</span> IN FILE PDF
             </button>
-            <button type="button" wire:click="saveMinStocks" wire:loading.attr="disabled" class="bg-gradient-to-r from-amber-500 to-amber-600 font-black hover:from-amber-600 hover:to-amber-700 text-white px-4 py-1.5 rounded-lg text-[11px] flex items-center gap-1 transition-all shadow-sm hover:shadow-md active:scale-95">
-                <span>💾</span> LƯU TỒN TỐI THIỂU
+            @if($activeTab === 'materials')
+            <button type="button" wire:click="saveMinStocks" wire:loading.attr="disabled" 
+                    x-data="{ saved: false }" 
+                    @min-stocks-saved.window="saved = true; setTimeout(() => saved = false, 3000)"
+                    class="h-[38px] shrink-0 bg-gradient-to-r from-amber-500 to-amber-600 font-black hover:from-amber-600 hover:to-amber-700 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
+                <span x-show="!saved">💾</span> 
+                <span x-show="!saved">LƯU TỒN TỐI THIỂU</span>
+                <span x-cloak x-show="saved" class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    ĐÃ LƯU
+                </span>
             </button>
-            <button type="button" wire:click="$set('showImportModal', true)" wire:loading.attr="disabled" class="bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-4 py-1.5 rounded-lg text-[11px] transition-all shadow-sm hover:shadow-md active:scale-95">
-                📥 IMPORT EXCEL
+            <button type="button" wire:click="$set('showImportModal', true)" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
+                <span>📥</span> IMPORT EXCEL
             </button>
+            @endif
         </div>
     </div>
 
@@ -132,6 +156,7 @@
     </div>
 
     <div class="bg-white rounded-xl shadow-sm overflow-hidden border">
+        @if($activeTab === 'materials')
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
@@ -231,6 +256,52 @@
         <div class="px-4 py-3 bg-gray-50 border-t">
             {{ $products->links() }}
         </div>
+        @else
+        <!-- Bảng thiết bị -->
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
+                    <th class="px-6 py-4 w-10 text-center no-print">
+                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
+                               {{ count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
+                               class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    </th>
+                    <th class="px-4 py-3">TÊN THIẾT BỊ</th>
+                    <th class="px-4 py-3">MÃ TÀI SẢN</th>
+                    <th class="px-4 py-3">BIỂN SỐ XE</th>
+                    <th class="px-4 py-3">TÊN TÀI XẾ</th>
+                    <th class="px-4 py-3">SỐ ĐIỆN THOẠI</th>
+                    <th class="px-4 py-3 text-center w-24">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @forelse($equipments as $index => $equipment)
+                    <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors {{ in_array($equipment->id, $selectedIds) ? 'bg-indigo-50/30' : '' }}">
+                        <td class="px-6 py-4 text-center no-print">
+                            <input type="checkbox" value="{{ $equipment->id }}" wire:model="selectedIds" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        </td>
+                        <td class="px-4 py-3 text-sm font-black text-gray-800 uppercase">{{ $equipment->name }}</td>
+                        <td class="px-4 py-3 text-sm font-mono text-indigo-600">{{ $equipment->asset_code }}</td>
+                        <td class="px-4 py-3 text-sm font-bold text-gray-700 uppercase">{{ $equipment->license_plate ?: '-' }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase">{{ $equipment->driver_name ?: '-' }}</td>
+                        <td class="px-4 py-3 text-sm font-mono text-gray-600">{{ $equipment->phone_number ?: '-' }}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button wire:click="openModal({{ $equipment->id }})" class="text-indigo-600 hover:text-indigo-800 font-black uppercase text-[10px] bg-indigo-50 px-3 py-1.5 rounded hover:bg-indigo-100 transition-colors">
+                                Sửa
+                            </button>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">Không tìm thấy thiết bị nào.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+        <div class="px-4 py-3 bg-gray-50 border-t">
+            {{ $equipments->links() }}
+        </div>
+        @endif
     </div>
 
     <!-- Modal -->
@@ -241,8 +312,9 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-y-auto max-h-[85vh] shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $isEdit ? 'Chỉnh sửa vật tư' : 'Thêm vật tư mới' }}</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $activeTab === 'materials' ? ($isEdit ? 'Chỉnh sửa vật tư' : 'Thêm vật tư mới') : ($isEdit ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới') }}</h3>
                         <div class="grid grid-cols-2 gap-4">
+                            @if($activeTab === 'materials')
                             <div class="col-span-2 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mb-2">
                                 <label class="block text-[11px] font-black text-indigo-900 uppercase tracking-widest mb-3">📸 Hình ảnh vật tư</label>
                                 <div class="flex items-center gap-6">
@@ -352,6 +424,35 @@
                                 <input type="text" inputmode="numeric" wire:model.lazy="min_stock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="0">
                                 @error('min_stock') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
+                            
+                            @else
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Mã tài sản</label>
+                                <input type="text" wire:model="asset_code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('asset_code') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Tên thiết bị</label>
+                                <input type="text" wire:model="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Biển số xe</label>
+                                <input type="text" wire:model="license_plate" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('license_plate') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Tên tài xế</label>
+                                <input type="text" wire:model="driver_name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('driver_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                                <input type="text" wire:model="phone_number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('phone_number') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            @endif
+
                             @if ($errors->any())
                                 <div class="col-span-2 bg-rose-50 p-3 rounded-lg border border-rose-200 mt-2">
                                     <ul class="list-disc list-inside">
@@ -478,40 +579,57 @@
 
         <!-- Tiêu đề phiếu -->
         <div style="text-align: center; margin-bottom: 25px;">
-            <h2 style="font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; margin: 0;">BẢNG DANH MỤC VẬT TƯ</h2>
+            <h2 style="font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; margin: 0;">{{ $activeTab === 'materials' ? 'BẢNG DANH MỤC VẬT TƯ' : 'BẢNG DANH MỤC THIẾT BỊ' }}</h2>
             <p style="font-size: 13px; font-style: italic; margin-top: 6px;">
                 Ngày {{ now()->format('d') }} tháng {{ now()->format('m') }} năm {{ now()->format('Y') }}
             </p>
         </div>
 
-        <!-- Bảng sản phẩm -->
+        <!-- Bảng sản phẩm / thiết bị -->
         <table class="print-table">
             <thead>
                 <tr>
                     <th style="width: 40px; text-align: center;">STT</th>
+                    @if($activeTab === 'materials')
                     <th style="width: 110px;">Mã Vật Tư</th>
                     <th>TÊN VẬT TƯ</th>
                     <th style="width: 130px;">Hãng SX</th>
                     <th style="width: 80px; text-align: center;">Số lượng</th>
                     <th style="width: 100px; text-align: center;">Vị trí</th>
+                    @else
+                    <th>TÊN THIẾT BỊ</th>
+                    <th style="width: 110px;">Mã Tài Sản</th>
+                    <th style="width: 100px;">Biển Số Xe</th>
+                    <th style="width: 130px;">Tên Tài Xế</th>
+                    <th style="width: 100px;">SĐT</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
                 @foreach($printItems as $index => $item)
                 <tr>
                     <td style="text-align: center;">{{ $index + 1 }}</td>
+                    @if($activeTab === 'materials')
                     <td style="font-family: monospace; text-transform: uppercase;">{{ $item->code }}</td>
                     <td style="font-weight: bold;">{{ $item->name }}</td>
                     <td>{{ $item->brand ?? '-' }}</td>
                     <td style="text-align: center; font-weight: bold;">{{ number_format($item->inventory?->quantity ?? 0) }}</td>
                     <td style="text-align: center;">{{ $item->location ?? '-' }}</td>
+                    @else
+                    <td style="font-weight: bold; text-transform: uppercase;">{{ $item->name }}</td>
+                    <td style="font-family: monospace; text-transform: uppercase;">{{ $item->asset_code }}</td>
+                    <td style="text-transform: uppercase;">{{ $item->license_plate ?? '-' }}</td>
+                    <td style="text-transform: uppercase;">{{ $item->driver_name ?? '-' }}</td>
+                    <td style="font-family: monospace;">{{ $item->phone_number ?? '-' }}</td>
+                    @endif
                 </tr>
                 @endforeach
                 {{-- Thêm hàng trống nếu ít hơn 8 dòng --}}
                 @for($i = count($printItems); $i < max(8, count($printItems)); $i++)
                 <tr>
                     <td style="text-align: center; color: transparent;">_</td>
-                    <td></td><td></td><td></td><td></td><td></td>
+                    <td></td><td></td><td></td><td></td>
+                    @if($activeTab === 'materials')<td></td>@endif
                 </tr>
                 @endfor
             </tbody>

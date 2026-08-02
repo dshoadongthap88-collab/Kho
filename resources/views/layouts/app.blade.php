@@ -46,10 +46,9 @@
                             3. DANH MỤC VẬT TƯ
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
-                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
-                            <a href="{{ route('warehouse.categories') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">DANH MỤC PHÂN LOẠI</a>
-                            <a href="{{ route('warehouse.product-catalog') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">DANH MỤC VẬT TƯ</a>
-                            <a href="{{ route('warehouse.asset-manager') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">DANH MỤC THIẾT BỊ & TÀI SẢN</a>
+                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left z-[100]">
+                            <a href="{{ route('warehouse.product-catalog', ['activeTab' => 'materials']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">DANH MỤC VẬT TƯ</a>
+                            <a href="{{ route('warehouse.product-catalog', ['activeTab' => 'equipments']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">DANH MỤC THIẾT BỊ</a>
                         </div>
                     </div>
 

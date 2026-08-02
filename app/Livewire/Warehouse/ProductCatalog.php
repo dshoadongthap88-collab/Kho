@@ -19,6 +19,8 @@ class ProductCatalog extends Component
     use WithPagination;
     use WithFileUploads;
 
+    public $activeTab = 'materials';
+
     public $search = '';
     public $showModal = false;
     public $showImportModal = false;
@@ -41,6 +43,13 @@ class ProductCatalog extends Component
     public $quantity;
     public $min_stock = 0;
     public $type = 'product_produced';
+    
+    // Form fields (Asset)
+    public $asset_code;
+    public $license_plate;
+    public $driver_name;
+    public $phone_number;
+
     public $filterMode = 'all';
 
     public $excelFile;
@@ -50,26 +59,36 @@ class ProductCatalog extends Component
     public $printItems = []; // Thêm mảng chứa dữ liệu để in
     public $minStocks = []; 
 
-    protected $queryString = ['search', 'dateFrom', 'dateTo', 'filterMode'];
+    protected $queryString = ['search', 'dateFrom', 'dateTo', 'filterMode', 'activeTab'];
 
     public function rules()
     {
-        return [
-            'code' => ['required', Rule::unique('products', 'code')->ignore($this->productId)],
-            'name' => 'required|string|max:255',
-            'brand' => 'nullable|string|max:255',
-            'box_spec' => 'nullable|string|max:255',
-            'carton_spec' => 'nullable|string|max:255',
-            'status' => 'required|in:active,inactive',
-            'category_id' => 'nullable|exists:categories,id',
-            'location' => 'nullable|string|max:255',
-            'batch_number' => 'nullable|string|max:255',
-            'expiry_date' => 'nullable|date',
-            'quantity' => 'nullable|numeric|min:0',
-            'min_stock' => 'nullable|numeric|min:0',
-            'type' => 'required|in:product,product_produced,product_purchased',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif,bmp|max:5120', // Tăng lên 5MB và hỗ trợ nhiều định dạng hơn
-        ];
+        if ($this->activeTab === 'materials') {
+            return [
+                'code' => ['required', Rule::unique('products', 'code')->ignore($this->productId)],
+                'name' => 'required|string|max:255',
+                'brand' => 'nullable|string|max:255',
+                'box_spec' => 'nullable|string|max:255',
+                'carton_spec' => 'nullable|string|max:255',
+                'status' => 'required|in:active,inactive',
+                'category_id' => 'nullable|exists:categories,id',
+                'location' => 'nullable|string|max:255',
+                'batch_number' => 'nullable|string|max:255',
+                'expiry_date' => 'nullable|date',
+                'quantity' => 'nullable|numeric|min:0',
+                'min_stock' => 'nullable|numeric|min:0',
+                'type' => 'required|in:product,product_produced,product_purchased',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif,bmp|max:5120',
+            ];
+        } else {
+            return [
+                'asset_code' => ['required', Rule::unique('assets', 'asset_code')->ignore($this->productId)],
+                'name' => 'required|string|max:255',
+                'license_plate' => 'nullable|string|max:255',
+                'driver_name' => 'nullable|string|max:255',
+                'phone_number' => 'nullable|string|max:255',
+            ];
+        }
     }
 
     public function setFilterMode($mode)
@@ -131,28 +150,44 @@ class ProductCatalog extends Component
     public function openModal($id = null)
     {
         $this->resetValidation();
-        $this->reset(['code', 'name', 'brand', 'box_spec', 'carton_spec', 'status', 'location', 'quantity', 'productId', 'image', 'type', 'category_id']);
+        $this->reset(['code', 'name', 'brand', 'box_spec', 'carton_spec', 'status', 'location', 'quantity', 'productId', 'image', 'type', 'category_id', 'asset_code', 'license_plate', 'driver_name', 'phone_number']);
         
-        if ($id) {
-            $this->isEdit = true;
-            $this->productId = $id;
-            $product = Product::findOrFail($id);
-            $this->code = $product->code;
-            $this->name = $product->name;
-            $this->brand = $product->brand;
-            $this->box_spec = $product->box_spec;
-            $this->carton_spec = $product->carton_spec;
-            $this->status = $product->status;
-            $this->location = $product->location;
-            $this->category_id = $product->category_id;
-            $this->batch_number = $product->batch_number;
-            $this->expiry_date = $product->expiry_date?->format('Y-m-d');
-            $this->quantity = $product->inventory?->quantity ?? 0;
-            $this->min_stock = $product->min_stock;
-            $this->type = in_array($product->type, ['product_produced', 'product_purchased']) ? $product->type : 'product_produced';
+        if ($this->activeTab === 'materials') {
+            if ($id) {
+                $this->isEdit = true;
+                $this->productId = $id;
+                $product = Product::findOrFail($id);
+                $this->code = $product->code;
+                $this->name = $product->name;
+                $this->brand = $product->brand;
+                $this->box_spec = $product->box_spec;
+                $this->carton_spec = $product->carton_spec;
+                $this->status = $product->status;
+                $this->location = $product->location;
+                $this->category_id = $product->category_id;
+                $this->batch_number = $product->batch_number;
+                $this->expiry_date = $product->expiry_date?->format('Y-m-d');
+                $this->quantity = $product->inventory?->quantity ?? 0;
+                $this->min_stock = $product->min_stock;
+                $this->type = in_array($product->type, ['product_produced', 'product_purchased']) ? $product->type : 'product_produced';
+            } else {
+                $this->isEdit = false;
+                $this->min_stock = 0;
+            }
         } else {
-            $this->isEdit = false;
-            $this->min_stock = 0;
+            // tab equipments
+            if ($id) {
+                $this->isEdit = true;
+                $this->productId = $id;
+                $asset = \App\Models\Asset::findOrFail($id);
+                $this->asset_code = $asset->asset_code;
+                $this->name = $asset->name;
+                $this->license_plate = $asset->license_plate;
+                $this->driver_name = $asset->driver_name;
+                $this->phone_number = $asset->phone_number;
+            } else {
+                $this->isEdit = false;
+            }
         }
 
         $this->showModal = true;
@@ -163,6 +198,34 @@ class ProductCatalog extends Component
         $this->validate();
 
         try {
+            if ($this->activeTab === 'equipments') {
+                if ($this->isEdit) {
+                    $asset = \App\Models\Asset::findOrFail($this->productId);
+                    $asset->update([
+                        'asset_code' => $this->asset_code,
+                        'name' => $this->name,
+                        'license_plate' => $this->license_plate,
+                        'driver_name' => $this->driver_name,
+                        'phone_number' => $this->phone_number,
+                    ]);
+                    session()->flash('message', 'Cập nhật thiết bị thành công.');
+                } else {
+                    \App\Models\Asset::create([
+                        'asset_code' => $this->asset_code,
+                        'name' => $this->name,
+                        'license_plate' => $this->license_plate,
+                        'driver_name' => $this->driver_name,
+                        'phone_number' => $this->phone_number,
+                        'department' => 'KHO',
+                        'machine_type' => 'OTHER',
+                        'model' => 'N/A'
+                    ]);
+                    session()->flash('message', 'Thêm thiết bị mới thành công.');
+                }
+                $this->showModal = false;
+                return;
+            }
+
             $imagePath = null;
             if ($this->image && !is_string($this->image)) {
                 // Nén ảnh bằng Intervention Image v3
@@ -219,6 +282,9 @@ class ProductCatalog extends Component
                     ]);
                 }
 
+                // Cập nhật lại mảng minStocks hiển thị trên bảng
+                $this->minStocks[$product->id] = $this->min_stock > 0 ? $this->min_stock : '';
+
                 session()->flash('message', 'Cập nhật vật tư thành công.');
             } else {
                 $product = Product::create([
@@ -249,7 +315,6 @@ class ProductCatalog extends Component
 
             $this->reset(['image']); // Xoá ảnh tạm sau khi lưu
             $this->showModal = false;
-
         } catch (\Exception $e) {
             session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
@@ -311,29 +376,47 @@ class ProductCatalog extends Component
 
     public function printAll()
     {
-        $this->printItems = Product::query()
-            ->with(['inventory'])
-            ->where(function($q) {
-                $q->where('type', '!=', 'material')
-                  ->orWhereNull('type');
-            })
-            ->where(function($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('code', 'like', '%' . $this->search . '%')
-                  ->orWhere('brand', 'like', '%' . $this->search . '%')
-                  ->orWhere('batch_number', 'like', '%' . $this->search . '%');
-            })
-            ->when($this->dateFrom, function($q) {
-                $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
-            })
-            ->when($this->dateTo, function($q) {
-                $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
-            })
-            ->when($this->filterMode === 'low_stock', function($q) {
-                return $this->applyLowStockFilter($q);
-            })
-            ->orderBy('products.created_at', 'desc')
-            ->get();
+        if ($this->activeTab === 'materials') {
+            $this->printItems = Product::query()
+                ->with(['inventory'])
+                ->where(function($q) {
+                    $q->where('type', '!=', 'material')
+                      ->orWhereNull('type');
+                })
+                ->where(function($q) {
+                    $q->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('code', 'like', '%' . $this->search . '%')
+                      ->orWhere('brand', 'like', '%' . $this->search . '%')
+                      ->orWhere('batch_number', 'like', '%' . $this->search . '%');
+                })
+                ->when($this->dateFrom, function($q) {
+                    $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
+                })
+                ->when($this->dateTo, function($q) {
+                    $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
+                })
+                ->when($this->filterMode === 'low_stock', function($q) {
+                    return $this->applyLowStockFilter($q);
+                })
+                ->orderBy('products.created_at', 'desc')
+                ->get();
+        } else {
+            $this->printItems = \App\Models\Asset::query()
+                ->where(function($q) {
+                    $q->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('asset_code', 'like', '%' . $this->search . '%')
+                      ->orWhere('license_plate', 'like', '%' . $this->search . '%')
+                      ->orWhere('driver_name', 'like', '%' . $this->search . '%');
+                })
+                ->when($this->dateFrom, function($q) {
+                    $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
+                })
+                ->when($this->dateTo, function($q) {
+                    $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
 
         $this->dispatch('trigger-print');
     }
@@ -383,52 +466,81 @@ class ProductCatalog extends Component
             } else {
                 session()->flash('message', "Đã lưu thành công định mức tồn tối thiểu cho {$count} vật tư!");
             }
+            $this->dispatch('min-stocks-saved');
         } catch (\Exception $e) {
             session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
 
 
+    public function switchTab($tab)
+    {
+        $this->activeTab = $tab;
+        $this->resetPage();
+    }
+
     public function render()
     {
-        $products = Product::query()
-            ->with(['inventory'])
-            ->where(function($q) {
-                $q->where('type', '!=', 'material')
-                  ->orWhereNull('type');
-            })
-            ->where(function($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('code', 'like', '%' . $this->search . '%')
-                  ->orWhere('brand', 'like', '%' . $this->search . '%')
-                  ->orWhere('batch_number', 'like', '%' . $this->search . '%');
-            })
-            ->when($this->dateFrom, function($q) {
-                $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
-            })
-            ->when($this->dateTo, function($q) {
-                $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
-            })
-            // Lọc theo filterMode
-            ->when($this->filterMode === 'low_stock', function($q) {
-                return $this->applyLowStockFilter($q);
-            })
-            ->orderBy('products.created_at', 'desc')
-            ->paginate(8);
+        $products = collect();
+        $equipments = collect();
+        
+        if ($this->activeTab === 'materials') {
+            $products = Product::query()
+                ->with(['inventory'])
+                ->where(function($q) {
+                    $q->where('type', '!=', 'material')
+                      ->orWhereNull('type');
+                })
+                ->where(function($q) {
+                    $q->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('code', 'like', '%' . $this->search . '%')
+                      ->orWhere('brand', 'like', '%' . $this->search . '%')
+                      ->orWhere('batch_number', 'like', '%' . $this->search . '%');
+                })
+                ->when($this->dateFrom, function($q) {
+                    $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
+                })
+                ->when($this->dateTo, function($q) {
+                    $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
+                })
+                ->when($this->filterMode === 'low_stock', function($q) {
+                    return $this->applyLowStockFilter($q);
+                })
+                ->orderBy('products.created_at', 'desc')
+                ->paginate(8);
 
-        // Khởi tạo các giá trị tồn tối thiểu cho ô nhập liệu trên trang hiện tại
-        foreach ($products as $product) {
-            if (!isset($this->minStocks[$product->id])) {
-                $this->minStocks[$product->id] = $product->min_stock > 0 ? $product->min_stock : '';
+            // Khởi tạo các giá trị tồn tối thiểu cho ô nhập liệu trên trang hiện tại
+            foreach ($products as $product) {
+                if (!isset($this->minStocks[$product->id])) {
+                    $this->minStocks[$product->id] = $product->min_stock > 0 ? $product->min_stock : '';
+                }
             }
+        } else {
+            // Tab equipments
+            $equipments = \App\Models\Asset::query()
+                ->where(function($q) {
+                    $q->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('asset_code', 'like', '%' . $this->search . '%')
+                      ->orWhere('license_plate', 'like', '%' . $this->search . '%')
+                      ->orWhere('driver_name', 'like', '%' . $this->search . '%');
+                })
+                ->when($this->dateFrom, function($q) {
+                    $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
+                })
+                ->when($this->dateTo, function($q) {
+                    $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
+                })
+                ->orderBy('created_at', 'desc')
+                ->paginate(8);
         }
 
         $categories = \App\Models\Category::where('status', 'active')->orderBy('name')->get();
 
         return view('livewire.warehouse.product-catalog', [
             'products' => $products,
+            'equipments' => $equipments,
             'categories' => $categories,
-            'allProductIdsOnPage' => $products->pluck('id')->toArray()
+            'allProductIdsOnPage' => $this->activeTab === 'materials' ? $products->pluck('id')->toArray() : $equipments->pluck('id')->toArray()
         ]);
     }
 }

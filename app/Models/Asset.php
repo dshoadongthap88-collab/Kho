@@ -13,6 +13,9 @@ class Asset extends Model
 
     protected $fillable = [
         'asset_code',
+        'license_plate',
+        'driver_name',
+        'phone_number',
         'name',
         'department',
         'machine_type',

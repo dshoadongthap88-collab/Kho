@@ -34,6 +34,7 @@ class Asset extends Model
         'last_maintenance_hours',
         'last_maintenance_odo',
         'bom_details',
+        'management_unit',
     ];
 
     public function oilBoms()

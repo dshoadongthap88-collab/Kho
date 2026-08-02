@@ -28,6 +28,13 @@ class AssetManager extends Component
     public $model;
     public $serial_number;
     public $manufacturer;
+    public $license_plate;
+    public $lifetime_odo;
+    public $lifetime_hours;
+    public $maintenance_cycle_hours;
+    public $maintenance_cycle_odo;
+    public $house_id;
+    public $management_unit;
     public $installation_date;
     public $status = 'active';
 
@@ -72,6 +79,13 @@ class AssetManager extends Component
         $this->model = $asset->model;
         $this->serial_number = $asset->serial_number;
         $this->manufacturer = $asset->manufacturer;
+        $this->license_plate = $asset->license_plate;
+        $this->lifetime_odo = $asset->lifetime_odo;
+        $this->lifetime_hours = $asset->lifetime_hours;
+        $this->maintenance_cycle_hours = $asset->maintenance_cycle_hours;
+        $this->maintenance_cycle_odo = $asset->maintenance_cycle_odo;
+        $this->house_id = $asset->house_id;
+        $this->management_unit = $asset->management_unit;
         $this->installation_date = $asset->installation_date;
         $this->status = $asset->status;
         
@@ -107,6 +121,13 @@ class AssetManager extends Component
             'model' => $this->model,
             'serial_number' => $this->serial_number,
             'manufacturer' => $this->manufacturer,
+            'license_plate' => $this->license_plate,
+            'lifetime_odo' => $this->lifetime_odo,
+            'lifetime_hours' => $this->lifetime_hours,
+            'maintenance_cycle_hours' => $this->maintenance_cycle_hours,
+            'maintenance_cycle_odo' => $this->maintenance_cycle_odo,
+            'house_id' => $this->house_id,
+            'management_unit' => $this->management_unit,
             'installation_date' => $this->installation_date ?: null,
             'status' => $this->status,
             'bom_details' => json_encode($this->bomItems),
@@ -147,16 +168,24 @@ class AssetManager extends Component
         $this->model = '';
         $this->serial_number = '';
         $this->manufacturer = '';
+        $this->license_plate = '';
+        $this->lifetime_odo = '';
+        $this->lifetime_hours = '';
+        $this->maintenance_cycle_hours = '';
+        $this->maintenance_cycle_odo = '';
+        $this->house_id = null;
+        $this->management_unit = '';
         $this->installation_date = '';
         $this->status = 'active';
     }
 
     public function render()
     {
-        $assets = Asset::where('name', 'like', '%'.$this->search.'%')
+        $assets = Asset::with('house')->where('name', 'like', '%'.$this->search.'%')
             ->orWhere('asset_code', 'like', '%'.$this->search.'%')
             ->orderBy('id', 'desc')
             ->paginate(15);
-        return view('livewire.warehouse.asset.asset-manager', compact('assets'));
+        $houses = \App\Models\House::all();
+        return view('livewire.warehouse.asset.asset-manager', compact('assets', 'houses'));
     }
 }

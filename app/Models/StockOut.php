@@ -30,6 +30,7 @@ class StockOut extends Model
         'supervisor_qltb',
         'supervisor_ca',
         'repair_staff',
+        'maintenance_plan_id',
     ];
 
     public function creator()
@@ -45,5 +46,10 @@ class StockOut extends Model
     public function items()
     {
         return $this->hasMany(StockOutItem::class);
+    }
+
+    public function maintenancePlan()
+    {
+        return $this->belongsTo(MaintenancePlan::class);
     }
 }

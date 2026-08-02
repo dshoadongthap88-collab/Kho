@@ -26,11 +26,13 @@
 
                     <!-- Module 2: KHO -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.stock-*') || request()->routeIs('warehouse.inventory') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.stock-*') || request()->routeIs('warehouse.inventory') || request()->routeIs('warehouse.product-*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             2. KHO
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
-                        <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0">
+                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left z-[100]">
+                            <a href="{{ route('warehouse.product-catalog', ['activeTab' => 'materials']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 font-bold border-b border-slate-100">DANH MỤC VẬT TƯ</a>
+                            <a href="{{ route('warehouse.product-catalog', ['activeTab' => 'equipments']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 font-bold border-b border-slate-100">DANH MỤC THIẾT BỊ</a>
                             <a href="{{ route('warehouse.stock-in') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Nhập kho</a>
                             <a href="{{ route('warehouse.stock-out') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Xuất kho</a>
                             <a href="{{ route('warehouse.inventory') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Tồn kho</a>
@@ -40,22 +42,11 @@
                         </div>
                     </div>
 
-                    <!-- Module 3: DANH MỤC VẬT TƯ -->
-                    <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.product-*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
-                            3. DANH MỤC VẬT TƯ
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                        </button>
-                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left z-[100]">
-                            <a href="{{ route('warehouse.product-catalog', ['activeTab' => 'materials']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">DANH MỤC VẬT TƯ</a>
-                            <a href="{{ route('warehouse.product-catalog', ['activeTab' => 'equipments']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">DANH MỤC THIẾT BỊ</a>
-                        </div>
-                    </div>
 
-                    <!-- Module 4: THEO DÕI BẢO DƯỠNG -->
+                    <!-- Module 3: THEO DÕI BẢO DƯỠNG -->
                     <div class="relative group">
                         <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.asset-manager') || request()->routeIs('maintenance.*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
-                            4. THEO DÕI BẢO DƯỠNG
+                            3. THEO DÕI BẢO DƯỠNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-72 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
@@ -67,10 +58,10 @@
                         </div>
                     </div>
 
-                    <!-- Module 5: KẾ HOẠCH & MUA HÀNG -->
+                    <!-- Module 4: KẾ HOẠCH & MUA HÀNG -->
                     <div class="relative group">
                         <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.purchase-*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
-                            5. KẾ HOẠCH & MUA HÀNG
+                            4. KẾ HOẠCH & MUA HÀNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
@@ -80,10 +71,10 @@
                         </div>
                     </div>
 
-                    <!-- Module 6: BÁO CÁO -->
+                    <!-- Module 5: BÁO CÁO -->
                     <div class="relative group">
                         <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports.*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
-                            6. BÁO CÁO
+                            5. BÁO CÁO
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
@@ -93,10 +84,10 @@
                         </div>
                     </div>
                     
-                    <!-- Module 7: CHAT KHO -->
+                    <!-- Module 6: CHAT KHO -->
                     <div class="relative group">
                         <a href="{{ route('warehouse.chat') }}" class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 hover:bg-sky-200 hover:text-sky-950 {{ request()->routeIs('warehouse.chat') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
-                            7. CHAT KHO
+                            6. CHAT KHO
                         </a>
                     </div>
                     @else

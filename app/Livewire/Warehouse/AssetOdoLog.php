@@ -162,9 +162,56 @@ class AssetOdoLog extends Component
         ];
 
         if ($this->logId) {
-            AssetDailyOdo::where('id', $this->logId)->update($data);
+            $log = AssetDailyOdo::find($this->logId);
+            $oldOdoDiff = $log->odo_diff;
+            $oldHoursDiff = $log->hours_diff;
+            $log->update($data);
+            
+            // Re-calculate the diffs for the asset
+            $actualOdoDiff = $this->odo_diff - $oldOdoDiff;
+            $actualHoursDiff = $this->hours_diff - $oldHoursDiff;
         } else {
             AssetDailyOdo::create($data);
+            $actualOdoDiff = $this->odo_diff;
+            $actualHoursDiff = $this->hours_diff;
+        }
+
+        // Update Asset instantly
+        $asset = Asset::find($this->asset_id);
+        if ($asset) {
+            $asset->lifetime_odo += $actualOdoDiff;
+            $asset->lifetime_hours += $actualHoursDiff;
+            $asset->current_odo += $actualOdoDiff;
+            $asset->current_hours += $actualHoursDiff;
+            $asset->save();
+
+            // Check for maintenance cycle
+            $needsMaintenance = false;
+            if ($asset->maintenance_cycle_odo > 0 && $asset->current_odo >= $asset->maintenance_cycle_odo) {
+                $needsMaintenance = true;
+            }
+            if ($asset->maintenance_cycle_hours > 0 && $asset->current_hours >= $asset->maintenance_cycle_hours) {
+                $needsMaintenance = true;
+            }
+
+            if ($needsMaintenance) {
+                // Check if an active plan already exists
+                $existingPlan = \App\Models\MaintenancePlan::where('asset_id', $asset->id)
+                    ->whereNotIn('status', ['hoan_thanh'])->first();
+                
+                if (!$existingPlan) {
+                    \App\Models\MaintenancePlan::create([
+                        'house_id' => $asset->house_id,
+                        'plan_code' => 'BD' . date('Ymd') . '-' . $asset->asset_code,
+                        'asset_id' => $asset->id,
+                        'category' => 'Bảo dưỡng định kỳ',
+                        'expected_date' => now()->addDays(1),
+                        'current_odo' => $asset->current_odo,
+                        'maintenance_odo' => $asset->maintenance_cycle_odo,
+                        'status' => 'cho_chuan_bi_vat_tu',
+                    ]);
+                }
+            }
         }
 
         $this->closeModal();

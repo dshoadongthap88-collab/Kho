@@ -13,7 +13,7 @@
                 </h2>
             </div>
             <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="space-y-1">
                         <label class="block text-xs font-bold text-slate-700 uppercase">Mã tài sản <span class="text-red-500">*</span></label>
                         <input type="text" wire:model="asset_code" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold uppercase" placeholder="Nhập mã...">
@@ -52,11 +52,49 @@
                     </div>
                     
                     <div class="space-y-1">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Biển số</label>
+                        <input type="text" wire:model="license_plate" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold uppercase" placeholder="Biển số xe...">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">ODO hiện tại</label>
+                        <input type="number" wire:model="lifetime_odo" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold" placeholder="Km...">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Giờ máy hiện tại</label>
+                        <input type="number" wire:model="lifetime_hours" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold" placeholder="Giờ...">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Chu kỳ BĐ (ODO)</label>
+                        <input type="number" wire:model="maintenance_cycle_odo" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold" placeholder="Km...">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Chu kỳ BĐ (Giờ)</label>
+                        <input type="number" wire:model="maintenance_cycle_hours" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold" placeholder="Giờ...">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Dự án <span class="text-red-500">*</span></label>
+                        <select wire:model="house_id" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold">
+                            <option value="">-- Chọn dự án --</option>
+                            @foreach($houses as $house)
+                                <option value="{{ $house->id }}">{{ $house->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Kho quản lý <span class="text-red-500">*</span></label>
+                        <select wire:model="management_unit" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold">
+                            <option value="">-- Chọn kho quản lý --</option>
+                            <option value="Vinalpha">Vinalpha</option>
+                            <option value="Vincons">Vincons</option>
+                            <option value="M&E">M&E</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
                         <label class="block text-xs font-bold text-slate-700 uppercase">Trạng thái <span class="text-red-500">*</span></label>
                         <select wire:model="status" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold">
-                            <option value="active">🟢 Đang hoạt động</option>
+                            <option value="active">🟢 Đang sử dụng</option>
                             <option value="maintenance">🟠 Đang bảo trì</option>
-                            <option value="inactive">🔴 Ngừng hoạt động</option>
+                            <option value="inactive">🔴 Ngưng sử dụng</option>
                         </select>
                     </div>
                 </div>
@@ -163,6 +201,8 @@
                         <th class="px-4 py-3">Bộ phận</th>
                         <th class="px-4 py-3">Model/Serial</th>
                         <th class="px-4 py-3 text-center">Trạng thái</th>
+                        <th class="px-4 py-3">Dự án</th>
+                        <th class="px-4 py-3 text-center">Kho QL</th>
                         <th class="px-4 py-3 text-center">Thao tác</th>
                     </tr>
                 </thead>
@@ -184,13 +224,15 @@
                         </td>
                         <td class="px-4 py-3 text-center">
                             @if($asset->status == 'active')
-                                <span class="px-2.5 py-1 text-[10px] uppercase font-black rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">Hoạt động</span>
+                                <span class="px-2.5 py-1 text-[10px] uppercase font-black rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">Đang sử dụng</span>
                             @elseif($asset->status == 'maintenance')
                                 <span class="px-2.5 py-1 text-[10px] uppercase font-black rounded-lg bg-amber-50 text-amber-700 border border-amber-100">Bảo trì</span>
                             @else
-                                <span class="px-2.5 py-1 text-[10px] uppercase font-black rounded-lg bg-rose-50 text-rose-700 border border-rose-100">Ngừng HĐ</span>
+                                <span class="px-2.5 py-1 text-[10px] uppercase font-black rounded-lg bg-rose-50 text-rose-700 border border-rose-100">Ngưng SD</span>
                             @endif
                         </td>
+                        <td class="px-4 py-3 font-semibold text-slate-700">{{ optional($asset->house)->name ?: '-' }}</td>
+                        <td class="px-4 py-3 text-center font-bold text-slate-700">{{ $asset->management_unit ?: '-' }}</td>
                         <td class="px-4 py-3 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <button wire:click="edit({{ $asset->id }})" class="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Sửa">

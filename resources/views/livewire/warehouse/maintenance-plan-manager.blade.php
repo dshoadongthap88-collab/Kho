@@ -58,13 +58,27 @@
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 @if($plan->status === 'pending')
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Đã lập</span>
-                                @elseif($plan->status === 'doing')
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Đang thực hiện</span>
+                                @elseif($plan->status === 'cho_chuan_bi_vat_tu')
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Chờ VT</span>
+                                @elseif($plan->status === 'thieu_vat_tu')
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Thiếu VT</span>
+                                @elseif($plan->status === 'san_sang_xuat')
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Sẵn sàng xuất</span>
+                                @elseif($plan->status === 'dang_bao_duong')
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Đang bảo dưỡng</span>
+                                @elseif($plan->status === 'completed' || $plan->status === 'hoan_thanh')
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Hoàn thành</span>
                                 @else
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Hoàn thành</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">{{ $plan->status }}</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                @if(in_array($plan->status, ['cho_chuan_bi_vat_tu', 'pending', 'thieu_vat_tu']))
+                                    <button wire:click="checkInventory({{ $plan->id }})" class="text-white bg-blue-600 hover:bg-blue-700 px-2 py-1.5 rounded mr-1" title="Kiểm tra tồn kho vật tư">🔍 Kiểm tra kho</button>
+                                @endif
+                                @if($plan->status === 'san_sang_xuat')
+                                    <button wire:click="createStockOut({{ $plan->id }})" class="text-white bg-green-600 hover:bg-green-700 px-2 py-1.5 rounded mr-1" title="Tạo phiếu xuất kho">📦 Xuất kho</button>
+                                @endif
                                 <button wire:click="edit({{ $plan->id }})" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded mr-1" title="Sửa">✏️</button>
                                 <button x-on:click="if(confirm('Xóa kế hoạch này?')) $wire.delete({{ $plan->id }})" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded" title="Xóa">🗑️</button>
                             </td>

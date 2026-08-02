@@ -6,6 +6,11 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\MaintenancePlan;
 use App\Models\Asset;
+use App\Models\MaintenanceBom;
+use App\Models\Inventory;
+use App\Models\PurchasePlan;
+use App\Models\StockOut;
+use App\Models\StockOutItem;
 use Illuminate\Support\Str;
 
 class MaintenancePlanManager extends Component
@@ -137,6 +142,103 @@ class MaintenancePlanManager extends Component
         $plan->status = $newStatus;
         $plan->save();
         session()->flash('message', 'Đã cập nhật trạng thái.');
+    }
+
+    public function checkInventory($planId)
+    {
+        $plan = MaintenancePlan::with(['asset.maintenanceBoms.items'])->findOrFail($planId);
+        
+        // Find BOM matching current maintenance level roughly or the latest BOM
+        $bom = MaintenanceBom::where('asset_id', $plan->asset_id)->first();
+        if (!$bom) {
+            session()->flash('error', 'Chưa cấu hình BOM bảo dưỡng cho thiết bị này.');
+            return;
+        }
+
+        $plan->maintenance_bom_id = $bom->id;
+        $plan->save();
+
+        $missingItems = [];
+        foreach ($bom->items as $item) {
+            $inventory = Inventory::where('product_id', $item->product_id)
+                ->where('house_id', $plan->house_id)
+                ->first();
+            
+            $available = $inventory ? $inventory->quantity : 0;
+            if ($available < $item->quantity) {
+                $missingItems[] = [
+                    'product_id' => $item->product_id,
+                    'missing_quantity' => $item->quantity - $available
+                ];
+            }
+        }
+
+        if (count($missingItems) > 0) {
+            $plan->status = 'thieu_vat_tu';
+            $plan->save();
+            
+            // Auto create Purchase Plan
+            $purchasePlan = PurchasePlan::create([
+                'house_id' => $plan->house_id,
+                'name' => 'Đề nghị mua vật tư cho ' . $plan->plan_code,
+                'status' => 'pending',
+                'created_by' => auth()->id() ?? 1,
+            ]);
+            
+            session()->flash('message', 'Thiếu vật tư! Hệ thống đã tự động tạo Phiếu đề nghị mua số ' . $purchasePlan->id);
+        } else {
+            $plan->status = 'san_sang_xuat';
+            $plan->save();
+            session()->flash('message', 'Tồn kho đủ. Sẵn sàng xuất kho vật tư.');
+        }
+    }
+
+    public function createStockOut($planId)
+    {
+        $plan = MaintenancePlan::with('maintenanceBom.items')->findOrFail($planId);
+        if ($plan->status != 'san_sang_xuat') {
+            session()->flash('error', 'Kế hoạch chưa sẵn sàng xuất kho.');
+            return;
+        }
+
+        if (!$plan->maintenanceBom) {
+            session()->flash('error', 'Không tìm thấy BOM liên kết.');
+            return;
+        }
+
+        $stockOut = StockOut::create([
+            'house_id' => $plan->house_id,
+            'maintenance_plan_id' => $plan->id,
+            'code' => 'XK-BD-' . date('YmdHis'),
+            'type' => 'bao_duong',
+            'status' => 'approved',
+            'asset_code' => $plan->asset->asset_code,
+            'created_by' => auth()->id() ?? 1,
+        ]);
+
+        $totalCost = 0;
+        foreach ($plan->maintenanceBom->items as $item) {
+            StockOutItem::create([
+                'stock_out_id' => $stockOut->id,
+                'product_id' => $item->product_id,
+                'quantity' => $item->quantity,
+                'price' => 0, // Should take average price
+            ]);
+            
+            // Deduct inventory
+            $inv = Inventory::where('product_id', $item->product_id)
+                ->where('house_id', $plan->house_id)
+                ->first();
+            if ($inv) {
+                $inv->quantity -= $item->quantity;
+                $inv->save();
+            }
+        }
+
+        $plan->status = 'dang_bao_duong';
+        $plan->save();
+
+        session()->flash('message', 'Đã tạo phiếu xuất kho thành công và trừ tồn kho.');
     }
 
     public function render()

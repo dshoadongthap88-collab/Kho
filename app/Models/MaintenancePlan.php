@@ -21,14 +21,28 @@ class MaintenancePlan extends Model
         'maintenance_odo',
         'status',
         'assigned_to',
+        'maintenance_bom_id',
+        'total_cost',
+        'completed_at',
     ];
 
     protected $casts = [
         'expected_date' => 'date',
+        'completed_at' => 'datetime',
     ];
 
     public function asset()
     {
         return $this->belongsTo(Asset::class);
+    }
+
+    public function maintenanceBom()
+    {
+        return $this->belongsTo(MaintenanceBom::class);
+    }
+
+    public function stockOuts()
+    {
+        return $this->hasMany(StockOut::class);
     }
 }

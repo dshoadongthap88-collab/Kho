@@ -48,16 +48,16 @@
     <div class="text-center mb-5">
         <div class="header-title uppercase">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI CÔNG HẠ TẦNG V- ALPHA</div>
         <div class="header-subtitle uppercase">BÁO CÁO CHI TIẾT GIAO DỊCH NGÀY</div>
-        <div style="font-size: 12px; font-style: italic; margin-top: 5px;">Ngày in: {{ now()->format('d/m/Y H:i') }}</div>
+        <div style="font-size: 12px; font-style: italic; margin-top: 5px;">Ngày in: <?php echo e(now()->format('d/m/Y H:i')); ?></div>
     </div>
 
     <div class="summary-box">
-        <div>- Tổng mã tài sản đã sử dụng: {{ $assetCodesCount }} mã</div>
-        <div>- Tổng mã vật tư đã giao dịch: {{ $productCodesCount }} mã</div>
-        <div style="font-style: italic; font-weight: normal; font-size: 12px;">(Lọc từ {{ count($transactions) }} giao dịch được chọn)</div>
+        <div>- Tổng mã tài sản đã sử dụng: <?php echo e($assetCodesCount); ?> mã</div>
+        <div>- Tổng mã vật tư đã giao dịch: <?php echo e($productCodesCount); ?> mã</div>
+        <div style="font-style: italic; font-weight: normal; font-size: 12px;">(Lọc từ <?php echo e(count($transactions)); ?> giao dịch được chọn)</div>
     </div>
 
-    @php
+    <?php
         // Group transactions by document_number
         $groupedTransactions = [];
         foreach($transactions as $tx) {
@@ -77,10 +77,10 @@
             
             $groupedTransactions[$docNum]['items']->push($tx);
         }
-    @endphp
+    ?>
 
-    @foreach($groupedTransactions as $docNum => $group)
-        @php
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $groupedTransactions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $docNum => $group): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+        <?php
             $groupAssetCount = $group['items']->filter(function($tx) {
                 return $tx->reference && isset($tx->reference->asset_code) && !empty($tx->reference->asset_code);
             })->pluck('reference.asset_code')->unique()->count();
@@ -88,15 +88,16 @@
             $groupProductCount = $group['items']->filter(function($tx) {
                 return $tx->product_id;
             })->pluck('product_id')->unique()->count();
-        @endphp
+        ?>
 
         <div style="margin-top: 15px; border: 1px solid #ddd; padding: 10px; page-break-inside: avoid;">
             <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px;">
-                <div style="width: 50%;">Số Phiếu ĐNSC/BD: <span style="font-weight: normal; font-size: 14px;">{{ $docNum !== 'KHÁC' ? $docNum : '..........................................' }}</span></div>
-                <div style="width: 50%;">Nhân viên sửa chữa: <span style="font-weight: normal; font-size: 14px;">{{ $group['repairStaff'] ?: '..........................................' }}</span></div>
+                <div style="width: 50%;">Số Phiếu ĐNSC/BD: <span style="font-weight: normal; font-size: 14px;"><?php echo e($docNum !== 'KHÁC' ? $docNum : '..........................................'); ?></span></div>
+                <div style="width: 50%;">Nhân viên sửa chữa: <span style="font-weight: normal; font-size: 14px;"><?php echo e($group['repairStaff'] ?: '..........................................'); ?></span></div>
             </div>
             <div style="font-size: 11px; font-style: italic; margin-bottom: 10px; color: #555;">
-                Tổng mã tài sản: {{ $groupAssetCount }} | Tổng mã vật tư: {{ $groupProductCount }} | Số lượng giao dịch: {{ $group['items']->count() }}
+                Tổng mã tài sản: <?php echo e($groupAssetCount); ?> | Tổng mã vật tư: <?php echo e($groupProductCount); ?> | Số lượng giao dịch: <?php echo e($group['items']->count()); ?>
+
             </div>
 
             <table>
@@ -111,34 +112,39 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($group['items'] as $index => $tx)
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $group['items']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $tx): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                         <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td class="text-center"><?php echo e($index + 1); ?></td>
                             <td class="text-center font-bold">
-                                {{ ($tx->reference && isset($tx->reference->asset_code)) ? $tx->reference->asset_code : '-' }}
+                                <?php echo e(($tx->reference && isset($tx->reference->asset_code)) ? $tx->reference->asset_code : '-'); ?>
+
                             </td>
                             <td class="text-center">
-                                {{ $tx->product->code ?? '-' }}
+                                <?php echo e($tx->product->code ?? '-'); ?>
+
                             </td>
                             <td class="text-center font-bold">
-                                {{ (float)$tx->quantity }} {{ $tx->product->unit ?? '' }}
+                                <?php echo e((float)$tx->quantity); ?> <?php echo e($tx->product->unit ?? ''); ?>
+
                             </td>
                             <td>
-                                {{ ($tx->reference && isset($tx->reference->department)) ? $tx->reference->department : '-' }}
+                                <?php echo e(($tx->reference && isset($tx->reference->department)) ? $tx->reference->department : '-'); ?>
+
                             </td>
                             <td>
-                                {{ $tx->item_note ?? $tx->note ?? '' }}
+                                <?php echo e($tx->item_note ?? $tx->note ?? ''); ?>
+
                             </td>
                         </tr>
-                    @empty
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <tr>
                             <td colspan="6" class="text-center" style="padding: 20px;">Không có dữ liệu hiển thị</td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </tbody>
             </table>
         </div>
-    @endforeach
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
 
     <div class="grid-footer">
         <div>
@@ -161,3 +167,4 @@
 
 </body>
 </html>
+<?php /**PATH D:\Project\resources\views\warehouse\transaction-detail-print.blade.php ENDPATH**/ ?>

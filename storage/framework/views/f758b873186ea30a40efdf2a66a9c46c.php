@@ -87,21 +87,28 @@
                 <div class="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between no-print">
                     <h2 class="text-[16px] font-black text-slate-900 flex items-center gap-3 uppercase tracking-tight">
                         <span class="p-2.5 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-100">📤</span>
-                        PHIẾU XUẤT KHO MỚI
+                        <?php echo e($editingStockOutId ? 'SỬA PHIẾU XUẤT KHO' : 'PHIẾU XUẤT KHO MỚI'); ?>
+
                     </h2>
                     <div class="flex items-center gap-2">
-                        <!-- Thêm mới -->
-                        <button type="button" onclick="handleResetForm('add')" class="flex items-center gap-1.5 px-3.5 py-2 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
-                            <span>➕</span> Thêm Mới
-                        </button>
-                        <!-- Sửa phiếu -->
-                        <button type="button" onclick="showToast('Bạn đang soạn thảo trực tiếp. Chọn vật tư ở bảng dưới để sửa đổi.', '✏️')" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
-                            <span>✏️</span> Sửa Phiếu
-                        </button>
-                        <!-- Xóa phiếu -->
-                        <button type="button" onclick="handleResetForm('delete')" class="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500 hover:bg-rose-600 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150" title="Xóa sạch dữ liệu đang điền">
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($editingStockOutId): ?>
+                            <button type="button" wire:click="cancelEdit" class="flex items-center gap-1.5 px-3.5 py-2 bg-slate-500 hover:bg-slate-600 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
+                                <span>❌</span> Hủy Sửa
+                            </button>
+                        <?php else: ?>
+                            <!-- Thêm mới -->
+                            <button type="button" onclick="handleResetForm('add')" class="flex items-center gap-1.5 px-3.5 py-2 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
+                                <span>➕</span> Thêm Mới
+                            </button>
+                            <!-- Sửa phiếu (Thông báo) -->
+                            <button type="button" onclick="showToast('Bạn đang soạn thảo trực tiếp. Chọn vật tư ở bảng dưới để sửa đổi.', '✏️')" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
+                                <span>✏️</span> Sửa Phiếu
+                            </button>
+                            <!-- Xóa phiếu -->
+                            <button type="button" onclick="handleResetForm('delete')" class="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500 hover:bg-rose-600 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150" title="Xóa sạch dữ liệu đang điền">
                             <span>🗑️</span> Xóa Phiếu
                         </button>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         <!-- In phiếu -->
                         <button type="button" onclick="handlePrint()" class="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-[12px] font-extrabold rounded-xl shadow transition duration-150">
                             <span>🖨️</span> In Phiếu
@@ -385,7 +392,16 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                     </div>
 
                     <div class="mt-8 mb-4 p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm no-print">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Nhân viên sửa chữa</label>
+                                <input type="text" wire:model.live="repair_staff" list="user_list" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Chọn hoặc nhập tên...">
+                                <datalist id="user_list">
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                        <option value="<?php echo e($user->name); ?>"></option>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                </datalist>
+                            </div>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên THỦ KHO</label>
                                 <input type="text" wire:model.live="warehouse_keeper" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên thủ kho...">
@@ -407,7 +423,8 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                         </a>
                         <button wire:click="save" class="bg-indigo-600 text-white px-8 py-2 rounded-xl text-sm font-black hover:bg-indigo-700 transition duration-150 shadow-md flex items-center gap-2">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                            Xác nhận xuất kho
+                            <?php echo e($editingStockOutId ? 'Lưu Thay Đổi' : 'Xác nhận xuất kho'); ?>
+
                         </button>
                     </div>
 
@@ -551,18 +568,12 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                 </table>
 
                 <!-- Footer Signatures Section (5 Signatures from left to right) -->
-                <div class="signatures-section grid grid-cols-5 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
+                <div class="signatures-section grid grid-cols-4 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
                     <div>
-                        <p>Nv vận hành</p>
+                        <p>Nv sửa chữa</p>
                         <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                         <div style="height: 50px;"></div>
-                        <p class="font-normal text-slate-300">........................</p>
-                    </div>
-                    <div>
-                        <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
-                        <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
-                        <div style="height: 50px;"></div>
-                        <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($supervisor_qltb ?: '........................'); ?></p>
+                        <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($repair_staff ?: '........................'); ?></p>
                     </div>
                     <div>
                         <p>Thủ kho</p>
@@ -571,10 +582,10 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                         <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($warehouse_keeper ?: '........................'); ?></p>
                     </div>
                     <div>
-                        <p>Nv sửa chữa</p>
+                        <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
                         <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                         <div style="height: 50px;"></div>
-                        <p class="font-normal text-slate-300">........................</p>
+                        <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($supervisor_qltb ?: '........................'); ?></p>
                     </div>
                     <div>
                         <p>Tổ trưởng / trưởng ca</p>
@@ -693,6 +704,9 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                             <div class="flex items-center justify-center gap-1">
                                                 <button wire:click="printSingle(<?php echo e($so->id); ?>)" class="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="In phiếu này">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                                </button>
+                                                <button wire:click="edit(<?php echo e($so->id); ?>)" class="p-2 text-amber-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all" title="Sửa phiếu">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                                 </button>
                                                 <button wire:confirm="Xác nhận xóa phiếu xuất <?php echo e($so->code); ?>? Tồn kho sẽ được hoàn trả tự động." wire:click="delete(<?php echo e($so->id); ?>)" class="p-2 text-rose-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" title="Xóa phiếu">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -861,18 +875,12 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
             </table>
 
             <!-- Footer Signatures Section (5 Signatures) -->
-            <div class="signatures-section grid grid-cols-5 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
+            <div class="signatures-section grid grid-cols-4 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
                 <div>
-                    <p>Nv vận hành</p>
+                    <p>Nv sửa chữa</p>
                     <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                     <div style="height: 50px;"></div>
-                    <p class="font-normal text-slate-300">........................</p>
-                </div>
-                <div>
-                    <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
-                    <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
-                    <div style="height: 50px;"></div>
-                    <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->supervisor_qltb ?: '........................'); ?></p>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->repair_staff ?: '........................'); ?></p>
                 </div>
                 <div>
                     <p>Thủ kho</p>
@@ -881,10 +889,10 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                     <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->warehouse_keeper ?: '........................'); ?></p>
                 </div>
                 <div>
-                    <p>Nv sửa chữa</p>
+                    <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
                     <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                     <div style="height: 50px;"></div>
-                    <p class="font-normal text-slate-300">........................</p>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->supervisor_qltb ?: '........................'); ?></p>
                 </div>
                 <div>
                     <p>Tổ trưởng / trưởng ca</p>
@@ -899,7 +907,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <?php
-        $__scriptKey = '1711333737-0';
+        $__scriptKey = '3240403988-2';
         ob_start();
     ?>
     <script>
@@ -1010,4 +1018,4 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
         \Livewire\store($this)->push('scripts', $__output, $__scriptKey)
     ?>
 </div>
-<?php /**PATH D:\Project\resources\views/livewire/warehouse/stock-out-form.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\Project\resources\views\livewire\warehouse\stock-out-form.blade.php ENDPATH**/ ?>

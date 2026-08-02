@@ -19,6 +19,7 @@
                 </a>
 
                 <div class="hidden md:flex items-center gap-1">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('current_house') != 5): ?>
                     <!-- Module 1: NCC/KH -->
                     <a href="<?php echo e(route('warehouse.contacts')); ?>" class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 hover:bg-sky-200 hover:text-sky-950 <?php echo e(request()->routeIs('warehouse.contacts') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900'); ?>">
                         1. NCC/KH
@@ -36,8 +37,7 @@
                             <a href="<?php echo e(route('warehouse.inventory')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Tồn kho</a>
                             <a href="<?php echo e(route('warehouse.stock-transfer.index')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Chuyển kho</a>
                             <a href="<?php echo e(route('warehouse.stock-recovery-report')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Thu hồi phế phẩm</a>
-                            <a href="<?php echo e(route('warehouse.stock-count')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Kiểm kê kho</a>
-                            <a href="<?php echo e(route('warehouse.settings.warehouses')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Cấu hình kho</a>
+                            <a href="<?php echo e(route('warehouse.stock-count')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Kiểm kê kho</a>
                         </div>
                     </div>
 
@@ -48,6 +48,7 @@
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="<?php echo e(route('warehouse.categories')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">DANH MỤC PHÂN LOẠI</a>
                             <a href="<?php echo e(route('warehouse.product-catalog')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">DANH MỤC VẬT TƯ</a>
                             <a href="<?php echo e(route('warehouse.asset-manager')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">DANH MỤC THIẾT BỊ & TÀI SẢN</a>
                         </div>
@@ -55,61 +56,70 @@
 
                     <!-- Module 4: THEO DÕI BẢO DƯỠNG -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 <?php echo e(request()->routeIs('warehouse.maintenance-*') || request()->routeIs('warehouse.asset-odo-log') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900'); ?>">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 <?php echo e(request()->routeIs('warehouse.asset-manager') || request()->routeIs('maintenance.*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900'); ?>">
                             4. THEO DÕI BẢO DƯỠNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-72 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
-                            <a href="<?php echo e(route('warehouse.maintenance-dashboard')); ?>" class="block px-4 py-2 text-sm text-indigo-700 hover:bg-indigo-50 border-t border-slate-50 font-bold">1. Dashboard Tổng Quan</a>
-                            <a href="<?php echo e(route('warehouse.asset-odo-log')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">2. Cập nhật giờ Odo hàng ngày</a>
-                            <a href="<?php echo e(route('warehouse.maintenance-rules')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">3. Cấp bảo dưỡng và chu kỳ</a>
-                            <a href="<?php echo e(route('warehouse.maintenance-tracking')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">4. Bảng theo dõi bảo dưỡng tự động</a>
-                            <a href="<?php echo e(route('warehouse.maintenance-plans')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">5. Lập kế hoạch bảo dưỡng</a>
-                            <a href="<?php echo e(route('warehouse.maintenance-tickets')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">6. Phiếu thực hiện bảo dưỡng</a>
+                            <a href="<?php echo e(route('warehouse.asset-manager')); ?>" class="block px-4 py-2 text-sm text-gray-700 font-bold bg-sky-50 hover:bg-sky-100 border-b border-sky-100">TRANG CHỦ TỔNG HỢP (7 IN 1)</a>
+                            <a href="<?php echo e(route('warehouse.asset-manager', ['activeTab' => 'odo-manager'])); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Cập nhật giờ ODO hàng ngày</a>
+                            <a href="<?php echo e(route('warehouse.asset-manager', ['activeTab' => 'bom-manager'])); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Định mức bảo dưỡng (BOM)</a>
+                            <a href="<?php echo e(route('warehouse.asset-manager', ['activeTab' => 'ticket-list'])); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50">Phiếu bảo dưỡng & Lịch</a>
+                            <a href="<?php echo e(route('warehouse.asset-manager', ['activeTab' => 'shift-log'])); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50">Giao ca / Nhật ký</a>
                         </div>
                     </div>
 
                     <!-- Module 5: KẾ HOẠCH & MUA HÀNG -->
-                    <div class="relative group ml-2">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 <?php echo e(request()->routeIs('purchase-plan*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900'); ?>">
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 <?php echo e(request()->routeIs('warehouse.purchase-*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900'); ?>">
                             5. KẾ HOẠCH & MUA HÀNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
-                        <div class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left z-50">
-                            <a href="<?php echo e(route('purchase-plan')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 font-bold text-indigo-700 hover:bg-indigo-50">1. Quản lý Kế hoạch</a>
-                            <a href="<?php echo e(route('purchase-plan.history')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">2. Lịch sử mua hàng</a>
+                        <div class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="<?php echo e(route('purchase-plan')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Kế hoạch mua hàng</a>
+                            <a href="<?php echo e(route('purchase-request')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Đề xuất mua vật tư</a>
+                            <a href="<?php echo e(route('purchase-plan.history')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Lịch sử kế hoạch</a>
                         </div>
                     </div>
 
                     <!-- Module 6: BÁO CÁO -->
-                    <div class="relative group ml-2">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 <?php echo e(request()->routeIs('warehouse.purchase-*') || request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports') || request()->routeIs('purchase-request') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900'); ?>">
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 <?php echo e(request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports.*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900'); ?>">
                             6. BÁO CÁO
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
-                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left z-50">
+                        <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
                             <a href="<?php echo e(route('warehouse.reports.transaction-detail')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 <?php echo e(request()->routeIs('warehouse.reports.transaction-detail') ? 'bg-slate-100 font-bold' : ''); ?>">Báo cáo chi tiết giao dịch</a>
                             <a href="<?php echo e(route('warehouse.reports.daily')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 <?php echo e(request()->routeIs('warehouse.reports.daily') ? 'bg-slate-100 font-bold' : ''); ?>">Báo Cáo Ngày</a>
                             <a href="<?php echo e(route('warehouse.reports.stock')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 <?php echo e(request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : ''); ?>">Báo Cáo Kho Tổng Hợp</a>
                         </div>
                     </div>
-
+                    
                     <!-- Module 7: CHAT KHO -->
-                    <?php
-                        $lastRead = auth()->user()->last_read_chat_at ?? '2000-01-01 00:00:00';
-                        $unreadCount = \App\Models\ChatMessage::where('created_at', '>', $lastRead)
-                            ->where('user_id', '!=', auth()->id())
-                            ->count();
-                    ?>
-                    <a href="<?php echo e(route('warehouse.chat')); ?>" class="ml-2 px-3 py-2 rounded-md text-sm font-bold transition duration-150 relative <?php echo e(request()->routeIs('warehouse.chat') ? 'bg-sky-200 text-sky-950 shadow-inner' : ($unreadCount > 0 ? 'text-red-600 bg-red-100 hover:bg-red-200 animate-pulse' : 'text-sky-900 hover:bg-sky-200 hover:text-sky-950')); ?>">
-                        7. CHAT KHO
-                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($unreadCount > 0): ?>
-                            <span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white ring-2 ring-sky-100">
-                                <?php echo e($unreadCount > 9 ? '9+' : $unreadCount); ?>
-
-                            </span>
-                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                    </a>
+                    <div class="relative group">
+                        <a href="<?php echo e(route('warehouse.chat')); ?>" class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 hover:bg-sky-200 hover:text-sky-950 <?php echo e(request()->routeIs('warehouse.chat') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900'); ?>">
+                            7. CHAT KHO
+                        </a>
+                    </div>
+                    <?php else: ?>
+                    <!-- Module HR -->
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::check() && Auth::user()->role === 'admin'): ?>
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-purple-200 group-hover:text-purple-950 flex items-center gap-1 <?php echo e(request()->routeIs('hr.*') ? 'bg-purple-200 text-purple-950 shadow-inner' : 'text-purple-900'); ?>">
+                            ⭐ NGÔI NHÀ HR (TRUNG TÂM ADMIN)
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        <div class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            <a href="<?php echo e(route('hr.dashboard')); ?>" class="block px-4 py-2 text-sm text-purple-700 font-bold hover:bg-purple-50">🎛️ Bảng Điều Khiển</a>
+                            <a href="<?php echo e(route('hr.projects')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Quản lý Dự án (Ngôi nhà)</a>
+                            <a href="<?php echo e(route('hr.modules')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Cấu hình Module</a>
+                            <a href="<?php echo e(route('hr.permissions')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Phân quyền Hệ thống</a>
+                            <a href="<?php echo e(route('hr.notifications')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Quản lý Thông báo</a>
+                            <a href="<?php echo e(route('hr.global-report')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Báo cáo Tổng hợp</a>
+                        </div>
+                    </div>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
             </div>
 
@@ -118,7 +128,7 @@
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
                     <div class="relative group">
                         <button class="flex items-center gap-2 px-3 py-2 rounded-md bg-sky-200 hover:bg-sky-300 transition duration-150 text-sm font-bold text-sky-950">
-                            <span class="bg-sky-600 px-2 py-0.5 rounded text-xs text-white border border-sky-700">Dự án <?php echo e(session('current_house', 1) == 2 ? 'Hậu Nghĩa' : (session('current_house', 1) == 3 ? 'Cần Giờ' : 'Hóc Môn')); ?></span>
+                            <span class="bg-sky-600 px-2 py-0.5 rounded text-xs text-white border border-sky-700"><?php echo e(\App\Models\Project::find(session('current_house', 1))?->name ?? 'Dự án'); ?></span>
                             <span>👤</span>
                             <span><?php echo e(Auth::user()->role === 'admin' ? 'Admin' : 'Nhân viên'); ?> - <?php echo e(Auth::user()->name); ?></span>
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -153,8 +163,9 @@
             <?php echo e(mb_strtoupper($title ?? '')); ?>
 
         </h1>
-        <?php echo e($slot); ?>
+        <?php echo e($slot ?? ''); ?>
 
+        <?php echo $__env->yieldContent('content'); ?>
     </main>
 
     <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
@@ -181,4 +192,4 @@
     </script>
 </body>
 </html>
-<?php /**PATH D:\Project\resources\views/components/warehouse-layout.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\Project\resources\views\layouts\app.blade.php ENDPATH**/ ?>

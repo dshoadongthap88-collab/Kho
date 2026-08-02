@@ -40,6 +40,7 @@ class StockOutForm extends Component
     public $warehouse_keeper = '';
     public $supervisor_qltb = '';
     public $supervisor_ca = '';
+    public $repair_staff = '';
 
     // Biến cho quy trình "Xuất cho sản xuất"
     public $production_product_id = '';
@@ -47,6 +48,7 @@ class StockOutForm extends Component
 
     // Biến quản lý Tab và Danh sách
     public $activeTab = 'form'; // 'form' hoặc 'list'
+    public $editingStockOutId = null;
     public $listDateFrom = '';
     public $listDateTo = '';
     public $listSearch = '';
@@ -94,6 +96,7 @@ class StockOutForm extends Component
             'warehouse_keeper',
             'supervisor_qltb',
             'supervisor_ca',
+            'repair_staff',
         ];
 
         foreach ($customColumns as $columnName) {
@@ -129,6 +132,7 @@ class StockOutForm extends Component
         $this->warehouse_keeper = session('last_warehouse_keeper', $lastStockOut->warehouse_keeper ?? 'ĐẶNG HỮU HÒA');
         $this->supervisor_qltb = session('last_supervisor_qltb', $lastStockOut->supervisor_qltb ?? 'LÊ HOÀNG NAM');
         $this->supervisor_ca = session('last_supervisor_ca', $lastStockOut->supervisor_ca ?? 'LÊ ĐÌNH HƯƠNG');
+        $this->repair_staff = session('last_repair_staff', $lastStockOut->repair_staff ?? '');
 
         // Dự phòng nếu giá trị cũ rỗng
         if (empty($this->warehouse_keeper)) $this->warehouse_keeper = 'ĐẶNG HỮU HÒA';
@@ -196,11 +200,12 @@ class StockOutForm extends Component
     public function updated($name, $value)
     {
         // Ghi nhớ tên người ký thời gian thực vào session ngay khi thay đổi
-        if (in_array($name, ['warehouse_keeper', 'supervisor_qltb', 'supervisor_ca'])) {
+        if (in_array($name, ['warehouse_keeper', 'supervisor_qltb', 'supervisor_ca', 'repair_staff'])) {
             session([
                 'last_warehouse_keeper' => $this->warehouse_keeper,
                 'last_supervisor_qltb' => $this->supervisor_qltb,
                 'last_supervisor_ca' => $this->supervisor_ca,
+                'last_repair_staff' => $this->repair_staff,
             ]);
         }
 
@@ -506,6 +511,64 @@ class StockOutForm extends Component
         }
     }
 
+    public function edit($id)
+    {
+        $stockOut = StockOut::with('items.product')->findOrFail($id);
+        $this->editingStockOutId = $stockOut->id;
+        
+        $this->customer_name = $stockOut->customer_name;
+        $this->receiver_name = $stockOut->receiver_name;
+        $this->receiver_contact = $stockOut->receiver_contact;
+        $this->asset_code = $stockOut->asset_code;
+        $this->type = $stockOut->type;
+        $this->note = $stockOut->note;
+        $this->project_name = $stockOut->project_name;
+        $this->document_number = $stockOut->document_number;
+        $this->license_plate = $stockOut->license_plate;
+        $this->km_number = $stockOut->km_number;
+        $this->operating_hours = $stockOut->operating_hours;
+        $this->device_name = $stockOut->device_name;
+        $this->department = $stockOut->department;
+        $this->warehouse_keeper = $stockOut->warehouse_keeper;
+        $this->supervisor_qltb = $stockOut->supervisor_qltb;
+        $this->supervisor_ca = $stockOut->supervisor_ca;
+        $this->repair_staff = $stockOut->repair_staff;
+
+        $this->items = $stockOut->items->map(function ($item) {
+            return [
+                'id' => uniqid(),
+                'product_id' => $item->product_id,
+                'name' => $item->product->name ?? '',
+                'unit' => $item->product->unit ?? '',
+                'batch_number' => $item->batch_number,
+                'expiry_date' => $item->expiry_date,
+                'warehouse_location' => $item->warehouse_location,
+                'quantity' => (float)$item->quantity,
+                'requested_quantity' => (float)$item->requested_quantity,
+                'recovered_quantity' => (float)$item->recovered_quantity,
+                'item_note' => $item->item_note,
+                'unit_price' => (float)$item->unit_price,
+                'vat_rate' => (float)$item->vat_rate,
+                'total_amount' => (float)$item->total_amount,
+            ];
+        })->toArray();
+
+        $this->activeTab = 'form';
+    }
+
+    public function cancelEdit()
+    {
+        $this->editingStockOutId = null;
+        $this->reset([
+            'items', 'customer_name', 'receiver_name', 'receiver_contact', 'note', 'asset_code',
+            'project_name', 'document_number', 'license_plate', 'km_number', 'operating_hours', 'device_name', 'department'
+        ]);
+        $this->customer_name = 'BCH VINALPHA';
+        $this->receiver_name = 'LÊ HOÀNG NAM';
+        $this->addItem();
+        $this->activeTab = 'list';
+    }
+
     public function save()
     {
         $this->validate([
@@ -529,6 +592,7 @@ class StockOutForm extends Component
             'warehouse_keeper',
             'supervisor_qltb',
             'supervisor_ca',
+            'repair_staff',
         ];
 
         foreach ($customColumns as $columnName) {
@@ -543,27 +607,65 @@ class StockOutForm extends Component
 
         return DB::transaction(function () use ($service) {
             try {
-                $stockOut = StockOut::create([
-                    'code' => 'SO-' . date('Ymd') . '-' . str_pad(StockOut::count() + 1, 4, '0', STR_PAD_LEFT),
-                    'customer_name' => $this->customer_name,
-                    'receiver_name' => $this->receiver_name,
-                    'receiver_contact' => $this->receiver_contact,
-                    'asset_code' => $this->asset_code,
-                    'type' => $this->type,
-                    'status' => 'completed',
-                    'note' => $this->note,
-                    'created_by' => auth()->id(),
-                    'project_name' => $this->project_name,
-                    'document_number' => $this->document_number,
-                    'license_plate' => $this->license_plate,
-                    'km_number' => $this->km_number,
-                    'operating_hours' => $this->operating_hours,
-                    'device_name' => $this->device_name,
-                    'department' => $this->department,
-                    'warehouse_keeper' => $this->warehouse_keeper,
-                    'supervisor_qltb' => $this->supervisor_qltb,
-                    'supervisor_ca' => $this->supervisor_ca,
-                ]);
+                if ($this->editingStockOutId) {
+                    $stockOut = StockOut::findOrFail($this->editingStockOutId);
+                    
+                    // Trả lại kho & xóa giao dịch cũ
+                    foreach ($stockOut->items as $oldItem) {
+                        $inv = \App\Models\Inventory::where('product_id', $oldItem->product_id)->first();
+                        if ($inv) {
+                            $inv->increment('quantity', $oldItem->quantity);
+                        }
+                    }
+                    \App\Models\InventoryTransaction::where('reference_type', 'stock_out')
+                        ->where('reference_id', $stockOut->id)
+                        ->delete();
+                    $stockOut->items()->delete();
+
+                    // Cập nhật thông tin phiếu
+                    $stockOut->update([
+                        'customer_name' => $this->customer_name,
+                        'receiver_name' => $this->receiver_name,
+                        'receiver_contact' => $this->receiver_contact,
+                        'asset_code' => $this->asset_code,
+                        'type' => $this->type,
+                        'note' => $this->note,
+                        'project_name' => $this->project_name,
+                        'document_number' => $this->document_number,
+                        'license_plate' => $this->license_plate,
+                        'km_number' => $this->km_number,
+                        'operating_hours' => $this->operating_hours,
+                        'device_name' => $this->device_name,
+                        'department' => $this->department,
+                        'warehouse_keeper' => $this->warehouse_keeper,
+                        'supervisor_qltb' => $this->supervisor_qltb,
+                        'supervisor_ca' => $this->supervisor_ca,
+                        'repair_staff' => $this->repair_staff,
+                    ]);
+                } else {
+                    $stockOut = StockOut::create([
+                        'code' => 'SO-' . date('Ymd') . '-' . str_pad(StockOut::count() + 1, 4, '0', STR_PAD_LEFT),
+                        'customer_name' => $this->customer_name,
+                        'receiver_name' => $this->receiver_name,
+                        'receiver_contact' => $this->receiver_contact,
+                        'asset_code' => $this->asset_code,
+                        'type' => $this->type,
+                        'status' => 'completed',
+                        'note' => $this->note,
+                        'created_by' => auth()->id(),
+                        'project_name' => $this->project_name,
+                        'document_number' => $this->document_number,
+                        'license_plate' => $this->license_plate,
+                        'km_number' => $this->km_number,
+                        'operating_hours' => $this->operating_hours,
+                        'device_name' => $this->device_name,
+                        'department' => $this->department,
+                        'warehouse_keeper' => $this->warehouse_keeper,
+                        'supervisor_qltb' => $this->supervisor_qltb,
+                        'supervisor_ca' => $this->supervisor_ca,
+                        'repair_staff' => $this->repair_staff,
+                    ]);
+                }
 
                 $lastRecovery = \App\Models\StockRecovery::latest('id')->first();
                 $recoverySequence = ($lastRecovery ? intval(preg_replace('/[^0-9]/', '', $lastRecovery->recovery_number)) : 0);
@@ -634,9 +736,15 @@ class StockOutForm extends Component
                     'last_warehouse_keeper' => $this->warehouse_keeper,
                     'last_supervisor_qltb' => $this->supervisor_qltb,
                     'last_supervisor_ca' => $this->supervisor_ca,
+                    'last_repair_staff' => $this->repair_staff,
                 ]);
 
-                session()->flash('success', 'Xuất kho thành công!');
+                session()->flash('success', $this->editingStockOutId ? 'Đã cập nhật phiếu xuất kho thành công!' : 'Đã tạo phiếu xuất kho thành công!');
+                
+                $isEditing = $this->editingStockOutId;
+                $this->editingStockOutId = null;
+                
+                // Reset form data
                 $this->reset([
                     'items', 'customer_name', 'receiver_name', 'receiver_contact', 'note', 'asset_code',
                     'project_name', 'document_number', 'license_plate', 'km_number', 'operating_hours', 'device_name', 'department'
@@ -701,7 +809,8 @@ class StockOutForm extends Component
             'productionProducts' => $productionProducts,
             'locations' => Product::whereNotNull('location')->distinct()->pluck('location'),
             'customers' => Supplier::orderBy('name')->get(),
-            'stockOuts' => $stockOuts
+            'stockOuts' => $stockOuts,
+            'users' => \App\Models\User::orderBy('name')->get()
         ]);
     }
 

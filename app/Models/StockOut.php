@@ -29,6 +29,7 @@ class StockOut extends Model
         'warehouse_keeper',
         'supervisor_qltb',
         'supervisor_ca',
+        'repair_staff',
     ];
 
     public function creator()

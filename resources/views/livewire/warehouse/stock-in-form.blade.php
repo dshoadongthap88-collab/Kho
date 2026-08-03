@@ -36,17 +36,17 @@
         } else if (hasComma) {
             // Kiểm tra xem phẩy là decimal hay thousands separator
             const parts = numStr.split(',');
-            if (parts.length === 2 && (parts[1].length === 2 || parts[1].length === 3)) {
+            if (parts.length === 2 && (parts[1].length === 1 || parts[1].length === 2)) {
                 return parseFloat(numStr.replace(',', '.'));
             }
             return parseFloat(numStr.replace(/,/g, ''));
         } else if (hasDot) {
             // Kiểm tra chấm có phải decimal không
             const parts = numStr.split('.');
-            if (parts.length === 2 && parts[1].length <= 3) {
+            if (parts.length === 2 && (parts[1].length === 1 || parts[1].length === 2)) {
                 return parseFloat(numStr);
             }
-            // Nhiều hơn 2 phần → bỏ separator
+            // Nếu có đúng 3 chữ số sau dấu chấm, ví dụ 2.704 hoặc 3.000, rất có thể là phân cách hàng nghìn (VN)
             return parseFloat(numStr.replace(/\./g, ''));
         }
 
@@ -433,7 +433,7 @@
             const norm = normalizeStr(lines[i]);
             const hasCode = norm.includes('ma hang') || norm.includes('ma vat tu') || norm.includes('ma sp') || norm.includes('ma hh') || norm.includes('ma vt');
             const hasName = norm.includes('ten hang') || norm.includes('ten vat tu') || norm.includes('ten sp') || norm.includes('ten hh') || norm.includes('ten vt');
-            const hasQty  = norm.includes('so luong') || norm.includes('sl nhan') || norm.includes('s luong');
+            const hasQty  = norm.includes('so luong') || norm.includes('sl nhan') || norm.includes('sl nhap') || norm.includes('s luong');
 
             if (hasCode && hasName) {
                 headerLineIdx = i;
@@ -442,12 +442,18 @@
                 const raw = lines[i];
                 const rawNorm = normalizeStr(raw);
 
-                const codeIdx = rawNorm.search(/ma\s*(hang|vat\s*tu|sp|hh|vt)/);
-                const nameIdx = rawNorm.search(/ten\s*(hang|vat\s*tu|sp|hh|vt)/);
+                const codeIdx = rawNorm.search(/ma\s*(hang|vat\s*tu|sp|hh|vt|code)/);
+                const nameIdx = rawNorm.search(/ten\s*(hang|vat\s*tu|sp|hh|vt|name)|mota/);
                 const unitIdx = rawNorm.search(/don\s*vi|d\.?v\.?t/);
                 
-                let qtyIdx  = rawNorm.search(/so\s*luong\s*nhan|sl\s*nhan/);
+                // Thử tìm Số lượng nhận hoặc nhập trước
+                let qtyIdx = rawNorm.search(/so\s*luong\s*(nhan|nhap)|sl\s*(nhan|nhap)|thuc\s*(nhan|nhap)/);
                 if (qtyIdx === -1) {
+                    // Tiếp theo thử tìm Số lượng chung (không chứa chữ 'giao' phía sau để tránh nhầm)
+                    qtyIdx = rawNorm.search(/so\s*luong(?!.*giao)|sl(?!.*giao)/);
+                }
+                if (qtyIdx === -1) {
+                    // Cuối cùng lấy bất kỳ Số lượng nào
                     qtyIdx = rawNorm.search(/so\s*luong|sl/);
                 }
 
@@ -528,19 +534,19 @@
                 }
             } else if (hasComma) {
                 // Chỉ có phẩy: kiểm tra xem là decimal separator hay thousands separator
-                // Nếu sau phẩy có đúng 2-3 số → có thể là decimal (VN)
+                // Nếu sau phẩy có đúng 1-2 số → có thể là decimal (VN)
                 const parts = numStr.split(',');
-                if (parts.length === 2 && (parts[1].length === 2 || parts[1].length === 3)) {
+                if (parts.length === 2 && (parts[1].length === 1 || parts[1].length === 2)) {
                     return parseFloat(numStr.replace(',', '.'));
                 }
                 return parseFloat(numStr.replace(/,/g, ''));
             } else if (hasDot) {
                 // Chỉ có chấm: kiểm tra xem có phải decimal không
                 const parts = numStr.split('.');
-                if (parts.length === 2 && parts[1].length <= 3) {
+                if (parts.length === 2 && (parts[1].length === 1 || parts[1].length === 2)) {
                     return parseFloat(numStr);
                 }
-                // Nếu nhiều hơn 2 phần → bỏ separator
+                // Nếu có đúng 3 chữ số sau dấu chấm (như 2.704) → coi là hàng nghìn
                 return parseFloat(numStr.replace(/\./g, ''));
             }
 
@@ -720,15 +726,69 @@
         }
 
         let colBounds = { code: null, name: null, unit: null, quantity: null };
-        
-        for (let i = 0; i < mergedHeaders.length; i++) {
-            let nText = mergedHeaders[i].normText;
-            if (!colBounds.code && (nText.includes('mahang') || nText.includes('mavattu') || nText.includes('masp') || nText.includes('mavt') || nText.includes('mahh'))) colBounds.code = mergedHeaders[i];
-            else if (!colBounds.name && (nText.includes('tenhang') || nText.includes('tenvattu') || nText.includes('tensp') || nText.includes('tenvt') || nText.includes('tenhh'))) colBounds.name = mergedHeaders[i];
-            else if (!colBounds.unit && (nText.includes('donvi') || nText.includes('dvt'))) colBounds.unit = mergedHeaders[i];
-            else if (nText.includes('soluongnhan') || nText.includes('slnhan')) colBounds.quantity = mergedHeaders[i];
-            else if (!colBounds.quantity && (nText.includes('soluong') || nText.includes('sl')) && !nText.includes('giao')) colBounds.quantity = mergedHeaders[i];
-        }
+        let scores = {
+            code: { header: null, score: 0 },
+            name: { header: null, score: 0 },
+            unit: { header: null, score: 0 },
+            quantity: { header: null, score: 0 }
+        };
+
+        mergedHeaders.forEach(h => {
+            let nText = h.normText;
+
+            // Score for Code
+            let codeScore = 0;
+            if (nText === 'ma' || nText === 'mavt' || nText === 'mahh' || nText === 'masp') codeScore = 100;
+            else if (nText.includes('mavattu') || nText.includes('mahanghoa') || nText.includes('masanpham')) codeScore = 90;
+            else if (nText.includes('mahang') || nText.includes('mavt') || nText.includes('code') || nText.includes('macode')) codeScore = 80;
+            else if (nText.includes('ma')) codeScore = 40;
+            if (codeScore > scores.code.score) {
+                scores.code.score = codeScore;
+                scores.code.header = h;
+            }
+
+            // Score for Name
+            let nameScore = 0;
+            if (nText === 'ten' || nText === 'tenvt' || nText === 'tenhh' || nText === 'tensp') nameScore = 100;
+            else if (nText.includes('tenvattu') || nText.includes('tenhanghoa') || nText.includes('tensanpham')) nameScore = 90;
+            else if (nText.includes('tenhang') || nText.includes('tenvt') || nText.includes('name') || nText.includes('mota')) nameScore = 80;
+            else if (nText.includes('ten')) nameScore = 40;
+            if (nameScore > scores.name.score) {
+                scores.name.score = nameScore;
+                scores.name.header = h;
+            }
+
+            // Score for Unit
+            let unitScore = 0;
+            if (nText === 'dvt' || nText === 'donvitinh' || nText === 'donvi') unitScore = 100;
+            else if (nText.includes('dvt') || nText.includes('donvi')) unitScore = 80;
+            else if (nText.includes('tinh')) unitScore = 30;
+            if (unitScore > scores.unit.score) {
+                scores.unit.score = unitScore;
+                scores.unit.header = h;
+            }
+
+            // Score for Quantity (nhận/nhập/thực tế)
+            let qtyScore = 0;
+            if (nText.includes('soluongnhan') || nText.includes('slnhan') || nText.includes('soluongnhap') || nText.includes('slnhap') || nText.includes('thucnhan') || nText.includes('thucnhap')) {
+                qtyScore = 100; // Cực kỳ ưu tiên cột nhận/nhập
+            } else if ((nText.includes('soluong') || nText.includes('sl')) && !nText.includes('giao')) {
+                qtyScore = 80; // Số lượng chung
+            } else if (nText.includes('soluong') || nText.includes('sl')) {
+                qtyScore = 50; // Số lượng bất kỳ (kể cả giao)
+            } else if (nText.includes('giao') || nText.includes('nhap')) {
+                qtyScore = 30;
+            }
+            if (qtyScore > scores.quantity.score) {
+                scores.quantity.score = qtyScore;
+                scores.quantity.header = h;
+            }
+        });
+
+        if (scores.code.score > 0) colBounds.code = scores.code.header;
+        if (scores.name.score > 0) colBounds.name = scores.name.header;
+        if (scores.unit.score > 0) colBounds.unit = scores.unit.header;
+        if (scores.quantity.score > 0) colBounds.quantity = scores.quantity.header;
 
         if (!colBounds.code && !colBounds.name) return null;
 

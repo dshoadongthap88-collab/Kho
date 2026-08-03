@@ -33,6 +33,13 @@ class TenantMiddleware
         // Hệ thống sử dụng Shared Database, không switch connection nữa
         // Chỉ cần đảm bảo Global Scope (BelongsToHouse) hoạt động là đủ phân tách dữ liệu
 
+        // Đồng bộ dữ liệu sang User model để đảm bảo mọi nơi đều nhất quán
+        $user = Auth::user();
+        if ($user && $user->current_house_id != $currentHouse) {
+            $user->current_house_id = $currentHouse;
+            $user->save();
+        }
+
         return $next($request);
     }
 }

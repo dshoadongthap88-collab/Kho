@@ -46,6 +46,10 @@ class TenantController extends Controller
         // Store selected house in session
         session(['current_house' => $request->house_id]);
 
+        // Sync current_house_id to user model
+        $user->current_house_id = $request->house_id;
+        $user->save();
+
         // Redirect to HR Module if House ID 5 is selected
         if ((int)$request->house_id === 5) {
             return response()->json([

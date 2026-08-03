@@ -611,7 +611,7 @@ class StockInForm extends Component
                         }
                     } elseif (str_contains($val, ',')) {
                         $parts = explode(',', $val);
-                        if (count($parts) == 2 && (strlen($parts[1]) == 2 || strlen($parts[1]) == 3)) {
+                        if (count($parts) == 2 && (strlen($parts[1]) == 1 || strlen($parts[1]) == 2)) {
                             $val = str_replace(',', '.', $val);
                         } else {
                             $val = str_replace(',', '', $val);

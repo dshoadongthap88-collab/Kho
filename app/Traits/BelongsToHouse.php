@@ -9,17 +9,17 @@ trait BelongsToHouse
     public static function bootBelongsToHouse()
     {
         static::addGlobalScope('house', function (Builder $builder) {
-            $user = auth()->user();
+            $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
             
-            if ($user && $user->role !== 'hr' && $user->current_house_id) {
-                $builder->where($builder->getModel()->getTable() . '.house_id', $user->current_house_id);
+            if ($houseId) {
+                $builder->where($builder->getModel()->getTable() . '.house_id', $houseId);
             }
         });
 
         static::creating(function ($model) {
-            $user = auth()->user();
-            if ($user && $user->current_house_id && !$model->house_id) {
-                $model->house_id = $user->current_house_id;
+            $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
+            if ($houseId && !$model->house_id) {
+                $model->house_id = $houseId;
             }
         });
     }

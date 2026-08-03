@@ -1,13 +1,13 @@
 # CẤU HÌNH HỆ THỐNG CHUẨN (MASTER CONFIGURATION)
 *Được chốt và chuẩn hóa: Tuyệt đối không thay đổi cấu trúc này*
 
-## I. CẤU TRÚC 7 MODULE LÕI (7 IN 1)
-Toàn bộ hệ thống quản lý ERP Kho & Thiết bị của tất cả các dự án (Ngôi nhà) bắt buộc phải tuân theo cấu trúc điều hướng (Navigation) và tính năng gồm đúng 7 Module sau:
+## I. CẤU TRÚC 6 MODULE LÕI (TRONG ĐÓ CÓ 7 IN 1)
+Toàn bộ hệ thống quản lý ERP Kho & Thiết bị của tất cả các dự án (Ngôi nhà) bắt buộc phải tuân theo cấu trúc điều hướng (Navigation) và tính năng gồm đúng 6 Module sau:
 
 1. **NCC/KH** (Quản lý Nhà cung cấp và Khách hàng)
 2. **KHO** (Quản lý nhập, xuất, tồn, chuyển kho, kiểm kê, thu hồi)
-3. **DANH MỤC VẬT TƯ** (Phân loại, Vật tư tiêu hao, Vật tư phụ tùng)
-4. **THEO DÕI BẢO DƯỠNG**
+   - *Bao gồm cả DANH MỤC VẬT TƯ và DANH MỤC THIẾT BỊ*
+3. **THEO DÕI BẢO DƯỠNG**
    - *Đây là Trung tâm điều hành thiết bị (Trang chủ tổng hợp 7 in 1)*
    - Menu Dropdown (Cố định tuyệt đối không thay đổi):
      1. TRANG CHỦ TỔNG HỢP (7 IN 1)
@@ -15,11 +15,11 @@ Toàn bộ hệ thống quản lý ERP Kho & Thiết bị của tất cả các 
      3. Định mức bảo dưỡng (BOM)
      4. Phiếu bảo dưỡng & Lịch
      5. Giao ca / Nhật ký
-5. **KẾ HOẠCH & MUA HÀNG** (Lập kế hoạch mua hàng, Đề xuất vật tư)
-6. **BÁO CÁO** (Báo cáo chi tiết giao dịch, Báo cáo tồn kho tổng hợp)
-7. **CHAT KHO** (Trao đổi nội bộ hệ thống)
+4. **KẾ HOẠCH & MUA HÀNG** (Lập kế hoạch mua hàng, Đề xuất vật tư)
+5. **BÁO CÁO** (Báo cáo chi tiết giao dịch, Báo cáo tồn kho tổng hợp)
+6. **CHAT KHO** (Trao đổi nội bộ hệ thống)
 
-> **Lưu ý QA**: Bất kỳ màn hình hay tính năng nào làm sai lệch số lượng hoặc thứ tự 7 module này trên thanh Menu chính (Nav bar) đều bị coi là vi phạm thiết kế chuẩn.
+> **Lưu ý QA**: Bất kỳ màn hình hay tính năng nào làm sai lệch số lượng hoặc thứ tự 6 module này trên thanh Menu chính (Nav bar) đều bị coi là vi phạm thiết kế chuẩn.
 
 ## II. KIẾN TRÚC DỮ LIỆU & BẢO MẬT (MULTI-TENANCY)
 - **Database**: Sử dụng chung 1 CSDL duy nhất (`laravel_5`).

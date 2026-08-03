@@ -27,3 +27,9 @@
 | 05/07/2026 | TPH1 | Test Product House 1 | pcs | 1 | 0 | 1 | Đã đặt | Tự động đề xuất do tồn kho (0) <= tồn tối thiểu (0) |
 | 18/07/2026 | VAP2017 | Súng bắn Bulong 1/2 inch (KC-3600), Kocu | Cái | 7 | 0 | 7 | Đã đặt | Tự động đề xuất do tồn kho (7.00) <= tồn tối thiểu (7) |
 | 18/07/2026 | VAP1807 | Chốt răng gầu máy xúc XE215C | Cái | 120 | 0 | 120 | Đã đặt | Tự động đề xuất do tồn kho (119.00) <= tồn tối thiểu (120) |
+
+
+## Chốt sổ ngày 03/08/2026 07:44:16
+| Ngày ĐX | Mã VT | Tên Vật Tư | ĐVT | SL Đề Xuất | Đã Giao | Còn Thiếu | Trạng Thái | Ghi Chú |
+|---------|--------|------------|-----|-------------|---------|------------|------------|----------|
+| 03/08/2026 | VAP1827 | Gale đỡ máy ủi Liugong CLGB230 | Cái | 50 | 0 | 50 | Đề xuất | Tự động đề xuất do tồn kho (8.00) <= tồn tối thiểu (50) |

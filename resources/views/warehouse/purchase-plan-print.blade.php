@@ -31,7 +31,7 @@
     <div style="margin-bottom: 20px;">
         <div style="font-weight: bold; font-size: 18px; text-transform: uppercase;">PHÒNG KỸ THUẬT SỮA CHỮA</div>
         <div style="font-weight: bold; font-size: 14px;">
-            DỰ ÁN: {{ session('current_house', 1) == 2 ? 'HẬU NGHĨA' : (session('current_house', 1) == 3 ? 'CẦN GIỜ' : 'HÓC MÔN') }}
+            DỰ ÁN: {{ session('current_house', 1) == 2 ? 'HẬU NGHĨA' : (session('current_house', 1) == 3 ? 'CẦN GIUỘC' : (session('current_house', 1) == 4 ? 'CẦN GIỜ' : 'HÓC MÔN')) }}
         </div>
     </div>
 

@@ -30,6 +30,8 @@ class StockOut extends Model
         'supervisor_qltb',
         'supervisor_ca',
         'repair_staff',
+        'operator_name',
+        'house_id',
         'maintenance_plan_id',
     ];
 

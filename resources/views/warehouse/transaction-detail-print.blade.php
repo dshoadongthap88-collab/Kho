@@ -45,10 +45,19 @@
         };
     </script>
 
-    <div class="text-center mb-5">
-        <div class="header-title uppercase">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI CÔNG HẠ TẦNG V- ALPHA</div>
-        <div class="header-subtitle uppercase">BÁO CÁO CHI TIẾT GIAO DỊCH NGÀY</div>
-        <div style="font-size: 12px; font-style: italic; margin-top: 5px;">Ngày in: {{ now()->format('d/m/Y H:i') }}</div>
+    <div style="display: flex; margin-bottom: 20px;">
+        <!-- Bên trái: Tên dự án -->
+        <div style="font-weight: bold; font-size: 14px; text-transform: uppercase; width: 25%;">
+            DỰ ÁN: {{ session('current_house') == 2 ? 'HẬU NGHĨA' : (session('current_house') == 3 ? 'CẦN GIUỘC' : (session('current_house') == 4 ? 'CẦN GIỜ' : 'HÓC MÔN')) }}
+        </div>
+        <!-- Ở giữa: Tiêu đề báo cáo -->
+        <div class="text-center" style="flex: 1;">
+            <div class="header-title uppercase">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI CÔNG HẠ TẦNG V- ALPHA</div>
+            <div class="header-subtitle uppercase">BÁO CÁO CHI TIẾT GIAO DỊCH NGÀY</div>
+            <div style="font-size: 12px; font-style: italic; margin-top: 5px;">Ngày in: {{ now()->format('d/m/Y H:i') }}</div>
+        </div>
+        <!-- Bên phải: Trống để cân đối -->
+        <div style="width: 25%;"></div>
     </div>
 
     <div class="summary-box">

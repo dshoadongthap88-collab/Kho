@@ -106,6 +106,9 @@
             <button type="button" wire:click="openModal" class="h-[38px] shrink-0 bg-gradient-to-r from-blue-600 to-blue-700 font-black hover:from-blue-700 hover:to-blue-800 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
                 <span>➕</span> THÊM MỚI
             </button>
+            <button type="button" wire:click="$set('showImportModal', true)" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
+                <span>📥</span> IMPORT EXCEL
+            </button>
             <button type="button" wire:click="printAll" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
                 <span>🖨️</span> IN FILE PDF
             </button>
@@ -120,9 +123,6 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                     ĐÃ LƯU
                 </span>
-            </button>
-            <button type="button" wire:click="$set('showImportModal', true)" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
-                <span>📥</span> IMPORT EXCEL
             </button>
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
@@ -174,14 +174,13 @@
                     <th class="px-4 py-3">TÊN VẬT TƯ</th>
                     <th class="px-4 py-3">Phân loại</th>
                     <th class="px-4 py-3">Hãng sản xuất</th>
-                    <th class="px-4 py-3">QC Hộp</th>
-                    <th class="px-4 py-3">QC Thùng</th>
                     <th class="px-4 py-3">Mã Code NCC</th>
                     <th class="px-4 py-3">Hạn dùng</th>
                     <th class="px-4 py-3 text-center">Số lượng</th>
                     <th class="px-4 py-3">Vị trí</th>
                     <th class="px-4 py-3">Tình trạng</th>
                     <th class="px-4 py-3">Tồn tối thiểu</th>
+                    <th class="px-4 py-3">Ghi chú</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -223,8 +222,6 @@
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
                         <td class="px-4 py-3 text-gray-600"><?php echo e($product->brand); ?></td>
-                        <td class="px-4 py-3 text-gray-600 italic"><?php echo e($product->box_spec); ?></td>
-                        <td class="px-4 py-3 text-gray-600"><?php echo e($product->carton_spec); ?></td>
                         <td class="px-4 py-3 text-sm font-semibold text-purple-700"><?php echo e($product->batch_number); ?></td>
                         <td class="px-4 py-3 text-sm <?php echo e($product->is_expiring_soon ? 'text-red-600 font-bold' : 'text-gray-600'); ?>">
                             <?php echo e($product->expiry_date ? $product->expiry_date->format('d/m/Y') : '-'); ?>
@@ -252,6 +249,7 @@
                                    class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-2 py-1 transition-all text-center shadow-inner placeholder-slate-400"
                                    placeholder="0">
                         </td>
+                        <td class="px-4 py-3 text-xs text-gray-600 truncate max-w-[150px]" title="<?php echo e($product->description); ?>"><?php echo e($product->description); ?></td>
                     </tr>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                      <tr>
@@ -275,11 +273,12 @@
 
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
+                    <th class="px-4 py-3">MÃ THIẾT BỊ</th>
                     <th class="px-4 py-3">TÊN THIẾT BỊ</th>
+                    <th class="px-4 py-3">LOẠI THIẾT BỊ</th>
                     <th class="px-4 py-3">MÃ TÀI SẢN</th>
-                    <th class="px-4 py-3">BIỂN SỐ XE</th>
-                    <th class="px-4 py-3">TÊN TÀI XẾ</th>
-                    <th class="px-4 py-3">SỐ ĐIỆN THOẠI</th>
+                    <th class="px-4 py-3">NGƯỜI QUẢN LÝ</th>
+                    <th class="px-4 py-3">TÌNH TRẠNG</th>
                     <th class="px-4 py-3 text-center w-24">THAO TÁC</th>
                 </tr>
             </thead>
@@ -289,14 +288,24 @@
                         <td class="px-6 py-4 text-center no-print">
                             <input type="checkbox" value="<?php echo e($equipment->id); ?>" wire:model="selectedIds" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
+                        <td class="px-4 py-3 text-sm font-mono text-indigo-600"><?php echo e($equipment->equipment_code ?: '-'); ?></td>
                         <td class="px-4 py-3 text-sm font-black text-gray-800 uppercase"><?php echo e($equipment->name); ?></td>
-                        <td class="px-4 py-3 text-sm font-mono text-indigo-600"><?php echo e($equipment->asset_code); ?></td>
-                        <td class="px-4 py-3 text-sm font-bold text-gray-700 uppercase"><?php echo e($equipment->license_plate ?: '-'); ?></td>
-                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase"><?php echo e($equipment->driver_name ?: '-'); ?></td>
-                        <td class="px-4 py-3 text-sm font-mono text-gray-600"><?php echo e($equipment->phone_number ?: '-'); ?></td>
+                        <td class="px-4 py-3 text-sm font-bold text-gray-700 uppercase"><?php echo e($equipment->machine_type ?: '-'); ?></td>
+                        <td class="px-4 py-3 text-sm font-mono text-indigo-600"><?php echo e($equipment->asset_code ?: '-'); ?></td>
+                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase"><?php echo e($equipment->manager ?: '-'); ?></td>
+                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($equipment->warranty_status === 'Còn bảo hành'): ?>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-[10px]"><?php echo e($equipment->warranty_status); ?></span>
+                            <?php else: ?>
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-[10px]"><?php echo e($equipment->warranty_status ?: 'Hết bảo hành'); ?></span>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        </td>
                         <td class="px-4 py-3 text-center">
                             <button wire:click="openModal(<?php echo e($equipment->id); ?>)" class="text-indigo-600 hover:text-indigo-800 font-black uppercase text-[10px] bg-indigo-50 px-3 py-1.5 rounded hover:bg-indigo-100 transition-colors">
                                 Sửa
+                            </button>
+                            <button wire:click="deleteEquipment(<?php echo e($equipment->id); ?>)" wire:confirm="Bạn có chắc chắn muốn xóa thiết bị này?" class="text-rose-600 hover:text-rose-800 font-black uppercase text-[10px] bg-rose-50 px-3 py-1.5 rounded hover:bg-rose-100 transition-colors ml-1 mt-1 sm:mt-0">
+                                Xóa
                             </button>
                         </td>
                     </tr>
@@ -444,30 +453,6 @@ endif;
 unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">QC Hộp (loại chai/hộp...)</label>
-                                <input type="text" wire:model="box_spec" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="VD: Chai 500ml">
-                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['box_spec'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                            </div>
-                            <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">QC Thùng (ghi tay)</label>
-                                <input type="text" wire:model="carton_spec" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="VD: 24 chai/thùng">
-                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['carton_spec'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                            </div>
-                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Vị trí</label>
                                 <input type="text" wire:model="location" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['location'];
@@ -495,6 +480,18 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                 <label class="block text-sm font-medium text-gray-700">Hạn sử dụng</label>
                                 <input type="date" wire:model="expiry_date" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['expiry_date'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700">Ghi chú</label>
+                                <textarea wire:model="description" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" rows="2" placeholder="Thêm ghi chú..."></textarea>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['description'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -552,9 +549,9 @@ endif;
 unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Biển số xe</label>
-                                <input type="text" wire:model="license_plate" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['license_plate'];
+                                <label class="block text-sm font-medium text-gray-700">Mã thiết bị</label>
+                                <input type="text" wire:model="equipment_code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['equipment_code'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -564,9 +561,9 @@ endif;
 unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Tên tài xế</label>
-                                <input type="text" wire:model="driver_name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['driver_name'];
+                                <label class="block text-sm font-medium text-gray-700">Loại thiết bị</label>
+                                <input type="text" wire:model="machine_type" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['machine_type'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -576,9 +573,24 @@ endif;
 unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Số điện thoại</label>
-                                <input type="text" wire:model="phone_number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['phone_number'];
+                                <label class="block text-sm font-medium text-gray-700">Người quản lý</label>
+                                <input type="text" wire:model="manager" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['manager'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Tình trạng</label>
+                                <select wire:model="warranty_status" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white">
+                                    <option value="Còn bảo hành">Còn bảo hành</option>
+                                    <option value="Hết bảo hành">Hết bảo hành</option>
+                                </select>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['warranty_status'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }

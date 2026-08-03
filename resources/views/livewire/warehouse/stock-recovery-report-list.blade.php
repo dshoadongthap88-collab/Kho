@@ -276,7 +276,7 @@
             <!-- Header -->
             <div class="mb-4 text-left">
                 <div class="font-bold uppercase" style="font-size: 18px; letter-spacing: 1px; color: black;">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ THI CÔNG HẠ TẦNG V-ALPHA</div>
-                <div class="font-bold uppercase mt-1" style="font-size: 16px; color: black;">DỰ ÁN: {{ mb_strtoupper($firstRecovery->stockOut?->project_name ?? (session('current_house', 1) == 2 ? 'HẬU NGHĨA' : (session('current_house', 1) == 3 ? 'CẦN GIỜ' : 'HÓC MÔN')), 'UTF-8') }}</div>
+                <div class="font-bold uppercase mt-1" style="font-size: 16px; color: black;">DỰ ÁN: {{ mb_strtoupper($firstRecovery->stockOut?->project_name ?? (session('current_house', 1) == 2 ? 'HẬU NGHĨA' : (session('current_house', 1) == 3 ? 'CẦN GIUỘC' : (session('current_house', 1) == 4 ? 'CẦN GIỜ' : 'HÓC MÔN'))), 'UTF-8') }}</div>
             </div>
             <div style="border-bottom: 2px solid #000; margin-bottom: 20px;"></div>
 

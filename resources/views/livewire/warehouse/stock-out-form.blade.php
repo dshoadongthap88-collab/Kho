@@ -218,8 +218,17 @@
                             <input type="text" wire:model="license_plate" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800 uppercase" placeholder="Biển kiểm soát...">
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Số KM</label>
-                            <input type="text" wire:model="km_number" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Đồng hồ KM...">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Mức bảo dưỡng</label>
+                            @if(!empty($available_boms))
+                                <select wire:model.live="selected_bom_id" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800">
+                                    <option value="">-- Chọn mức bảo dưỡng --</option>
+                                    @foreach($available_boms as $bom)
+                                        <option value="{{ $bom['id'] }}">{{ $bom['maintenance_level'] }}</option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input type="text" wire:model.lazy="km_number" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Gõ tự do...">
+                            @endif
                         </div>
                         <div class="space-y-1">
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Số giờ HĐ</label>
@@ -227,7 +236,12 @@
                         </div>
                         <div class="space-y-1">
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên thiết bị</label>
-                            <input type="text" wire:model="device_name" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Tên thiết bị bảo dưỡng...">
+                            <input type="text" list="asset_list" wire:model.live="device_name" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Chọn hoặc gõ tên thiết bị...">
+                            <datalist id="asset_list">
+                                @foreach(\App\Models\Asset::orderBy('name')->get() as $asset)
+                                    <option value="{{ $asset->name }}">{{ $asset->asset_code }}</option>
+                                @endforeach
+                            </datalist>
                         </div>
                     </div>
                     @endif
@@ -282,7 +296,7 @@
                             </thead>
                             <tbody class="divide-y divide-slate-100 no-print">
                                 @foreach($items as $index => $item)
-                                <tr wire:key="item-{{ $index }}" class="hover:bg-slate-50/50 transition duration-150 {{ !$item['is_printed'] ? 'no-print' : '' }}">
+                                <tr wire:key="item-{{ $index }}" class="hover:bg-slate-50/50 transition duration-150 {{ !($item['is_printed'] ?? true) ? 'no-print' : '' }}">
                                     <td class="px-3 py-1.5 text-center no-print">
                                         <input type="checkbox" wire:model.live="items.{{ $index }}.is_printed" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
                                     </td>
@@ -372,7 +386,19 @@
                     </div>
 
                     <div class="mt-8 mb-4 p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm no-print">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Nhân viên vận hành</label>
+                                <input type="text" wire:model.live="operator_name" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên người vận hành...">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Tổ trưởng/ trưởng ca QLTB / vận hành</label>
+                                <input type="text" wire:model.live="supervisor_qltb" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên tổ trưởng QLTB...">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên THỦ KHO</label>
+                                <input type="text" wire:model.live="warehouse_keeper" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên thủ kho...">
+                            </div>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Nhân viên sửa chữa</label>
                                 <input type="text" wire:model.live="repair_staff" list="user_list" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Chọn hoặc nhập tên...">
@@ -381,14 +407,6 @@
                                         <option value="{{ $user->name }}"></option>
                                     @endforeach
                                 </datalist>
-                            </div>
-                            <div class="space-y-1">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên THỦ KHO</label>
-                                <input type="text" wire:model.live="warehouse_keeper" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên thủ kho...">
-                            </div>
-                            <div class="space-y-1">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Tổ trưởng/ trưởng ca QLTB / vận hành</label>
-                                <input type="text" wire:model.live="supervisor_qltb" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên tổ trưởng QLTB...">
                             </div>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Tổ trưởng / trưởng ca</label>
@@ -470,9 +488,9 @@
                             </td>
                         </tr>
                         <tr>
-                            <!-- Số KM -->
+                            <!-- Mức bảo dưỡng -->
                             <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
-                                Số KM : <span class="font-normal">{{ $km_number ?: '................................' }}</span>
+                                Mức BD : <span class="font-normal">{{ $km_number ?: '................................' }}</span>
                             </td>
                             <!-- Số giờ HĐ -->
                             <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
@@ -507,15 +525,15 @@
                     <tbody>
                         @php $validCount = 0; @endphp
                         @foreach($items as $index => $item)
-                            @if($item['product_id'] && $item['is_printed'])
+                            @if($item['product_id'] && ($item['is_printed'] ?? true))
                                 @php $validCount++; @endphp
                                 <tr>
                                     <td class="border border-black px-1 py-1.5 text-center">{{ $validCount }}</td>
                                     <td class="border border-black px-2 py-1.5 font-bold uppercase">
-                                        {{ str_contains($item['product_search'], ' - ') ? explode(' - ', $item['product_search'], 2)[1] : $item['product_search'] }}
+                                        {{ str_contains($item['product_search'] ?? '', ' - ') ? explode(' - ', $item['product_search'], 2)[1] : ($item['product_search'] ?? '') }}
                                     </td>
                                     <td class="border border-black px-2 py-1.5 text-center font-mono uppercase">
-                                        {{ str_contains($item['product_search'], ' - ') ? explode(' - ', $item['product_search'], 2)[0] : '' }}
+                                        {{ str_contains($item['product_search'] ?? '', ' - ') ? explode(' - ', $item['product_search'], 2)[0] : '' }}
                                     </td>
                                     <td class="border border-black px-1 py-1.5 text-center">{{ $item['unit'] ?: '-' }}</td>
                                     <td class="border border-black px-1 py-1.5 text-center font-bold">{{ (float)($item['requested_quantity'] ?? $item['quantity']) }}</td>
@@ -543,19 +561,13 @@
                     </tbody>
                 </table>
 
-                <!-- Footer Signatures Section (5 Signatures from left to right) -->
-                <div class="signatures-section grid grid-cols-4 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
+                <!-- Signatures Section -->
+                <div class="grid grid-cols-5 gap-2 text-center text-[10px] mt-8 font-bold leading-normal relative z-10">
                     <div>
-                        <p>Nv sửa chữa</p>
+                        <p>Nhân viên vận hành</p>
                         <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                         <div style="height: 50px;"></div>
-                        <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $repair_staff ?: '........................' }}</p>
-                    </div>
-                    <div>
-                        <p>Thủ kho</p>
-                        <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
-                        <div style="height: 50px;"></div>
-                        <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $warehouse_keeper ?: '........................' }}</p>
+                        <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $operator_name ?: '........................' }}</p>
                     </div>
                     <div>
                         <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
@@ -776,9 +788,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <!-- Số KM -->
+                        <!-- Mức bảo dưỡng -->
                         <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
-                            Số KM : <span class="font-normal">{{ $pItem->km_number ?: '................................' }}</span>
+                            Mức BD : <span class="font-normal">{{ $pItem->km_number ?: '................................' }}</span>
                         </td>
                         <!-- Số giờ HĐ -->
                         <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
@@ -847,12 +859,18 @@
             </table>
 
             <!-- Footer Signatures Section (5 Signatures) -->
-            <div class="signatures-section grid grid-cols-4 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
+            <div class="signatures-section grid grid-cols-5 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
                 <div>
-                    <p>Nv sửa chữa</p>
+                    <p>Nhân viên vận hành</p>
                     <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                     <div style="height: 50px;"></div>
-                    <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $pItem->repair_staff ?: '........................' }}</p>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $pItem->operator_name ?: '........................' }}</p>
+                </div>
+                <div>
+                    <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
+                    <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                    <div style="height: 50px;"></div>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $pItem->supervisor_qltb ?: '........................' }}</p>
                 </div>
                 <div>
                     <p>Thủ kho</p>
@@ -861,10 +879,10 @@
                     <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $pItem->warehouse_keeper ?: '........................' }}</p>
                 </div>
                 <div>
-                    <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
+                    <p>Nhân viên sửa chữa</p>
                     <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                     <div style="height: 50px;"></div>
-                    <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $pItem->supervisor_qltb ?: '........................' }}</p>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $pItem->repair_staff ?: '........................' }}</p>
                 </div>
                 <div>
                     <p>Tổ trưởng / trưởng ca</p>

@@ -33,8 +33,7 @@ class ProductCatalog extends Component
     public $code;
     public $name;
     public $brand;
-    public $box_spec;
-    public $carton_spec;
+    public $description;
     public $status = 'active';
     public $location;
     public $category_id;
@@ -45,10 +44,11 @@ class ProductCatalog extends Component
     public $type = 'product_produced';
     
     // Form fields (Asset)
+    public $equipment_code;
     public $asset_code;
-    public $license_plate;
-    public $driver_name;
-    public $phone_number;
+    public $machine_type;
+    public $manager;
+    public $warranty_status = 'Còn bảo hành';
 
     public $filterMode = 'all';
 
@@ -68,8 +68,7 @@ class ProductCatalog extends Component
                 'code' => ['required', Rule::unique('products', 'code')->ignore($this->productId)],
                 'name' => 'required|string|max:255',
                 'brand' => 'nullable|string|max:255',
-                'box_spec' => 'nullable|string|max:255',
-                'carton_spec' => 'nullable|string|max:255',
+                'description' => 'nullable|string',
                 'status' => 'required|in:active,inactive',
                 'category_id' => 'nullable|exists:categories,id',
                 'location' => 'nullable|string|max:255',
@@ -82,11 +81,12 @@ class ProductCatalog extends Component
             ];
         } else {
             return [
-                'asset_code' => ['required', Rule::unique('assets', 'asset_code')->ignore($this->productId)],
+                'equipment_code' => ['required', Rule::unique('assets', 'equipment_code')->ignore($this->productId)],
+                'asset_code' => ['nullable', Rule::unique('assets', 'asset_code')->ignore($this->productId)],
                 'name' => 'required|string|max:255',
-                'license_plate' => 'nullable|string|max:255',
-                'driver_name' => 'nullable|string|max:255',
-                'phone_number' => 'nullable|string|max:255',
+                'machine_type' => 'nullable|string|max:255',
+                'manager' => 'nullable|string|max:255',
+                'warranty_status' => 'nullable|string|max:255',
             ];
         }
     }
@@ -150,8 +150,9 @@ class ProductCatalog extends Component
     public function openModal($id = null)
     {
         $this->resetValidation();
-        $this->reset(['code', 'name', 'brand', 'box_spec', 'carton_spec', 'status', 'location', 'quantity', 'productId', 'image', 'type', 'category_id', 'asset_code', 'license_plate', 'driver_name', 'phone_number']);
+        $this->reset(['code', 'name', 'brand', 'description', 'status', 'location', 'quantity', 'productId', 'image', 'type', 'category_id', 'equipment_code', 'asset_code', 'machine_type', 'manager', 'warranty_status']);
         
+        $this->warranty_status = 'Còn bảo hành';
         if ($this->activeTab === 'materials') {
             if ($id) {
                 $this->isEdit = true;
@@ -160,8 +161,7 @@ class ProductCatalog extends Component
                 $this->code = $product->code;
                 $this->name = $product->name;
                 $this->brand = $product->brand;
-                $this->box_spec = $product->box_spec;
-                $this->carton_spec = $product->carton_spec;
+                $this->description = $product->description;
                 $this->status = $product->status;
                 $this->location = $product->location;
                 $this->category_id = $product->category_id;
@@ -181,10 +181,11 @@ class ProductCatalog extends Component
                 $this->productId = $id;
                 $asset = \App\Models\Asset::findOrFail($id);
                 $this->asset_code = $asset->asset_code;
+                $this->equipment_code = $asset->equipment_code;
                 $this->name = $asset->name;
-                $this->license_plate = $asset->license_plate;
-                $this->driver_name = $asset->driver_name;
-                $this->phone_number = $asset->phone_number;
+                $this->machine_type = $asset->machine_type;
+                $this->manager = $asset->manager;
+                $this->warranty_status = $asset->warranty_status ?: 'Còn bảo hành';
             } else {
                 $this->isEdit = false;
             }
@@ -202,22 +203,23 @@ class ProductCatalog extends Component
                 if ($this->isEdit) {
                     $asset = \App\Models\Asset::findOrFail($this->productId);
                     $asset->update([
+                        'equipment_code' => $this->equipment_code,
                         'asset_code' => $this->asset_code,
                         'name' => $this->name,
-                        'license_plate' => $this->license_plate,
-                        'driver_name' => $this->driver_name,
-                        'phone_number' => $this->phone_number,
+                        'machine_type' => $this->machine_type,
+                        'manager' => $this->manager,
+                        'warranty_status' => $this->warranty_status,
                     ]);
                     session()->flash('message', 'Cập nhật thiết bị thành công.');
                 } else {
                     \App\Models\Asset::create([
+                        'equipment_code' => $this->equipment_code,
                         'asset_code' => $this->asset_code,
                         'name' => $this->name,
-                        'license_plate' => $this->license_plate,
-                        'driver_name' => $this->driver_name,
-                        'phone_number' => $this->phone_number,
+                        'machine_type' => $this->machine_type,
+                        'manager' => $this->manager,
+                        'warranty_status' => $this->warranty_status,
                         'department' => 'KHO',
-                        'machine_type' => 'OTHER',
                         'model' => 'N/A'
                     ]);
                     session()->flash('message', 'Thêm thiết bị mới thành công.');
@@ -252,8 +254,7 @@ class ProductCatalog extends Component
                     'code' => $this->code,
                     'name' => $this->name,
                     'brand' => $this->brand,
-                    'box_spec' => $this->box_spec,
-                    'carton_spec' => $this->carton_spec,
+                    'description' => $this->description,
                     'status' => $this->status,
                     'category_id' => $this->category_id ?: null,
                     'location' => $this->location,
@@ -291,8 +292,7 @@ class ProductCatalog extends Component
                     'code' => $this->code,
                     'name' => $this->name,
                     'brand' => $this->brand,
-                    'box_spec' => $this->box_spec,
-                    'carton_spec' => $this->carton_spec,
+                    'description' => $this->description,
                     'status' => $this->status,
                     'category_id' => $this->category_id ?: null,
                     'location' => $this->location,
@@ -338,19 +338,36 @@ class ProductCatalog extends Component
         try {
             $count = 0;
             foreach ($this->selectedIds as $id) {
-                $product = Product::find($id);
-                if ($product) {
-                    $product->delete();
+                if ($this->activeTab === 'materials') {
+                    $item = Product::find($id);
+                } else {
+                    $item = \App\Models\Asset::find($id);
+                }
+                
+                if ($item) {
+                    $item->delete();
                     $count++;
                 }
             }
             
             if ($count > 0) {
-                session()->flash('message', "Đã xóa thành công {$count} vật tư.");
+                $type = $this->activeTab === 'materials' ? 'vật tư' : 'thiết bị';
+                session()->flash('message', "Đã xóa thành công {$count} {$type}.");
             }
             $this->selectedIds = [];
         } catch (\Exception $e) {
-            session()->flash('error', 'Một số vật tư không thể xóa do có dữ liệu liên quan (như phiếu nhập, phiếu xuất hoặc định mức BOM).');
+            session()->flash('error', 'Một số mục không thể xóa do có dữ liệu liên quan.');
+        }
+    }
+
+    public function deleteEquipment($id)
+    {
+        try {
+            $asset = \App\Models\Asset::findOrFail($id);
+            $asset->delete();
+            session()->flash('message', 'Đã xoá thiết bị thành công.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Không thể xóa thiết bị này vì đã có dữ liệu liên quan.');
         }
     }
 
@@ -405,8 +422,8 @@ class ProductCatalog extends Component
                 ->where(function($q) {
                     $q->where('name', 'like', '%' . $this->search . '%')
                       ->orWhere('asset_code', 'like', '%' . $this->search . '%')
-                      ->orWhere('license_plate', 'like', '%' . $this->search . '%')
-                      ->orWhere('driver_name', 'like', '%' . $this->search . '%');
+                      ->orWhere('equipment_code', 'like', '%' . $this->search . '%')
+                      ->orWhere('manager', 'like', '%' . $this->search . '%');
                 })
                 ->when($this->dateFrom, function($q) {
                     $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
@@ -428,7 +445,11 @@ class ProductCatalog extends Component
         ]);
 
         try {
-            Excel::import(new ProductsImport, $this->excelFile);
+            if ($this->activeTab === 'materials') {
+                Excel::import(new ProductsImport, $this->excelFile);
+            } else {
+                Excel::import(new \App\Imports\AssetsImport, $this->excelFile);
+            }
             
             $this->reset(['excelFile', 'showImportModal']);
             session()->flash('message', 'Nhập dữ liệu từ Excel thành công!');
@@ -521,8 +542,8 @@ class ProductCatalog extends Component
                 ->where(function($q) {
                     $q->where('name', 'like', '%' . $this->search . '%')
                       ->orWhere('asset_code', 'like', '%' . $this->search . '%')
-                      ->orWhere('license_plate', 'like', '%' . $this->search . '%')
-                      ->orWhere('driver_name', 'like', '%' . $this->search . '%');
+                      ->orWhere('equipment_code', 'like', '%' . $this->search . '%')
+                      ->orWhere('manager', 'like', '%' . $this->search . '%');
                 })
                 ->when($this->dateFrom, function($q) {
                     $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');

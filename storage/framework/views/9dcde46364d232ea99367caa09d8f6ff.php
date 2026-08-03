@@ -46,17 +46,16 @@
 
                     <!-- Module 3: THEO DÕI BẢO DƯỠNG -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 <?php echo e(request()->routeIs('warehouse.maintenance-*') || request()->routeIs('warehouse.asset-odo-log') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900'); ?>">
+                        <button class="px-3 py-2 rounded-md text-sm font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 <?php echo e(request()->routeIs('warehouse.asset-manager') || request()->routeIs('maintenance.*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900'); ?>">
                             3. THEO DÕI BẢO DƯỠNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-72 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
-                            <a href="<?php echo e(route('warehouse.maintenance-dashboard')); ?>" class="block px-4 py-2 text-sm text-indigo-700 hover:bg-indigo-50 border-t border-slate-50 font-bold">1. Dashboard Tổng Quan</a>
-                            <a href="<?php echo e(route('warehouse.asset-odo-log')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">2. Cập nhật giờ Odo hàng ngày</a>
-                            <a href="<?php echo e(route('warehouse.maintenance-rules')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">3. Cấp bảo dưỡng và chu kỳ</a>
-                            <a href="<?php echo e(route('warehouse.maintenance-tracking')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">4. Bảng theo dõi bảo dưỡng tự động</a>
-                            <a href="<?php echo e(route('warehouse.maintenance-plans')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">5. Lập kế hoạch bảo dưỡng</a>
-                            <a href="<?php echo e(route('warehouse.maintenance-tickets')); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">6. Phiếu thực hiện bảo dưỡng</a>
+                            <a href="<?php echo e(route('warehouse.asset-manager')); ?>" class="block px-4 py-2 text-sm text-gray-700 font-bold bg-sky-50 hover:bg-sky-100 border-b border-sky-100">TRANG CHỦ TỔNG HỢP (7 IN 1)</a>
+                            <a href="<?php echo e(route('warehouse.asset-manager', ['activeTab' => 'odo-manager'])); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Cập nhật giờ ODO hàng ngày</a>
+                            <a href="<?php echo e(route('warehouse.asset-manager', ['activeTab' => 'bom-manager'])); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Định mức bảo dưỡng (BOM)</a>
+                            <a href="<?php echo e(route('warehouse.asset-manager', ['activeTab' => 'ticket-list'])); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">Phiếu bảo dưỡng & Lịch</a>
+                            <a href="<?php echo e(route('warehouse.asset-manager', ['activeTab' => 'shift-log'])); ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">Giao ca / Nhật ký</a>
                         </div>
                     </div>
 
@@ -109,7 +108,7 @@
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
                     <div class="relative group">
                         <button class="flex items-center gap-2 px-3 py-2 rounded-md bg-sky-200 hover:bg-sky-300 transition duration-150 text-sm font-bold text-sky-950">
-                            <span class="bg-sky-600 px-2 py-0.5 rounded text-xs text-white border border-sky-700">Dự án <?php echo e(session('current_house', 1) == 2 ? 'Hậu Nghĩa' : (session('current_house', 1) == 3 ? 'Cần Giờ' : 'Hóc Môn')); ?></span>
+                            <span class="bg-sky-600 px-2 py-0.5 rounded text-xs text-white border border-sky-700">Dự án <?php echo e(session('current_house', 1) == 2 ? 'Hậu Nghĩa' : (session('current_house', 1) == 3 ? 'Cần Giuộc' : (session('current_house', 1) == 4 ? 'Cần Giờ' : 'Hóc Môn'))); ?></span>
                             <span>👤</span>
                             <span><?php echo e(Auth::user()->role === 'admin' ? 'Admin' : 'Nhân viên'); ?> - <?php echo e(Auth::user()->name); ?></span>
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>

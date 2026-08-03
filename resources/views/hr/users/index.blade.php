@@ -190,7 +190,7 @@
                                 @for($i = 1; $i <= 4; $i++)
                                 <label class="flex items-center p-1.5 hover:bg-white rounded cursor-pointer transition-colors border border-transparent hover:border-gray-200">
                                     <input type="checkbox" name="allowed_houses[]" value="{{ $i }}" x-model="formData.allowed_houses" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500 focus:ring-2">
-                                    <span class="ml-2 text-sm text-gray-700 font-medium">{{ $i == 1 ? 'Dự án Hóc Môn' : ($i == 2 ? 'Dự án Hậu Nghĩa' : ($i == 3 ? 'Dự án Cần Giờ' : 'Dự án Số 4')) }}</span>
+                                    <span class="ml-2 text-sm text-gray-700 font-medium">{{ $i == 1 ? 'Dự án Hóc Môn' : ($i == 2 ? 'Dự án Hậu Nghĩa' : ($i == 3 ? 'Dự án Cần Giuộc' : ($i == 4 ? 'Dự án Cần Giờ' : 'Dự án Số 5'))) }}</span>
                                 </label>
                                 @endfor
                             </div>

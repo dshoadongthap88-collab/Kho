@@ -75,7 +75,7 @@
     <div class="header clearfix">
         <div class="company-info">
             <div class="company-name">CÔNG TY CP ĐẦU TƯ VÀ HẠ TẦNG V-ALPHA</div>
-            <div class="project-name">Dự án: {{ session('current_house', 1) == 2 ? 'Hậu Nghĩa' : (session('current_house', 1) == 3 ? 'Cần Giờ' : 'Hóc Môn') }}</div>
+            <div class="project-name">Dự án: {{ session('current_house', 1) == 2 ? 'Hậu Nghĩa' : (session('current_house', 1) == 3 ? 'Cần Giuộc' : (session('current_house', 1) == 4 ? 'Cần Giờ' : 'Hóc Môn')) }}</div>
         </div>
     </div>
 

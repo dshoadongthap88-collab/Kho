@@ -12,6 +12,7 @@ class Asset extends Model
     use HasFactory, SoftDeletes, BelongsToHouse;
 
     protected $fillable = [
+        'equipment_code',
         'asset_code',
         'license_plate',
         'driver_name',
@@ -19,6 +20,8 @@ class Asset extends Model
         'name',
         'department',
         'machine_type',
+        'manager',
+        'warranty_status',
         'model',
         'serial_number',
         'manufacturer',

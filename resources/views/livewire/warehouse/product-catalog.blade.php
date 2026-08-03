@@ -106,6 +106,9 @@
             <button type="button" wire:click="openModal" class="h-[38px] shrink-0 bg-gradient-to-r from-blue-600 to-blue-700 font-black hover:from-blue-700 hover:to-blue-800 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
                 <span>➕</span> THÊM MỚI
             </button>
+            <button type="button" wire:click="$set('showImportModal', true)" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
+                <span>📥</span> IMPORT EXCEL
+            </button>
             <button type="button" wire:click="printAll" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
                 <span>🖨️</span> IN FILE PDF
             </button>
@@ -120,9 +123,6 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                     ĐÃ LƯU
                 </span>
-            </button>
-            <button type="button" wire:click="$set('showImportModal', true)" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
-                <span>📥</span> IMPORT EXCEL
             </button>
             @endif
         </div>
@@ -170,14 +170,13 @@
                     <th class="px-4 py-3">TÊN VẬT TƯ</th>
                     <th class="px-4 py-3">Phân loại</th>
                     <th class="px-4 py-3">Hãng sản xuất</th>
-                    <th class="px-4 py-3">QC Hộp</th>
-                    <th class="px-4 py-3">QC Thùng</th>
                     <th class="px-4 py-3">Mã Code NCC</th>
                     <th class="px-4 py-3">Hạn dùng</th>
                     <th class="px-4 py-3 text-center">Số lượng</th>
                     <th class="px-4 py-3">Vị trí</th>
                     <th class="px-4 py-3">Tình trạng</th>
                     <th class="px-4 py-3">Tồn tối thiểu</th>
+                    <th class="px-4 py-3">Ghi chú</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -218,8 +217,6 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-gray-600">{{ $product->brand }}</td>
-                        <td class="px-4 py-3 text-gray-600 italic">{{ $product->box_spec }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ $product->carton_spec }}</td>
                         <td class="px-4 py-3 text-sm font-semibold text-purple-700">{{ $product->batch_number }}</td>
                         <td class="px-4 py-3 text-sm {{ $product->is_expiring_soon ? 'text-red-600 font-bold' : 'text-gray-600' }}">
                             {{ $product->expiry_date ? $product->expiry_date->format('d/m/Y') : '-' }}
@@ -245,6 +242,7 @@
                                    class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-2 py-1 transition-all text-center shadow-inner placeholder-slate-400"
                                    placeholder="0">
                         </td>
+                        <td class="px-4 py-3 text-xs text-gray-600 truncate max-w-[150px]" title="{{ $product->description }}">{{ $product->description }}</td>
                     </tr>
                 @empty
                      <tr>
@@ -266,11 +264,12 @@
                                {{ count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
+                    <th class="px-4 py-3">MÃ THIẾT BỊ</th>
                     <th class="px-4 py-3">TÊN THIẾT BỊ</th>
+                    <th class="px-4 py-3">LOẠI THIẾT BỊ</th>
                     <th class="px-4 py-3">MÃ TÀI SẢN</th>
-                    <th class="px-4 py-3">BIỂN SỐ XE</th>
-                    <th class="px-4 py-3">TÊN TÀI XẾ</th>
-                    <th class="px-4 py-3">SỐ ĐIỆN THOẠI</th>
+                    <th class="px-4 py-3">NGƯỜI QUẢN LÝ</th>
+                    <th class="px-4 py-3">TÌNH TRẠNG</th>
                     <th class="px-4 py-3 text-center w-24">THAO TÁC</th>
                 </tr>
             </thead>
@@ -280,14 +279,24 @@
                         <td class="px-6 py-4 text-center no-print">
                             <input type="checkbox" value="{{ $equipment->id }}" wire:model="selectedIds" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
+                        <td class="px-4 py-3 text-sm font-mono text-indigo-600">{{ $equipment->equipment_code ?: '-' }}</td>
                         <td class="px-4 py-3 text-sm font-black text-gray-800 uppercase">{{ $equipment->name }}</td>
-                        <td class="px-4 py-3 text-sm font-mono text-indigo-600">{{ $equipment->asset_code }}</td>
-                        <td class="px-4 py-3 text-sm font-bold text-gray-700 uppercase">{{ $equipment->license_plate ?: '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase">{{ $equipment->driver_name ?: '-' }}</td>
-                        <td class="px-4 py-3 text-sm font-mono text-gray-600">{{ $equipment->phone_number ?: '-' }}</td>
+                        <td class="px-4 py-3 text-sm font-bold text-gray-700 uppercase">{{ $equipment->machine_type ?: '-' }}</td>
+                        <td class="px-4 py-3 text-sm font-mono text-indigo-600">{{ $equipment->asset_code ?: '-' }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase">{{ $equipment->manager ?: '-' }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase">
+                            @if($equipment->warranty_status === 'Còn bảo hành')
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-[10px]">{{ $equipment->warranty_status }}</span>
+                            @else
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-[10px]">{{ $equipment->warranty_status ?: 'Hết bảo hành' }}</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 text-center">
                             <button wire:click="openModal({{ $equipment->id }})" class="text-indigo-600 hover:text-indigo-800 font-black uppercase text-[10px] bg-indigo-50 px-3 py-1.5 rounded hover:bg-indigo-100 transition-colors">
                                 Sửa
+                            </button>
+                            <button wire:click="deleteEquipment({{ $equipment->id }})" wire:confirm="Bạn có chắc chắn muốn xóa thiết bị này?" class="text-rose-600 hover:text-rose-800 font-black uppercase text-[10px] bg-rose-50 px-3 py-1.5 rounded hover:bg-rose-100 transition-colors ml-1 mt-1 sm:mt-0">
+                                Xóa
                             </button>
                         </td>
                     </tr>
@@ -392,16 +401,6 @@
                                 @error('quantity') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">QC Hộp (loại chai/hộp...)</label>
-                                <input type="text" wire:model="box_spec" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="VD: Chai 500ml">
-                                @error('box_spec') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                            <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">QC Thùng (ghi tay)</label>
-                                <input type="text" wire:model="carton_spec" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="VD: 24 chai/thùng">
-                                @error('carton_spec') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Vị trí</label>
                                 <input type="text" wire:model="location" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('location') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -415,6 +414,11 @@
                                 <label class="block text-sm font-medium text-gray-700">Hạn sử dụng</label>
                                 <input type="date" wire:model="expiry_date" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('expiry_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-medium text-gray-700">Ghi chú</label>
+                                <textarea wire:model="description" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" rows="2" placeholder="Thêm ghi chú..."></textarea>
+                                @error('description') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
                                 @error('status') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -437,19 +441,27 @@
                                 @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Biển số xe</label>
-                                <input type="text" wire:model="license_plate" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                @error('license_plate') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <label class="block text-sm font-medium text-gray-700">Mã thiết bị</label>
+                                <input type="text" wire:model="equipment_code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('equipment_code') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Tên tài xế</label>
-                                <input type="text" wire:model="driver_name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                @error('driver_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <label class="block text-sm font-medium text-gray-700">Loại thiết bị</label>
+                                <input type="text" wire:model="machine_type" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('machine_type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Số điện thoại</label>
-                                <input type="text" wire:model="phone_number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                                @error('phone_number') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <label class="block text-sm font-medium text-gray-700">Người quản lý</label>
+                                <input type="text" wire:model="manager" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                @error('manager') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-gray-700">Tình trạng</label>
+                                <select wire:model="warranty_status" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white">
+                                    <option value="Còn bảo hành">Còn bảo hành</option>
+                                    <option value="Hết bảo hành">Hết bảo hành</option>
+                                </select>
+                                @error('warranty_status') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             @endif
 

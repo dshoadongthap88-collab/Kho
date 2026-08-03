@@ -222,8 +222,17 @@
                             <input type="text" wire:model="license_plate" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800 uppercase" placeholder="Biển kiểm soát...">
                         </div>
                         <div class="space-y-1">
-                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Số KM</label>
-                            <input type="text" wire:model="km_number" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Đồng hồ KM...">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Mức bảo dưỡng</label>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($available_boms)): ?>
+                                <select wire:model.live="selected_bom_id" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800">
+                                    <option value="">-- Chọn mức bảo dưỡng --</option>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $available_boms; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bom): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                        <option value="<?php echo e($bom['id']); ?>"><?php echo e($bom['maintenance_level']); ?></option>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                </select>
+                            <?php else: ?>
+                                <input type="text" wire:model.lazy="km_number" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Gõ tự do...">
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
                         <div class="space-y-1">
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Số giờ HĐ</label>
@@ -231,7 +240,12 @@
                         </div>
                         <div class="space-y-1">
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên thiết bị</label>
-                            <input type="text" wire:model="device_name" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Tên thiết bị bảo dưỡng...">
+                            <input type="text" list="asset_list" wire:model.live="device_name" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Chọn hoặc gõ tên thiết bị...">
+                            <datalist id="asset_list">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = \App\Models\Asset::orderBy('name')->get(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $asset): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                    <option value="<?php echo e($asset->name); ?>"><?php echo e($asset->asset_code); ?></option>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                            </datalist>
                         </div>
                     </div>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -286,7 +300,7 @@
                             </thead>
                             <tbody class="divide-y divide-slate-100 no-print">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
-                                <tr <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'item-'.e($index).''; ?>wire:key="item-<?php echo e($index); ?>" class="hover:bg-slate-50/50 transition duration-150 <?php echo e(!$item['is_printed'] ? 'no-print' : ''); ?>">
+                                <tr <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'item-'.e($index).''; ?>wire:key="item-<?php echo e($index); ?>" class="hover:bg-slate-50/50 transition duration-150 <?php echo e(!($item['is_printed'] ?? true) ? 'no-print' : ''); ?>">
                                     <td class="px-3 py-1.5 text-center no-print">
                                         <input type="checkbox" wire:model.live="items.<?php echo e($index); ?>.is_printed" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
                                     </td>
@@ -392,7 +406,19 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                     </div>
 
                     <div class="mt-8 mb-4 p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm no-print">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Nhân viên vận hành</label>
+                                <input type="text" wire:model.live="operator_name" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên người vận hành...">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Tổ trưởng/ trưởng ca QLTB / vận hành</label>
+                                <input type="text" wire:model.live="supervisor_qltb" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên tổ trưởng QLTB...">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên THỦ KHO</label>
+                                <input type="text" wire:model.live="warehouse_keeper" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên thủ kho...">
+                            </div>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Nhân viên sửa chữa</label>
                                 <input type="text" wire:model.live="repair_staff" list="user_list" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Chọn hoặc nhập tên...">
@@ -401,14 +427,6 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                         <option value="<?php echo e($user->name); ?>"></option>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 </datalist>
-                            </div>
-                            <div class="space-y-1">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên THỦ KHO</label>
-                                <input type="text" wire:model.live="warehouse_keeper" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên thủ kho...">
-                            </div>
-                            <div class="space-y-1">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Tổ trưởng/ trưởng ca QLTB / vận hành</label>
-                                <input type="text" wire:model.live="supervisor_qltb" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên tổ trưởng QLTB...">
                             </div>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Tổ trưởng / trưởng ca</label>
@@ -492,9 +510,9 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                             </td>
                         </tr>
                         <tr>
-                            <!-- Số KM -->
+                            <!-- Mức bảo dưỡng -->
                             <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
-                                Số KM : <span class="font-normal"><?php echo e($km_number ?: '................................'); ?></span>
+                                Mức BD : <span class="font-normal"><?php echo e($km_number ?: '................................'); ?></span>
                             </td>
                             <!-- Số giờ HĐ -->
                             <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
@@ -529,16 +547,16 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                     <tbody>
                         <?php $validCount = 0; ?>
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
-                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($item['product_id'] && $item['is_printed']): ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($item['product_id'] && ($item['is_printed'] ?? true)): ?>
                                 <?php $validCount++; ?>
                                 <tr>
                                     <td class="border border-black px-1 py-1.5 text-center"><?php echo e($validCount); ?></td>
                                     <td class="border border-black px-2 py-1.5 font-bold uppercase">
-                                        <?php echo e(str_contains($item['product_search'], ' - ') ? explode(' - ', $item['product_search'], 2)[1] : $item['product_search']); ?>
+                                        <?php echo e(str_contains($item['product_search'] ?? '', ' - ') ? explode(' - ', $item['product_search'], 2)[1] : ($item['product_search'] ?? '')); ?>
 
                                     </td>
                                     <td class="border border-black px-2 py-1.5 text-center font-mono uppercase">
-                                        <?php echo e(str_contains($item['product_search'], ' - ') ? explode(' - ', $item['product_search'], 2)[0] : ''); ?>
+                                        <?php echo e(str_contains($item['product_search'] ?? '', ' - ') ? explode(' - ', $item['product_search'], 2)[0] : ''); ?>
 
                                     </td>
                                     <td class="border border-black px-1 py-1.5 text-center"><?php echo e($item['unit'] ?: '-'); ?></td>
@@ -567,19 +585,13 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                     </tbody>
                 </table>
 
-                <!-- Footer Signatures Section (5 Signatures from left to right) -->
-                <div class="signatures-section grid grid-cols-4 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
+                <!-- Signatures Section -->
+                <div class="grid grid-cols-5 gap-2 text-center text-[10px] mt-8 font-bold leading-normal relative z-10">
                     <div>
-                        <p>Nv sửa chữa</p>
+                        <p>Nhân viên vận hành</p>
                         <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                         <div style="height: 50px;"></div>
-                        <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($repair_staff ?: '........................'); ?></p>
-                    </div>
-                    <div>
-                        <p>Thủ kho</p>
-                        <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
-                        <div style="height: 50px;"></div>
-                        <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($warehouse_keeper ?: '........................'); ?></p>
+                        <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($operator_name ?: '........................'); ?></p>
                     </div>
                     <div>
                         <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
@@ -802,9 +814,9 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                         </td>
                     </tr>
                     <tr>
-                        <!-- Số KM -->
+                        <!-- Mức bảo dưỡng -->
                         <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
-                            Số KM : <span class="font-normal"><?php echo e($pItem->km_number ?: '................................'); ?></span>
+                            Mức BD : <span class="font-normal"><?php echo e($pItem->km_number ?: '................................'); ?></span>
                         </td>
                         <!-- Số giờ HĐ -->
                         <td class="border border-black px-2 py-1.5 align-middle whitespace-nowrap" style="width: 17.5%;">
@@ -875,12 +887,18 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
             </table>
 
             <!-- Footer Signatures Section (5 Signatures) -->
-            <div class="signatures-section grid grid-cols-4 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
+            <div class="signatures-section grid grid-cols-5 gap-2 text-center text-[10px] mt-6 font-bold leading-normal">
                 <div>
-                    <p>Nv sửa chữa</p>
+                    <p>Nhân viên vận hành</p>
                     <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                     <div style="height: 50px;"></div>
-                    <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->repair_staff ?: '........................'); ?></p>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->operator_name ?: '........................'); ?></p>
+                </div>
+                <div>
+                    <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
+                    <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                    <div style="height: 50px;"></div>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->supervisor_qltb ?: '........................'); ?></p>
                 </div>
                 <div>
                     <p>Thủ kho</p>
@@ -889,10 +907,10 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                     <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->warehouse_keeper ?: '........................'); ?></p>
                 </div>
                 <div>
-                    <p>Tổ trưởng/ trưởng ca QLTB / vận hành</p>
+                    <p>Nhân viên sửa chữa</p>
                     <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                     <div style="height: 50px;"></div>
-                    <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->supervisor_qltb ?: '........................'); ?></p>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->repair_staff ?: '........................'); ?></p>
                 </div>
                 <div>
                     <p>Tổ trưởng / trưởng ca</p>

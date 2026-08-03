@@ -38,9 +38,15 @@ class StockOutForm extends Component
     public $device_name = '';
     public $department = 'BCH VINALPHA';
     public $warehouse_keeper = '';
-    public $supervisor_qltb = '';
-    public $supervisor_ca = '';
+    public $supervisor_qltb = 'LÊ HOÀNG NAM';
+    public $supervisor_ca = 'LÊ ĐÌNH HƯƠNG';
     public $repair_staff = '';
+    public $operator_name = '';
+
+    // Variables for Maintenance BOM integration
+    public $asset_id = '';
+    public $available_boms = [];
+    public $selected_bom_id = '';
 
     // Biến cho quy trình "Xuất cho sản xuất"
     public $production_product_id = '';
@@ -75,6 +81,8 @@ class StockOutForm extends Component
         if ($currentHouse == 2) {
             $this->project_name = 'HẬU NGHĨA';
         } elseif ($currentHouse == 3) {
+            $this->project_name = 'CẦN GIUỘC';
+        } elseif ($currentHouse == 4) {
             $this->project_name = 'CẦN GIỜ';
         } else {
             $this->project_name = 'HÓC MÔN';
@@ -97,6 +105,7 @@ class StockOutForm extends Component
             'supervisor_qltb',
             'supervisor_ca',
             'repair_staff',
+            'operator_name',
         ];
 
         foreach ($customColumns as $columnName) {
@@ -128,11 +137,11 @@ class StockOutForm extends Component
 
         // Tải thông tin người ký tự động từ lần gần nhất
         $lastStockOut = \App\Models\StockOut::latest()->first();
-        
         $this->warehouse_keeper = session('last_warehouse_keeper', $lastStockOut->warehouse_keeper ?? 'ĐẶNG HỮU HÒA');
         $this->supervisor_qltb = session('last_supervisor_qltb', $lastStockOut->supervisor_qltb ?? 'LÊ HOÀNG NAM');
         $this->supervisor_ca = session('last_supervisor_ca', $lastStockOut->supervisor_ca ?? 'LÊ ĐÌNH HƯƠNG');
         $this->repair_staff = session('last_repair_staff', $lastStockOut->repair_staff ?? '');
+        $this->operator_name = session('last_operator_name', $lastStockOut->operator_name ?? '');
 
         // Dự phòng nếu giá trị cũ rỗng
         if (empty($this->warehouse_keeper)) $this->warehouse_keeper = 'ĐẶNG HỮU HÒA';
@@ -200,13 +209,81 @@ class StockOutForm extends Component
     public function updated($name, $value)
     {
         // Ghi nhớ tên người ký thời gian thực vào session ngay khi thay đổi
-        if (in_array($name, ['warehouse_keeper', 'supervisor_qltb', 'supervisor_ca', 'repair_staff'])) {
-            session([
-                'last_warehouse_keeper' => $this->warehouse_keeper,
-                'last_supervisor_qltb' => $this->supervisor_qltb,
-                'last_supervisor_ca' => $this->supervisor_ca,
-                'last_repair_staff' => $this->repair_staff,
-            ]);
+        if (in_array($name, ['warehouse_keeper', 'supervisor_qltb', 'supervisor_ca', 'repair_staff', 'operator_name'])) {
+            session(['last_warehouse_keeper' => $this->warehouse_keeper]);
+            session(['last_supervisor_qltb' => $this->supervisor_qltb]);
+            session(['last_supervisor_ca' => $this->supervisor_ca]);
+            session(['last_repair_staff' => $this->repair_staff]);
+            session(['last_operator_name' => $this->operator_name]);
+        }
+
+        if ($name === 'device_name') {
+            if ($value) {
+                // Try to find asset by name
+                $asset = \App\Models\Asset::where('name', $value)->first();
+                if ($asset) {
+                    $this->asset_id = $asset->id;
+                    if (!empty($asset->asset_code)) {
+                        $this->asset_code = $asset->asset_code;
+                    }
+                    if (!empty($asset->license_plate)) {
+                        $this->license_plate = $asset->license_plate;
+                    }
+                    $this->available_boms = \App\Models\MaintenanceBom::where('asset_id', $asset->id)->orderBy('cycle')->get()->toArray();
+                } else {
+                    $this->asset_id = null;
+                    // Không clear asset_code và license_plate để người dùng có thể tự nhập tay
+                    $this->available_boms = [];
+                }
+            } else {
+                $this->asset_id = null;
+                $this->asset_code = '';
+                $this->license_plate = '';
+                $this->available_boms = [];
+            }
+            $this->selected_bom_id = '';
+            $this->km_number = '';
+        }
+
+        if ($name === 'selected_bom_id') {
+            if ($value) {
+                $bom = \App\Models\MaintenanceBom::with('items.product.inventory')->find($value);
+                if ($bom) {
+                    $this->km_number = $bom->maintenance_level;
+                    
+                    // Clear existing items and populate with BOM items
+                    $this->items = [];
+                    foreach ($bom->items as $bomItem) {
+                        $product = $bomItem->product;
+                        if ($product) {
+                            $this->items[] = [
+                                'product_id' => $product->id,
+                                'product_search' => $product->code . ' - ' . $product->name,
+                                'unit' => $product->unit,
+                                'brand' => $product->brand,
+                                'batch_number' => $product->batch_number,
+                                'expiry_date' => $product->expiry_date ? clone $product->expiry_date : '',
+                                'warehouse_location' => $product->inventory?->warehouse_location ?? '',
+                                'quantity' => (float) $bomItem->quantity,
+                                'requested_quantity' => (float) $bomItem->quantity,
+                                'recovered_quantity' => 0,
+                                'item_note' => '',
+                                'unit_price' => $product->price ?? 0,
+                                'vat_rate' => 0,
+                                'total_amount' => ($product->price ?? 0) * (float) $bomItem->quantity,
+                                'is_printed' => true,
+                                'available_qty' => $product->inventory?->quantity ?? 0
+                            ];
+                        }
+                    }
+                    
+                    if (empty($this->items)) {
+                        $this->addItem();
+                    } else {
+                        session()->flash('message', 'Đã tự động tải danh sách vật tư theo định mức bảo dưỡng.');
+                    }
+                }
+            }
         }
 
         // Khi chọn khách hàng
@@ -533,13 +610,17 @@ class StockOutForm extends Component
         $this->supervisor_qltb = $stockOut->supervisor_qltb;
         $this->supervisor_ca = $stockOut->supervisor_ca;
         $this->repair_staff = $stockOut->repair_staff;
+        $this->operator_name = $stockOut->operator_name;
 
         $this->items = $stockOut->items->map(function ($item) {
+            $product = $item->product;
             return [
                 'id' => uniqid(),
                 'product_id' => $item->product_id,
-                'name' => $item->product->name ?? '',
-                'unit' => $item->product->unit ?? '',
+                'product_search' => $product ? ($product->code . ' - ' . $product->name) : '',
+                'name' => $product->name ?? '',
+                'unit' => $product->unit ?? '',
+                'brand' => $product->brand ?? '',
                 'batch_number' => $item->batch_number,
                 'expiry_date' => $item->expiry_date,
                 'warehouse_location' => $item->warehouse_location,
@@ -550,6 +631,8 @@ class StockOutForm extends Component
                 'unit_price' => (float)$item->unit_price,
                 'vat_rate' => (float)$item->vat_rate,
                 'total_amount' => (float)$item->total_amount,
+                'is_printed' => true,
+                'available_qty' => $product ? ($product->inventory?->quantity ?? 0) : 0,
             ];
         })->toArray();
 
@@ -561,7 +644,7 @@ class StockOutForm extends Component
         $this->editingStockOutId = null;
         $this->reset([
             'items', 'customer_name', 'receiver_name', 'receiver_contact', 'note', 'asset_code',
-            'project_name', 'document_number', 'license_plate', 'km_number', 'operating_hours', 'device_name', 'department'
+            'project_name', 'document_number', 'license_plate', 'km_number', 'operating_hours', 'device_name', 'department', 'operator_name'
         ]);
         $this->customer_name = 'BCH VINALPHA';
         $this->receiver_name = 'LÊ HOÀNG NAM';
@@ -579,29 +662,6 @@ class StockOutForm extends Component
             'receiver_contact' => 'nullable|string',
             'asset_code' => 'nullable|string',
         ]);
-
-        // Đảm bảo tất cả các cột tùy chỉnh tồn tại động trong bảng stock_outs trước khi lưu
-        $customColumns = [
-            'project_name',
-            'document_number',
-            'license_plate',
-            'km_number',
-            'operating_hours',
-            'device_name',
-            'department',
-            'warehouse_keeper',
-            'supervisor_qltb',
-            'supervisor_ca',
-            'repair_staff',
-        ];
-
-        foreach ($customColumns as $columnName) {
-            if (!\Schema::hasColumn('stock_outs', $columnName)) {
-                \Schema::table('stock_outs', function (\Illuminate\Database\Schema\Blueprint $table) use ($columnName) {
-                    $table->string($columnName)->nullable();
-                });
-            }
-        }
 
         $service = app(InventoryService::class);
 
@@ -641,10 +701,22 @@ class StockOutForm extends Component
                         'supervisor_qltb' => $this->supervisor_qltb,
                         'supervisor_ca' => $this->supervisor_ca,
                         'repair_staff' => $this->repair_staff,
+                        'operator_name' => $this->operator_name,
+                        'house_id' => session('current_house', 1),
                     ]);
                 } else {
+                    $today = date('Ymd');
+                    $lastStockOutToday = StockOut::where('code', 'like', "SO-{$today}-%")->latest('id')->first();
+                    $sequence = 1;
+                    if ($lastStockOutToday) {
+                        $parts = explode('-', $lastStockOutToday->code);
+                        if (count($parts) === 3) {
+                            $sequence = intval($parts[2]) + 1;
+                        }
+                    }
+
                     $stockOut = StockOut::create([
-                        'code' => 'SO-' . date('Ymd') . '-' . str_pad(StockOut::count() + 1, 4, '0', STR_PAD_LEFT),
+                        'code' => 'SO-' . $today . '-' . str_pad($sequence, 4, '0', STR_PAD_LEFT),
                         'customer_name' => $this->customer_name,
                         'receiver_name' => $this->receiver_name,
                         'receiver_contact' => $this->receiver_contact,
@@ -664,6 +736,8 @@ class StockOutForm extends Component
                         'supervisor_qltb' => $this->supervisor_qltb,
                         'supervisor_ca' => $this->supervisor_ca,
                         'repair_staff' => $this->repair_staff,
+                        'operator_name' => $this->operator_name,
+                        'house_id' => session('current_house', 1),
                     ]);
                 }
 
@@ -737,6 +811,7 @@ class StockOutForm extends Component
                     'last_supervisor_qltb' => $this->supervisor_qltb,
                     'last_supervisor_ca' => $this->supervisor_ca,
                     'last_repair_staff' => $this->repair_staff,
+                    'last_operator_name' => $this->operator_name,
                 ]);
 
                 session()->flash('success', $this->editingStockOutId ? 'Đã cập nhật phiếu xuất kho thành công!' : 'Đã tạo phiếu xuất kho thành công!');
@@ -747,11 +822,13 @@ class StockOutForm extends Component
                 // Reset form data
                 $this->reset([
                     'items', 'customer_name', 'receiver_name', 'receiver_contact', 'note', 'asset_code',
-                    'project_name', 'document_number', 'license_plate', 'km_number', 'operating_hours', 'device_name', 'department'
+                    'project_name', 'document_number', 'license_plate', 'km_number', 'operating_hours', 'device_name', 'department',
+                    'asset_id', 'selected_bom_id', 'available_boms', 'operator_name'
                 ]);
                 $this->customer_name = 'BCH VINALPHA';
                 $this->receiver_name = 'LÊ HOÀNG NAM';
                 $this->addItem();
+                
                 $this->activeTab = 'list';
                 $this->listDateFrom = now()->startOfMonth()->format('Y-m-d');
                 $this->listDateTo = now()->format('Y-m-d');
@@ -777,6 +854,8 @@ class StockOutForm extends Component
         if ($currentHouse == 2) {
             $this->project_name = 'HẬU NGHĨA';
         } elseif ($currentHouse == 3) {
+            $this->project_name = 'CẦN GIUỘC';
+        } elseif ($currentHouse == 4) {
             $this->project_name = 'CẦN GIỜ';
         } else {
             $this->project_name = 'HÓC MÔN';

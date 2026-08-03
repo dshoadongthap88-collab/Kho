@@ -116,7 +116,7 @@ unset($__split);
 $__split = function ($name, $params = []) {
     return [$name, $params];
 };
-[$__name, $__params] = $__split('warehouse.asset.asset-bom-manager');
+[$__name, $__params] = $__split('warehouse.maintenance-bom-manager');
 
 $__keyOuter = $__key ?? null;
 

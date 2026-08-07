@@ -161,6 +161,56 @@ class InventoryList extends Component
         $this->selectedItems = [];
     }
 
+    public function exportExcel()
+    {
+        $query = Product::query()
+            ->leftJoin('inventories', 'products.id', '=', 'inventories.product_id')
+            ->where('products.status', 'active')
+            ->select(
+                'products.id',
+                'inventories.id as inventory_id',
+                \Illuminate\Support\Facades\DB::raw('COALESCE(inventories.quantity, 0) as quantity'),
+                \Illuminate\Support\Facades\DB::raw('COALESCE(inventories.reserved_quantity, 0) as reserved_quantity'),
+                'inventories.warehouse_location',
+                'products.name as product_name',
+                'products.code as product_code',
+                'products.unit',
+                'products.brand',
+                'products.min_stock',
+                'products.batch_number',
+                'products.expiry_date'
+            );
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('products.name', 'like', "%{$this->search}%")
+                  ->orWhere('products.code', 'like', "%{$this->search}%");
+            });
+        }
+
+        if ($this->filterBrand) {
+            $query->where('products.brand', $this->filterBrand);
+        }
+
+        if ($this->filterLocation) {
+            $query->where('inventories.warehouse_location', 'like', "%{$this->filterLocation}%");
+        }
+
+        if ($this->filterStatus === 'critical') {
+            $query->whereRaw('(inventories.quantity - inventories.reserved_quantity) < products.min_stock');
+        } elseif ($this->filterStatus === 'warning') {
+            $query->whereRaw('(inventories.quantity - inventories.reserved_quantity) >= products.min_stock')
+                  ->whereRaw('(inventories.quantity - inventories.reserved_quantity) < (products.min_stock * 1.5)');
+        } elseif ($this->filterStatus === 'sufficient') {
+            $query->whereRaw('(inventories.quantity - inventories.reserved_quantity) >= (products.min_stock * 1.5)');
+        }
+
+        $query->orderBy($this->sortField, $this->sortDirection);
+        $data = $query->get();
+
+        return Excel::download(new \App\Exports\InventoryExport($data), 'Danh_sach_ton_kho_' . date('Ymd_His') . '.xlsx');
+    }
+
     public function importExcel()
     {
         $this->validate([

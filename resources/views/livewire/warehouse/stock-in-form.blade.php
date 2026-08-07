@@ -703,15 +703,19 @@
         let mergeThreshold = Math.max(avgWidth * 3.5, 25); 
         
         for (let it of headerItems) {
+            let itX = it.transform[4];
+            let itStr = it.str.trim();
+            if (!itStr) continue;
+
             if (!curHeader) {
-                curHeader = { text: it.text, x: it.x, endX: it.x + (it.text.length * avgWidth * 0.7) };
+                curHeader = { text: itStr, x: itX, endX: itX + (itStr.length * avgWidth * 0.7) };
             } else {
-                if (it.x - curHeader.endX < mergeThreshold) { 
-                    curHeader.text += ' ' + it.text;
-                    curHeader.endX = it.x + (it.text.length * avgWidth * 0.7);
+                if (itX - curHeader.endX < mergeThreshold) { 
+                    curHeader.text += ' ' + itStr;
+                    curHeader.endX = itX + (itStr.length * avgWidth * 0.7);
                 } else {
                     mergedHeaders.push(curHeader);
-                    curHeader = { text: it.text, x: it.x, endX: it.x + (it.text.length * avgWidth * 0.7) };
+                    curHeader = { text: itStr, x: itX, endX: itX + (itStr.length * avgWidth * 0.7) };
                 }
             }
         }
@@ -940,14 +944,54 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
     </script>
 
-    <!-- Tab Navigation -->
-    <div class="bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex items-center gap-3 w-fit no-print">
-        <button wire:click="$set('activeTab', 'form')" class="px-8 py-3 rounded-xl text-[13px] font-black transition-all flex items-center gap-2 {{ $activeTab === 'form' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50' }}">
-            <span>📥</span> LẬP PHIẾU NHẬP
-        </button>
-        <button wire:click="$set('activeTab', 'list')" class="px-8 py-3 rounded-xl text-[13px] font-black transition-all flex items-center gap-2 {{ $activeTab === 'list' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50' }}">
-            <span>📋</span> DANH SÁCH PHIẾU
-        </button>
+    <!-- Top Bar: Tabs & Header Info -->
+    <div class="flex items-center justify-between gap-6 mb-4">
+        <!-- Tab Navigation -->
+        <div class="bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex items-center gap-3 w-fit no-print shrink-0">
+            <button wire:click="$set('activeTab', 'form')" class="px-8 py-3 rounded-xl text-[13px] font-black transition-all flex items-center gap-2 {{ $activeTab === 'form' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50' }}">
+                <span>📥</span> LẬP PHIẾU NHẬP
+            </button>
+            <button wire:click="$set('activeTab', 'list')" class="px-8 py-3 rounded-xl text-[13px] font-black transition-all flex items-center gap-2 {{ $activeTab === 'list' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50' }}">
+                <span>📋</span> DANH SÁCH PHIẾU
+            </button>
+        </div>
+
+        @if($activeTab === 'form')
+        <!-- Header Info (moved up) -->
+        <div class="flex-1 bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex items-center gap-4">
+            <div class="flex-1 space-y-1">
+                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Nhà cung cấp</label>
+                <input type="text" wire:model="supplier_name" list="suppliers_list" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Chọn hoặc nhập tên...">
+                <datalist id="suppliers_list">
+                    @foreach($suppliers as $supplier)
+                        <option value="{{ $supplier->name }}"></option>
+                    @endforeach
+                </datalist>
+            </div>
+            <div class="flex-1 space-y-1">
+                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Ngày nhập kho</label>
+                <input type="date" wire:model="stock_in_date" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[12px] font-bold text-slate-800">
+            </div>
+            <div class="flex-1 space-y-1">
+                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Hãng sản xuất</label>
+                <input type="text" wire:model="manufacturer" list="brands_list" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Nhập hãng SX...">
+                <datalist id="brands_list">
+                    @foreach($brands as $brand)
+                        <option value="{{ $brand }}"></option>
+                    @endforeach
+                </datalist>
+            </div>
+            <div class="flex-1 space-y-1">
+                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Loại nhập</label>
+                <select wire:model.live="type" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[12px] font-black text-slate-800 appearance-none">
+                    <option value="purchase_produced">🛒 MUA HÀNG TP</option>
+                    <option value="return_produced">↩️ TRẢ HÀNG TP</option>
+                    <option value="production">🏭 TỪ SẢN XUẤT</option>
+                    <option value="import_material">📦 NGUYÊN VẬT LIỆU</option>
+                </select>
+            </div>
+        </div>
+        @endif
     </div>
 
     <div class="flex-1 main-content">
@@ -994,39 +1038,7 @@
                 
                 <div class="p-6">
 
-        <div class="grid grid-cols-3 gap-6 mb-8">
-            <div class="space-y-1.5">
-                <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Nhà cung cấp</label>
-                <input type="text" wire:model="supplier_name" list="suppliers_list" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2.5 px-4 text-[13px] font-bold text-slate-800" placeholder="Chọn hoặc nhập tên...">
-                <datalist id="suppliers_list">
-                    @foreach($suppliers as $supplier)
-                        <option value="{{ $supplier->name }}"></option>
-                    @endforeach
-                </datalist>
-            </div>
-<div class="space-y-1.5">
-    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Ngày nhập kho</label>
-    <input type="date" wire:model="stock_in_date" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2.5 px-4 text-[13px] font-bold text-slate-800">
-  </div>
-            <div class="space-y-1.5">
-                <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Hãng sản xuất</label>
-                <input type="text" wire:model="manufacturer" list="brands_list" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2.5 px-4 text-[13px] font-bold text-slate-800" placeholder="Nhập hãng SX...">
-                <datalist id="brands_list">
-                    @foreach($brands as $brand)
-                        <option value="{{ $brand }}"></option>
-                    @endforeach
-                </datalist>
-            </div>
-            <div class="space-y-1.5">
-                <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Loại nhập</label>
-                <select wire:model.live="type" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2.5 px-4 text-[13px] font-black text-slate-800 appearance-none">
-                    <option value="purchase_produced">🛒 NHẬP MUA HÀNG TP</option>
-                    <option value="return_produced">↩️ NHẬP TRẢ HÀNG TP</option>
-                    <option value="production">🏭 NHẬP TỪ SẢN XUẤT</option>
-                    <option value="import_material">📦 NHẬP NGUYÊN VẬT LIỆU</option>
-                </select>
-            </div>
-        </div>
+        <!-- Grid removed from here as it moved to top bar -->
 
         <div class="overflow-hidden border border-slate-200 rounded-2xl shadow-sm mb-6 bg-slate-50/30">
                         <table class="w-full border-collapse">

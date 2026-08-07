@@ -85,6 +85,9 @@
                     In danh sách ({{ count($selectedItems) }})
                 </button>
             @else
+                <button wire:click="exportExcel" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm font-bold">
+                    📤 Xuất Excel
+                </button>
                 <button wire:click="$set('showImportModal', true)" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm font-bold mr-2">
                     📥 Nhập từ Excel
                 </button>

@@ -1,36 +1,40 @@
 <div>
-    <!-- Header & Actions -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm mã hoặc tên vật tư..." class="w-full md:w-64 rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500">
-            <select wire:model.live="statusFilter" class="w-full md:w-48 rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm mã hoặc tên vật tư..." class="w-full md:w-56 py-1.5 px-3 text-sm rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500">
+            <select wire:model.live="statusFilter" class="w-full md:w-40 py-1.5 px-3 text-sm rounded-lg border-gray-300 shadow-sm focus:border-sky-500 focus:ring-sky-500">
                 <option value="">-- Tất cả trạng thái --</option>
                 <option value="pending">Đề xuất (Chờ duyệt)</option>
                 <option value="ordered">Đã đặt hàng</option>
                 <option value="unreceived">Chưa giao</option>
                 <option value="partial">Giao thiếu</option>
-                <option value="completed">Đủ hàng (Hoàn thành)</option>
+                <option value="completed">Đủ hàng</option>
             </select>
         </div>
         <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-            <button wire:click="printSelected" class="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-bold shadow transition">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <button wire:click="printSelected" class="flex items-center justify-center gap-1.5 bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 In phiếu
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($selected) > 0): ?>
-                    <span class="bg-white text-slate-800 text-xs px-2 py-0.5 rounded-full ml-1"><?php echo e(count($selected)); ?></span>
+                    <span class="bg-white text-slate-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1"><?php echo e(count($selected)); ?></span>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </button>
-            <button wire:click="openAddModal" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow transition">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <button wire:click="openAddModal" class="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Thêm đề xuất
             </button>
-            <button wire:click="autoSuggest" wire:loading.attr="disabled" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold shadow transition">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                Tự động đề xuất mua
-            </button>
-            <button wire:click="closeDay" wire:confirm="Bạn có chắc chắn muốn chốt sổ và dọn dẹp bảng? Dữ liệu sẽ được lưu vào file Lịch sử và chuyển sang trạng thái đã lưu trữ." wire:loading.attr="disabled" class="flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg font-bold shadow transition">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-                Chốt sổ cuối ngày
+            <div class="flex items-center bg-indigo-50 border border-indigo-200 rounded-lg overflow-hidden shadow">
+                <div class="px-2 py-1.5 text-indigo-700 font-medium text-xs whitespace-nowrap">Dự trù</div>
+                <input type="number" wire:model="reserveDays" class="w-12 border-0 text-center font-bold text-indigo-700 text-sm bg-white focus:ring-0 p-1.5" title="Số ngày dự trù">
+                <div class="px-2 py-1.5 text-indigo-700 font-medium text-xs whitespace-nowrap border-r border-indigo-200">ngày</div>
+                <button wire:click="autoSuggest" wire:loading.attr="disabled" class="flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-sm font-medium transition">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Tự động phân tích
+                </button>
+            </div>
+            <button wire:click="closeDay" wire:confirm="Bạn có chắc chắn muốn chốt sổ và dọn dẹp bảng? Dữ liệu sẽ được lưu vào file Lịch sử." wire:loading.attr="disabled" class="flex items-center justify-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                Chốt sổ
             </button>
         </div>
     </div>
@@ -48,20 +52,20 @@
             <table class="w-full text-sm text-left">
                 <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
                     <tr>
-                        <th class="px-4 py-3 w-10 text-center">
+                        <th class="px-2 py-2 w-10 text-center">
                             <input type="checkbox" wire:model.live="selectAll" class="rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer">
                         </th>
-                        <th class="px-4 py-3">Ngày ĐX</th>
-                        <th class="px-4 py-3">Mã & Tên Vật Tư</th>
-                        <th class="px-4 py-3 text-right">Tồn Kho</th>
-                        <th class="px-4 py-3 text-right">SL Đề Xuất</th>
-                        <th class="px-4 py-3 text-right">Đã Giao</th>
-                        <th class="px-4 py-3 text-right text-rose-600">Còn Thiếu</th>
-                        <th class="px-4 py-3 text-center">Trạng Thái</th>
-                        <th class="px-4 py-3 text-center">Tình Trạng</th>
-                        <th class="px-4 py-3 text-center">Ngày Nhận</th>
-                        <th class="px-4 py-3">Ghi Chú</th>
-                        <th class="px-4 py-3 text-right">Thao Tác</th>
+                        <th class="px-2 py-2">Ngày ĐX</th>
+                        <th class="px-2 py-2">Mã & Tên Vật Tư</th>
+                        <th class="px-2 py-2 text-right">Tồn Kho</th>
+                        <th class="px-2 py-2 text-right">SL Đề Xuất</th>
+                        <th class="px-2 py-2 text-right">Đã Giao</th>
+                        <th class="px-2 py-2 text-right text-rose-600">Còn Thiếu</th>
+                        <th class="px-2 py-2 text-center">Trạng Thái</th>
+                        <th class="px-2 py-2 text-center">Tình Trạng</th>
+                        <th class="px-2 py-2 text-center">Ngày Nhận</th>
+                        <th class="px-2 py-2">Ghi Chú</th>
+                        <th class="px-2 py-2 text-right">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
@@ -70,81 +74,82 @@
                             $missing = $plan->proposed_quantity - $plan->delivered_quantity;
                             $missing = $missing > 0 ? $missing : 0;
                         ?>
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="px-4 py-3 text-center">
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                            <td class="px-2 py-1.5 text-center">
                                 <input type="checkbox" wire:model.live="selected" value="<?php echo e($plan->id); ?>" class="rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap"><?php echo e($plan->created_at->format('d/m/Y')); ?></td>
-                            <td class="px-4 py-3 font-medium text-slate-900">
-                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs mr-1"><?php echo e($plan->product?->code ?? 'N/A'); ?></span>
-                                <?php echo e($plan->product?->name ?? 'Vật tư đã bị xóa'); ?>
-
+                            <td class="px-2 py-1.5 whitespace-nowrap text-xs"><?php echo e($plan->created_at->format('d/m/Y')); ?></td>
+                            <td class="px-2 py-1.5 text-sm font-medium text-slate-900 leading-tight">
+                                <div class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-bold inline-block mb-0.5"><?php echo e($plan->product?->code ?? 'N/A'); ?></div><br>
+                                <span class="line-clamp-2 max-w-[180px]" title="<?php echo e($plan->product?->name ?? 'Vật tư đã bị xóa'); ?>"><?php echo e($plan->product?->name ?? 'Vật tư đã bị xóa'); ?></span>
                             </td>
-                            <td class="px-4 py-3 text-right font-bold text-slate-600">
+                            <td class="px-2 py-1.5 text-right font-bold text-slate-600 text-sm whitespace-nowrap">
                                 <?php echo e(number_format($plan->product?->inventory?->quantity ?? 0, 0)); ?>
 
                             </td>
-                            <td class="px-4 py-3 text-right">
+                            <td class="px-2 py-1.5 text-right whitespace-nowrap">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status !== 'completed'): ?>
                                     <input type="number" 
                                            value="<?php echo e($plan->proposed_quantity); ?>" 
                                            wire:change="updateProposedQuantity(<?php echo e($plan->id); ?>, $event.target.value)"
-                                           class="w-20 text-right p-1 text-sm border-slate-300 rounded font-bold text-slate-700 focus:ring-sky-500 focus:border-sky-500">
+                                           class="w-16 text-right p-1 text-sm border-slate-300 rounded font-bold text-slate-700 focus:ring-sky-500 focus:border-sky-500 h-8">
                                 <?php else: ?>
-                                    <span class="font-bold text-slate-700"><?php echo e(number_format($plan->proposed_quantity, 0)); ?></span>
+                                    <span class="font-bold text-slate-700 text-sm"><?php echo e(number_format($plan->proposed_quantity, 0)); ?></span>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
-                            <td class="px-4 py-3 text-right font-bold text-emerald-600"><?php echo e(number_format($plan->delivered_quantity, 0)); ?></td>
-                            <td class="px-4 py-3 text-right font-bold text-rose-600"><?php echo e(number_format($missing, 0)); ?></td>
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-2 py-1.5 text-right font-bold text-emerald-600 text-sm whitespace-nowrap"><?php echo e(number_format($plan->delivered_quantity, 0)); ?></td>
+                            <td class="px-2 py-1.5 text-right font-bold text-rose-600 text-sm whitespace-nowrap"><?php echo e(number_format($missing, 0)); ?></td>
+                            <td class="px-2 py-1.5 text-center whitespace-nowrap">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status === 'pending'): ?>
-                                    <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">Đề xuất</span>
+                                    <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[11px] font-bold inline-block">Đề xuất</span>
                                 <?php elseif($plan->status === 'ordered'): ?>
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-bold">Đã đặt</span>
+                                    <span class="px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded text-[11px] font-bold inline-block">Đã đặt</span>
                                 <?php elseif($plan->status === 'unreceived'): ?>
-                                    <span class="px-2 py-1 bg-rose-100 text-rose-600 rounded-full text-xs font-bold">Chưa giao</span>
+                                    <span class="px-1.5 py-0.5 bg-rose-100 text-rose-600 rounded text-[11px] font-bold inline-block">Chưa giao</span>
                                 <?php elseif($plan->status === 'partial'): ?>
-                                    <span class="px-2 py-1 bg-amber-100 text-amber-600 rounded-full text-xs font-bold">Giao thiếu</span>
+                                    <span class="px-1.5 py-0.5 bg-amber-100 text-amber-600 rounded text-[11px] font-bold inline-block">Giao thiếu</span>
                                 <?php else: ?>
-                                    <span class="px-2 py-1 bg-emerald-100 text-emerald-600 rounded-full text-xs font-bold">Đủ hàng</span>
+                                    <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-600 rounded text-[11px] font-bold inline-block">Đủ hàng</span>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-2 py-1.5 text-center whitespace-nowrap">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status !== 'completed'): ?>
-                                    <select wire:change="updateUrgency(<?php echo e($plan->id); ?>, $event.target.value)" class="p-1 text-xs border-slate-300 rounded focus:ring-sky-500 focus:border-sky-500 <?php echo e($plan->urgency === 'urgent' ? 'text-rose-600 font-bold bg-rose-50' : 'text-slate-600'); ?>">
+                                    <select wire:change="updateUrgency(<?php echo e($plan->id); ?>, $event.target.value)" class="p-1 text-[11px] h-7 border-slate-300 rounded focus:ring-sky-500 focus:border-sky-500 <?php echo e($plan->urgency === 'urgent' ? 'text-rose-600 font-bold bg-rose-50' : 'text-slate-600'); ?>">
                                         <option value="normal" <?php echo e($plan->urgency === 'normal' ? 'selected' : ''); ?>>Bình thường</option>
                                         <option value="urgent" <?php echo e($plan->urgency === 'urgent' ? 'selected' : ''); ?>>Cần gấp</option>
                                     </select>
                                 <?php else: ?>
-                                    <span class="text-xs px-2 py-1 rounded <?php echo e($plan->urgency === 'urgent' ? 'text-rose-600 font-bold bg-rose-50' : 'text-slate-600'); ?>">
+                                    <span class="text-[11px] px-1.5 py-0.5 rounded <?php echo e($plan->urgency === 'urgent' ? 'text-rose-600 font-bold bg-rose-50' : 'text-slate-600'); ?>">
                                         <?php echo e($plan->urgency === 'urgent' ? 'Cần gấp' : 'Bình thường'); ?>
 
                                     </span>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-2 py-1.5 text-center whitespace-nowrap">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status !== 'completed'): ?>
                                     <input type="date" value="<?php echo e($plan->expected_delivery_date ? $plan->expected_delivery_date->format('Y-m-d') : ''); ?>"
                                            wire:change="updateExpectedDate(<?php echo e($plan->id); ?>, $event.target.value)"
-                                           class="p-1 text-xs w-28 border-slate-300 rounded focus:ring-sky-500 focus:border-sky-500 text-slate-600">
+                                           class="p-1 text-[11px] h-7 w-24 border-slate-300 rounded focus:ring-sky-500 focus:border-sky-500 text-slate-600">
                                 <?php else: ?>
-                                    <span class="text-xs text-slate-600 font-medium"><?php echo e($plan->expected_delivery_date ? $plan->expected_delivery_date->format('d/m/Y') : ''); ?></span>
+                                    <span class="text-[11px] text-slate-600 font-medium"><?php echo e($plan->expected_delivery_date ? $plan->expected_delivery_date->format('d/m/Y') : ''); ?></span>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
-                            <td class="px-4 py-3 text-slate-600 max-w-xs truncate" title="<?php echo e($plan->notes); ?>">
-                                <?php echo e($plan->notes); ?>
+                            <td class="px-2 py-1.5 text-slate-600 text-[11px] leading-tight">
+                                <div class="line-clamp-2 max-w-[150px]" title="<?php echo e($plan->notes); ?>">
+                                    <?php echo e($plan->notes); ?>
 
+                                </div>
                             </td>
-                            <td class="px-4 py-3 text-right space-x-1 whitespace-nowrap">
+                            <td class="px-2 py-1.5 text-right space-x-1 whitespace-nowrap">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status === 'pending'): ?>
-                                    <button wire:click="placeOrder(<?php echo e($plan->id); ?>)" class="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded text-xs font-bold transition">Đặt hàng</button>
+                                    <button wire:click="placeOrder(<?php echo e($plan->id); ?>)" class="px-1.5 py-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded text-[11px] font-bold transition">Đặt hàng</button>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status !== 'completed'): ?>
-                                    <button wire:click="openUpdateModal(<?php echo e($plan->id); ?>)" class="px-2 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded text-xs font-bold transition">Cập nhật giao</button>
+                                    <button wire:click="openUpdateModal(<?php echo e($plan->id); ?>)" class="px-1.5 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded text-[11px] font-bold transition">Nhận</button>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                <button wire:click="delete(<?php echo e($plan->id); ?>)" wire:confirm="Bạn có chắc chắn muốn xóa?" class="px-2 py-1 text-rose-600 hover:bg-rose-50 rounded text-xs transition">Xóa</button>
+                                <button wire:click="delete(<?php echo e($plan->id); ?>)" wire:confirm="Bạn có chắc chắn muốn xóa?" class="px-1.5 py-1 text-rose-600 hover:bg-rose-50 rounded text-[11px] transition">Xóa</button>
                             </td>
                         </tr>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>

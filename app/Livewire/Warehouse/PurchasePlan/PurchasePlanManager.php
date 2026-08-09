@@ -22,6 +22,9 @@ class PurchasePlanManager extends Component
     public $new_quantity = 1;
     public $new_notes = '';
 
+    // Số ngày dự trù tự động đề xuất
+    public $reserveDays = 30;
+
     // Dữ liệu cho modal cập nhật
     public $updateId = null;
     public $delivered_quantity = 0;
@@ -71,7 +74,9 @@ class PurchasePlanManager extends Component
         
         $count = 0;
         $daysToAnalyze = 60; // Số ngày phân tích
-        $leadTime = 30; // Thời gian chờ hàng về (ngày)
+        $leadTime = (int) $this->reserveDays; // Thời gian chờ hàng/dự trù linh hoạt (ngày)
+        if ($leadTime <= 0) $leadTime = 30;
+        
         $sixtyDaysAgo = now()->subDays($daysToAnalyze);
 
         foreach ($products as $product) {
@@ -334,7 +339,7 @@ class PurchasePlanManager extends Component
 
     public function render()
     {
-        $plans = $this->getFilteredPlans()->paginate(15);
+        $plans = $this->getFilteredPlans()->paginate(50);
         $allProducts = Product::orderBy('name')->get();
 
         return view('livewire.warehouse.purchase-plan.purchase-plan-manager', [

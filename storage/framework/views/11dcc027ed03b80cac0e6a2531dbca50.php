@@ -56,7 +56,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="relative z-10 min-h-screen flex flex-col items-center justify-center p-2">
         <div class="text-center mb-8 absolute top-8 left-0 right-0">
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-indigo-600 uppercase">
                 Hệ Thống ERP Đa Chi Nhánh
@@ -120,7 +120,7 @@
     <!-- PIN Modal -->
     <div id="pinModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm opacity-0 pointer-events-none">
         <div id="pinModalContent" class="bg-white p-8 rounded-3xl w-full max-w-md border border-slate-100 shadow-2xl relative">
-            <button onclick="closePinModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors">
+            <button onclick="closePinModal()" class="absolute top-2 right-4 text-slate-400 hover:text-slate-700 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
             

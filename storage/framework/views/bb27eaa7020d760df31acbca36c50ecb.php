@@ -8,7 +8,7 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 no-print"
+             class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-2 no-print"
              style="display: none;"
              @click="showLightbox = false"
              @keydown.escape.window="showLightbox = false">
@@ -20,7 +20,7 @@
         </div>
 
 
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
         <!-- Tabs -->
         <div class="flex bg-slate-100 p-1 rounded-lg w-full mb-2">
             <button wire:click="switchTab('materials')" class="flex-1 py-2 text-sm font-bold uppercase rounded-md transition-all <?php echo e($activeTab === 'materials' ? 'bg-white text-indigo-600 shadow' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'); ?>">
@@ -129,7 +129,7 @@
     </div>
 
     <!-- Toast Notifications -->
-    <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+    <div class="fixed top-2 right-4 z-50 flex flex-col gap-2 pointer-events-none">
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('message')): ?>
             <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show" x-transition.opacity.duration.500ms
                  class="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-xl shadow-lg border border-emerald-200 font-black text-[13px] flex items-center gap-2 pointer-events-auto">
@@ -330,13 +330,13 @@
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="$set('showModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-y-auto max-h-[85vh] shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4"><?php echo e($activeTab === 'materials' ? ($isEdit ? 'Chỉnh sửa vật tư' : 'Thêm vật tư mới') : ($isEdit ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới')); ?></h3>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-2">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($activeTab === 'materials'): ?>
-                            <div class="col-span-2 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mb-2">
+                            <div class="col-span-2 bg-indigo-50/50 p-2 rounded-xl border border-indigo-100 mb-2">
                                 <label class="block text-[11px] font-black text-indigo-900 uppercase tracking-widest mb-3">📸 Hình ảnh vật tư</label>
-                                <div class="flex items-center gap-6">
+                                <div class="flex items-center gap-2">
                                     <div class="relative group">
                                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($image): ?>
                                             <img src="<?php echo e($image->temporaryUrl()); ?>" class="h-24 w-24 object-cover rounded-xl border-2 border-white shadow-md ring-2 ring-indigo-200">
@@ -417,7 +417,7 @@ if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
-                            <div class="col-span-2 flex gap-4 my-2">
+                            <div class="col-span-2 flex gap-2 my-2">
                                 <label class="block text-sm font-medium text-gray-700 items-center flex">Phân loại gốc:</label>
                                 <label class="inline-flex items-center">
                                     <input type="radio" wire:model="type" value="product_produced" class="text-blue-600">
@@ -625,7 +625,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                         </button>
                         
                         <div wire:loading wire:target="save" class="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-50 rounded-lg">
-                            <div class="bg-white p-4 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center gap-3">
+                            <div class="bg-white p-2 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center gap-3">
                                 <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
                                 <span class="text-sm font-black text-indigo-900 uppercase">Đang xử lý dữ liệu...</span>
                             </div>
@@ -642,7 +642,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Nhập dữ liệu từ Excel</h3>
                         
                         <div class="mb-4">
@@ -683,7 +683,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
     <style>
         @media print {
             .no-print, header, nav, aside, .sidebar, .sidebar-toolbar,
-            .bg-white.p-6.rounded-2xl, .bg-white.rounded-xl.shadow-sm,
+            .bg-white.p-2.rounded-2xl, .bg-white.rounded-xl.shadow-sm,
             .px-4.py-3.bg-gray-50.border-t, button, input, select {
                 display: none !important;
             }

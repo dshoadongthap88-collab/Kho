@@ -21,11 +21,13 @@ class InventoryTransaction extends Model
         'reference_id',
         'note',
         'created_by',
+        'is_exported_app',
     ];
 
     protected $casts = [
         'expiry_date' => 'date',
         'transaction_date' => 'date',
+        'is_exported_app' => 'boolean',
     ];
 
     public function product()

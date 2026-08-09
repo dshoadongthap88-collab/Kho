@@ -24,6 +24,11 @@
                         <option value="adjust">Điều chỉnh</option>
                         <option value="transfer">Chuyển kho</option>
                     </select>
+                    <select wire:model.live="filterExportedApp" class="rounded-lg border-gray-200 shadow-sm text-xs font-bold focus:ring-indigo-500 py-2 ml-1">
+                        <option value="">-- Xuất app --</option>
+                        <option value="1">Đã xuất app</option>
+                        <option value="0">Chưa xuất app</option>
+                    </select>
                 </div>
                 <button type="button" wire:click="exportExcel" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer">
                     <span wire:loading.remove wire:target="exportExcel" class="text-sm">📊</span>
@@ -82,6 +87,7 @@
                     <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Người liên hệ</th>
                     <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Người thực hiện</th>
                     <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Ghi chú</th>
+                    <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Xuất app</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -131,6 +137,11 @@
                     </td>
                     <td class="px-2 py-1.5 text-xs font-medium text-gray-600 italic">👤 {{ $tx->creator->name ?? '-' }}</td>
                     <td class="px-2 py-1.5 text-[10px] text-gray-400 leading-tight">{{ \Illuminate\Support\Str::limit($tx->note, 100) }}</td>
+                    <td class="px-2 py-1.5 text-center">
+                        <button type="button" wire:click="toggleExportedApp({{ $tx->id }})" class="px-2 py-1 rounded text-[10px] font-bold transition-colors cursor-pointer {{ $tx->is_exported_app ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
+                            {{ $tx->is_exported_app ? 'Đã xuất app' : 'Chưa xuất app' }}
+                        </button>
+                    </td>
                 </tr>
                 @empty
                 <tr><td colspan="9" class="px-4 py-12 text-center text-gray-400 italic">Dữ liệu trống trong khoảng thời gian này...</td></tr>

@@ -19,6 +19,7 @@ class TransactionDetailReport extends Component
     public $filterProduct = '';
     public $filterAssetCode = '';
     public $filterUser = '';
+    public $filterExportedApp = '';
     public $selectedIds = [];
 
     public function toggleSelectAll($idsOnPage)
@@ -61,6 +62,15 @@ class TransactionDetailReport extends Component
         session()->flash('message', 'Đã xóa thành công các giao dịch được chọn.');
     }
 
+    public function toggleExportedApp($transactionId)
+    {
+        $transaction = InventoryTransaction::find($transactionId);
+        if ($transaction) {
+            $transaction->is_exported_app = !$transaction->is_exported_app;
+            $transaction->save();
+        }
+    }
+
     public function exportExcel()
     {
         $query = InventoryTransaction::with(['product', 'creator'])
@@ -72,6 +82,10 @@ class TransactionDetailReport extends Component
             } else {
                 $query->where('type', $this->filterType);
             }
+        }
+
+        if ($this->filterExportedApp !== '') {
+            $query->where('is_exported_app', $this->filterExportedApp === '1');
         }
 
         if ($this->filterProduct) {
@@ -108,6 +122,10 @@ class TransactionDetailReport extends Component
             } else {
                 $query->where('type', $this->filterType);
             }
+        }
+
+        if ($this->filterExportedApp !== '') {
+            $query->where('is_exported_app', $this->filterExportedApp === '1');
         }
 
         if ($this->filterProduct) {

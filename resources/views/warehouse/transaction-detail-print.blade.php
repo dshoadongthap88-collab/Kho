@@ -114,9 +114,10 @@
                         <th style="width: 5%">STT</th>
                         <th style="width: 15%">MÃ TÀI SẢN</th>
                         <th style="width: 15%">MÃ VẬT TƯ</th>
-                        <th style="width: 15%">SỐ LƯỢNG</th>
-                        <th style="width: 25%">BP SỬ DỤNG</th>
-                        <th style="width: 25%">GHI CHÚ</th>
+                        <th style="width: 10%">SỐ LƯỢNG</th>
+                        <th style="width: 20%">BP SỬ DỤNG</th>
+                        <th style="width: 20%">GHI CHÚ</th>
+                        <th style="width: 15%">XUẤT APP</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -138,10 +139,13 @@
                             <td>
                                 {{ $tx->item_note ?? $tx->note ?? '' }}
                             </td>
+                            <td class="text-center font-bold" style="font-size: 10px; {{ $tx->is_exported_app ? 'color: green;' : 'color: red;' }}">
+                                {{ $tx->is_exported_app ? 'Đã xuất' : 'Chưa xuất' }}
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center" style="padding: 20px;">Không có dữ liệu hiển thị</td>
+                            <td colspan="7" class="text-center" style="padding: 20px;">Không có dữ liệu hiển thị</td>
                         </tr>
                     @endforelse
                 </tbody>

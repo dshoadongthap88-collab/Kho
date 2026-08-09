@@ -110,15 +110,8 @@ class PurchasePlanManager extends Component
                     // Tự động phân loại khẩn cấp (Nếu tồn kho không đủ dùng trong 10 ngày)
                     $urgency = ($currentStock <= ($dailyUsage * 10)) ? 'urgent' : 'normal';
 
-                    // Ghi chú AI
-                    if ($dailyUsage > 0) {
-                        $notes = sprintf(
-                            "AI: Tiêu thụ %.1f cái/ngày. Cần đặt trước để kịp cấp phát trong %d ngày (ROP: %d).",
-                            $dailyUsage, $leadTime, ceil($rop)
-                        );
-                    } else {
-                        $notes = "Tự động đề xuất do tồn kho (".$currentStock.") <= tồn tối thiểu (".$product->min_stock.").";
-                    }
+                    // Ghi chú AI (Người dùng yêu cầu để trống hoàn toàn mặc định)
+                    $notes = '';
 
                     PurchasePlan::create([
                         'product_id' => $product->id,
@@ -141,7 +134,7 @@ class PurchasePlanManager extends Component
         $this->resetValidation();
         $this->new_product_id = '';
         $this->new_quantity = 1;
-        $this->new_notes = 'Đề xuất thủ công';
+        $this->new_notes = '';
         $this->dispatch('open-modal', 'add-plan-modal');
     }
 
@@ -208,6 +201,14 @@ class PurchasePlanManager extends Component
             $plan->save();
             session()->flash('message', 'Đã cập nhật ngày nhận.');
         }
+    }
+
+    public function updateNotes($id, $notes)
+    {
+        $plan = PurchasePlan::findOrFail($id);
+        $plan->notes = $notes;
+        $plan->save();
+        session()->flash('message', 'Đã cập nhật ghi chú.');
     }
 
     public function printSelected()

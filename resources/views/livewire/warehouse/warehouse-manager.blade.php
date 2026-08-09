@@ -1,6 +1,6 @@
 <div class="px-4">
     <!-- Header -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
             <p class="text-sm text-gray-500">Quản lý danh mục kho, địa điểm lưu trữ trên hệ thống</p>
         </div>
@@ -11,13 +11,13 @@
 
     <!-- Thông báo -->
     @if (session()->has('message'))
-        <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
+        <div class="mb-4 p-2 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
             <span>✅</span> {{ session('message') }}
         </div>
     @endif
 
     <!-- Toolbar -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-4 items-center justify-between">
+    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-2 items-center justify-between">
         <div class="w-full md:w-1/3 relative">
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm kiếm mã, tên kho..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
             <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
@@ -30,25 +30,25 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã kho (DA-XXX)</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tên kho (DỰ ÁN...)</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Địa chỉ</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Người quản lý (THỦ KHO)</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã kho (DA-XXX)</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tên kho (DỰ ÁN...)</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Địa chỉ</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Người quản lý (THỦ KHO)</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($warehouses as $warehouse)
                         <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-indigo-600">{{ $warehouse->code }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900 font-semibold">{{ $warehouse->name }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $warehouse->address ?? '-' }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-indigo-600">{{ $warehouse->code }}</td>
+                            <td class="px-2 py-1.5 text-sm text-gray-900 font-semibold">{{ $warehouse->name }}</td>
+                            <td class="px-2 py-1.5 text-sm text-gray-500">{{ $warehouse->address ?? '-' }}</td>
+                            <td class="px-2 py-1.5 text-sm text-gray-500">
                                 <div>{{ $warehouse->manager_name ?? '-' }}</div>
                                 <div class="text-xs text-gray-400">{{ $warehouse->phone ?? '' }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-2 py-1.5 whitespace-nowrap text-center">
                                 @if($warehouse->status == 'active')
                                     <span class="px-2.5 py-1 inline-flex text-[11px] leading-5 font-semibold rounded-full bg-green-100 text-green-800">Hoạt động</span>
                                 @elseif($warehouse->status == 'inactive')
@@ -57,7 +57,7 @@
                                     <span class="px-2.5 py-1 inline-flex text-[11px] leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Đã đóng</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-2 py-1.5 whitespace-nowrap text-right text-sm font-medium">
                                 <button wire:click="edit({{ $warehouse->id }})" class="text-indigo-600 hover:text-indigo-900 mx-2 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded" title="Sửa">✏️</button>
                                 <button x-on:click="if(confirm('Bạn có chắc chắn muốn xóa kho này?')) $wire.delete({{ $warehouse->id }})" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded" title="Xóa">🗑️</button>
                             </td>
@@ -89,7 +89,7 @@
 
                 <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
                     <form wire:submit.prevent="save">
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                             <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4" id="modal-title">
                                 {{ $warehouseId ? 'Cập nhật kho' : 'Thêm kho mới' }}
                             </h3>
@@ -113,7 +113,7 @@
                                     @error('address') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Người quản lý (THỦ KHO)</label>
                                         <input type="text" wire:model="manager_name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">

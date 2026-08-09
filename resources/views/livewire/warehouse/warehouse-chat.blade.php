@@ -13,7 +13,7 @@
     </div>
 
     <!-- Messages Area -->
-    <div class="flex-1 overflow-y-auto p-6 bg-slate-50 space-y-6" id="chat-messages-container">
+    <div class="flex-1 overflow-y-auto p-2 bg-slate-50 space-y-6" id="chat-messages-container">
         @forelse($messages as $msg)
             @php
                 $isMe = $msg->user_id === auth()->id();
@@ -64,7 +64,7 @@
                             <div class="whitespace-pre-wrap {{ $msg->type === 'system' ? 'font-bold' : '' }}">{!! $msg->type === 'system' ? $content : $content !!}</div>
                         @endif
                         
-                        <div class="text-[10px] {{ $isMe ? 'text-sky-100' : 'text-gray-400' }} mt-2 text-right flex justify-between items-center gap-4">
+                        <div class="text-[10px] {{ $isMe ? 'text-sky-100' : 'text-gray-400' }} mt-2 text-right flex justify-between items-center gap-2">
                             @if($isMentioned && !$isMe) <span class="text-yellow-600 font-bold bg-yellow-100 px-1 rounded">Bạn được nhắc!</span> @else <span></span> @endif
                             <span>{{ $msg->created_at->format('H:i d/m') }}</span>
                         </div>
@@ -101,7 +101,7 @@
             </ul>
         </div>
 
-        <div class="p-4">
+        <div class="p-2">
             <!-- Reply Preview box -->
             @if($reply_to_id)
                 @php

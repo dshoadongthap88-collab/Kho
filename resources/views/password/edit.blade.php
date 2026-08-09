@@ -8,13 +8,13 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <nav class="bg-indigo-900 text-white shadow-xl">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="w-full px-4 py-3 flex items-center justify-between">
             <a href="{{ route('warehouse.inventory') }}" class="flex items-center gap-2 text-xl font-bold">
                 <span class="bg-white text-indigo-900 p-1 rounded">📦</span>
                 <span>ERP KHO</span>
             </a>
             
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
                 <span class="text-sm">{{ Auth::user()->name }}</span>
             </div>
         </div>
@@ -25,7 +25,7 @@
             <h1 class="text-2xl font-bold text-gray-800 mb-6">🔐 Đổi mật khẩu</h1>
 
             @if (session('success'))
-                <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                <div class="mb-4 p-2 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                     {{ session('success') }}
                 </div>
             @endif

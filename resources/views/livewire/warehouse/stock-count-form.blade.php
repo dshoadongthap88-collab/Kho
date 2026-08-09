@@ -1,17 +1,17 @@
 <div>
     {{-- Flash Messages --}}
     @if(session('success'))
-    <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl flex items-center gap-3 shadow-sm no-print">
+    <div class="mb-4 p-2 bg-green-50 border border-green-200 text-green-800 rounded-xl flex items-center gap-3 shadow-sm no-print">
         <span class="text-xl">✅</span> <span class="font-semibold text-sm">{!! session('success') !!}</span>
     </div>
     @endif
     @if(session('error'))
-    <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl flex items-center gap-3 shadow-sm no-print">
+    <div class="mb-4 p-2 bg-red-50 border border-red-200 text-red-800 rounded-xl flex items-center gap-3 shadow-sm no-print">
         <span class="text-xl">❌</span> <span class="font-semibold text-sm">{{ session('error') }}</span>
     </div>
     @endif
     @if(session('info'))
-    <div class="mb-4 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl flex items-center gap-3 shadow-sm no-print">
+    <div class="mb-4 p-2 bg-blue-50 border border-blue-200 text-blue-800 rounded-xl flex items-center gap-3 shadow-sm no-print">
         <span class="text-xl">ℹ️</span> <span class="font-semibold text-sm">{{ session('info') }}</span>
     </div>
     @endif
@@ -79,13 +79,13 @@
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Vị trí</th>
-                            <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">TÊN VẬT TƯ / MÃ VẬT TƯ</th>
-                            <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Tồn hệ thống</th>
-                            <th class="px-4 py-3 text-center text-[10px] font-bold text-yellow-600 uppercase no-print">Thực tế (Nhập)</th>
-                            <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase hidden print:table-cell">Thực tế</th>
-                            <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Chênh lệch</th>
-                            <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase no-print">Ghi chú</th>
+                            <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Vị trí</th>
+                            <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">TÊN VẬT TƯ / MÃ VẬT TƯ</th>
+                            <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Tồn hệ thống</th>
+                            <th class="px-2 py-2 text-center text-[10px] font-bold text-yellow-600 uppercase no-print">Thực tế (Nhập)</th>
+                            <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase hidden print:table-cell">Thực tế</th>
+                            <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Chênh lệch</th>
+                            <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase no-print">Ghi chú</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
@@ -101,7 +101,7 @@
                                 <input type="number" 
                                     value="{{ $item->actual_quantity }}"
                                     wire:change="updateActualQty({{ $item->id }}, $event.target.value)"
-                                    class="w-24 text-center border border-yellow-300 rounded-lg px-2 py-1 text-sm font-bold focus:ring-yellow-500 focus:border-yellow-500 bg-yellow-50"
+                                    class="w-24 text-center border border-yellow-300 rounded-lg px-1.5 py-1 text-[11px] text-xs font-bold focus:ring-yellow-500 focus:border-yellow-500 bg-yellow-50"
                                     placeholder="0">
                             </td>
                             <td class="px-4 py-2 text-center font-black text-indigo-600 hidden print:table-cell">
@@ -123,7 +123,7 @@
             </div>
 
             {{-- Chữ ký (Chỉ hiện khi in) --}}
-            <div class="hidden print:grid grid-cols-3 text-center mt-12 gap-4 pb-10">
+            <div class="hidden print:grid grid-cols-3 text-center mt-12 gap-2 pb-10">
                 <div>
                     <p class="font-bold text-sm text-black">Thủ kho</p>
                     <p class="text-[10px] italic text-gray-500">(Ký, ghi rõ họ tên)</p>
@@ -143,7 +143,7 @@
         <div class="bg-white rounded-xl border shadow-sm p-5 mb-6 no-print">
             <h2 class="text-sm font-black text-gray-700 uppercase mb-3">➕ Tạo phiếu kiểm kê mới</h2>
             <p class="text-xs text-gray-400 mb-3">Hệ thống sẽ tự động tải toàn bộ danh sách sản phẩm và số tồn kho hiện tại vào phiếu kiểm kê để bạn đối chiếu thực tế.</p>
-            <div class="flex gap-4 items-end">
+            <div class="flex gap-2 items-end">
                 <div class="flex-1">
                     <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ghi chú phiếu kiểm kê</label>
                     <input type="text" wire:model="countNote" placeholder="VD: Kiểm kê tháng 5/2026..." class="w-full rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
@@ -159,7 +159,7 @@
 
         {{-- Lịch sử phiếu kiểm kê --}}
         <div class="bg-white rounded-xl shadow border overflow-hidden no-print">
-            <div class="px-5 py-3 border-b flex flex-wrap justify-between items-center gap-4">
+            <div class="px-5 py-3 border-b flex flex-wrap justify-between items-center gap-2">
                 <div class="flex items-center gap-3">
                     <h3 class="text-sm font-bold text-gray-700">Lịch sử phiếu kiểm kê</h3>
                     <div class="flex items-center gap-1 ml-4 no-print" wire:key="bulk-actions-toolbar-container">
@@ -203,19 +203,19 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-center w-10">
+                        <th class="px-2 py-2 text-center w-10">
                             <input type="checkbox" 
                                 wire:key="select-all-checkbox"
                                 wire:click="toggleSelectAll([{{ implode(',', $stockCounts->pluck('id')->toArray()) }}])"
                                 {{ count($selectedStockCounts) >= count($stockCounts) && count($selectedStockCounts) > 0 ? 'checked' : '' }}
                                 class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </th>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Mã phiếu</th>
-                        <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Trạng thái</th>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Ghi chú</th>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Người tạo</th>
-                        <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Ngày tạo</th>
-                        <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase no-print">Thao tác</th>
+                        <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Mã phiếu</th>
+                        <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Trạng thái</th>
+                        <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Ghi chú</th>
+                        <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Người tạo</th>
+                        <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Ngày tạo</th>
+                        <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase no-print">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -229,17 +229,17 @@
                         $s = $statusMap[$sc->status] ?? ['label' => $sc->status, 'class' => 'bg-gray-100 text-gray-600'];
                     @endphp
                     <tr wire:key="sc-row-{{ $sc->id }}" class="hover:bg-gray-50 transition-colors {{ in_array($sc->id, $selectedStockCounts) ? 'bg-indigo-50/50' : '' }}">
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-2 py-1.5 text-center">
                             <input type="checkbox" wire:model.live="selectedStockCounts" value="{{ $sc->id }}" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                         </td>
-                        <td class="px-4 py-3 text-sm font-bold text-indigo-700">{{ $sc->code }}</td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-2 py-1.5 text-sm font-bold text-indigo-700">{{ $sc->code }}</td>
+                        <td class="px-2 py-1.5 text-center">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $s['class'] }}">{{ $s['label'] }}</span>
                         </td>
-                        <td class="px-4 py-3 text-xs text-gray-500">{{ $sc->note }}</td>
-                        <td class="px-4 py-3 text-xs text-gray-600">👤 {{ $sc->creator->name ?? '-' }}</td>
-                        <td class="px-4 py-3 text-xs text-gray-400 font-mono">{{ $sc->created_at->format('d/m/Y H:i') }}</td>
-                        <td class="px-4 py-3 text-center no-print">
+                        <td class="px-2 py-1.5 text-xs text-gray-500">{{ $sc->note }}</td>
+                        <td class="px-2 py-1.5 text-xs text-gray-600">👤 {{ $sc->creator->name ?? '-' }}</td>
+                        <td class="px-2 py-1.5 text-xs text-gray-400 font-mono">{{ $sc->created_at->format('d/m/Y H:i') }}</td>
+                        <td class="px-2 py-1.5 text-center no-print">
                             <div class="flex items-center justify-center gap-2">
                                 <button wire:click="editStockCount({{ $sc->id }})" 
                                     wire:loading.attr="disabled"
@@ -284,7 +284,7 @@
 
     @if($activeTab === 'periodic')
     <div class="space-y-6">
-        <div class="bg-white rounded-xl border shadow-sm p-6">
+        <div class="bg-white rounded-xl border shadow-sm p-2">
             <h2 class="text-base font-black text-emerald-800 uppercase mb-4">📊 Kiểm kê định kỳ & Toàn bộ (Excel)</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -326,7 +326,7 @@
         </div>
 
         @if($currentCount && $currentCount->type === 'periodic')
-        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-2 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <span class="text-2xl">📝</span>
                 <div>
@@ -354,7 +354,7 @@
             </button>
         </div>
 
-        <div class="p-6">
+        <div class="p-2">
             @if(empty($syncCheckResults))
                 <div class="py-12 text-center text-gray-400 italic">
                     Nhấn "Kiểm tra sai lệch" để bắt đầu quá trình đối soát dữ liệu.
@@ -381,13 +381,13 @@
                         <tbody class="divide-y divide-gray-100">
                             @foreach($syncCheckResults as $res)
                             <tr>
-                                <td class="px-4 py-3">
-                                    <div class="text-sm font-bold text-gray-800">{{ $res['product_name'] }}</div>
+                                <td class="px-2 py-1.5">
+                                    <div class="text-xs font-bold text-gray-800">{{ $res['product_name'] }}</div>
                                     <div class="text-[10px] text-gray-400 font-mono">{{ $res['product_code'] }}</div>
                                 </td>
-                                <td class="px-4 py-3 text-center font-bold">{{ number_format($res['stored_qty']) }}</td>
-                                <td class="px-4 py-3 text-center font-bold text-indigo-600">{{ number_format($res['calculated_qty']) }}</td>
-                                <td class="px-4 py-3 text-center font-black text-red-600">{{ number_format($res['difference']) }}</td>
+                                <td class="px-2 py-1.5 text-center font-bold">{{ number_format($res['stored_qty']) }}</td>
+                                <td class="px-2 py-1.5 text-center font-bold text-indigo-600">{{ number_format($res['calculated_qty']) }}</td>
+                                <td class="px-2 py-1.5 text-center font-black text-red-600">{{ number_format($res['difference']) }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -403,7 +403,7 @@
         <div class="max-w-4xl mx-auto">
             <div class="flex justify-between items-center mb-8 no-print">
                 <h1 class="text-2xl font-black text-gray-800">🖨️ IN HÀNG LOẠT ({{ count($printBatchCodes) }} PHIẾU)</h1>
-                <div class="flex gap-4">
+                <div class="flex gap-2">
                     <button onclick="window.print()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-black shadow-lg">IN NGAY</button>
                     <button wire:click="$set('isPrintingMultiple', false)" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold">ĐÓNG</button>
                 </div>
@@ -458,7 +458,7 @@
                     </table>
                     
                     {{-- Chữ ký (Cho In hàng loạt) --}}
-                    <div class="grid grid-cols-3 text-center mt-12 gap-4 pb-10">
+                    <div class="grid grid-cols-3 text-center mt-12 gap-2 pb-10">
                         <div>
                             <p class="font-bold text-sm text-black">Thủ kho</p>
                             <p class="text-[10px] italic text-gray-500">(Ký, ghi rõ họ tên)</p>
@@ -511,14 +511,14 @@
         </div>
 
         <!-- Message logs -->
-        <div class="p-6 h-[400px] overflow-y-auto space-y-4 bg-slate-50 flex flex-col justify-end">
+        <div class="p-2 h-[400px] overflow-y-auto space-y-4 bg-slate-50 flex flex-col justify-end">
             <div class="space-y-4 overflow-y-auto pr-2 flex-1">
                 @foreach($chatMessages as $msg)
                     <div class="flex {{ $msg['sender'] === 'user' ? 'justify-end' : 'justify-start' }} items-start gap-2.5">
                         @if($msg['sender'] === 'ai')
                             <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-bold shrink-0">AI</div>
                         @endif
-                        <div class="flex flex-col w-full max-w-[450px] leading-1.5 p-4 border-gray-200 rounded-r-xl rounded-bl-xl {{ $msg['sender'] === 'user' ? 'bg-indigo-600 text-white rounded-l-xl rounded-br-xl' : 'bg-white text-gray-800' }} shadow-sm">
+                        <div class="flex flex-col w-full max-w-[450px] leading-1.5 p-2 border-gray-200 rounded-r-xl rounded-bl-xl {{ $msg['sender'] === 'user' ? 'bg-indigo-600 text-white rounded-l-xl rounded-br-xl' : 'bg-white text-gray-800' }} shadow-sm">
                             <p class="text-sm font-normal whitespace-pre-wrap">{!! \Illuminate\Mail\Markdown::parse($msg['text']) !!}</p>
                             <span class="text-[10px] font-normal text-right mt-1.5 {{ $msg['sender'] === 'user' ? 'text-indigo-200' : 'text-gray-400' }}">{{ $msg['timestamp'] }}</span>
                         </div>
@@ -550,7 +550,7 @@
         </div>
 
         <!-- Chat input form -->
-        <form wire:submit.prevent="sendChatMessage" class="p-4 bg-white border-t flex gap-3">
+        <form wire:submit.prevent="sendChatMessage" class="p-2 bg-white border-t flex gap-3">
             <input type="text" 
                 wire:model="chatInput"
                 placeholder="Nhập tin nhắn..." 

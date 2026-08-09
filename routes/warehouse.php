@@ -207,7 +207,20 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
                 'stockInCount' => $stockInCount, 'stockOutCount' => $stockOutCount, 'stockTransferCount' => $stockTransferCount,
                 'stockRecoveryCount' => $stockRecoveryCount, 'totalStockOutOrders' => $totalStockOutOrders, 'assetExportCount' => $assetExportCount, 'materialExportCount' => $stockOutCount,
             ];
-            return view('warehouse.reports.daily-report-print', compact('reportData', 'date'));
+            
+            $detailed = request('detailed') == '1';
+            $transactions = null;
+            $assetCodesCount = 0;
+            $productCodesCount = 0;
+            
+            if ($detailed) {
+                $transactions = \App\Models\InventoryTransaction::with(['product', 'creator', 'reference'])
+                    ->whereDate('created_at', $parsedDate)->orderBy('created_at', 'desc')->get();
+                $assetCodesCount = $transactions->filter(function($tx) { return $tx->reference && isset($tx->reference->asset_code) && !empty($tx->reference->asset_code); })->pluck('reference.asset_code')->unique()->count();
+                $productCodesCount = $transactions->filter(function($tx) { return $tx->product_id; })->pluck('product_id')->unique()->count();
+            }
+
+            return view('warehouse.reports.daily-report-print', compact('reportData', 'date', 'detailed', 'transactions', 'assetCodesCount', 'productCodesCount'));
         })->name('reports.daily.print');
     });
 

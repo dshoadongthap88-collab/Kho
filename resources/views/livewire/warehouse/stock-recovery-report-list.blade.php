@@ -11,7 +11,7 @@
     </style>
 
     <!-- Filters and Actions -->
-    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-2 mb-6 no-print">
         <div class="flex flex-wrap items-center gap-3">
             <!-- Date Filters -->
             <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
@@ -83,20 +83,20 @@
     @endif
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-4 gap-4 mb-6">
-        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 shadow-sm">
+    <div class="grid grid-cols-4 gap-2 mb-6">
+        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-2 shadow-sm">
             <p class="text-xs font-bold text-indigo-600 uppercase mb-1">Tổng phiếu</p>
             <p class="text-2xl font-black text-indigo-700">{{ $summary['total'] }}</p>
         </div>
-        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 shadow-sm">
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-2 shadow-sm">
             <p class="text-xs font-bold text-yellow-600 uppercase mb-1">Đang chờ</p>
             <p class="text-2xl font-black text-yellow-700">{{ $summary['pending'] }}</p>
         </div>
-        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm">
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-2 shadow-sm">
             <p class="text-xs font-bold text-blue-600 uppercase mb-1">Đã duyệt</p>
             <p class="text-2xl font-black text-blue-700">{{ $summary['approved'] }}</p>
         </div>
-        <div class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
+        <div class="bg-green-50 border border-green-200 rounded-xl p-2 shadow-sm">
             <p class="text-xs font-bold text-green-600 uppercase mb-1">Tổng SL thu hồi</p>
             <p class="text-2xl font-black text-green-700">{{ number_format($summary['total_quantity'], 0, ',', '.') }}</p>
         </div>
@@ -107,52 +107,52 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
-                    <th class="px-4 py-3 w-10 text-center">
+                    <th class="px-2 py-2 w-10 text-center">
                         <input type="checkbox" wire:click="toggleSelectAll({{ collect($recoveries)->pluck('id') }})" 
                             {{ count(array_intersect(collect($recoveries)->pluck('id')->toArray(), $selectedIds)) === collect($recoveries)->count() && collect($recoveries)->count() > 0 ? 'checked' : '' }}
                             class="rounded border-slate-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                     </th>
-                    <th class="px-4 py-3">Số thu hồi</th>
-                    <th class="px-4 py-3">Số PX</th>
-                    <th class="px-4 py-3">Mã vật tư</th>
-                    <th class="px-4 py-3">Tên vật tư</th>
-                    <th class="px-4 py-3 text-center">Số lượng</th>
-                    <th class="px-4 py-3 text-center">ĐVT</th>
-                    <th class="px-4 py-3">Ngày thu hồi</th>
-                    <th class="px-4 py-3">Trạng thái</th>
-                    <th class="px-4 py-3 text-right no-print">Thao tác</th>
+                    <th class="px-2 py-2">Số thu hồi</th>
+                    <th class="px-2 py-2">Số PX</th>
+                    <th class="px-2 py-2">Mã vật tư</th>
+                    <th class="px-2 py-2">Tên vật tư</th>
+                    <th class="px-2 py-2 text-center">Số lượng</th>
+                    <th class="px-2 py-2 text-center">ĐVT</th>
+                    <th class="px-2 py-2">Ngày thu hồi</th>
+                    <th class="px-2 py-2">Trạng thái</th>
+                    <th class="px-2 py-2 text-right no-print">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($recoveries as $recovery)
                     <tr class="hover:bg-slate-50/80 transition group {{ in_array($recovery->id, $selectedIds) ? 'bg-indigo-50/50' : '' }}">
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-2 py-1.5 text-center">
                             <input type="checkbox" wire:model.live="selectedIds" value="{{ $recovery->id }}" class="rounded border-slate-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </td>
-                        <td class="px-4 py-3 font-mono font-black text-indigo-700">{{ $recovery->recovery_number }}</td>
-                        <td class="px-4 py-3 font-mono text-xs text-gray-600">{{ $recovery->stockOut?->code ?? '-' }}</td>
-                        <td class="px-4 py-3 font-mono text-xs">{{ $recovery->product?->code ?? '' }}</td>
-                        <td class="px-4 py-3 text-gray-800">{{ $recovery->product?->name ?? '' }}</td>
-                        <td class="px-4 py-3 text-center font-bold text-indigo-700">{{ number_format($recovery->quantity, 2) }}</td>
-                        <td class="px-4 py-3 text-center text-gray-600">{{ $recovery->unit ?? '-' }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ $recovery->recovery_date->format('d/m/Y') }}</td>
-                        <td class="px-4 py-3">
+                        <td class="px-2 py-1.5 font-mono font-black text-indigo-700">{{ $recovery->recovery_number }}</td>
+                        <td class="px-2 py-1.5 font-mono text-xs text-gray-600">{{ $recovery->stockOut?->code ?? '-' }}</td>
+                        <td class="px-2 py-1.5 font-mono text-xs">{{ $recovery->product?->code ?? '' }}</td>
+                        <td class="px-2 py-1.5 text-gray-800">{{ $recovery->product?->name ?? '' }}</td>
+                        <td class="px-2 py-1.5 text-center font-bold text-indigo-700">{{ number_format($recovery->quantity, 2) }}</td>
+                        <td class="px-2 py-1.5 text-center text-gray-600">{{ $recovery->unit ?? '-' }}</td>
+                        <td class="px-2 py-1.5 text-gray-600">{{ $recovery->recovery_date->format('d/m/Y') }}</td>
+                        <td class="px-2 py-1.5">
                             @switch($recovery->status)
                                 @case('pending')
-                                    <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">Đang chờ</span>
+                                    <span class="bg-yellow-100 text-yellow-700 px-1.5 py-1 text-[11px] rounded text-xs">Đang chờ</span>
                                     @break
                                 @case('approved')
-                                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Đã duyệt</span>
+                                    <span class="bg-blue-100 text-blue-700 px-1.5 py-1 text-[11px] rounded text-xs">Đã duyệt</span>
                                     @break
                                 @case('completed')
-                                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Đã thu hồi</span>
+                                    <span class="bg-green-100 text-green-700 px-1.5 py-1 text-[11px] rounded text-xs">Đã thu hồi</span>
                                     @break
                                 @case('cancelled')
-                                    <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Đã hủy</span>
+                                    <span class="bg-red-100 text-red-700 px-1.5 py-1 text-[11px] rounded text-xs">Đã hủy</span>
                                     @break
                             @endswitch
                         </td>
-                        <td class="px-4 py-3 text-right flex gap-1 justify-end no-print">
+                        <td class="px-2 py-1.5 text-right flex gap-1 justify-end no-print">
                             <button wire:click="printSingle({{ $recovery->id }})" class="text-slate-400 hover:text-indigo-600 p-1 transition-all hover:scale-110" title="In phiếu">🖨️</button>
                             <button wire:click="edit({{ $recovery->id }})" class="text-indigo-500 hover:text-indigo-700 p-1 transition-all hover:scale-110" title="Sửa">📝</button>
                             <button wire:confirm="Xóa phiếu thu hồi {{ $recovery->recovery_number }}?" wire:click="destroy({{ $recovery->id }})" class="text-rose-400 hover:text-rose-600 p-1 transition-all hover:scale-110" title="Xóa">🗑️</button>
@@ -174,13 +174,13 @@
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showCreateModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full max-h-[90vh] overflow-y-auto">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
                             {{ $editingRecovery ? 'Chỉnh sửa phiếu thu hồi' : 'Tạo phiếu thu hồi mới' }}
                         </h3>
 
                         <div class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Số phiếu thu hồi</label>
                                     <input type="text" wire:model="recoveryNumber" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 {{ $editingRecovery ? 'bg-gray-100' : '' }}" placeholder="SCR-2026-000001">
@@ -200,7 +200,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Vật tư thu hồi <span class="text-red-500">*</span></label>
                                     <select wire:model.live="productId" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
@@ -219,7 +219,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Số lượng <span class="text-red-500">*</span></label>
                                     <input type="number" step="0.01" wire:model="quantity" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
@@ -232,7 +232,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Trạng thái</label>
                                     <select wire:model="statusForm" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
@@ -319,7 +319,7 @@
             </table>
 
             <!-- Footer / Signatures -->
-            <div class="grid grid-cols-4 gap-4 text-center mt-8 mb-8">
+            <div class="grid grid-cols-4 gap-2 text-center mt-8 mb-8">
                 <div>
                     <p class="font-bold text-[14px]">Bộ Phận An Ninh</p>
                     <p class="text-[12px] italic">(Ký, ghi rõ họ tên)</p>

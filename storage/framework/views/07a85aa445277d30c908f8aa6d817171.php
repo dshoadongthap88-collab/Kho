@@ -134,11 +134,12 @@
                                     <span class="text-[11px] text-slate-600 font-medium"><?php echo e($plan->expected_delivery_date ? $plan->expected_delivery_date->format('d/m/Y') : ''); ?></span>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
-                            <td class="px-2 py-1.5 text-slate-600 text-[11px] leading-tight">
-                                <div class="line-clamp-2 max-w-[150px]" title="<?php echo e($plan->notes); ?>">
-                                    <?php echo e($plan->notes); ?>
-
-                                </div>
+                            <td class="px-2 py-1.5">
+                                <input type="text" 
+                                       value="<?php echo e($plan->notes); ?>" 
+                                       wire:change="updateNotes(<?php echo e($plan->id); ?>, $event.target.value)"
+                                       class="w-full min-w-[120px] p-1 text-[11px] border-slate-300 rounded focus:ring-sky-500 focus:border-sky-500 text-slate-700 h-7" 
+                                       placeholder="Ghi chú...">
                             </td>
                             <td class="px-2 py-1.5 text-right space-x-1 whitespace-nowrap">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status === 'pending'): ?>

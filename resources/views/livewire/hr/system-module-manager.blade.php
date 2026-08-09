@@ -10,14 +10,14 @@
     </div>
 
     @if (session()->has("message"))
-    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 absolute top-20 right-4 z-50 shadow-md transform transition-all duration-300 rounded" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-2 absolute top-20 right-4 z-50 shadow-md transform transition-all duration-300 rounded" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
         <p>{{ session("message") }}</p>
     </div>
     @endif
 
-    <div class="px-6 py-4 flex flex-col h-[calc(100vh-80px)] overflow-hidden gap-4">
+    <div class="px-6 py-4 flex flex-col h-[calc(100vh-80px)] overflow-hidden gap-2">
         <div class="bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col flex-1 overflow-hidden">
-            <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <div class="p-2 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <div class="relative w-1/3">
                     <input type="text" wire:model.live="search" class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="Tìm kiếm module, nhóm...">
                     <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -32,27 +32,27 @@
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-gray-50 text-gray-600 text-xs uppercase sticky top-0 shadow-sm z-10">
                         <tr>
-                            <th class="px-4 py-3 font-semibold border-b">ID</th>
-                            <th class="px-4 py-3 font-semibold border-b">Nhóm</th>
-                            <th class="px-4 py-3 font-semibold border-b">Route / Mã</th>
-                            <th class="px-4 py-3 font-semibold border-b">Tên hiển thị</th>
-                            <th class="px-4 py-3 font-semibold border-b">Trạng thái</th>
-                            <th class="px-4 py-3 font-semibold border-b text-center">Thao tác</th>
+                            <th class="px-2 py-2 font-semibold border-b">ID</th>
+                            <th class="px-2 py-2 font-semibold border-b">Nhóm</th>
+                            <th class="px-2 py-2 font-semibold border-b">Route / Mã</th>
+                            <th class="px-2 py-2 font-semibold border-b">Tên hiển thị</th>
+                            <th class="px-2 py-2 font-semibold border-b">Trạng thái</th>
+                            <th class="px-2 py-2 font-semibold border-b text-center">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100">
                         @foreach ($modules as $module)
                         <tr class="hover:bg-indigo-50/50 transition-colors">
-                            <td class="px-4 py-3 text-gray-500">{{ $module->id }}</td>
-                            <td class="px-4 py-3 font-medium text-indigo-900">{{ $module->group_name }}</td>
-                            <td class="px-4 py-3 text-gray-600 font-mono text-xs">{{ $module->route_name }}</td>
-                            <td class="px-4 py-3 text-gray-800">{{ $module->label }}</td>
-                            <td class="px-4 py-3">
-                                <button wire:click="toggleActive({{ $module->id }})" class="px-2 py-1 rounded text-xs font-bold {{ $module->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                            <td class="px-2 py-1.5 text-gray-500">{{ $module->id }}</td>
+                            <td class="px-2 py-1.5 font-medium text-indigo-900">{{ $module->group_name }}</td>
+                            <td class="px-2 py-1.5 text-gray-600 font-mono text-xs">{{ $module->route_name }}</td>
+                            <td class="px-2 py-1.5 text-gray-800">{{ $module->label }}</td>
+                            <td class="px-2 py-1.5">
+                                <button wire:click="toggleActive({{ $module->id }})" class="px-1.5 py-1 text-[11px] rounded text-xs font-bold {{ $module->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                     {{ $module->is_active ? "Đang bật" : "Đã tắt" }}
                                 </button>
                             </td>
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-2 py-1.5 text-center">
                                 <button wire:click="edit({{ $module->id }})" class="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50 transition-colors" title="Sửa">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                 </button>
@@ -76,7 +76,7 @@
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showModal', false)"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                             <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">

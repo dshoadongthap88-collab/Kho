@@ -1,6 +1,6 @@
 <div style="font-family: 'Times New Roman', Times, serif;">
-    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-8 no-print">
-        <div class="flex flex-wrap items-center gap-4">
+    <div class="bg-white p-2 rounded-2xl shadow-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 mb-8 no-print">
+        <div class="flex flex-wrap items-center gap-2">
             <!-- Date Filter Premium -->
             <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-inner focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
                 <div class="flex items-center gap-2">
@@ -100,40 +100,40 @@
                         $daysOverdueCount = $isOverdue ? $dueDate->diffInDays(now()) : 0;
                     @endphp
                     <tr wire:key="debt-{{ $report->id }}" class="hover:bg-slate-50/80 transition group {{ $isOverdue ? 'bg-red-50/30' : '' }} {{ in_array((string)$report->id, $selectedIds) ? 'bg-blue-50/30 is-selected' : '' }} print-row">
-                        <td class="px-6 py-4 text-center no-print">
+                        <td class="px-2 py-1.5 text-center no-print">
                             <input type="checkbox" wire:model.live="selectedIds" value="{{ $report->id }}" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
                         </td>
                         <!-- Số phiếu -->
-                        <td class="px-4 py-3">
+                        <td class="px-2 py-1.5">
                             <button wire:click="viewStockOutDetails({{ $report->stock_out_id }})" class="font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors text-left print:text-black print:no-underline">
                                 {{ $report->stockOut->code ?? 'N/A' }}
                             </button>
                         </td>
                         
                         <!-- Tên khách hàng -->
-                        <td class="px-4 py-3 font-semibold text-slate-800">
+                        <td class="px-2 py-1.5 font-semibold text-slate-800">
                             {{ explode(' (', $report->customer_name)[0] }}
                         </td>
                         
                         <!-- Tổng tiền (Nợ) -->
-                        <td class="px-4 py-3 text-right font-bold text-slate-800">
+                        <td class="px-2 py-1.5 text-right font-bold text-slate-800">
                             {{ number_format($report->total_amount) }}
                         </td>
                         
                         <!-- Đã thanh toán -->
-                        <td class="px-4 py-3 text-right font-semibold text-emerald-600 print:text-black">
+                        <td class="px-2 py-1.5 text-right font-semibold text-emerald-600 print:text-black">
                             {{ number_format($report->paid_amount) }}
                         </td>
                         
                         <!-- Còn lại -->
-                        <td class="px-4 py-3 text-right font-bold {{ $remaining > 0 ? 'text-red-600' : 'text-slate-400' }} print:text-black">
+                        <td class="px-2 py-1.5 text-right font-bold {{ $remaining > 0 ? 'text-red-600' : 'text-slate-400' }} print:text-black">
                             {{ number_format($remaining) }}
                         </td>
                         
                         <!-- Hạn TT -->
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-2 py-1.5 text-center">
                             @if($remaining == 0 && $report->total_amount > 0)
-                                <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold print:bg-white print:text-black">Hoàn tất</span>
+                                <span class="bg-emerald-100 text-emerald-700 px-1.5 py-1 text-[11px] rounded text-xs font-bold print:bg-white print:text-black">Hoàn tất</span>
                             @else
                                 <div class="{{ $isOverdue ? 'text-red-600 font-bold animate-pulse print:animate-none' : 'text-slate-600' }}">
                                     {{ $dueDate ? $dueDate->format('d/m/Y') : 'Chưa đặt hạn' }}
@@ -145,20 +145,20 @@
                         </td>
                         
                         <!-- Tùy chỉnh (Action) -->
-                        <td class="px-4 py-3 text-center print:hidden">
+                        <td class="px-2 py-1.5 text-center print:hidden">
                             @if($remaining > 0)
                                 <div class="flex items-center justify-center gap-2">
                                     <button wire:click="printSingle({{ $report->id }})" class="text-slate-400 hover:text-blue-600 p-1" title="In phiếu nợ">🖨️</button>
-                                    <button wire:click="openPayModal({{ $report->id }})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 flex items-center justify-center rounded transition" title="Thu tiền">
+                                    <button wire:click="openPayModal({{ $report->id }})" class="bg-blue-500 hover:bg-blue-600 text-white px-1.5 py-1 text-[11px] flex items-center justify-center rounded transition" title="Thu tiền">
                                         💰
                                     </button>
-                                    <button wire:confirm="Khách hàng đã trả hết nợ hóa đơn này?" wire:click="markAsFullyPaid({{ $report->id }})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 flex items-center justify-center rounded transition" title="Xong nợ">
+                                    <button wire:confirm="Khách hàng đã trả hết nợ hóa đơn này?" wire:click="markAsFullyPaid({{ $report->id }})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-1.5 py-1 text-[11px] flex items-center justify-center rounded transition" title="Xong nợ">
                                         ✅
                                     </button>
-                                    <button wire:click="openEditModal({{ $report->id }})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 flex items-center justify-center rounded transition" title="Chỉnh sửa">
+                                    <button wire:click="openEditModal({{ $report->id }})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-1.5 py-1 text-[11px] flex items-center justify-center rounded transition" title="Chỉnh sửa">
                                         📝
                                     </button>
-                                    <button wire:confirm="Xác nhận xóa bản ghi công nợ này?" wire:click="delete({{ $report->id }})" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-2 py-1 flex items-center justify-center rounded transition" title="Xóa">
+                                    <button wire:confirm="Xác nhận xóa bản ghi công nợ này?" wire:click="delete({{ $report->id }})" class="bg-rose-100 hover:bg-rose-200 text-rose-600 px-1.5 py-1 text-[11px] flex items-center justify-center rounded transition" title="Xóa">
                                         🗑️
                                     </button>
                                 </div>
@@ -276,7 +276,7 @@
                     </div>
                     
                     <div class="px-6 py-5">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-8 bg-slate-50 p-2 rounded-xl border border-slate-100">
                             <div>
                                 <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Khách hàng</p>
                                 <p class="font-bold text-slate-800">{{ $selectedStockOut->customer_name }}</p>
@@ -356,7 +356,7 @@
                 </div>
             </div>
 
-            <div class="bg-slate-50 p-4 rounded-lg border-2 border-slate-900 mb-6 grid grid-cols-2 gap-4">
+            <div class="bg-slate-50 p-2 rounded-lg border-2 border-slate-900 mb-6 grid grid-cols-2 gap-2">
                 <div>
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Khách hàng</p>
                     <p class="font-black text-slate-800 text-lg uppercase">{{ $pItem->customer_name }}</p>
@@ -393,7 +393,7 @@
                 </tbody>
             </table>
 
-            <div class="grid grid-cols-2 gap-4 text-center mt-12 mb-8">
+            <div class="grid grid-cols-2 gap-2 text-center mt-12 mb-8">
                 <div>
                     <p class="font-bold text-sm uppercase">Đại diện khách hàng</p>
                     <p class="text-[10px] italic">(Ký, ghi rõ họ tên)</p>

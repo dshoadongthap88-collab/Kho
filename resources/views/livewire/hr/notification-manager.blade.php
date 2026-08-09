@@ -1,6 +1,6 @@
 <div class="space-y-4">
     <!-- Header & Actions -->
-    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+    <div class="flex justify-between items-center bg-white p-2 rounded-xl shadow-sm border border-gray-100">
         <div>
             <h2 class="text-lg font-bold text-gray-800">Quản lý Thông báo</h2>
             <p class="text-sm text-gray-500">Tạo, sửa, xóa các thông báo gửi đến người dùng.</p>
@@ -29,38 +29,38 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Người Nhận</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tiêu Đề</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nội Dung</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng Thái</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thời Gian</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao Tác</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Người Nhận</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tiêu Đề</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nội Dung</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng Thái</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thời Gian</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($notifications as $notification)
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{{ $notification->id }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-bold text-gray-900">{{ $notification->user->name ?? 'Không rõ' }}</div>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm text-gray-500">#{{ $notification->id }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap">
+                                <div class="text-xs font-bold text-gray-900">{{ $notification->user->name ?? 'Không rõ' }}</div>
                                 <div class="text-xs text-gray-500">{{ $notification->user->email ?? '' }}</div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ $notification->title }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
+                            <td class="px-2 py-1.5 text-sm text-gray-900 font-medium">{{ $notification->title }}</td>
+                            <td class="px-2 py-1.5 text-sm text-gray-500">
                                 <div class="max-w-xs truncate" title="{{ $notification->message }}">{{ $notification->message }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-2 py-1.5 whitespace-nowrap text-center">
                                 @if($notification->is_read)
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Đã xem</span>
                                 @else
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Chưa xem</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm text-gray-500">
                                 {{ $notification->created_at->format('d/m/Y H:i') }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-2 py-1.5 whitespace-nowrap text-right text-sm font-medium">
                                 <button wire:click="edit({{ $notification->id }})" class="text-indigo-600 hover:text-indigo-900 mr-3">Sửa</button>
                                 <button onclick="confirm('Bạn có chắc muốn xóa thông báo này?') || event.stopImmediatePropagation()" wire:click="delete({{ $notification->id }})" class="text-red-600 hover:text-red-900">Xóa</button>
                             </td>

@@ -8,7 +8,7 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 no-print"
+             class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-2 no-print"
              style="display: none;"
              @click="showLightbox = false"
              @keydown.escape.window="showLightbox = false">
@@ -20,7 +20,7 @@
         </div>
 
 
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
         <!-- Tabs -->
         <div class="flex bg-slate-100 p-1 rounded-lg w-full mb-2">
             <button wire:click="switchTab('materials')" class="flex-1 py-2 text-sm font-bold uppercase rounded-md transition-all {{ $activeTab === 'materials' ? 'bg-white text-indigo-600 shadow' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50' }}">
@@ -129,7 +129,7 @@
     </div>
 
     <!-- Toast Notifications -->
-    <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+    <div class="fixed top-2 right-4 z-50 flex flex-col gap-2 pointer-events-none">
         @if (session()->has('message'))
             <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show" x-transition.opacity.duration.500ms
                  class="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-xl shadow-lg border border-emerald-200 font-black text-[13px] flex items-center gap-2 pointer-events-auto">
@@ -160,33 +160,33 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
-                    <th class="px-6 py-4 w-10 text-center no-print">
+                    <th class="px-2 py-2 w-10 text-center no-print">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
                                {{ count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
                     <th class="px-3 py-4 text-[11px] font-black uppercase tracking-tighter text-slate-500">Mã vật tư</th>
-                    <th class="px-4 py-3 w-16 text-center">Hình ảnh</th>
-                    <th class="px-4 py-3">TÊN VẬT TƯ</th>
-                    <th class="px-4 py-3">Phân loại</th>
-                    <th class="px-4 py-3">Hãng sản xuất</th>
-                    <th class="px-4 py-3">Mã Code NCC</th>
-                    <th class="px-4 py-3">Hạn dùng</th>
-                    <th class="px-4 py-3 text-center">Số lượng</th>
-                    <th class="px-4 py-3">Vị trí</th>
-                    <th class="px-4 py-3">Tình trạng</th>
-                    <th class="px-4 py-3">Tồn tối thiểu</th>
-                    <th class="px-4 py-3">Ghi chú</th>
+                    <th class="px-2 py-2 w-16 text-center">Hình ảnh</th>
+                    <th class="px-2 py-2">TÊN VẬT TƯ</th>
+                    <th class="px-2 py-2">Phân loại</th>
+                    <th class="px-2 py-2">Hãng sản xuất</th>
+                    <th class="px-2 py-2">Mã Code NCC</th>
+                    <th class="px-2 py-2">Hạn dùng</th>
+                    <th class="px-2 py-2 text-center">Số lượng</th>
+                    <th class="px-2 py-2">Vị trí</th>
+                    <th class="px-2 py-2">Tình trạng</th>
+                    <th class="px-2 py-2">Tồn tối thiểu</th>
+                    <th class="px-2 py-2">Ghi chú</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($products as $product)
                     <tr wire:key="product-{{ $product->id }}" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors {{ in_array((string)$product->id, $selectedIds) ? 'bg-indigo-50/50' : '' }}">
-                        <td class="px-6 py-4 text-center no-print">
+                        <td class="px-2 py-1.5 text-center no-print">
                             <input type="checkbox" wire:model.live="selectedIds" value="{{ $product->id }}" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
-                        <td class="px-4 py-3 font-mono text-sm text-blue-600">{{ $product->code }}</td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-2 py-1.5 font-mono text-sm text-blue-600">{{ $product->code }}</td>
+                        <td class="px-2 py-1.5 text-center">
                             @if($product->image)
                                 <div class="relative group inline-block">
                                     <img src="{{ asset('storage/' . $product->image) }}" 
@@ -203,46 +203,46 @@
                                 </button>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-[11px] font-black text-gray-800 uppercase tracking-tight">
+                        <td class="px-2 py-1.5 text-[11px] font-black text-gray-800 uppercase tracking-tight">
                             {{ $product->name }}
                             @if($product->category)
                                 <div class="text-[9px] text-gray-500 mt-1 uppercase">{{ $product->category->name }}</div>
                             @endif
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-2 py-1.5">
                             @if($product->type === 'product_produced')
                                 <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs">SX</span>
                             @elseif($product->type === 'product_purchased')
                                 <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">Mua</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-gray-600">{{ $product->brand }}</td>
-                        <td class="px-4 py-3 text-sm font-semibold text-purple-700">{{ $product->batch_number }}</td>
-                        <td class="px-4 py-3 text-sm {{ $product->is_expiring_soon ? 'text-red-600 font-bold' : 'text-gray-600' }}">
+                        <td class="px-2 py-1.5 text-gray-600">{{ $product->brand }}</td>
+                        <td class="px-2 py-1.5 text-sm font-semibold text-purple-700">{{ $product->batch_number }}</td>
+                        <td class="px-2 py-1.5 text-sm {{ $product->is_expiring_soon ? 'text-red-600 font-bold' : 'text-gray-600' }}">
                             {{ $product->expiry_date ? $product->expiry_date->format('d/m/Y') : '-' }}
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold 
+                        <td class="px-2 py-1.5 text-center">
+                            <span class="px-1.5 py-1 text-[11px] rounded-full text-xs font-bold 
                                 {{ $product->is_low_stock ? 'bg-orange-600 text-white' : (($product->inventory?->quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500') }}">
                                 {{ number_format($product->inventory?->quantity ?? 0) }}
                                 @if($product->is_low_stock) ⚠️ @endif
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-gray-600 font-bold">{{ $product->inventory?->warehouse_location ?? $product->location }}</td>
-                        <td class="px-4 py-3">
+                        <td class="px-2 py-1.5 text-gray-600 font-bold">{{ $product->inventory?->warehouse_location ?? $product->location }}</td>
+                        <td class="px-2 py-1.5">
                             @if($product->status === 'active')
-                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Đang kinh doanh</span>
+                                <span class="bg-green-100 text-green-700 px-1.5 py-1 text-[11px] rounded text-xs">Đang kinh doanh</span>
                             @else
-                                <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Ngừng kinh doanh</span>
+                                <span class="bg-red-100 text-red-700 px-1.5 py-1 text-[11px] rounded text-xs">Ngừng kinh doanh</span>
                             @endif
                         </td>
                         <td class="px-4 py-2 text-center">
                             <input type="number" 
                                    wire:model.defer="minStocks.{{ $product->id }}"
-                                   class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-2 py-1 transition-all text-center shadow-inner placeholder-slate-400"
+                                   class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-1.5 py-1 text-[11px] transition-all text-center shadow-inner placeholder-slate-400"
                                    placeholder="0">
                         </td>
-                        <td class="px-4 py-3 text-xs text-gray-600 truncate max-w-[150px]" title="{{ $product->description }}">{{ $product->description }}</td>
+                        <td class="px-2 py-1.5 text-xs text-gray-600 truncate max-w-[150px]" title="{{ $product->description }}">{{ $product->description }}</td>
                     </tr>
                 @empty
                      <tr>
@@ -259,43 +259,43 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
-                    <th class="px-6 py-4 w-10 text-center no-print">
+                    <th class="px-2 py-2 w-10 text-center no-print">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
                                {{ count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
-                    <th class="px-4 py-3">MÃ THIẾT BỊ</th>
-                    <th class="px-4 py-3">TÊN THIẾT BỊ</th>
-                    <th class="px-4 py-3">LOẠI THIẾT BỊ</th>
-                    <th class="px-4 py-3">MÃ TÀI SẢN</th>
-                    <th class="px-4 py-3">NGƯỜI QUẢN LÝ</th>
-                    <th class="px-4 py-3">TÌNH TRẠNG</th>
-                    <th class="px-4 py-3 text-center w-24">THAO TÁC</th>
+                    <th class="px-2 py-2">MÃ THIẾT BỊ</th>
+                    <th class="px-2 py-2">TÊN THIẾT BỊ</th>
+                    <th class="px-2 py-2">LOẠI THIẾT BỊ</th>
+                    <th class="px-2 py-2">MÃ TÀI SẢN</th>
+                    <th class="px-2 py-2">NGƯỜI QUẢN LÝ</th>
+                    <th class="px-2 py-2">TÌNH TRẠNG</th>
+                    <th class="px-2 py-2 text-center w-24">THAO TÁC</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($equipments as $index => $equipment)
                     <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors {{ in_array($equipment->id, $selectedIds) ? 'bg-indigo-50/30' : '' }}">
-                        <td class="px-6 py-4 text-center no-print">
+                        <td class="px-2 py-1.5 text-center no-print">
                             <input type="checkbox" value="{{ $equipment->id }}" wire:model="selectedIds" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
-                        <td class="px-4 py-3 text-sm font-mono text-indigo-600">{{ $equipment->equipment_code ?: '-' }}</td>
-                        <td class="px-4 py-3 text-sm font-black text-gray-800 uppercase">{{ $equipment->name }}</td>
-                        <td class="px-4 py-3 text-sm font-bold text-gray-700 uppercase">{{ $equipment->machine_type ?: '-' }}</td>
-                        <td class="px-4 py-3 text-sm font-mono text-indigo-600">{{ $equipment->asset_code ?: '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase">{{ $equipment->manager ?: '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase">
+                        <td class="px-2 py-1.5 text-sm font-mono text-indigo-600">{{ $equipment->equipment_code ?: '-' }}</td>
+                        <td class="px-2 py-1.5 text-sm font-black text-gray-800 uppercase">{{ $equipment->name }}</td>
+                        <td class="px-2 py-1.5 text-sm font-bold text-gray-700 uppercase">{{ $equipment->machine_type ?: '-' }}</td>
+                        <td class="px-2 py-1.5 text-sm font-mono text-indigo-600">{{ $equipment->asset_code ?: '-' }}</td>
+                        <td class="px-2 py-1.5 text-sm text-gray-600 font-bold uppercase">{{ $equipment->manager ?: '-' }}</td>
+                        <td class="px-2 py-1.5 text-sm text-gray-600 font-bold uppercase">
                             @if($equipment->warranty_status === 'Còn bảo hành')
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-[10px]">{{ $equipment->warranty_status }}</span>
+                                <span class="bg-green-100 text-green-800 px-1.5 py-1 text-[11px] rounded text-[10px]">{{ $equipment->warranty_status }}</span>
                             @else
-                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-[10px]">{{ $equipment->warranty_status ?: 'Hết bảo hành' }}</span>
+                                <span class="bg-red-100 text-red-800 px-1.5 py-1 text-[11px] rounded text-[10px]">{{ $equipment->warranty_status ?: 'Hết bảo hành' }}</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <button wire:click="openModal({{ $equipment->id }})" class="text-indigo-600 hover:text-indigo-800 font-black uppercase text-[10px] bg-indigo-50 px-3 py-1.5 rounded hover:bg-indigo-100 transition-colors">
+                        <td class="px-2 py-1.5 text-center">
+                            <button wire:click="openModal({{ $equipment->id }})" class="text-indigo-600 hover:text-indigo-800 font-black uppercase text-[10px] bg-indigo-50 px-1.5 py-1 text-[11px].5 rounded hover:bg-indigo-100 transition-colors">
                                 Sửa
                             </button>
-                            <button wire:click="deleteEquipment({{ $equipment->id }})" wire:confirm="Bạn có chắc chắn muốn xóa thiết bị này?" class="text-rose-600 hover:text-rose-800 font-black uppercase text-[10px] bg-rose-50 px-3 py-1.5 rounded hover:bg-rose-100 transition-colors ml-1 mt-1 sm:mt-0">
+                            <button wire:click="deleteEquipment({{ $equipment->id }})" wire:confirm="Bạn có chắc chắn muốn xóa thiết bị này?" class="text-rose-600 hover:text-rose-800 font-black uppercase text-[10px] bg-rose-50 px-1.5 py-1 text-[11px].5 rounded hover:bg-rose-100 transition-colors ml-1 mt-1 sm:mt-0">
                                 Xóa
                             </button>
                         </td>
@@ -320,13 +320,13 @@
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="$set('showModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-y-auto max-h-[85vh] shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $activeTab === 'materials' ? ($isEdit ? 'Chỉnh sửa vật tư' : 'Thêm vật tư mới') : ($isEdit ? 'Chỉnh sửa thiết bị' : 'Thêm thiết bị mới') }}</h3>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-2">
                             @if($activeTab === 'materials')
-                            <div class="col-span-2 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mb-2">
+                            <div class="col-span-2 bg-indigo-50/50 p-2 rounded-xl border border-indigo-100 mb-2">
                                 <label class="block text-[11px] font-black text-indigo-900 uppercase tracking-widest mb-3">📸 Hình ảnh vật tư</label>
-                                <div class="flex items-center gap-6">
+                                <div class="flex items-center gap-2">
                                     <div class="relative group">
                                         @if ($image)
                                             <img src="{{ $image->temporaryUrl() }}" class="h-24 w-24 object-cover rounded-xl border-2 border-white shadow-md ring-2 ring-indigo-200">
@@ -379,7 +379,7 @@
                                 </select>
                                 @error('category_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
-                            <div class="col-span-2 flex gap-4 my-2">
+                            <div class="col-span-2 flex gap-2 my-2">
                                 <label class="block text-sm font-medium text-gray-700 items-center flex">Phân loại gốc:</label>
                                 <label class="inline-flex items-center">
                                     <input type="radio" wire:model="type" value="product_produced" class="text-blue-600">
@@ -489,7 +489,7 @@
                         </button>
                         
                         <div wire:loading wire:target="save" class="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-50 rounded-lg">
-                            <div class="bg-white p-4 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center gap-3">
+                            <div class="bg-white p-2 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center gap-3">
                                 <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
                                 <span class="text-sm font-black text-indigo-900 uppercase">Đang xử lý dữ liệu...</span>
                             </div>
@@ -506,7 +506,7 @@
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Nhập dữ liệu từ Excel</h3>
                         
                         <div class="mb-4">
@@ -540,7 +540,7 @@
     <style>
         @media print {
             .no-print, header, nav, aside, .sidebar, .sidebar-toolbar,
-            .bg-white.p-6.rounded-2xl, .bg-white.rounded-xl.shadow-sm,
+            .bg-white.p-2.rounded-2xl, .bg-white.rounded-xl.shadow-sm,
             .px-4.py-3.bg-gray-50.border-t, button, input, select {
                 display: none !important;
             }

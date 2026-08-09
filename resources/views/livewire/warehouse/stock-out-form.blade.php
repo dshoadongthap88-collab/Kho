@@ -60,7 +60,7 @@
         <div class="w-full main-content">
             @if($activeTab === 'form')
             @if(session('success'))
-                <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg shadow-sm border border-green-200 no-print">
+                <div class="mb-4 p-2 bg-green-100 text-green-800 rounded-lg shadow-sm border border-green-200 no-print">
                     <span class="flex items-center gap-2">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         {{ session('success') }}
@@ -72,7 +72,7 @@
             @endif
 
             @if(session('error'))
-                <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-lg shadow-sm border border-red-200 no-print">
+                <div class="mb-4 p-2 bg-red-100 text-red-800 rounded-lg shadow-sm border border-red-200 no-print">
                     <span class="flex items-center gap-2">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         {{ session('error') }}
@@ -136,8 +136,8 @@
                     </div>
                 </div>
 
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-2">
+                <div class="p-2">
+                    <div class="grid grid-cols-1 md:grid-cols-6 gap-2 mb-2">
                         <div class="space-y-1">
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Khách hàng / Bộ phận nhận</label>
                             <select wire:model.live="customer_name" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[12px] font-black text-slate-800 uppercase appearance-none">
@@ -191,7 +191,7 @@
                     </div>
 
                     @if($type === 'repair')
-                    <div class="grid grid-cols-1 md:grid-cols-7 gap-3 mb-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm no-print">
+                    <div class="grid grid-cols-1 md:grid-cols-7 gap-3 mb-4 p-2 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm no-print">
                         <div class="space-y-1">
                             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Số Phiếu ĐNSC/BD</label>
                             <input type="text" wire:model="document_number" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-1.5 px-3 text-[12px] font-bold text-slate-800" placeholder="Số phiếu...">
@@ -248,7 +248,7 @@
 
                     @if($type === 'production')
                     <!-- Production BOM Selection Area -->
-                    <div class="mb-4 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl shadow-inner no-print">
+                    <div class="mb-4 p-2 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl shadow-inner no-print">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="space-y-2">
                                 <label class="block text-sm font-black text-indigo-900 uppercase tracking-tight">Thành phẩm cần sản xuất</label>
@@ -281,7 +281,7 @@
                             <thead>
                                 <tr class="bg-emerald-600">
                                     <th class="px-2 py-3 text-center text-[10px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-10 no-print">IN</th>
-                                    <th class="px-4 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 min-w-[350px]">TÊN VẬT TƯ / MÃ VẬT TƯ</th>
+                                    <th class="px-2 py-2 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 min-w-[350px]">TÊN VẬT TƯ / MÃ VẬT TƯ</th>
                                     <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-16">Đề nghị</th>
                                     <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-16">Thực xuất</th>
                                     <th class="px-2 py-3 text-center text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-16">Thu hồi</th>
@@ -386,7 +386,7 @@
                     </div>
 
                     <div class="mt-8 mb-4 p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm no-print">
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Nhân viên vận hành</label>
                                 <input type="text" wire:model.live="operator_name" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên người vận hành...">
@@ -415,7 +415,7 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end items-center gap-4 no-print mt-2">
+                    <div class="flex justify-end items-center gap-2 no-print mt-2">
                         <a href="{{ route('warehouse.inventory') }}" class="px-6 py-2 border border-slate-300 rounded-xl text-slate-600 text-sm font-semibold hover:bg-slate-50 transition duration-150">
                             Hủy bỏ
                         </a>
@@ -592,7 +592,7 @@
                         <p class="text-[13px] font-bold mt-1">TỪ NGÀY: {{ \Carbon\Carbon::parse($listDateFrom)->format('d/m/Y') }} - ĐẾN NGÀY: {{ \Carbon\Carbon::parse($listDateTo)->format('d/m/Y') }}</p>
                     </div>
 
-                    <div class="bg-slate-50 px-6 py-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 no-print">
+                    <div class="bg-slate-50 px-6 py-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 no-print">
                         <h2 class="text-[15px] font-black text-slate-900 flex items-center gap-2 uppercase tracking-tight">
                             <span class="p-2 bg-indigo-600 text-white rounded-xl shadow-lg">📋</span>
                             LỊCH SỬ PHIẾU XUẤT KHO
@@ -650,33 +650,33 @@
                                     $idsOnPage = $stockOuts->pluck('id')->toArray();
                                 @endphp
                                 <tr>
-                                    <th class="px-6 py-4 w-10 no-print text-center">
+                                    <th class="px-2 py-2 w-10 no-print text-center">
                                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $idsOnPage) }}])" {{ count($selectedIds) >= count($idsOnPage) && count($idsOnPage) > 0 ? 'checked' : '' }} class="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500">
                                     </th>
                                     <th class="px-2 py-4">MÃ PHIẾU</th>
-                                    <th class="px-6 py-4">NGÀY TẠO</th>
-                                    <th class="px-6 py-4">KHÁCH HÀNG / BỘ PHẬN</th>
-                                    <th class="px-6 py-4">NGƯỜI LIÊN HỆ / MÃ TS</th>
-                                    <th class="px-6 py-4">LOẠI XUẤT</th>
-                                    <th class="px-6 py-4 text-right">TỔNG TIỀN</th>
-                                    <th class="px-6 py-4">GHI CHÚ</th>
-                                    <th class="px-6 py-4 text-center no-print">THAO TÁC</th>
+                                    <th class="px-2 py-2">NGÀY TẠO</th>
+                                    <th class="px-2 py-2">KHÁCH HÀNG / BỘ PHẬN</th>
+                                    <th class="px-2 py-2">NGƯỜI LIÊN HỆ / MÃ TS</th>
+                                    <th class="px-2 py-2">LOẠI XUẤT</th>
+                                    <th class="px-2 py-2 text-right">TỔNG TIỀN</th>
+                                    <th class="px-2 py-2">GHI CHÚ</th>
+                                    <th class="px-2 py-2 text-center no-print">THAO TÁC</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
                                 @forelse($stockOuts as $so)
                                     <tr class="hover:bg-indigo-50/30 transition-all group {{ in_array($so->id, $selectedIds) ? 'bg-indigo-50' : '' }}">
-                                        <td class="px-6 py-4 no-print text-center">
+                                        <td class="px-2 py-1.5 no-print text-center">
                                             <input type="checkbox" wire:model.live="selectedIds" value="{{ $so->id }}" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                                         </td>
                                         <td class="px-2 py-4 font-black text-indigo-700 tracking-tight">{{ $so->code }}</td>
-                                        <td class="px-6 py-4 text-slate-500 text-[12px] font-bold">{{ $so->created_at->format('d/m/Y H:i') }}</td>
-                                        <td class="px-6 py-4 font-black text-slate-800 text-[13px] uppercase tracking-tighter">{{ $so->customer_name ?: '-' }}</td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-2 py-1.5 text-slate-500 text-[12px] font-bold">{{ $so->created_at->format('d/m/Y H:i') }}</td>
+                                        <td class="px-2 py-1.5 font-black text-slate-800 text-[13px] uppercase tracking-tighter">{{ $so->customer_name ?: '-' }}</td>
+                                        <td class="px-2 py-1.5">
                                             <div class="text-[12px] font-bold text-slate-700 uppercase">{{ $so->receiver_name ?: '-' }}</div>
                                             <div class="text-[10px] font-black text-indigo-600">{{ $so->asset_code }}</div>
                                         </td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-2 py-1.5">
                                             @switch($so->type)
                                                 @case('repair') <span class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-black uppercase border border-blue-100">🛠️ SỬA CHỮA</span> @break
                                                 @case('delivery') <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-black uppercase border border-emerald-100">🚚 GIAO HÀNG</span> @break
@@ -684,11 +684,11 @@
                                                 @default <span class="px-2.5 py-1 bg-slate-50 text-slate-600 rounded-lg text-[10px] font-black uppercase border border-slate-100">KHÁC</span>
                                             @endswitch
                                         </td>
-                                        <td class="px-6 py-4 text-right font-black text-slate-900 text-[14px]">
+                                        <td class="px-2 py-1.5 text-right font-black text-slate-900 text-[14px]">
                                             {{ number_format($so->items->sum('total_amount')) }} đ
                                         </td>
-                                        <td class="px-6 py-4 text-slate-400 text-[11px] font-bold italic truncate max-w-[150px]" title="{{ $so->note }}">{{ $so->note ?: '-' }}</td>
-                                        <td class="px-6 py-4 text-center no-print">
+                                        <td class="px-2 py-1.5 text-slate-400 text-[11px] font-bold italic truncate max-w-[150px]" title="{{ $so->note }}">{{ $so->note ?: '-' }}</td>
+                                        <td class="px-2 py-1.5 text-center no-print">
                                             <div class="flex items-center justify-center gap-1">
                                                 <button wire:click="printSingle({{ $so->id }})" class="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="In phiếu này">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
@@ -707,7 +707,7 @@
                                         <td colspan="7" class="px-6 py-12 text-center text-slate-400">
                                             <div class="flex flex-col items-center gap-2">
                                                 <span class="text-4xl text-slate-200">🔍</span>
-                                                <p class="text-sm font-bold">Không tìm thấy phiếu xuất nào trong khoảng thời gian này</p>
+                                                <p class="text-xs font-bold">Không tìm thấy phiếu xuất nào trong khoảng thời gian này</p>
                                             </div>
                                         </td>
                                     </tr>

@@ -10,42 +10,42 @@
     </div>
 
     @if (session()->has('success'))
-        <div class="mb-4 p-4 bg-emerald-100 text-emerald-800 rounded-xl font-bold border border-emerald-200">
+        <div class="mb-4 p-2 bg-emerald-100 text-emerald-800 rounded-xl font-bold border border-emerald-200">
             {{ session('success') }}
         </div>
     @endif
 
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="p-4 border-b border-slate-200 bg-slate-50">
+        <div class="p-2 border-b border-slate-200 bg-slate-50">
             <input wire:model.live="search" type="text" placeholder="Tìm kiếm tên, mã dự án..." class="w-full max-w-md px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
         </div>
 
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-100 text-slate-600 text-sm">
-                    <th class="p-4 font-bold border-b border-slate-200">Mã</th>
-                    <th class="p-4 font-bold border-b border-slate-200">Tên Ngôi nhà / Dự án</th>
-                    <th class="p-4 font-bold border-b border-slate-200">Trạng thái</th>
-                    <th class="p-4 font-bold border-b border-slate-200">Mô tả</th>
-                    <th class="p-4 font-bold border-b border-slate-200 text-right">Thao tác</th>
+                    <th class="p-2 font-bold border-b border-slate-200">Mã</th>
+                    <th class="p-2 font-bold border-b border-slate-200">Tên Ngôi nhà / Dự án</th>
+                    <th class="p-2 font-bold border-b border-slate-200">Trạng thái</th>
+                    <th class="p-2 font-bold border-b border-slate-200">Mô tả</th>
+                    <th class="p-2 font-bold border-b border-slate-200 text-right">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($projects as $project)
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="p-4 text-slate-800 font-medium">{{ $project->code ?? '-' }}</td>
-                    <td class="p-4 font-bold text-indigo-700">{{ $project->name }}</td>
-                    <td class="p-4">
+                    <td class="p-2 text-slate-800 font-medium">{{ $project->code ?? '-' }}</td>
+                    <td class="p-2 font-bold text-indigo-700">{{ $project->name }}</td>
+                    <td class="p-2">
                         @if($project->status === 'active')
-                            <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">Hoạt động</span>
+                            <span class="px-1.5 py-1 text-[11px] bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">Hoạt động</span>
                         @else
-                            <span class="px-3 py-1 bg-slate-200 text-slate-600 text-xs font-bold rounded-full">Ngừng hoạt động</span>
+                            <span class="px-1.5 py-1 text-[11px] bg-slate-200 text-slate-600 text-xs font-bold rounded-full">Ngừng hoạt động</span>
                         @endif
                     </td>
-                    <td class="p-4 text-slate-600 text-sm">{{ $project->description ?? '-' }}</td>
-                    <td class="p-4 text-right">
-                        <button wire:click="edit({{ $project->id }})" class="text-blue-600 hover:text-blue-800 font-bold text-sm mr-3">Sửa</button>
-                        <button wire:click="delete({{ $project->id }})" onclick="confirm('Bạn có chắc chắn muốn xóa dự án này?') || event.stopImmediatePropagation()" class="text-red-600 hover:text-red-800 font-bold text-sm">Xóa</button>
+                    <td class="p-2 text-slate-600 text-sm">{{ $project->description ?? '-' }}</td>
+                    <td class="p-2 text-right">
+                        <button wire:click="edit({{ $project->id }})" class="text-blue-600 hover:text-blue-800 font-bold text-xs mr-3">Sửa</button>
+                        <button wire:click="delete({{ $project->id }})" onclick="confirm('Bạn có chắc chắn muốn xóa dự án này?') || event.stopImmediatePropagation()" class="text-red-600 hover:text-red-800 font-bold text-xs">Xóa</button>
                     </td>
                 </tr>
                 @empty
@@ -56,21 +56,21 @@
             </tbody>
         </table>
         
-        <div class="p-4 border-t border-slate-200">
+        <div class="p-2 border-t border-slate-200">
             {{ $projects->links() }}
         </div>
     </div>
 
     <!-- Modal Form -->
     @if($showModal)
-    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2">
         <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
                 <h2 class="text-lg font-bold text-slate-800">{{ $projectId ? 'Chỉnh sửa Dự án' : 'Thêm mới Dự án' }}</h2>
                 <button wire:click="$set('showModal', false)" class="text-slate-400 hover:text-slate-600">&times;</button>
             </div>
             
-            <div class="p-6 space-y-4">
+            <div class="p-2 space-y-4">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">Mã dự án</label>
                     <input wire:model="code" type="text" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">

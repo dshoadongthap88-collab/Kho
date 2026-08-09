@@ -7,7 +7,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 no-print"
+         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-2 no-print"
          style="display: none;"
          @click="showLightbox = false"
          @keydown.escape.window="showLightbox = false">
@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
         <div class="flex flex-wrap items-center gap-3">
             <!-- Search -->
             <div class="relative w-64">
@@ -64,7 +64,7 @@
     </div>
 
     <!-- Toast Notifications -->
-    <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+    <div class="fixed top-2 right-4 z-50 flex flex-col gap-2 pointer-events-none">
         @if (session()->has('message'))
             <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show" x-transition.opacity.duration.500ms
                  class="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-xl shadow-lg border border-emerald-200 font-black text-[13px] flex items-center gap-2 pointer-events-auto">
@@ -91,7 +91,7 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 no-print"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 no-print"
              style="display: none;"
              @keydown.escape.window="openModal = false"
              x-cloak>
@@ -106,7 +106,7 @@
                 </div>
 
                 <!-- Form Content -->
-                <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                <div class="flex-1 overflow-y-auto p-2 space-y-4">
                     @if($errors->any())
                         <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm font-bold">
                             <div class="font-bold mb-1">⚠️ Vui lòng kiểm tra lại:</div>
@@ -118,7 +118,7 @@
                         </div>
                     @endif
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                         <!-- Mã tài sản -->
                         <div>
                             <label class="block text-sm font-black text-gray-700 mb-1">Mã tài sản <span class="text-red-500">*</span></label>
@@ -180,7 +180,7 @@
                     </div>
 
                     <!-- Thông tin bổ sung -->
-                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-600">
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-600">
                         <div class="flex items-center gap-2 mb-2">
                             <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span class="font-bold">Lưu ý:</span>
@@ -223,7 +223,7 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 no-print"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 no-print"
              style="display: none;"
              @keydown.escape.window="openImportModal = false"
              x-cloak>
@@ -238,8 +238,8 @@
                 </div>
 
                 <!-- Form Content -->
-                <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                    <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-start gap-3">
+                <div class="flex-1 overflow-y-auto p-2 space-y-6">
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-2 flex items-start gap-3">
                         <svg class="w-6 h-6 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <div class="text-sm text-emerald-800">
                             <p class="font-bold mb-1">Hướng dẫn nhập liệu:</p>
@@ -306,48 +306,48 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
-                    <th class="px-6 py-4 w-10 text-center no-print">
+                    <th class="px-2 py-2 w-10 text-center no-print">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allReadingIdsOnPage) }}])"
                                {{ count(array_intersect(array_map('strval', $allReadingIdsOnPage), $selectedIds)) === count($allReadingIdsOnPage) && count($allReadingIdsOnPage) > 0 ? 'checked' : '' }}
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
-                    <th class="px-4 py-3">Mã tài sản</th>
-                    <th class="px-4 py-3">Tên tài sản</th>
-                    <th class="px-4 py-3 text-center">Ngày đọc</th>
-                    <th class="px-4 py-3 text-center">Số giờ</th>
-                    <th class="px-4 py-3">Người vận hành</th>
-                    <th class="px-4 py-3 text-center">Tình trạng</th>
-                    <th class="px-4 py-3">Ghi chú</th>
-                    <th class="px-4 py-3 text-center no-print">Thao tác</th>
+                    <th class="px-2 py-2">Mã tài sản</th>
+                    <th class="px-2 py-2">Tên tài sản</th>
+                    <th class="px-2 py-2 text-center">Ngày đọc</th>
+                    <th class="px-2 py-2 text-center">Số giờ</th>
+                    <th class="px-2 py-2">Người vận hành</th>
+                    <th class="px-2 py-2 text-center">Tình trạng</th>
+                    <th class="px-2 py-2">Ghi chú</th>
+                    <th class="px-2 py-2 text-center no-print">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($readings as $reading)
                     <tr wire:key="reading-{{ $reading->id }}" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors {{ in_array((string)$reading->id, $selectedIds) ? 'bg-indigo-50/50' : '' }}">
-                        <td class="px-6 py-4 text-center no-print">
+                        <td class="px-2 py-1.5 text-center no-print">
                             <input type="checkbox" wire:model.live="selectedIds" value="{{ $reading->id }}" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
-                        <td class="px-4 py-3 font-mono text-sm text-blue-600">{{ $reading->product->code }}</td>
-                        <td class="px-4 py-3 text-[11px] font-black text-gray-800 uppercase tracking-tight">{{ $reading->product->name }}</td>
-                        <td class="px-4 py-3 text-center text-sm">{{ $reading->reading_date->format('d/m/Y') }}</td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold {{ $reading->status === 'maintenance_required' ? 'bg-red-100 text-red-700' : ($reading->status === 'maintenance_done' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700') }}">
+                        <td class="px-2 py-1.5 font-mono text-sm text-blue-600">{{ $reading->product->code }}</td>
+                        <td class="px-2 py-1.5 text-[11px] font-black text-gray-800 uppercase tracking-tight">{{ $reading->product->name }}</td>
+                        <td class="px-2 py-1.5 text-center text-sm">{{ $reading->reading_date->format('d/m/Y') }}</td>
+                        <td class="px-2 py-1.5 text-center">
+                            <span class="px-1.5 py-1 text-[11px] rounded-full text-xs font-bold {{ $reading->status === 'maintenance_required' ? 'bg-red-100 text-red-700' : ($reading->status === 'maintenance_done' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700') }}">
                                 {{ number_format($reading->current_hours, 2) }} giờ
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-gray-600 text-sm">{{ $reading->operator ?: '-' }}</td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-2 py-1.5 text-gray-600 text-sm">{{ $reading->operator ?: '-' }}</td>
+                        <td class="px-2 py-1.5 text-center">
                             @if($reading->status === 'maintenance_required')
-                                <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Cần bảo dưỡng</span>
+                                <span class="bg-red-100 text-red-700 px-1.5 py-1 text-[11px] rounded text-xs font-bold">Cần bảo dưỡng</span>
                             @elseif($reading->status === 'maintenance_done')
-                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Đã bảo dưỡng</span>
+                                <span class="bg-green-100 text-green-700 px-1.5 py-1 text-[11px] rounded text-xs font-bold">Đã bảo dưỡng</span>
                             @else
-                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">Bình thường</span>
+                                <span class="bg-blue-100 text-blue-700 px-1.5 py-1 text-[11px] rounded text-xs font-bold">Bình thường</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-gray-600 text-sm">{{ $reading->notes ?: '-' }}</td>
-                        <td class="px-4 py-3 text-center no-print">
-                            <button wire:click="openModal({{ $reading->id }})" class="text-amber-600 hover:text-amber-800 text-sm font-bold">✏️ Sửa</button>
+                        <td class="px-2 py-1.5 text-gray-600 text-sm">{{ $reading->notes ?: '-' }}</td>
+                        <td class="px-2 py-1.5 text-center no-print">
+                            <button wire:click="openModal({{ $reading->id }})" class="text-amber-600 hover:text-amber-800 text-xs font-bold">✏️ Sửa</button>
                         </td>
                     </tr>
                 @empty

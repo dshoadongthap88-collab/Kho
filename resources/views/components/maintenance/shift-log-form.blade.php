@@ -1,4 +1,4 @@
-<div class="p-6 bg-white rounded shadow-md">
+<div class="p-2 bg-white rounded shadow-md">
     <h2 class="text-xl font-bold mb-4">Cập Nhật Ca Làm Việc</h2>
 
     @if (session()->has('message'))

@@ -1,4 +1,4 @@
-<div class="p-6 bg-white rounded-lg shadow-sm">
+<div class="p-2 bg-white rounded-lg shadow-sm">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold text-gray-800">Danh sách Định mức bảo dưỡng (BOM)</h2>
         <a href="{{ route('maintenance-boms.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
@@ -6,7 +6,7 @@
         </a>
     </div>
 
-    <div class="mb-4 flex flex-wrap gap-4">
+    <div class="mb-4 flex flex-wrap gap-2">
         <div class="flex-1 min-w-[200px]">
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm kiếm theo Mã BOM, Tên xe, Cấp BD, Mã vật tư..." class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200 focus:outline-none">
         </div>
@@ -43,7 +43,7 @@
                         <td class="p-3 font-medium text-blue-600">{{ $bom->bom_code }}</td>
                         <td class="p-3">{{ $bom->asset->asset_code ?? 'N/A' }}</td>
                         <td class="p-3">{{ $bom->asset->name ?? 'N/A' }}</td>
-                        <td class="p-3"><span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">{{ $bom->maintenance_level }}</span></td>
+                        <td class="p-3"><span class="px-1.5 py-1 text-[11px] bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">{{ $bom->maintenance_level }}</span></td>
                         <td class="p-3">{{ $bom->cycle }}</td>
                         <td class="p-3 font-bold">{{ $bom->items->count() }}</td>
                         <td class="p-3">{{ $bom->creator->name ?? 'System' }}</td>
@@ -54,7 +54,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="p-6 text-center text-gray-500">Không tìm thấy kết quả nào.</td>
+                        <td colspan="9" class="p-2 text-center text-gray-500">Không tìm thấy kết quả nào.</td>
                     </tr>
                 @endforelse
             </tbody>

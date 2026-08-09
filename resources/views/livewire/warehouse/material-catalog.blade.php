@@ -7,7 +7,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 no-print"
+         class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-2 no-print"
          style="display: none;"
          @click="showLightbox = false"
          @keydown.escape.window="showLightbox = false">
@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
         <div class="flex flex-wrap items-center gap-3">
             <!-- Search Standard -->
             <div class="relative w-64">
@@ -75,7 +75,7 @@
     </div>
 
     <!-- Toast Notifications -->
-    <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+    <div class="fixed top-2 right-4 z-50 flex flex-col gap-2 pointer-events-none">
         @if (session()->has('message'))
             <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)" x-show="show" x-transition.opacity.duration.500ms 
                  class="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-xl shadow-lg border border-emerald-200 font-black text-[13px] flex items-center gap-2 pointer-events-auto">
@@ -97,7 +97,7 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-800 border-b border-slate-700 text-white uppercase text-[11px] font-black tracking-widest">
-                    <th class="px-6 py-4 w-10 no-print text-center">
+                    <th class="px-2 py-2 w-10 no-print text-center">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
                                {{ count($selectedProducts) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
                                class="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500">
@@ -119,13 +119,13 @@
                     <tr class="hover:bg-indigo-50/30 transition-all border-b border-slate-100 
                         {{ $product->is_expiring_soon ? 'bg-rose-50/50' : ($product->is_low_stock ? 'bg-amber-50/50' : '') }}
                         {{ in_array($product->id, $selectedProducts) ? 'bg-indigo-50' : '' }}">
-                        <td class="px-6 py-4 no-print text-center">
+                        <td class="px-2 py-1.5 no-print text-center">
                             <input type="checkbox" wire:model.live="selectedProducts" value="{{ $product->id }}" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                         </td>
                         <td class="px-3 py-4 text-center text-xs font-bold text-slate-500">
                             {{ $index + 1 + ($products->currentPage() - 1) * $products->perPage() }}
                         </td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-2 py-1.5 text-center">
                             @if($product->image)
                                 <div class="relative group inline-block">
                                     <img src="{{ asset('storage/' . $product->image) }}" 
@@ -151,7 +151,7 @@
                             @endif
                         </td>
                         <td class="px-4 py-4 text-center">
-                            <span class="px-3 py-1.5 rounded-xl text-[13px] font-black shadow-sm border
+                            <span class="px-1.5 py-1 text-[11px].5 rounded-xl text-[13px] font-black shadow-sm border
                                 {{ $product->is_low_stock ? 'bg-rose-600 text-white border-rose-700' : (($product->inventory?->quantity ?? 0) > 0 ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-slate-100 text-slate-400 border-slate-200') }}">
                                 {{ number_format($product->inventory?->quantity ?? 0) }}
                                 @if($product->is_low_stock) ⚠️ @endif
@@ -197,12 +197,12 @@
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="$set('showModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $isEdit ? 'Chỉnh sửa NVL' : 'Thêm NVL mới' }}</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="col-span-2 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 mb-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="col-span-2 bg-indigo-50/50 p-2 rounded-xl border border-indigo-100 mb-2">
                                 <label class="block text-[11px] font-black text-indigo-900 uppercase tracking-widest mb-3">📸 Hình ảnh nguyên vật liệu</label>
-                                <div class="flex items-center gap-6">
+                                <div class="flex items-center gap-2">
                                     <div class="relative group">
                                         @if ($image)
                                             <img src="{{ $image->temporaryUrl() }}" class="h-24 w-24 object-cover rounded-xl border-2 border-white shadow-md ring-2 ring-indigo-200">
@@ -325,7 +325,7 @@
                         </button>
 
                         <div wire:loading wire:target="save" class="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-50 rounded-lg">
-                            <div class="bg-white p-4 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center gap-3">
+                            <div class="bg-white p-2 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center gap-3">
                                 <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
                                 <span class="text-sm font-black text-indigo-900 uppercase">Đang xử lý dữ liệu...</span>
                             </div>
@@ -342,7 +342,7 @@
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Nhập dữ liệu từ Excel</h3>
                         
                         <div class="mb-4">
@@ -381,7 +381,7 @@
             aside, 
             .sidebar, 
             .flex.justify-between.items-center.mb-4,
-            .flex.items-center.gap-4.mb-4,
+            .flex.items-center.gap-2.mb-4,
             .px-4.py-3.bg-gray-50.border-t {
                 display: none !important;
             }

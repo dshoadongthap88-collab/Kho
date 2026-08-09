@@ -12,23 +12,23 @@
         }
     </style>
 
-    <div class="grid grid-cols-3 gap-4 mb-6">
-        <div class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
+    <div class="grid grid-cols-3 gap-2 mb-6">
+        <div class="bg-green-50 border border-green-200 rounded-xl p-2 shadow-sm">
             <p class="text-xs font-bold text-green-600 uppercase mb-1">Tổng nhập trong kỳ</p>
             <p class="text-2xl font-black text-green-700">{{ number_format($summary->total_import ?? 0) }}</p>
         </div>
-        <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 shadow-sm">
+        <div class="bg-orange-50 border border-orange-200 rounded-xl p-2 shadow-sm">
             <p class="text-xs font-bold text-orange-600 uppercase mb-1">Tổng xuất trong kỳ</p>
             <p class="text-2xl font-black text-orange-700">{{ number_format($summary->total_export ?? 0) }}</p>
         </div>
-        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm">
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-2 shadow-sm">
             <p class="text-xs font-bold text-blue-600 uppercase mb-1">Tổng điều chỉnh</p>
             <p class="text-2xl font-black text-blue-700">{{ number_format($summary->total_adjust ?? 0) }}</p>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border p-4 mb-6">
-        <div class="flex flex-wrap gap-4 items-end">
+    <div class="bg-white rounded-xl shadow-sm border p-2 mb-6">
+        <div class="flex flex-wrap gap-2 items-end">
             <div>
                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Từ ngày</label>
                 <input type="date" wire:model.live="dateFrom" class="rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
@@ -67,7 +67,7 @@
     </div>
 
     <!-- Charts Dashboard Area -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8" x-data="{ 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-8" x-data="{ 
             barData: @entangle('barData'),
             pieData: @entangle('pieData'),
             paretoData: @entangle('paretoData'),
@@ -163,16 +163,16 @@
                 });
             }
          }">
-        <div class="bg-white p-4 rounded-xl shadow-sm border">
+        <div class="bg-white p-2 rounded-xl shadow-sm border">
             <div x-ref="barChart"></div>
         </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border">
+        <div class="bg-white p-2 rounded-xl shadow-sm border">
             <div x-ref="pieChart"></div>
         </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border">
+        <div class="bg-white p-2 rounded-xl shadow-sm border">
             <div x-ref="paretoChart"></div>
         </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border">
+        <div class="bg-white p-2 rounded-xl shadow-sm border">
             <div x-ref="heatMapChart"></div>
         </div>
     </div>
@@ -186,12 +186,12 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead>
                 <tr class="bg-gray-50/50">
-                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Thời gian</th>
-                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Sản phẩm</th>
-                    <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Loại</th>
-                    <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Số lượng</th>
-                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Người thực hiện</th>
-                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Ghi chú</th>
+                    <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Thời gian</th>
+                    <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Sản phẩm</th>
+                    <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Loại</th>
+                    <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Số lượng</th>
+                    <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Người thực hiện</th>
+                    <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Ghi chú</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 italic-rows">
@@ -211,21 +211,21 @@
                     ];
                 @endphp
                 <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-4 py-3 text-xs text-gray-400 font-mono">{{ $tx->created_at->format('d/m/Y H:i') }}</td>
-                    <td class="px-4 py-3">
-                        <div class="text-sm font-semibold text-gray-800">{{ $tx->product->name ?? '' }}</div>
+                    <td class="px-2 py-1.5 text-xs text-gray-400 font-mono">{{ $tx->created_at->format('d/m/Y H:i') }}</td>
+                    <td class="px-2 py-1.5">
+                        <div class="text-xs font-semibold text-gray-800">{{ $tx->product->name ?? '' }}</div>
                         <div class="text-[10px] text-gray-400 font-mono">{{ $tx->product->code ?? '' }}</div>
                     </td>
-                    <td class="px-4 py-3 text-center">
+                    <td class="px-2 py-1.5 text-center">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold border {{ $typeColors[$tx->type] ?? 'bg-gray-50 text-gray-600' }}">
                             {{ $typeLabels[$tx->type] ?? $tx->type }}
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-center text-sm font-black {{ $tx->quantity >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                    <td class="px-2 py-1.5 text-center text-sm font-black {{ $tx->quantity >= 0 ? 'text-green-600' : 'text-red-600' }}">
                         {{ $tx->quantity >= 0 ? '+' : '' }}{{ number_format($tx->quantity) }}
                     </td>
-                    <td class="px-4 py-3 text-xs font-medium text-gray-600 italic">👤 {{ $tx->creator->name ?? '-' }}</td>
-                    <td class="px-4 py-3 text-[10px] text-gray-400 leading-tight">{{ Str::limit($tx->note, 50) }}</td>
+                    <td class="px-2 py-1.5 text-xs font-medium text-gray-600 italic">👤 {{ $tx->creator->name ?? '-' }}</td>
+                    <td class="px-2 py-1.5 text-[10px] text-gray-400 leading-tight">{{ Str::limit($tx->note, 50) }}</td>
                 </tr>
                 @empty
                 <tr><td colspan="6" class="px-4 py-12 text-center text-gray-400 italic">Dữ liệu trống trong khoảng thời gian này...</td></tr>

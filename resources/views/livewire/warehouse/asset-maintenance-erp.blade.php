@@ -1,5 +1,5 @@
 <div>
-    <div class="mb-6 flex flex-wrap justify-between items-center gap-4">
+    <div class="mb-6 flex flex-wrap justify-between items-center gap-2">
         <div>
             <h1 class="text-2xl font-bold text-slate-800 uppercase">Trang chủ Thiết bị & Bảo dưỡng (ERP)</h1>
             <p class="text-sm text-slate-500">Trung tâm quản lý, vận hành và theo dõi tình trạng thiết bị toàn diện</p>
@@ -45,7 +45,7 @@
         
         <!-- Loading overlay -->
         <div wire:loading wire:target="switchTab" class="absolute inset-0 z-50 flex items-center justify-center bg-slate-50/50 backdrop-blur-sm rounded-xl">
-            <div class="flex flex-col items-center gap-3 p-6 bg-white rounded-2xl shadow-xl border border-slate-100">
+            <div class="flex flex-col items-center gap-3 p-2 bg-white rounded-2xl shadow-xl border border-slate-100">
                 <div class="w-8 h-8 border-4 border-slate-200 border-t-sky-600 rounded-full animate-spin"></div>
                 <div class="text-sm font-bold text-slate-600">Đang tải phân hệ...</div>
             </div>

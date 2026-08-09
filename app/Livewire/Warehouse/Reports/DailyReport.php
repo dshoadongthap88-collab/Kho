@@ -13,6 +13,7 @@ use Carbon\Carbon;
 class DailyReport extends Component
 {
     public $date;
+    public $printDetailed = false;
 
     public function mount()
     {

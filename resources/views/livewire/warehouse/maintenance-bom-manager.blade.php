@@ -15,9 +15,9 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-2">
         <!-- CỘT 1: CHỌN THIẾT BỊ (Chiếm 3 cột) -->
-        <div class="md:col-span-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <div class="md:col-span-3 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
             <div class="mb-4 pb-2 border-b space-y-2">
                 <h3 class="font-bold text-slate-700 uppercase">1. Chọn Thiết bị</h3>
                 <input type="text" wire:model.live.debounce.300ms="searchAsset" placeholder="Tìm tên thiết bị, mã..." class="w-full text-sm border-slate-200 rounded-md focus:ring-sky-500 focus:border-sky-500 px-3 py-1.5 shadow-sm">
@@ -36,7 +36,7 @@
         </div>
 
         <!-- CỘT 2: CÁC MỨC BẢO DƯỠNG (Chiếm 3 cột) -->
-        <div class="md:col-span-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <div class="md:col-span-3 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
             <div class="flex justify-between items-center mb-4 pb-2 border-b">
                 <h3 class="font-bold text-slate-700 uppercase">2. Mức bảo dưỡng</h3>
                 @if($selectedAssetId)
@@ -71,7 +71,7 @@
         </div>
 
         <!-- CỘT 3: DANH SÁCH VẬT TƯ BÊN TRONG BOM (Chiếm 6 cột) -->
-        <div class="md:col-span-6 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <div class="md:col-span-6 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
             <div class="flex justify-between items-center mb-4 pb-2 border-b">
                 <h3 class="font-bold text-slate-700 uppercase">3. Chi tiết BOM Vật tư</h3>
                 @if($selectedBomId)
@@ -120,7 +120,7 @@
                                         {{ number_format($item->product->inventory->quantity ?? 0, 2) }}
                                     </td>
                                     <td class="px-3 py-2">
-                                        <input type="number" step="0.01" wire:model="bomItemQuantities.{{ $item->id }}" class="w-full border-gray-300 rounded text-right font-bold text-indigo-700 py-1 px-2 text-sm shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                        <input type="number" step="0.01" wire:model="bomItemQuantities.{{ $item->id }}" class="w-full border-gray-300 rounded text-right font-bold text-indigo-700 py-1 px-2 text-xs shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     </td>
                                     <td class="px-3 py-2 text-center">
                                         <button onclick="if(confirm('Xóa vật tư này khỏi BOM?')) @this.deleteItem({{ $item->id }})" class="text-red-600 hover:text-red-800 bg-red-50 p-1.5 rounded" title="Xóa"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
@@ -144,7 +144,7 @@
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showBomModal', false)"></div>
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4 uppercase">{{ $isEditBom ? 'Cập nhật Mức bảo dưỡng' : 'Thêm Mức bảo dưỡng mới' }}</h3>
                         
                         <div class="mb-4">
@@ -174,7 +174,7 @@
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showProductPickerModal', false)"></div>
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <div class="flex justify-between items-center mb-4 border-b pb-2">
                             <h3 class="text-xl leading-6 font-bold text-gray-900 uppercase">Danh mục Vật tư</h3>
                             <button wire:click="$set('showProductPickerModal', false)" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
@@ -232,7 +232,7 @@
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showCopyModal', false)"></div>
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4 uppercase">Sao chép BOM từ mức khác</h3>
                         <p class="text-sm text-gray-500 mb-4">Thao tác này sẽ sao chép toàn bộ vật tư từ mức bảo dưỡng bạn chọn sang mức hiện tại (chỉ thêm vật tư mới, không ghi đè nếu đã tồn tại).</p>
                         

@@ -1,6 +1,6 @@
 <div>
     <div class="flex justify-between items-center mb-4">
-        <div class="flex gap-4 flex-1 max-w-2xl">
+        <div class="flex gap-2 flex-1 max-w-2xl">
             <div class="flex-1">
                 <input wire:model.live="search" type="text" placeholder="Tìm theo tên, sđt, người liên hệ..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500">
             </div>
@@ -33,53 +33,53 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-gray-50 border-b text-gray-600 uppercase text-xs font-semibold">
-                    <th class="px-4 py-3">Phân loại</th>
-                    <th class="px-4 py-3">Tên Khách hàng/NCC</th>
-                    <th class="px-4 py-3">Địa chỉ</th>
-                    <th class="px-4 py-3">Số điện thoại</th>
-                    <th class="px-4 py-3">Người liên hệ</th>
-                    <th class="px-4 py-3">Email</th>
-                    <th class="px-4 py-3 text-left">Bộ phận</th>
-                    <th class="px-4 py-3 text-center">
+                    <th class="px-2 py-2">Phân loại</th>
+                    <th class="px-2 py-2">Tên Khách hàng/NCC</th>
+                    <th class="px-2 py-2">Địa chỉ</th>
+                    <th class="px-2 py-2">Số điện thoại</th>
+                    <th class="px-2 py-2">Người liên hệ</th>
+                    <th class="px-2 py-2">Email</th>
+                    <th class="px-2 py-2 text-left">Bộ phận</th>
+                    <th class="px-2 py-2 text-center">
                         <input type="checkbox" wire:model.live="selectAll" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
                     </th>
-                    <th class="px-4 py-3">Tình trạng</th>
-                    <th class="px-4 py-3 text-right">Thao tác</th>
+                    <th class="px-2 py-2">Tình trạng</th>
+                    <th class="px-2 py-2 text-right">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($contacts as $contact)
                     <tr class="hover:bg-gray-50 transition">
-                        <td class="px-4 py-3 whitespace-nowrap">
+                        <td class="px-2 py-1.5 whitespace-nowrap">
                             @if($contact->type === 'customer')
-                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Khách hàng</span>
+                                <span class="bg-blue-100 text-blue-700 px-1.5 py-1 text-[11px] rounded text-xs">Khách hàng</span>
                             @elseif($contact->type === 'supplier')
-                                <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Nhà cung cấp</span>
+                                <span class="bg-purple-100 text-purple-700 px-1.5 py-1 text-[11px] rounded text-xs">Nhà cung cấp</span>
                             @elseif($contact->type === 'internal')
-                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Nội bộ</span>
+                                <span class="bg-green-100 text-green-700 px-1.5 py-1 text-[11px] rounded text-xs font-bold">Nội bộ</span>
                             @else
-                                <span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Cả hai</span>
+                                <span class="bg-amber-100 text-amber-700 px-1.5 py-1 text-[11px] rounded text-xs">Cả hai</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 font-medium text-gray-800">{{ $contact->name }}</td>
-                        <td class="px-4 py-3 text-gray-600 text-sm max-w-xs truncate">{{ $contact->address }}</td>
-                        <td class="px-4 py-3 text-gray-600 font-mono">{{ $contact->phone }}</td>
-                        <td class="px-4 py-3 text-gray-800 font-medium">{{ $contact->contact_person }}</td>
-                        <td class="px-4 py-3 text-blue-600 text-sm italic underline">{{ $contact->email }}</td>
-                        <td class="px-4 py-3 text-left text-gray-600 font-medium">
+                        <td class="px-2 py-1.5 font-medium text-gray-800">{{ $contact->name }}</td>
+                        <td class="px-2 py-1.5 text-gray-600 text-sm max-w-xs truncate">{{ $contact->address }}</td>
+                        <td class="px-2 py-1.5 text-gray-600 font-mono">{{ $contact->phone }}</td>
+                        <td class="px-2 py-1.5 text-gray-800 font-medium">{{ $contact->contact_person }}</td>
+                        <td class="px-2 py-1.5 text-blue-600 text-sm italic underline">{{ $contact->email }}</td>
+                        <td class="px-2 py-1.5 text-left text-gray-600 font-medium">
                             {{ $contact->department ?? '-' }}
                         </td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-2 py-1.5 text-center">
                             <input type="checkbox" wire:model="selectedContacts" value="{{ $contact->id }}" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-2 py-1.5">
                             @if($contact->status === 'active')
-                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Hoạt động</span>
+                                <span class="bg-green-100 text-green-700 px-1.5 py-1 text-[11px] rounded text-xs">Hoạt động</span>
                             @else
-                                <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Ngừng HĐ</span>
+                                <span class="bg-red-100 text-red-700 px-1.5 py-1 text-[11px] rounded text-xs">Ngừng HĐ</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-right">
+                        <td class="px-2 py-1.5 text-right">
                             <button wire:click="openModal({{ $contact->id }})" class="text-blue-500 hover:text-blue-700 mr-2" title="Sửa">📝</button>
                             <button wire:confirm="Xác nhận xoá đối tác {{ $contact->name }}?" wire:click="delete({{ $contact->id }})" class="text-red-500 hover:text-red-700" title="Xoá">🗑️</button>
                         </td>
@@ -103,7 +103,7 @@
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $isEdit ? 'Chỉnh sửa đối tác' : 'Thêm đối tác mới' }}</h3>
 
                         @if($errors->any())
@@ -118,7 +118,7 @@
                                 <input type="text" wire:model="name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Người liên hệ</label>
                                     <input type="text" wire:model="contact_person" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
@@ -130,7 +130,7 @@
                                     @error('phone') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Email</label>
                                     <input type="email" wire:model="email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
@@ -147,7 +147,7 @@
                                 <textarea wire:model="address" rows="2" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></textarea>
                                 @error('address') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Phân loại</label>
                                     <select wire:model="type" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">

@@ -1,6 +1,6 @@
 <div class="space-y-4">
     {{-- Header --}}
-    <div class="flex justify-between items-center bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl shadow-sm border border-amber-200">
+    <div class="flex justify-between items-center bg-gradient-to-r from-amber-50 to-orange-50 p-2 rounded-xl shadow-sm border border-amber-200">
         <div>
             <h2 class="text-xl font-black text-amber-900">🛒 TRUNG TÂM MUA HÀNG</h2>
             <p class="text-sm text-amber-700">Phân tích vật tư, cảnh báo tồn kho, đề xuất mua hàng tổng hợp từ tất cả dự án.</p>
@@ -40,28 +40,28 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">STT</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Mã VT</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tên Vật Tư</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">ĐVT</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Tổng Xuất</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Số Đơn</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Dự Án Xuất Nhiều Nhất</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Thao Tác</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">STT</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Mã VT</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tên Vật Tư</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">ĐVT</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Tổng Xuất</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Số Đơn</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Dự Án Xuất Nhiều Nhất</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse($this->topUsageData as $index => $item)
                     <tr class="hover:bg-amber-50 transition-colors">
-                        <td class="px-4 py-3 text-sm text-gray-500 font-bold">{{ $index + 1 }}</td>
-                        <td class="px-4 py-3 text-sm font-mono font-bold text-gray-900">{{ $item['code'] }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">{{ $item['name'] }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-500">{{ $item['unit'] }}</td>
-                        <td class="px-4 py-3 text-sm text-center font-bold text-amber-700">{{ number_format($item['total_qty'], 2) }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-600">{{ $item['total_orders'] }}</td>
-                        <td class="px-4 py-3 text-sm text-sky-700 font-medium">{{ $item['top_project'] }}</td>
-                        <td class="px-4 py-3 text-center">
-                            <button wire:click="openCreateFromProduct({{ $item['product_id'] }}, {{ $item['house_id'] ?? 'null' }})" class="text-xs bg-amber-100 text-amber-700 hover:bg-amber-200 px-2 py-1 rounded font-bold transition-colors">
+                        <td class="px-2 py-1.5 text-sm text-gray-500 font-bold">{{ $index + 1 }}</td>
+                        <td class="px-2 py-1.5 text-sm font-mono font-bold text-gray-900">{{ $item['code'] }}</td>
+                        <td class="px-2 py-1.5 text-sm text-gray-700">{{ $item['name'] }}</td>
+                        <td class="px-2 py-1.5 text-sm text-center text-gray-500">{{ $item['unit'] }}</td>
+                        <td class="px-2 py-1.5 text-sm text-center font-bold text-amber-700">{{ number_format($item['total_qty'], 2) }}</td>
+                        <td class="px-2 py-1.5 text-sm text-center text-gray-600">{{ $item['total_orders'] }}</td>
+                        <td class="px-2 py-1.5 text-sm text-sky-700 font-medium">{{ $item['top_project'] }}</td>
+                        <td class="px-2 py-1.5 text-center">
+                            <button wire:click="openCreateFromProduct({{ $item['product_id'] }}, {{ $item['house_id'] ?? 'null' }})" class="text-xs bg-amber-100 text-amber-700 hover:bg-amber-200 px-1.5 py-1 text-[11px] rounded font-bold transition-colors">
                                 + Đề xuất
                             </button>
                         </td>
@@ -87,32 +87,32 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">STT</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Mã VT</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tên Vật Tư</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">ĐVT</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Tồn Hiện Tại</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Tối Thiểu</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Thiếu</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Dự Án</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Thao Tác</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">STT</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Mã VT</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tên Vật Tư</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">ĐVT</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Tồn Hiện Tại</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Tối Thiểu</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Thiếu</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Dự Án</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse($this->lowStockData as $index => $item)
                     <tr class="hover:bg-red-50 transition-colors">
-                        <td class="px-4 py-3 text-sm text-gray-500 font-bold">{{ $index + 1 }}</td>
-                        <td class="px-4 py-3 text-sm font-mono font-bold text-gray-900">{{ $item['code'] }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">{{ $item['name'] }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-500">{{ $item['unit'] }}</td>
-                        <td class="px-4 py-3 text-sm text-center font-bold text-red-600">{{ number_format($item['current_qty'], 2) }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-600">{{ number_format($item['min_stock'], 2) }}</td>
-                        <td class="px-4 py-3 text-sm text-center">
+                        <td class="px-2 py-1.5 text-sm text-gray-500 font-bold">{{ $index + 1 }}</td>
+                        <td class="px-2 py-1.5 text-sm font-mono font-bold text-gray-900">{{ $item['code'] }}</td>
+                        <td class="px-2 py-1.5 text-sm text-gray-700">{{ $item['name'] }}</td>
+                        <td class="px-2 py-1.5 text-sm text-center text-gray-500">{{ $item['unit'] }}</td>
+                        <td class="px-2 py-1.5 text-sm text-center font-bold text-red-600">{{ number_format($item['current_qty'], 2) }}</td>
+                        <td class="px-2 py-1.5 text-sm text-center text-gray-600">{{ number_format($item['min_stock'], 2) }}</td>
+                        <td class="px-2 py-1.5 text-sm text-center">
                             <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-bold">-{{ number_format($item['shortage'], 2) }}</span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-sky-700 font-medium">{{ $item['project'] }}</td>
-                        <td class="px-4 py-3 text-center">
-                            <button wire:click="openCreateFromProduct({{ $item['product_id'] }}, {{ $item['house_id'] }}, {{ $item['shortage'] }})" class="text-xs bg-red-100 text-red-700 hover:bg-red-200 px-2 py-1 rounded font-bold transition-colors">
+                        <td class="px-2 py-1.5 text-sm text-sky-700 font-medium">{{ $item['project'] }}</td>
+                        <td class="px-2 py-1.5 text-center">
+                            <button wire:click="openCreateFromProduct({{ $item['product_id'] }}, {{ $item['house_id'] }}, {{ $item['shortage'] }})" class="text-xs bg-red-100 text-red-700 hover:bg-red-200 px-1.5 py-1 text-[11px] rounded font-bold transition-colors">
                                 + Đề xuất mua
                             </button>
                         </td>
@@ -149,32 +149,32 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">ID</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Mã VT</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tên Vật Tư</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">SL Đề Xuất</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">SL Đã Giao</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Dự Án</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Ngày Giao DK</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">Trạng Thái</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Ghi chú</th>
-                        <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Thao Tác</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">ID</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Mã VT</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tên Vật Tư</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">SL Đề Xuất</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">SL Đã Giao</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Dự Án</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Ngày Giao DK</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Trạng Thái</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Ghi chú</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse($proposals as $plan)
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-4 py-3 text-sm text-gray-500">#{{ $plan->id }}</td>
-                        <td class="px-4 py-3 text-sm font-mono font-bold text-gray-900">{{ $plan->product->code ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">{{ $plan->product->name ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-sm text-center font-bold text-amber-700">{{ number_format($plan->proposed_quantity, 2) }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-green-600 font-bold">{{ number_format($plan->delivered_quantity, 2) }}</td>
-                        <td class="px-4 py-3 text-sm text-sky-700 font-medium">
+                        <td class="px-2 py-1.5 text-sm text-gray-500">#{{ $plan->id }}</td>
+                        <td class="px-2 py-1.5 text-sm font-mono font-bold text-gray-900">{{ $plan->product->code ?? 'N/A' }}</td>
+                        <td class="px-2 py-1.5 text-sm text-gray-700">{{ $plan->product->name ?? 'N/A' }}</td>
+                        <td class="px-2 py-1.5 text-sm text-center font-bold text-amber-700">{{ number_format($plan->proposed_quantity, 2) }}</td>
+                        <td class="px-2 py-1.5 text-sm text-center text-green-600 font-bold">{{ number_format($plan->delivered_quantity, 2) }}</td>
+                        <td class="px-2 py-1.5 text-sm text-sky-700 font-medium">
                             @php $proj = \App\Models\Project::find($plan->house_id); @endphp
                             {{ $proj->name ?? 'N/A' }}
                         </td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-500">{{ $plan->expected_delivery_date ? $plan->expected_delivery_date->format('d/m/Y') : '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-center">
+                        <td class="px-2 py-1.5 text-sm text-center text-gray-500">{{ $plan->expected_delivery_date ? $plan->expected_delivery_date->format('d/m/Y') : '-' }}</td>
+                        <td class="px-2 py-1.5 text-sm text-center">
                             @switch($plan->status)
                                 @case('pending')
                                     <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">Chờ duyệt</span>
@@ -195,8 +195,8 @@
                                     <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-700">{{ $plan->status }}</span>
                             @endswitch
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-500 max-w-[150px] truncate" title="{{ $plan->notes }}">{{ $plan->notes ?? '-' }}</td>
-                        <td class="px-4 py-3 text-right text-sm space-x-2">
+                        <td class="px-2 py-1.5 text-sm text-gray-500 max-w-[150px] truncate" title="{{ $plan->notes }}">{{ $plan->notes ?? '-' }}</td>
+                        <td class="px-2 py-1.5 text-right text-sm space-x-2">
                             <button wire:click="editProposal({{ $plan->id }})" class="text-indigo-600 hover:text-indigo-900 font-bold">Sửa</button>
                             <button onclick="confirm('Bạn có chắc muốn xóa đề xuất #{{ $plan->id }}?') || event.stopImmediatePropagation()" wire:click="deleteProposal({{ $plan->id }})" class="text-red-600 hover:text-red-900 font-bold">Xóa</button>
                         </td>

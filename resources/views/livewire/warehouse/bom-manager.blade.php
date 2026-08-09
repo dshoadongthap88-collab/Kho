@@ -1,9 +1,9 @@
 <div>
     @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg">{{ session('success') }}</div>
+        <div class="mb-4 p-2 bg-green-100 text-green-800 rounded-lg">{{ session('success') }}</div>
     @endif
 
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-xl shadow p-2">
         <h2 class="text-xl font-bold mb-4">🔧 Quản lý BOM - Định mức mã tài sản</h2>
 
         <div class="mb-6">
@@ -62,7 +62,7 @@
                         </td>
                         @endif
                         <td class="px-3 py-2 text-center">
-                            <button wire:confirm="Xác nhận xóa vật tư {{ $item['material_name'] }} khỏi định mức mã tài sản?" wire:click="removeMaterial({{ $item['id'] }})" class="text-rose-500 hover:text-rose-700 text-sm font-bold transition-all hover:scale-110">Xóa</button>
+                            <button wire:confirm="Xác nhận xóa vật tư {{ $item['material_name'] }} khỏi định mức mã tài sản?" wire:click="removeMaterial({{ $item['id'] }})" class="text-rose-500 hover:text-rose-700 text-xs font-bold transition-all hover:scale-110">Xóa</button>
                         </td>
                     </tr>
                     @endforeach
@@ -72,7 +72,7 @@
                 <p class="text-gray-400 text-sm mb-4">Chưa có vật tư định mức nào được khai báo cho sản phẩm/mã tài sản này.</p>
             @endif
 
-            <div class="bg-gray-50 rounded-lg p-4">
+            <div class="bg-gray-50 rounded-lg p-2">
                 <h4 class="text-sm font-semibold mb-3">Thêm định mức vật tư</h4>
                 <div class="flex gap-3 items-end">
                     <div class="flex-1">
@@ -100,7 +100,7 @@
     </div>
     <style>
         @media print {
-            .no-print, header, nav, aside.sidebar, .mb-6:first-child, .bg-gray-50.p-4 { display: none !important; }
+            .no-print, header, nav, aside.sidebar, .mb-6:first-child, .bg-gray-50.p-2 { display: none !important; }
             .bg-white { box-shadow: none !important; }
             body { font-size: 12pt; }
         }

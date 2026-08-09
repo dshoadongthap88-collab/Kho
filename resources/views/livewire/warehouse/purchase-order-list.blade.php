@@ -9,7 +9,7 @@
             main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
         }
     </style>
-    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4 mb-6 no-print">
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-2 mb-6 no-print">
         <div class="flex flex-wrap items-center gap-3">
             <!-- Date Filter Standard -->
             <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm transition-all focus-within:ring-2 focus-within:ring-amber-100">
@@ -93,53 +93,53 @@
                     $idsOnPage = $orders->pluck('id')->toArray();
                 @endphp
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
-                    <th class="px-6 py-4 w-10 text-center no-print bg-slate-100/30">
+                    <th class="px-2 py-2 w-10 text-center no-print bg-slate-100/30">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $idsOnPage) }}])" {{ count($selectedIds) >= count($idsOnPage) && count($idsOnPage) > 0 ? 'checked' : '' }} class="rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
                     </th>
-                    <th class="px-4 py-3">Số PO</th>
-                    <th class="px-4 py-3">Nhà cung cấp</th>
-                    <th class="px-4 py-3">Người đặt</th>
-                    <th class="px-4 py-3">Ngày đặt hàng</th>
-                    <th class="px-4 py-3">Ngày dự kiến giao</th>
-                    <th class="px-4 py-3">Tổng tiền</th>
-                    <th class="px-4 py-3 no-print">Trạng thái</th>
-                    <th class="px-4 py-3 text-right no-print">Thao tác</th>
+                    <th class="px-2 py-2">Số PO</th>
+                    <th class="px-2 py-2">Nhà cung cấp</th>
+                    <th class="px-2 py-2">Người đặt</th>
+                    <th class="px-2 py-2">Ngày đặt hàng</th>
+                    <th class="px-2 py-2">Ngày dự kiến giao</th>
+                    <th class="px-2 py-2">Tổng tiền</th>
+                    <th class="px-2 py-2 no-print">Trạng thái</th>
+                    <th class="px-2 py-2 text-right no-print">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($orders as $order)
                     <tr class="hover:bg-slate-50/80 transition group {{ in_array($order->id, $selectedIds) ? 'bg-amber-50 is-selected' : '' }}">
-                        <td class="px-6 py-4 text-center no-print">
+                        <td class="px-2 py-1.5 text-center no-print">
                             <input type="checkbox" wire:model.live="selectedIds" value="{{ $order->id }}" class="w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer">
                         </td>
-                        <td class="px-4 py-3 font-mono font-black text-indigo-700">{{ $order->po_number }}</td>
-                        <td class="px-4 py-3 text-gray-800">{{ $order->supplier->name ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-gray-700 text-sm">
-                            <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs">👤 {{ $order->user?->name ?? 'Chưa ghi' }}</span>
+                        <td class="px-2 py-1.5 font-mono font-black text-indigo-700">{{ $order->po_number }}</td>
+                        <td class="px-2 py-1.5 text-gray-800">{{ $order->supplier->name ?? 'N/A' }}</td>
+                        <td class="px-2 py-1.5 text-gray-700 text-sm">
+                            <span class="bg-indigo-100 text-indigo-700 px-1.5 py-1 text-[11px] rounded-full text-xs">👤 {{ $order->user?->name ?? 'Chưa ghi' }}</span>
                         </td>
-                        <td class="px-4 py-3 text-gray-600 text-sm">{{ $order->order_date?->format('d/m/Y') }}</td>
-                        <td class="px-4 py-3 text-gray-600 text-sm">{{ $order->expected_delivery_date?->format('d/m/Y') }}</td>
-                        <td class="px-4 py-3 font-semibold text-amber-700">{{ number_format($order->total_amount, 0, ',', '.') }} đ</td>
-                        <td class="px-4 py-3 no-print">
+                        <td class="px-2 py-1.5 text-gray-600 text-sm">{{ $order->order_date?->format('d/m/Y') }}</td>
+                        <td class="px-2 py-1.5 text-gray-600 text-sm">{{ $order->expected_delivery_date?->format('d/m/Y') }}</td>
+                        <td class="px-2 py-1.5 font-semibold text-amber-700">{{ number_format($order->total_amount, 0, ',', '.') }} đ</td>
+                        <td class="px-2 py-1.5 no-print">
                             @switch($order->status)
                                 @case('pending')
-                                    <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">Đã trình</span>
+                                    <span class="bg-yellow-100 text-yellow-700 px-1.5 py-1 text-[11px] rounded text-xs">Đã trình</span>
                                     @break
                                 @case('confirmed')
-                                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Đã duyệt</span>
+                                    <span class="bg-blue-100 text-blue-700 px-1.5 py-1 text-[11px] rounded text-xs">Đã duyệt</span>
                                     @break
                                 @case('received')
-                                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Đã nhận</span>
+                                    <span class="bg-green-100 text-green-700 px-1.5 py-1 text-[11px] rounded text-xs">Đã nhận</span>
                                     @break
                                 @case('cancelled')
-                                    <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Đã hủy</span>
+                                    <span class="bg-red-100 text-red-700 px-1.5 py-1 text-[11px] rounded text-xs">Đã hủy</span>
                                     @break
                             @endswitch
                         </td>
-                        <td class="px-4 py-3 text-right flex gap-1 justify-end no-print">
+                        <td class="px-2 py-1.5 text-right flex gap-1 justify-end no-print">
                             <button wire:click="printSingle({{ $order->id }})" class="text-slate-400 hover:text-amber-600 p-1 transition-all hover:scale-110" title="In phiếu">🖨️</button>
                             @if($order->status === 'pending')
-                                <button wire:click="confirmOrder({{ $order->id }})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-black transition-all hover:scale-105 shadow-sm" title="Xác nhận">DUYỆT</button>
+                                <button wire:click="confirmOrder({{ $order->id }})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-1.5 py-1 text-[11px] rounded text-[10px] font-black transition-all hover:scale-105 shadow-sm" title="Xác nhận">DUYỆT</button>
                             @endif
                             <button wire:click="openModal({{ $order->id }})" class="text-indigo-500 hover:text-indigo-700 p-1 transition-all hover:scale-110" title="Sửa">📝</button>
                             <button wire:confirm="Xác nhận xoá đơn hàng {{ $order->po_number }}?" wire:click="delete({{ $order->id }})" class="text-rose-400 hover:text-rose-600 p-1 transition-all hover:scale-110" title="Xoá">🗑️</button>
@@ -164,12 +164,12 @@
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full max-h-[90vh] overflow-y-auto">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">{{ $isEdit ? 'Chỉnh sửa phiếu đề xuất' : 'Tạo phiếu đề xuất mới' }}</h3>
                         
                         <div class="space-y-4">
                             <!-- Basic Info -->
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Số phiếu (PO)</label>
                                     <input type="text" wire:model="po_number" {{ !$isEdit ? 'readOnly' : '' }} class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 {{ !$isEdit ? 'bg-gray-100' : '' }}" placeholder="PO-2024-001">
@@ -190,7 +190,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Ngày đặt hàng</label>
                                     <input type="date" wire:model="order_date" readOnly class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100 cursor-not-allowed">
@@ -205,7 +205,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Trạng thái phê duyệt</label>
                                     <select wire:model="status" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
@@ -330,10 +330,10 @@
                             <span>🏢</span> Tạo đề xuất Mua hàng Văn phòng
                         </h3>
                     </div>
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <div class="space-y-4">
                             <!-- Basic Info -->
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Số phiếu (PO)</label>
                                     <input type="text" wire:model="po_number" readOnly class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100">
@@ -497,7 +497,7 @@
             </table>
 
             <!-- Footer / Signatures -->
-            <div class="grid grid-cols-2 gap-4 text-center mt-8 mb-8">
+            <div class="grid grid-cols-2 gap-2 text-center mt-8 mb-8">
                 <div>
                     <p class="font-bold text-[14px]">Người đặt hàng</p>
                     <p class="text-[12px] italic">(Ký, ghi rõ họ tên)</p>

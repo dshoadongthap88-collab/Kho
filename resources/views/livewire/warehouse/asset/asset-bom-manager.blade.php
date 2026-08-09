@@ -233,20 +233,20 @@
 
     <!-- Thống báo trạng thái -->
     @if (session()->has('message'))
-        <div class="p-4 mb-4 text-sm text-emerald-800 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center gap-2 shadow-sm transition-all duration-300 no-print">
+        <div class="p-2 mb-4 text-sm text-emerald-800 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center gap-2 shadow-sm transition-all duration-300 no-print">
             <span class="text-base">✨</span>
             <div class="font-semibold">{{ session('message') }}</div>
         </div>
     @endif
     @if (session()->has('error'))
-        <div class="p-4 mb-4 text-sm text-rose-800 rounded-lg bg-rose-50 border border-rose-100 flex items-center gap-2 shadow-sm transition-all duration-300 no-print">
+        <div class="p-2 mb-4 text-sm text-rose-800 rounded-lg bg-rose-50 border border-rose-100 flex items-center gap-2 shadow-sm transition-all duration-300 no-print">
             <span class="text-base">⚠️</span>
             <div class="font-semibold">{{ session('error') }}</div>
         </div>
     @endif
 
     <!-- Thanh công cụ tìm kiếm & nút thao tác -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-wrap items-center justify-between gap-4 no-print">
+    <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-100 flex flex-wrap items-center justify-between gap-2 no-print">
         <div class="flex items-center gap-3 w-full lg:w-auto">
             <div class="relative w-full lg:w-80">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
@@ -314,7 +314,7 @@
                 Thêm thiết bị mới vào hệ thống
             </h3>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Mã tài sản <span class="text-red-500">*</span></label>
                     <input type="text" wire:model.defer="new_asset_code" placeholder="Ví dụ: TS-003" 
@@ -398,14 +398,14 @@
                                             <div x-data="{ open: false }" class="relative">
                                                 <!-- Button / Badge -->
                                                 <button type="button" @click="open = !open" @click.away="open = false" 
-                                                        class="text-[11px] font-black text-sky-700 bg-sky-50 border border-sky-200 px-2 py-1 rounded-md hover:bg-sky-100 transition shadow-sm flex items-center gap-1">
+                                                        class="text-[11px] font-black text-sky-700 bg-sky-50 border border-sky-200 px-1.5 py-1 text-[11px] rounded-md hover:bg-sky-100 transition shadow-sm flex items-center gap-1">
                                                     <svg class="w-3 h-3 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                                     {{ $bom->cycle }}h
                                                     <span class="text-[9px] px-1 bg-sky-200 text-sky-800 rounded-full">{{ $bom->items->count() }}</span>
                                                 </button>
 
                                                 <!-- Dropdown / Popover => Changed to Modal -->
-                                                <div x-show="open" x-transition.opacity style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 no-print">
+                                                <div x-show="open" x-transition.opacity style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-2 no-print">
                                                     <!-- Backdrop -->
                                                     <div class="fixed inset-0 bg-slate-800/60 backdrop-blur-sm" @click="open = false"></div>
                                                     
@@ -425,16 +425,16 @@
                                                                 <table class="w-full text-left border-collapse">
                                                                     <thead class="bg-slate-50 border-b border-slate-200 text-[11px] uppercase font-bold text-slate-600">
                                                                         <tr>
-                                                                            <th class="px-4 py-3 w-12 text-center">#</th>
-                                                                            <th class="px-4 py-3">Tên vật tư</th>
-                                                                            <th class="px-4 py-3 w-32 text-center">Số lượng</th>
-                                                                            <th class="px-4 py-3 w-32 text-center">SL Dự phòng</th>
+                                                                            <th class="px-2 py-2 w-12 text-center">#</th>
+                                                                            <th class="px-2 py-2">Tên vật tư</th>
+                                                                            <th class="px-2 py-2 w-32 text-center">Số lượng</th>
+                                                                            <th class="px-2 py-2 w-32 text-center">SL Dự phòng</th>
                                                                         </tr>
                                                                     </thead>
-                                                                    <tbody class="divide-y divide-slate-100 text-sm">
+                                                                    <tbody class="divide-y divide-slate-100 text-xs">
                                                                         @forelse($bom->items as $i => $item)
                                                                             <tr class="hover:bg-slate-50/50">
-                                                                                <td class="px-4 py-2.5 text-center text-slate-400 font-medium">{{ $i + 1 }}</td>
+                                                                                <td class="px-1.5 py-1 text-[11px].5 text-center text-slate-400 font-medium">{{ $i + 1 }}</td>
                                                                                 <td class="px-4 py-2.5 font-bold text-slate-700">{{ $item->product ? $item->product->name : 'N/A' }}</td>
                                                                                 <td class="px-4 py-2.5 text-center">
                                                                                     @if($item->quantity > 0)
@@ -495,7 +495,7 @@
                     
                     <!-- Tab Header -->
                     <div class="bg-slate-50 border-b border-slate-150 px-6 py-3 flex items-center justify-between">
-                        <div class="flex gap-4">
+                        <div class="flex gap-2">
                             <button @click="activeTab = 'excel'" 
                                     :class="activeTab === 'excel' ? 'border-sky-600 text-sky-600 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
                                     class="py-2 px-1 text-sm border-b-2 transition duration-150">
@@ -512,7 +512,7 @@
                     </div>
 
                     <!-- Tab 1: Nhập từ Excel/CSV -->
-                    <div x-show="activeTab === 'excel'" class="p-6 space-y-4">
+                    <div x-show="activeTab === 'excel'" class="p-2 space-y-4">
                         <div class="p-3.5 bg-emerald-50 text-emerald-850 rounded-lg text-xs font-semibold leading-relaxed border border-emerald-100">
                             ✨ <span class="font-extrabold text-emerald-950">Hệ thống đồng bộ cột thông minh:</span> Anh/chị có thể sắp xếp các cột Excel/CSV theo thứ tự tùy ý! Hệ thống sẽ quét các dòng tiêu đề như 
                             <i>"Mã tài sản", "Tên thiết bị", "Bộ phận", "Dầu động cơ", "Lọc nhớt"...</i> để tự động phân tích và trích xuất thông tin một cách chuẩn xác nhất.
@@ -546,14 +546,14 @@
                     </div>
 
                     <!-- Tab 2: Nhận diện từ Ảnh chụp AI OCR -->
-                    <div x-show="activeTab === 'ocr'" class="p-6 space-y-4" @paste="handleImagePaste($event)">
+                    <div x-show="activeTab === 'ocr'" class="p-2 space-y-4" @paste="handleImagePaste($event)">
                         <div class="p-3 bg-indigo-50 text-indigo-850 rounded-lg text-xs font-semibold leading-relaxed border border-indigo-100">
                             📷 <span class="font-extrabold text-indigo-950">Giải pháp nhận diện ảnh thông minh:</span> Anh/chị chỉ cần **chụp ảnh màn hình bảng Excel hoặc chụp ảnh thiết bị**, rồi nhấn **Ctrl + V** để dán ảnh trực tiếp vào đây hoặc chọn ảnh chụp để AI bóc tách định mức nhanh chóng!
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <!-- Khu vực tải ảnh & Preview -->
-                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center min-h-[220px] bg-slate-50 relative hover:border-sky-350 transition-colors">
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center min-h-[220px] bg-slate-50 relative hover:border-sky-350 transition-colors">
                                 <template x-if="!ocrImageSrc">
                                     <div class="text-center space-y-2 pointer-events-none select-none">
                                         <span class="text-3xl block">📋</span>
@@ -573,7 +573,7 @@
                             </div>
 
                             <!-- Trạng thái quét AI -->
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-150 flex flex-col justify-between">
+                            <div class="bg-slate-50 p-2 rounded-xl border border-slate-150 flex flex-col justify-between">
                                 <div class="space-y-3">
                                     <h4 class="text-xs font-bold text-slate-700 uppercase">Trạng thái nhận diện AI</h4>
                                     <p class="text-xs font-semibold text-slate-600" x-text="ocrStatus || 'Chưa tải ảnh chụp lên...'"></p>

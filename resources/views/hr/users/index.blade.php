@@ -22,12 +22,12 @@
     </div>
 
     @if (session('success'))
-    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 absolute top-20 right-4 z-50 shadow-md transform transition-all duration-300 rounded" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-2 absolute top-20 right-4 z-50 shadow-md transform transition-all duration-300 rounded" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
         <p>{{ session('success') }}</p>
     </div>
     @endif
     @if ($errors->any())
-    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 absolute top-20 right-4 z-50 shadow-md transform transition-all duration-300 rounded" x-data="{ show: true }" x-show="show">
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 absolute top-20 right-4 z-50 shadow-md transform transition-all duration-300 rounded" x-data="{ show: true }" x-show="show">
         <div class="flex justify-between items-start">
             <ul class="list-disc pl-4 text-sm mt-1">
                 @foreach ($errors->all() as $error)
@@ -40,11 +40,11 @@
     @endif
 
     <!-- Main Content -->
-    <div class="flex-1 flex overflow-hidden relative z-10 px-4 py-4 gap-6">
+    <div class="flex-1 flex overflow-hidden relative z-10 px-4 py-4 gap-2">
         
         <!-- Left: Data List (Table) -->
         <div class="w-2/3 bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col overflow-hidden">
-            <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <div class="p-2 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <h2 class="text-lg font-bold text-gray-700 flex items-center gap-2">
                     <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
                     Danh sách nhân viên ({{ count($users) }})
@@ -59,29 +59,29 @@
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-gray-50 text-gray-600 text-xs uppercase sticky top-0 shadow-sm z-10">
                         <tr>
-                            <th class="px-4 py-3 font-semibold border-b">Mã NV</th>
-                            <th class="px-4 py-3 font-semibold border-b">Tên Nhân Viên</th>
-                            <th class="px-4 py-3 font-semibold border-b">Chức Vụ</th>
-                            <th class="px-4 py-3 font-semibold border-b">Phòng Ban</th>
-                            <th class="px-4 py-3 font-semibold border-b">Tên Đăng Nhập</th>
-                            <th class="px-4 py-3 font-semibold border-b">Mật khẩu</th>
-                            <th class="px-4 py-3 font-semibold border-b text-center">Thao tác</th>
+                            <th class="px-2 py-2 font-semibold border-b">Mã NV</th>
+                            <th class="px-2 py-2 font-semibold border-b">Tên Nhân Viên</th>
+                            <th class="px-2 py-2 font-semibold border-b">Chức Vụ</th>
+                            <th class="px-2 py-2 font-semibold border-b">Phòng Ban</th>
+                            <th class="px-2 py-2 font-semibold border-b">Tên Đăng Nhập</th>
+                            <th class="px-2 py-2 font-semibold border-b">Mật khẩu</th>
+                            <th class="px-2 py-2 font-semibold border-b text-center">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100">
                         @foreach ($users as $user)
                         <tr class="hover:bg-indigo-50/50 transition-colors cursor-pointer {{ session('edited_user_id') == $user->id ? 'bg-indigo-50' : '' }}" 
                             @click="editUser({{ $user->toJson() }})">
-                            <td class="px-4 py-3 font-medium text-gray-800">{{ $user->code }}</td>
-                            <td class="px-4 py-3 text-gray-800 flex items-center gap-2">
+                            <td class="px-2 py-1.5 font-medium text-gray-800">{{ $user->code }}</td>
+                            <td class="px-2 py-1.5 text-gray-800 flex items-center gap-2">
                                 <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs uppercase">{{ substr($user->name, 0, 1) }}</div>
                                 <span>{{ $user->name }}</span>
                             </td>
-                            <td class="px-4 py-3 text-gray-600">{{ $user->role === 'admin' ? 'Quản trị viên' : ($user->role === 'staff' ? 'Nhân viên' : 'Xem') }}</td>
-                            <td class="px-4 py-3 text-gray-600">{{ $user->department ?? '-' }}</td>
-                            <td class="px-4 py-3 text-gray-600">{{ $user->username ?? $user->email ?? '-' }}</td>
-                            <td class="px-4 py-3 text-gray-400 text-xl leading-none tracking-widest mt-1 inline-block">******</td>
-                            <td class="px-4 py-3 text-center" @click.stop>
+                            <td class="px-2 py-1.5 text-gray-600">{{ $user->role === 'admin' ? 'Quản trị viên' : ($user->role === 'staff' ? 'Nhân viên' : 'Xem') }}</td>
+                            <td class="px-2 py-1.5 text-gray-600">{{ $user->department ?? '-' }}</td>
+                            <td class="px-2 py-1.5 text-gray-600">{{ $user->username ?? $user->email ?? '-' }}</td>
+                            <td class="px-2 py-1.5 text-gray-400 text-xl leading-none tracking-widest mt-1 inline-block">******</td>
+                            <td class="px-2 py-1.5 text-center" @click.stop>
                                 <form action="{{ route('hr.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');" class="inline-block">
                                     @csrf
                                     @method('DELETE')
@@ -110,7 +110,7 @@
              x-transition:enter-end="opacity-100 translate-x-0"
              style="display: none; max-height: calc(100% - 10px);">
             
-            <div class="p-4 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center shrink-0">
+            <div class="p-2 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center shrink-0">
                 <h3 class="text-lg font-bold text-indigo-900" x-text="isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên mới'"></h3>
                 <button @click="closeForm()" class="text-indigo-400 hover:text-indigo-700 bg-white rounded-full p-1 shadow-sm">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -126,7 +126,7 @@
                     
                     <div class="space-y-4">
                         <!-- Thông tin cơ bản -->
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Mã NV <span class="text-red-500">*</span></label>
                                 <input type="text" name="code" x-model="formData.code" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
@@ -137,7 +137,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Chức vụ <span class="text-red-500">*</span></label>
                                 <select name="role" x-model="formData.role" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm bg-white">
@@ -235,7 +235,7 @@
                 </form>
             </div>
             
-            <div class="p-6 border-t border-gray-100 bg-gray-50 shrink-0 flex justify-end gap-3 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] z-10 pb-8">
+            <div class="p-2 border-t border-gray-100 bg-gray-50 shrink-0 flex justify-end gap-3 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] z-10 pb-8">
                 <button type="button" @click="closeForm()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-200" :disabled="isSubmitting">Hủy</button>
                 <button type="button" @click="submitForm()" 
                         class="px-6 py-2 rounded-lg shadow-lg transition-all duration-300 text-sm font-bold flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-1 min-w-[140px] justify-center"
@@ -265,7 +265,7 @@
                  x-transition:enter-end="opacity-100"
                  class="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-50"
                  style="display: none;">
-                <div class="bg-white p-6 rounded-2xl shadow-2xl border border-green-100 flex flex-col items-center gap-4 transform scale-110">
+                <div class="bg-white p-2 rounded-2xl shadow-2xl border border-green-100 flex flex-col items-center gap-2 transform scale-110">
                     <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center shadow-inner">
                         <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                     </div>

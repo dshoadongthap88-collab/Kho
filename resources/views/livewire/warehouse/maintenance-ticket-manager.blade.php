@@ -1,6 +1,6 @@
 <div class="px-4 pb-10">
     <!-- Header -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
             <p class="text-sm text-gray-500">Quản lý các phiếu thực hiện bảo dưỡng sửa chữa</p>
         </div>
@@ -10,13 +10,13 @@
     </div>
 
     @if (session()->has('message'))
-        <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
+        <div class="mb-4 p-2 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
             <span>✅</span> {{ session('message') }}
         </div>
     @endif
 
     <!-- Toolbar -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-4 items-center justify-between">
+    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-2 items-center justify-between">
         <div class="w-full md:w-1/3 relative">
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm kiếm số phiếu, thiết bị..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
             <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
@@ -29,25 +29,25 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Số Phiếu</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ngày bảo dưỡng</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tên thiết bị bảo dưỡng</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã tài sản bảo dưỡng</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mức bảo dưỡng</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tên tài xế</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Số Phiếu</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ngày bảo dưỡng</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tên thiết bị bảo dưỡng</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã tài sản bảo dưỡng</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mức bảo dưỡng</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tên tài xế</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($tickets as $ticket)
                         <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-indigo-600">{{ $ticket->ticket_code }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $ticket->maintenance_date ? $ticket->maintenance_date->format('d/m/Y') : '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ $ticket->asset->name ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{{ $ticket->asset->asset_code ?? '' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">{{ $ticket->maintenance_rule_id ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $ticket->staff_name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-indigo-600">{{ $ticket->ticket_code }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm text-gray-600">{{ $ticket->maintenance_date ? $ticket->maintenance_date->format('d/m/Y') : '-' }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-gray-900">{{ $ticket->asset->name ?? 'N/A' }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm text-gray-500 font-mono">{{ $ticket->asset->asset_code ?? '' }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm font-semibold text-gray-700">{{ $ticket->maintenance_rule_id ?? 'N/A' }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm text-gray-600">{{ $ticket->staff_name }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-right text-sm font-medium">
                                 <button wire:click="edit({{ $ticket->id }})" class="text-indigo-600 hover:text-indigo-900 mx-2 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded" title="Chi tiết / Sửa">✏️</button>
                                 <button x-on:click="if(confirm('Xóa phiếu bảo dưỡng này?')) $wire.delete({{ $ticket->id }})" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded" title="Xóa">🗑️</button>
                             </td>
@@ -88,14 +88,14 @@
                             </button>
                         </div>
 
-                        <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 140px);">
+                        <div class="p-2 overflow-y-auto" style="max-height: calc(90vh - 140px);">
                             <div class="space-y-6">
                                 
                                 <!-- Khối Thông Tin Cơ Bản -->
-                                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
+                                <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 space-y-4">
                                     <h4 class="font-bold text-indigo-800 border-b border-slate-200 pb-2 mb-4 uppercase text-sm">1. Thông tin chung</h4>
                                     
-                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700">Số Phiếu</label>
                                             <input type="text" wire:model="ticket_code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-100 sm:text-sm font-mono font-bold" readonly>
@@ -117,7 +117,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700">Cấp Bảo Dưỡng / Hạng Mục</label>
                                             <select wire:model="maintenance_rule_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -140,7 +140,7 @@
                                 </div>
 
                                 <!-- Khối Nội Dung Công Việc -->
-                                <div class="bg-white p-4 rounded-lg border border-gray-200 space-y-4">
+                                <div class="bg-white p-2 rounded-lg border border-gray-200 space-y-4">
                                     <h4 class="font-bold text-indigo-800 border-b border-gray-200 pb-2 mb-4 uppercase text-sm">2. Nội dung thực hiện</h4>
                                     
                                     <div>
@@ -153,7 +153,7 @@
                                         <textarea wire:model="materials_used" rows="2" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="VD: 20L nhớt động cơ, 1 lọc dầu, 1 lọc gió..."></textarea>
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700">Nhân Viên Thực Hiện</label>
                                             <input type="text" wire:model="staff_name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -176,10 +176,10 @@
                                 </div>
 
                                 <!-- Khối Hình Ảnh -->
-                                <div class="bg-white p-4 rounded-lg border border-gray-200 space-y-4">
+                                <div class="bg-white p-2 rounded-lg border border-gray-200 space-y-4">
                                     <h4 class="font-bold text-indigo-800 border-b border-gray-200 pb-2 mb-4 uppercase text-sm">3. Hình ảnh đính kèm</h4>
                                     
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Hình ảnh TRƯỚC bảo dưỡng</label>
                                             <input type="file" wire:model="image_before" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">

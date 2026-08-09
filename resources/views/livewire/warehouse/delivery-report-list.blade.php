@@ -13,7 +13,7 @@
         }
     </style>
     <!-- Header & Action -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 bg-white p-5 rounded-xl shadow-sm border border-slate-200">
         <div>
             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                 <span>🚚</span> Quản lý Giao Hàng
@@ -87,7 +87,7 @@
 
     <!-- Messages -->
     @if(session('message'))
-        <div class="bg-green-100 border border-green-200 text-green-800 rounded-lg p-4 flex items-center gap-3">
+        <div class="bg-green-100 border border-green-200 text-green-800 rounded-lg p-2 flex items-center gap-3">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
             {{ session('message') }}
         </div>
@@ -102,31 +102,31 @@
                         @php
                             $idsOnPage = $reports->pluck('id')->toArray();
                         @endphp
-                        <th class="px-6 py-4 w-10 no-print">
+                        <th class="px-2 py-2 w-10 no-print">
                             <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $idsOnPage) }}])" {{ count($selectedIds) >= count($idsOnPage) && count($idsOnPage) > 0 ? 'checked' : '' }} class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </th>
-                        <th class="px-6 py-4">Mã Phiếu Xuất</th>
-                        <th class="px-6 py-4">Khách hàng</th>
-                        <th class="px-6 py-4 text-center">Tình trạng Giao</th>
-                        <th class="px-6 py-4 text-center">Thanh toán</th>
-                        <th class="px-6 py-4">Ghi chú</th>
-                        <th class="px-6 py-4 text-center">Hành động</th>
+                        <th class="px-2 py-2">Mã Phiếu Xuất</th>
+                        <th class="px-2 py-2">Khách hàng</th>
+                        <th class="px-2 py-2 text-center">Tình trạng Giao</th>
+                        <th class="px-2 py-2 text-center">Thanh toán</th>
+                        <th class="px-2 py-2">Ghi chú</th>
+                        <th class="px-2 py-2 text-center">Hành động</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($reports as $report)
                         <tr class="hover:bg-slate-50 transition-colors {{ $report->status === 'pending' ? 'bg-red-50/30' : '' }} {{ in_array($report->id, $selectedIds) ? 'bg-indigo-50/20' : '' }}">
-                            <td class="px-6 py-4 no-print">
+                            <td class="px-2 py-1.5 no-print">
                                 <input type="checkbox" wire:model.live="selectedIds" value="{{ $report->id }}" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                             </td>
-                            <td class="px-6 py-4 font-semibold text-indigo-700">
+                            <td class="px-2 py-1.5 font-semibold text-indigo-700">
                                 {{ $report->stockOut->code ?? 'N/A' }}
                                 <div class="text-[11px] text-slate-400 font-normal mt-1">{{ optional($report->stockOut->created_at)->format('d/m/Y H:i') }}</div>
                             </td>
-                            <td class="px-6 py-4 font-medium text-slate-800">
+                            <td class="px-2 py-1.5 font-medium text-slate-800">
                                 {{ $report->customer_name ?: 'Khách lẻ' }}
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-2 py-1.5 text-center">
                                 @if($report->status === 'delivered')
                                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
                                         <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
@@ -141,7 +141,7 @@
                                     <div class="text-[10px] text-slate-500 mt-1">{{ \Carbon\Carbon::parse($report->delivered_at)->format('d/m/Y H:i') }}</div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-2 py-1.5 text-center">
                                 @if($report->payment_status === 'paid')
                                     <span class="inline-block px-2 text-xs font-semibold rounded bg-emerald-100 text-emerald-800">Đã thanh toán</span>
                                 @elseif($report->payment_status === 'debt')
@@ -150,19 +150,19 @@
                                     <span class="inline-block px-2 text-xs font-semibold rounded bg-slate-100 text-slate-600">Chưa TT</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-slate-600 max-w-[200px] truncate" title="{{ $report->notes }}">
+                            <td class="px-2 py-1.5 text-sm text-slate-600 max-w-[200px] truncate" title="{{ $report->notes }}">
                                 {{ $report->notes ?: '-' }}
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-2 py-1.5 text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <button wire:click="printSingle({{ $report->id }})" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition" title="In báo cáo này">🖨️</button>
                                     @if($report->status !== 'delivered')
-                                        <button wire:click="openConfirmModal({{ $report->id }})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-sm transition-all hover:scale-105 uppercase">
+                                        <button wire:click="openConfirmModal({{ $report->id }})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black px-1.5 py-1 text-[11px] rounded-lg shadow-sm transition-all hover:scale-105 uppercase">
                                             Xác nhận
                                         </button>
                                     @else
                                         @if($report->photo_path)
-                                            <a href="{{ Storage::url($report->photo_path) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-[11px] font-black underline flex items-center justify-center gap-1 bg-indigo-50 px-2 py-1 rounded-lg">
+                                            <a href="{{ Storage::url($report->photo_path) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-[11px] font-black underline flex items-center justify-center gap-1 bg-indigo-50 px-1.5 py-1 text-[11px] rounded-lg">
                                                 <span>📷</span> ẢNH
                                             </a>
                                         @else
@@ -326,7 +326,7 @@
             </div>
             @endif
 
-            <div class="grid grid-cols-2 gap-4 text-center mt-auto pt-10 border-t border-slate-100">
+            <div class="grid grid-cols-2 gap-2 text-center mt-auto pt-10 border-t border-slate-100">
                 <div>
                     <p class="font-bold text-xs uppercase text-slate-800">Khách nhận hàng ký tên</p>
                     <div style="height: 60px;"></div>

@@ -31,7 +31,7 @@
             </div>
         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         
-        <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex flex-wrap gap-3 items-center">
                 <!-- Tìm kiếm -->
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tên/Mã vật tư..."
@@ -110,21 +110,21 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-4 py-3 text-center no-print">
+                    <th class="px-2 py-2 text-center no-print">
                         <input type="checkbox" wire:click="toggleSelectAll([<?php echo e($inventories->pluck('id')->implode(',')); ?>])" 
                                <?php echo e(count($selectedItems) > 0 && count($selectedItems) === count($inventories->pluck('id')) ? 'checked' : ''); ?>
 
                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                     </th>
-                    <th wire:click="sortBy('products.code')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 italic">Mã Vật Tư</th>
-                    <th wire:click="sortBy('products.name')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">TÊN VẬT TƯ</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hãng SX</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Mã Code NCC</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hạn dùng</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">ĐVT</th>
-                    <th wire:click="sortBy('inventories.quantity')" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">Tồn kho</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Vị trí</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
+                    <th wire:click="sortBy('products.code')" class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 italic">Mã Vật Tư</th>
+                    <th wire:click="sortBy('products.name')" class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">TÊN VẬT TƯ</th>
+                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Hãng SX</th>
+                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Mã Code NCC</th>
+                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Hạn dùng</th>
+                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">ĐVT</th>
+                    <th wire:click="sortBy('inventories.quantity')" class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">Tồn kho</th>
+                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Vị trí</th>
+                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -147,20 +147,20 @@
                         }
                     ?>
                     <tr class="hover:bg-gray-50 transition <?php echo e($isSelected ? 'bg-indigo-50' : 'noprint-row'); ?>">
-                        <td class="px-4 py-3 text-center no-print">
+                        <td class="px-2 py-1.5 text-center no-print">
                             <input type="checkbox" wire:model.live="selectedItems" value="<?php echo e($inv->id); ?>"
                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                         </td>
-                        <td class="px-4 py-3 text-sm font-mono text-indigo-600"><?php echo e($inv->product_code); ?></td>
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900"><?php echo e($inv->product_name); ?></td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-500"><?php echo e($inv->brand ?? '-'); ?></td>
-                        <td class="px-4 py-3 text-sm text-center font-mono text-gray-600"><?php echo e($inv->batch_number ?? '-'); ?></td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-500 italic"><?php echo e($inv->expiry_date ? \Carbon\Carbon::parse($inv->expiry_date)->format('d/m/y') : '-'); ?></td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-500"><?php echo e($inv->unit); ?></td>
-                        <td class="px-4 py-3 text-sm text-center font-bold text-indigo-700"><?php echo e(number_format($inv->quantity)); ?></td>
-                        <td class="px-4 py-3 text-sm text-center text-gray-500"><?php echo e($inv->warehouse_location ?? '-'); ?></td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium status-badge <?php echo e($statusColor); ?>">
+                        <td class="px-2 py-1.5 text-sm font-mono text-indigo-600"><?php echo e($inv->product_code); ?></td>
+                        <td class="px-2 py-1.5 text-sm font-medium text-gray-900"><?php echo e($inv->product_name); ?></td>
+                        <td class="px-2 py-1.5 text-sm text-center text-gray-500"><?php echo e($inv->brand ?? '-'); ?></td>
+                        <td class="px-2 py-1.5 text-sm text-center font-mono text-gray-600"><?php echo e($inv->batch_number ?? '-'); ?></td>
+                        <td class="px-2 py-1.5 text-sm text-center text-gray-500 italic"><?php echo e($inv->expiry_date ? \Carbon\Carbon::parse($inv->expiry_date)->format('d/m/y') : '-'); ?></td>
+                        <td class="px-2 py-1.5 text-sm text-center text-gray-500"><?php echo e($inv->unit); ?></td>
+                        <td class="px-2 py-1.5 text-sm text-center font-bold text-indigo-700"><?php echo e(number_format($inv->quantity)); ?></td>
+                        <td class="px-2 py-1.5 text-sm text-center text-gray-500"><?php echo e($inv->warehouse_location ?? '-'); ?></td>
+                        <td class="px-2 py-1.5 text-center">
+                            <span class="inline-flex items-center px-1.5 py-1 text-[11px] rounded-full text-[10px] font-medium status-badge <?php echo e($statusColor); ?>">
                                 <?php echo e($statusIcon); ?> <?php echo e($statusText); ?>
 
                             </span>
@@ -182,10 +182,10 @@
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="$set('showEditModal', false)"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-middle bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4 border-b pb-2">✏️ Chỉnh sửa thông tin chi tiết</h3>
                         <div class="space-y-4 mt-4 max-h-[60vh] overflow-y-auto px-1 custom-scrollbar">
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-1">Mã Vật Tư <span class="text-rose-500">*</span></label>
                                     <input type="text" wire:model="editingProductCode" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm">
@@ -225,7 +225,7 @@ endif;
 unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-1">Mã Code NCC</label>
                                     <input type="text" wire:model="editingBatchNumber" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono">
@@ -252,7 +252,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-1">Đơn vị tính <span class="text-rose-500">*</span></label>
                                     <input type="text" wire:model="editingUnit" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
@@ -281,7 +281,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
                             <div class="pt-2 border-t border-gray-100"></div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-sm font-bold text-indigo-700 mb-1">Số lượng tồn kho <span class="text-rose-500">*</span></label>
                                     <input type="number" step="0.01" wire:model="editingQuantity" class="w-full border-indigo-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold text-indigo-700 bg-indigo-50">
@@ -328,7 +328,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
             <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
                 <div class="inline-block align-middle bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <h3 class="text-lg font-bold text-gray-900 mb-2">📥 Nhập tồn kho từ Excel</h3>
                         
                         <div class="mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">

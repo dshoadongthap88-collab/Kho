@@ -8,7 +8,7 @@
 
 @section('content')
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="w-full  space-y-6">
             <!-- Dashboard cảnh báo & Danh sách thiết bị -->
             <div class="col-span-1 md:col-span-2 mb-8">
                 @livewire('maintenance.asset-maintenance-dashboard')
@@ -19,7 +19,7 @@
                 @livewire('maintenance.daily-odo-manager')
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <!-- Cập nhật ca làm việc -->
                 <div class="col-span-1">
                     @livewire('maintenance.shift-log-form')

@@ -163,34 +163,34 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
-                    <th class="px-6 py-4 w-10 text-center no-print">
+                    <th class="px-2 py-2 w-10 text-center no-print">
                         <input type="checkbox" wire:click="toggleSelectAll([<?php echo e(implode(',', $allProductIdsOnPage)); ?>])" 
                                <?php echo e(count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : ''); ?>
 
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
                     <th class="px-3 py-4 text-[11px] font-black uppercase tracking-tighter text-slate-500">Mã vật tư</th>
-                    <th class="px-4 py-3 w-16 text-center">Hình ảnh</th>
-                    <th class="px-4 py-3">TÊN VẬT TƯ</th>
-                    <th class="px-4 py-3">Phân loại</th>
-                    <th class="px-4 py-3">Hãng sản xuất</th>
-                    <th class="px-4 py-3">Mã Code NCC</th>
-                    <th class="px-4 py-3">Hạn dùng</th>
-                    <th class="px-4 py-3 text-center">Số lượng</th>
-                    <th class="px-4 py-3">Vị trí</th>
-                    <th class="px-4 py-3">Tình trạng</th>
-                    <th class="px-4 py-3">Tồn tối thiểu</th>
-                    <th class="px-4 py-3">Ghi chú</th>
+                    <th class="px-2 py-2 w-16 text-center">Hình ảnh</th>
+                    <th class="px-2 py-2">TÊN VẬT TƯ</th>
+                    <th class="px-2 py-2">Phân loại</th>
+                    <th class="px-2 py-2">Hãng sản xuất</th>
+                    <th class="px-2 py-2">Mã Code NCC</th>
+                    <th class="px-2 py-2">Hạn dùng</th>
+                    <th class="px-2 py-2 text-center">Số lượng</th>
+                    <th class="px-2 py-2">Vị trí</th>
+                    <th class="px-2 py-2">Tình trạng</th>
+                    <th class="px-2 py-2">Tồn tối thiểu</th>
+                    <th class="px-2 py-2">Ghi chú</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                     <tr <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'product-'.e($product->id).''; ?>wire:key="product-<?php echo e($product->id); ?>" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors <?php echo e(in_array((string)$product->id, $selectedIds) ? 'bg-indigo-50/50' : ''); ?>">
-                        <td class="px-6 py-4 text-center no-print">
+                        <td class="px-2 py-1.5 text-center no-print">
                             <input type="checkbox" wire:model.live="selectedIds" value="<?php echo e($product->id); ?>" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
-                        <td class="px-4 py-3 font-mono text-sm text-blue-600"><?php echo e($product->code); ?></td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="px-2 py-1.5 font-mono text-sm text-blue-600"><?php echo e($product->code); ?></td>
+                        <td class="px-2 py-1.5 text-center">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->image): ?>
                                 <div class="relative group inline-block">
                                     <img src="<?php echo e(asset('storage/' . $product->image)); ?>" 
@@ -207,49 +207,49 @@
                                 </button>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
-                        <td class="px-4 py-3 text-[11px] font-black text-gray-800 uppercase tracking-tight">
+                        <td class="px-2 py-1.5 text-[11px] font-black text-gray-800 uppercase tracking-tight">
                             <?php echo e($product->name); ?>
 
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->category): ?>
                                 <div class="text-[9px] text-gray-500 mt-1 uppercase"><?php echo e($product->category->name); ?></div>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-2 py-1.5">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->type === 'product_produced'): ?>
                                 <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs">SX</span>
                             <?php elseif($product->type === 'product_purchased'): ?>
                                 <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">Mua</span>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
-                        <td class="px-4 py-3 text-gray-600"><?php echo e($product->brand); ?></td>
-                        <td class="px-4 py-3 text-sm font-semibold text-purple-700"><?php echo e($product->batch_number); ?></td>
-                        <td class="px-4 py-3 text-sm <?php echo e($product->is_expiring_soon ? 'text-red-600 font-bold' : 'text-gray-600'); ?>">
+                        <td class="px-2 py-1.5 text-gray-600"><?php echo e($product->brand); ?></td>
+                        <td class="px-2 py-1.5 text-sm font-semibold text-purple-700"><?php echo e($product->batch_number); ?></td>
+                        <td class="px-2 py-1.5 text-sm <?php echo e($product->is_expiring_soon ? 'text-red-600 font-bold' : 'text-gray-600'); ?>">
                             <?php echo e($product->expiry_date ? $product->expiry_date->format('d/m/Y') : '-'); ?>
 
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold 
+                        <td class="px-2 py-1.5 text-center">
+                            <span class="px-1.5 py-1 text-[11px] rounded-full text-xs font-bold 
                                 <?php echo e($product->is_low_stock ? 'bg-orange-600 text-white' : (($product->inventory?->quantity ?? 0) > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500')); ?>">
                                 <?php echo e(number_format($product->inventory?->quantity ?? 0)); ?>
 
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->is_low_stock): ?> ⚠️ <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-gray-600 font-bold"><?php echo e($product->inventory?->warehouse_location ?? $product->location); ?></td>
-                        <td class="px-4 py-3">
+                        <td class="px-2 py-1.5 text-gray-600 font-bold"><?php echo e($product->inventory?->warehouse_location ?? $product->location); ?></td>
+                        <td class="px-2 py-1.5">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->status === 'active'): ?>
-                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Đang kinh doanh</span>
+                                <span class="bg-green-100 text-green-700 px-1.5 py-1 text-[11px] rounded text-xs">Đang kinh doanh</span>
                             <?php else: ?>
-                                <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Ngừng kinh doanh</span>
+                                <span class="bg-red-100 text-red-700 px-1.5 py-1 text-[11px] rounded text-xs">Ngừng kinh doanh</span>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
                         <td class="px-4 py-2 text-center">
                             <input type="number" 
                                    wire:model.defer="minStocks.<?php echo e($product->id); ?>"
-                                   class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-2 py-1 transition-all text-center shadow-inner placeholder-slate-400"
+                                   class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-1.5 py-1 text-[11px] transition-all text-center shadow-inner placeholder-slate-400"
                                    placeholder="0">
                         </td>
-                        <td class="px-4 py-3 text-xs text-gray-600 truncate max-w-[150px]" title="<?php echo e($product->description); ?>"><?php echo e($product->description); ?></td>
+                        <td class="px-2 py-1.5 text-xs text-gray-600 truncate max-w-[150px]" title="<?php echo e($product->description); ?>"><?php echo e($product->description); ?></td>
                     </tr>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                      <tr>
@@ -267,44 +267,44 @@
         <table class="w-full text-left border-collapse">
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
-                    <th class="px-6 py-4 w-10 text-center no-print">
+                    <th class="px-2 py-2 w-10 text-center no-print">
                         <input type="checkbox" wire:click="toggleSelectAll([<?php echo e(implode(',', $allProductIdsOnPage)); ?>])" 
                                <?php echo e(count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : ''); ?>
 
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
-                    <th class="px-4 py-3">MÃ THIẾT BỊ</th>
-                    <th class="px-4 py-3">TÊN THIẾT BỊ</th>
-                    <th class="px-4 py-3">LOẠI THIẾT BỊ</th>
-                    <th class="px-4 py-3">MÃ TÀI SẢN</th>
-                    <th class="px-4 py-3">NGƯỜI QUẢN LÝ</th>
-                    <th class="px-4 py-3">TÌNH TRẠNG</th>
-                    <th class="px-4 py-3 text-center w-24">THAO TÁC</th>
+                    <th class="px-2 py-2">MÃ THIẾT BỊ</th>
+                    <th class="px-2 py-2">TÊN THIẾT BỊ</th>
+                    <th class="px-2 py-2">LOẠI THIẾT BỊ</th>
+                    <th class="px-2 py-2">MÃ TÀI SẢN</th>
+                    <th class="px-2 py-2">NGƯỜI QUẢN LÝ</th>
+                    <th class="px-2 py-2">TÌNH TRẠNG</th>
+                    <th class="px-2 py-2 text-center w-24">THAO TÁC</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $equipments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $equipment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                     <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors <?php echo e(in_array($equipment->id, $selectedIds) ? 'bg-indigo-50/30' : ''); ?>">
-                        <td class="px-6 py-4 text-center no-print">
+                        <td class="px-2 py-1.5 text-center no-print">
                             <input type="checkbox" value="<?php echo e($equipment->id); ?>" wire:model="selectedIds" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
-                        <td class="px-4 py-3 text-sm font-mono text-indigo-600"><?php echo e($equipment->equipment_code ?: '-'); ?></td>
-                        <td class="px-4 py-3 text-sm font-black text-gray-800 uppercase"><?php echo e($equipment->name); ?></td>
-                        <td class="px-4 py-3 text-sm font-bold text-gray-700 uppercase"><?php echo e($equipment->machine_type ?: '-'); ?></td>
-                        <td class="px-4 py-3 text-sm font-mono text-indigo-600"><?php echo e($equipment->asset_code ?: '-'); ?></td>
-                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase"><?php echo e($equipment->manager ?: '-'); ?></td>
-                        <td class="px-4 py-3 text-sm text-gray-600 font-bold uppercase">
+                        <td class="px-2 py-1.5 text-sm font-mono text-indigo-600"><?php echo e($equipment->equipment_code ?: '-'); ?></td>
+                        <td class="px-2 py-1.5 text-sm font-black text-gray-800 uppercase"><?php echo e($equipment->name); ?></td>
+                        <td class="px-2 py-1.5 text-sm font-bold text-gray-700 uppercase"><?php echo e($equipment->machine_type ?: '-'); ?></td>
+                        <td class="px-2 py-1.5 text-sm font-mono text-indigo-600"><?php echo e($equipment->asset_code ?: '-'); ?></td>
+                        <td class="px-2 py-1.5 text-sm text-gray-600 font-bold uppercase"><?php echo e($equipment->manager ?: '-'); ?></td>
+                        <td class="px-2 py-1.5 text-sm text-gray-600 font-bold uppercase">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($equipment->warranty_status === 'Còn bảo hành'): ?>
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-[10px]"><?php echo e($equipment->warranty_status); ?></span>
+                                <span class="bg-green-100 text-green-800 px-1.5 py-1 text-[11px] rounded text-[10px]"><?php echo e($equipment->warranty_status); ?></span>
                             <?php else: ?>
-                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-[10px]"><?php echo e($equipment->warranty_status ?: 'Hết bảo hành'); ?></span>
+                                <span class="bg-red-100 text-red-800 px-1.5 py-1 text-[11px] rounded text-[10px]"><?php echo e($equipment->warranty_status ?: 'Hết bảo hành'); ?></span>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <button wire:click="openModal(<?php echo e($equipment->id); ?>)" class="text-indigo-600 hover:text-indigo-800 font-black uppercase text-[10px] bg-indigo-50 px-3 py-1.5 rounded hover:bg-indigo-100 transition-colors">
+                        <td class="px-2 py-1.5 text-center">
+                            <button wire:click="openModal(<?php echo e($equipment->id); ?>)" class="text-indigo-600 hover:text-indigo-800 font-black uppercase text-[10px] bg-indigo-50 px-1.5 py-1 text-[11px].5 rounded hover:bg-indigo-100 transition-colors">
                                 Sửa
                             </button>
-                            <button wire:click="deleteEquipment(<?php echo e($equipment->id); ?>)" wire:confirm="Bạn có chắc chắn muốn xóa thiết bị này?" class="text-rose-600 hover:text-rose-800 font-black uppercase text-[10px] bg-rose-50 px-3 py-1.5 rounded hover:bg-rose-100 transition-colors ml-1 mt-1 sm:mt-0">
+                            <button wire:click="deleteEquipment(<?php echo e($equipment->id); ?>)" wire:confirm="Bạn có chắc chắn muốn xóa thiết bị này?" class="text-rose-600 hover:text-rose-800 font-black uppercase text-[10px] bg-rose-50 px-1.5 py-1 text-[11px].5 rounded hover:bg-rose-100 transition-colors ml-1 mt-1 sm:mt-0">
                                 Xóa
                             </button>
                         </td>

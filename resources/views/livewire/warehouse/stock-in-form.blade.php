@@ -945,7 +945,7 @@
     </script>
 
     <!-- Top Bar: Tabs & Header Info -->
-    <div class="flex items-center justify-between gap-6 mb-4">
+    <div class="flex items-center justify-between gap-2 mb-4">
         <!-- Tab Navigation -->
         <div class="bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex items-center gap-3 w-fit no-print shrink-0">
             <button wire:click="$set('activeTab', 'form')" class="px-8 py-3 rounded-xl text-[13px] font-black transition-all flex items-center gap-2 {{ $activeTab === 'form' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50' }}">
@@ -958,7 +958,7 @@
 
         @if($activeTab === 'form')
         <!-- Header Info (moved up) -->
-        <div class="flex-1 bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex items-center gap-4">
+        <div class="flex-1 bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex items-center gap-2">
             <div class="flex-1 space-y-1">
                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Nhà cung cấp</label>
                 <input type="text" wire:model="supplier_name" list="suppliers_list" class="w-full rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Chọn hoặc nhập tên...">
@@ -997,20 +997,20 @@
     <div class="flex-1 main-content">
         @if($activeTab === 'form')
             @if(session('success'))
-                <div class="mb-4 p-4 bg-emerald-100 text-emerald-800 rounded-2xl font-bold flex items-center gap-2 border border-emerald-200 animate-in fade-in slide-in-from-top-2">
+                <div class="mb-4 p-2 bg-emerald-100 text-emerald-800 rounded-2xl font-bold flex items-center gap-2 border border-emerald-200 animate-in fade-in slide-in-from-top-2">
                     <span>✅</span> {{ session('success') }}
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-2xl font-bold flex items-center gap-2 border border-red-200 animate-in fade-in slide-in-from-top-2">
+                <div class="mb-4 p-2 bg-red-100 text-red-800 rounded-2xl font-bold flex items-center gap-2 border border-red-200 animate-in fade-in slide-in-from-top-2">
                     <span>❌</span> {{ session('error') }}
                 </div>
             @endif
 
 
             @if($errors->any())
-                <div class="mb-4 p-4 bg-rose-50 text-rose-700 rounded-2xl font-bold border border-rose-200 animate-in fade-in slide-in-from-top-2">
+                <div class="mb-4 p-2 bg-rose-50 text-rose-700 rounded-2xl font-bold border border-rose-200 animate-in fade-in slide-in-from-top-2">
                     <div class="flex items-center gap-2 mb-2 text-rose-800">
                         <span>❌</span> <span>Có lỗi xảy ra:</span>
                     </div>
@@ -1036,7 +1036,7 @@
                     </button>
                 </div>
                 
-                <div class="p-6">
+                <div class="p-2">
 
         <!-- Grid removed from here as it moved to top bar -->
 
@@ -1044,7 +1044,7 @@
                         <table class="w-full border-collapse">
                             <thead>
                                 <tr class="bg-slate-800">
-                                    <th class="px-4 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 min-w-[200px]">Vật tư</th>
+                                    <th class="px-2 py-2 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 min-w-[200px]">Vật tư</th>
                                     <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Mã Code NCC</th>
                                     <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-32">Hạn dùng</th>
                                     <th class="px-2 py-3 text-left text-[11px] font-black text-white uppercase tracking-widest border-b border-slate-700 w-24">Vị trí</th>
@@ -1057,7 +1057,7 @@
                                 @foreach($items as $index => $item)
                                 <tr class="hover:bg-indigo-50/30 transition-colors">
                                     <!-- Cột Vật tư -->
-                                    <td class="px-4 py-3">
+                                    <td class="px-2 py-1.5">
                                         <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}"
                                                class="w-full rounded-lg text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all py-1.5 px-3 {{ empty($item['product_id']) ? 'border-orange-400 bg-orange-50/40 focus:ring-orange-100 text-orange-900 placeholder:text-orange-300' : 'border-slate-200 bg-slate-50 focus:bg-white text-slate-800' }}"
                                                placeholder="Mã hoặc tên vật tư...">
@@ -1097,7 +1097,7 @@
                                     </td>
                                     
                                     <td class="px-2 py-3 text-center">
-                                        <span class="text-[11px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200 uppercase">{{ $items[$index]['unit'] ?? '-' }}</span>
+                                        <span class="text-[11px] font-black text-slate-500 bg-slate-100 px-1.5 py-1 text-[11px] rounded-md border border-slate-200 uppercase">{{ $items[$index]['unit'] ?? '-' }}</span>
                                     </td>
                                     <td class="px-2 py-3 text-center">
                                         @if(count($items) > 1)
@@ -1112,7 +1112,7 @@
                             @if(count($items) > 0)
                             <tfoot class="border-t-2 border-slate-100">
                                 <tr class="bg-indigo-50/50">
-                                    <td colspan="6" class="px-6 py-4 text-right font-black text-slate-500 uppercase tracking-widest text-[11px]">Tổng số lượng:</td>
+                                    <td colspan="6" class="px-2 py-1.5 text-right font-black text-slate-500 uppercase tracking-widest text-[11px]">Tổng số lượng:</td>
                                     <td class="px-4 py-4 text-right font-black text-indigo-900 text-[16px] underline decoration-double">
                                         {{ number_format(collect($items)->sum(fn($item) => (float)($item['quantity'] ?? 0))) }}
                                     </td>
@@ -1122,7 +1122,7 @@
                         </table>
                     </div>
 
-        <div class="flex items-center gap-4 mb-8">
+        <div class="flex items-center gap-2 mb-8">
             @if($this->canAddItem())
                 <button wire:click="addItem" class="bg-slate-800 text-white px-6 py-2.5 rounded-xl text-[12px] font-black flex items-center gap-2 hover:bg-indigo-600 transition-all shadow-md active:scale-95">
                     <span>➕</span> THÊM DÒNG MỚI
@@ -1151,7 +1151,7 @@
         <!-- TAB DANH SÁCH PHIẾU -->
         @if($activeTab === 'list')
             <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-                <div class="bg-slate-50 px-6 py-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 no-print">
+                <div class="bg-slate-50 px-6 py-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 no-print">
                     <div class="flex items-center gap-3">
                         <input type="date" wire:model.live="listDateFrom" class="rounded-xl border-slate-200 text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 py-2 px-3 bg-white">
                         <span class="text-slate-400 font-black">➔</span>
@@ -1199,30 +1199,30 @@
                                 $idsOnPage = $allOnPage->pluck('id')->toArray();
                             @endphp
                             <tr>
-                                <th class="px-6 py-4 w-10 no-print text-center">
+                                <th class="px-2 py-2 w-10 no-print text-center">
                                     <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $idsOnPage) }}])" {{ count($selectedIds) >= count($idsOnPage) && count($idsOnPage) > 0 ? 'checked' : '' }} class="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500">
                                 </th>
                                 <th class="px-2 py-4">MÃ PHIẾU</th>
-                                <th class="px-6 py-4">NGÀY TẠO</th>
-                                <th class="px-6 py-4">NGÀY NHẬP</th>
-                                <th class="px-6 py-4">NHÀ CUNG CẤP / ĐỐI TÁC</th>
-                                <th class="px-6 py-4">LOẠI NHẬP</th>
-                                <th class="px-6 py-4 text-right">TỔNG TIỀN</th>
-                                <th class="px-6 py-4">GHI CHÚ</th>
-                                <th class="px-6 py-4 text-center no-print">THAO TÁC</th>
+                                <th class="px-2 py-2">NGÀY TẠO</th>
+                                <th class="px-2 py-2">NGÀY NHẬP</th>
+                                <th class="px-2 py-2">NHÀ CUNG CẤP / ĐỐI TÁC</th>
+                                <th class="px-2 py-2">LOẠI NHẬP</th>
+                                <th class="px-2 py-2 text-right">TỔNG TIỀN</th>
+                                <th class="px-2 py-2">GHI CHÚ</th>
+                                <th class="px-2 py-2 text-center no-print">THAO TÁC</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 bg-white">
                             @forelse($allOnPage as $si)
                                 <tr class="hover:bg-indigo-50/30 transition-all group {{ in_array($si->id, $selectedIds) ? 'bg-indigo-50' : '' }}">
-                                    <td class="px-6 py-4 no-print text-center">
+                                    <td class="px-2 py-1.5 no-print text-center">
                                         <input type="checkbox" wire:model.live="selectedIds" value="{{ $si->id }}" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                                     </td>
                                     <td class="px-2 py-4 font-black text-indigo-700 tracking-tight">{{ $si->code }}</td>
-                                    <td class="px-6 py-4 text-slate-500 text-[12px] font-bold">{{ $si->created_at->format('d/m/Y H:i') }}</td>
-          <td class="px-6 py-4 text-slate-500 text-[12px] font-bold">{{ $si->stock_in_date ? $si->stock_in_date->format('d/m/Y') : $si->created_at->format('d/m/Y') }}</td>
-                                    <td class="px-6 py-4 font-black text-slate-800 text-[13px] uppercase tracking-tighter">{{ $si->supplier_name ?: ($si->manufacturer ?: '-') }}</td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-2 py-1.5 text-slate-500 text-[12px] font-bold">{{ $si->created_at->format('d/m/Y H:i') }}</td>
+          <td class="px-2 py-1.5 text-slate-500 text-[12px] font-bold">{{ $si->stock_in_date ? $si->stock_in_date->format('d/m/Y') : $si->created_at->format('d/m/Y') }}</td>
+                                    <td class="px-2 py-1.5 font-black text-slate-800 text-[13px] uppercase tracking-tighter">{{ $si->supplier_name ?: ($si->manufacturer ?: '-') }}</td>
+                                    <td class="px-2 py-1.5">
                                         @switch($si->type)
                                             @case('purchase_produced') <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-black uppercase border border-emerald-100">🛒 MUA HÀNG</span> @break
                                             @case('production') <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-[10px] font-black uppercase border border-indigo-100">🏭 SẢN XUẤT</span> @break
@@ -1230,11 +1230,11 @@
                                             @default <span class="px-2.5 py-1 bg-slate-50 text-slate-600 rounded-lg text-[10px] font-black uppercase border border-slate-100">{{ $si->type }}</span>
                                         @endswitch
                                     </td>
-                                    <td class="px-6 py-4 text-right font-black text-slate-900 text-[14px]">
+                                    <td class="px-2 py-1.5 text-right font-black text-slate-900 text-[14px]">
                                         {{ number_format($si->items->sum('total_amount')) }} đ
                                     </td>
-                                    <td class="px-6 py-4 text-slate-400 text-[11px] font-bold italic truncate max-w-[150px]">{{ $si->note ?: '-' }}</td>
-                                    <td class="px-6 py-4 text-center no-print">
+                                    <td class="px-2 py-1.5 text-slate-400 text-[11px] font-bold italic truncate max-w-[150px]">{{ $si->note ?: '-' }}</td>
+                                    <td class="px-2 py-1.5 text-center no-print">
                                         <div class="flex items-center justify-center gap-1">
       <div class="flex items-center justify-center gap-1">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 0 0 002-2v-4a2 0 0 00-2-2H5a2 0 0 00-2 2v4a2 0 0 002 2h2m2 4h6a2 0 0 002-2v-4a2 0 0 00-2-2H9a2 0 0 00-2 2v4a2 0 0 002 2zm8-12V5a2 0 0 00-2-2H9a2 0 0 00-2 2v4h10z"></path></svg>
@@ -1274,7 +1274,7 @@
                     
                     <!-- Tab Header -->
                     <div class="bg-slate-55 border-b border-slate-150 px-6 py-4 flex items-center justify-between shrink-0 bg-slate-50">
-                        <div class="flex gap-6">
+                        <div class="flex gap-2">
                             <button @click="activeImportTab = 'excel'" 
                                     :class="activeImportTab === 'excel' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
                                     class="py-2 px-1 text-[13px] border-b-2 transition duration-150">
@@ -1309,7 +1309,7 @@
                     <!-- Tab Content Wrapper -->
                     <div :class="ocrMaximized ? 'flex-1 overflow-y-auto' : ''">
                         <!-- Tab 1: Nhập từ Excel/CSV -->
-                        <div x-show="activeImportTab === 'excel'" class="p-6 space-y-4">
+                        <div x-show="activeImportTab === 'excel'" class="p-2 space-y-4">
                             @if(session('error'))
                                 <div class="p-3 bg-red-100 text-red-800 rounded-lg text-xs font-bold border border-red-200">
                                     ❌ {{ session('error') }}
@@ -1341,14 +1341,14 @@
                     </div>
 
                     <!-- Tab 2: Nhập từ tệp tin PDF -->
-                    <div x-show="activeImportTab === 'pdf'" class="p-6 space-y-4">
+                    <div x-show="activeImportTab === 'pdf'" class="p-2 space-y-4">
                         <div class="p-3.5 bg-red-50 text-red-850 rounded-lg text-xs font-semibold leading-relaxed border border-red-100">
                             📋 <span class="font-extrabold text-red-950">Giải pháp xử lý PDF thông minh:</span> Hệ thống sẽ đọc dữ liệu text trực tiếp từ tệp tin PDF hóa đơn/phiếu giao hàng của nhà cung cấp và tự động bóc tách các trường: <i>Mã vật tư, Số lượng, Hạn dùng, Số lô, Vị trí, Đơn giá</i> để điền nhanh vào phiếu nhập!
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <!-- PDF Drag and Drop Zone -->
-                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center min-h-[200px] bg-slate-50 relative hover:border-red-400 hover:bg-slate-100/50 transition-all cursor-pointer"
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center min-h-[200px] bg-slate-50 relative hover:border-red-400 hover:bg-slate-100/50 transition-all cursor-pointer"
                                  @click="$refs.pdfInput.click()"
                                  @dragover.prevent="$el.classList.add('border-red-400', 'bg-slate-100')"
                                  @dragleave.prevent="$el.classList.remove('border-red-400', 'bg-slate-100')"
@@ -1370,7 +1370,7 @@
                                 </div>
                             </div>
 
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-150 flex flex-col justify-between">
+                            <div class="bg-slate-50 p-2 rounded-xl border border-slate-150 flex flex-col justify-between">
                                 <div class="space-y-3">
                                     <h4 class="text-xs font-bold text-slate-700 uppercase">Trạng thái phân tích PDF</h4>
                                     <p class="text-xs font-semibold text-slate-650" x-text="ocrStatus || 'Đang đợi tải tệp PDF...'"></p>
@@ -1476,14 +1476,14 @@
                     </div>
 
                     <!-- Tab 3: Nhận diện từ Ảnh chụp AI OCR -->
-                    <div x-show="activeImportTab === 'ocr'" class="p-6 space-y-4" @paste="handleImagePaste($event)">
+                    <div x-show="activeImportTab === 'ocr'" class="p-2 space-y-4" @paste="handleImagePaste($event)">
                         <div class="p-3 bg-indigo-50 text-indigo-850 rounded-lg text-xs font-semibold leading-relaxed border border-indigo-100">
                             📷 <span class="font-extrabold text-indigo-950">Quét ảnh chụp thông minh:</span> Anh/chị chỉ cần chụp ảnh màn hình bảng Excel hoặc chụp phiếu xuất kho của nhà cung cấp, nhấn **Ctrl + V** để dán trực tiếp ảnh vào đây hoặc chọn ảnh chụp để AI bóc tách nhanh chóng!
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <!-- Image Drag and Drop Zone -->
-                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center min-h-[200px] bg-slate-50 relative hover:border-indigo-400 hover:bg-slate-100/50 transition-all cursor-pointer"
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center min-h-[200px] bg-slate-50 relative hover:border-indigo-400 hover:bg-slate-100/50 transition-all cursor-pointer"
                                  @click="$refs.imageInput.click()"
                                  @dragover.prevent="$el.classList.add('border-indigo-400', 'bg-slate-100')"
                                  @dragleave.prevent="$el.classList.remove('border-indigo-400', 'bg-slate-100')"
@@ -1515,7 +1515,7 @@
                             </div>
 
                             <!-- Trạng thái OCR -->
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-150 flex flex-col justify-between">
+                            <div class="bg-slate-50 p-2 rounded-xl border border-slate-150 flex flex-col justify-between">
                                 <div class="space-y-3">
                                     <h4 class="text-xs font-bold text-slate-700 uppercase">Trạng thái nhận diện AI OCR</h4>
                                     <p class="text-xs font-semibold text-slate-650" x-text="ocrStatus || 'Đang đợi ảnh chụp...'"></p>
@@ -1635,7 +1635,7 @@
     <!-- Quick Product Modal -->
     @if($showProductModal)
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-            <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-2">
                 <h3 class="text-lg font-bold mb-4">Tạo nhanh vật tư mới</h3>
                 
                 <div class="space-y-4">
@@ -1746,7 +1746,7 @@
             effect.innerHTML = `
                 <div class="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none transition-all duration-500 opacity-0" id="success-effect-container">
                     <div class="bg-white/90 backdrop-blur-md border-4 border-emerald-500 text-emerald-600 rounded-[3rem] p-12 flex flex-col items-center justify-center shadow-[0_0_100px_rgba(16,185,129,0.4)] transform scale-50 transition-transform duration-500" id="success-effect-box">
-                        <div class="bg-emerald-500 text-white p-4 rounded-full mb-6 shadow-xl animate-[bounce_1s_ease-in-out]">
+                        <div class="bg-emerald-500 text-white p-2 rounded-full mb-6 shadow-xl animate-[bounce_1s_ease-in-out]">
                             <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
                         </div>
                         <h2 class="text-4xl font-black uppercase tracking-widest text-slate-800">Đã Nhập Kho</h2>

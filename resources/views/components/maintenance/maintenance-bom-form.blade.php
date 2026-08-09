@@ -1,11 +1,11 @@
-<div class="p-6 bg-white rounded-lg shadow-sm">
+<div class="p-2 bg-white rounded-lg shadow-sm">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold text-gray-800">{{ $bomId ? 'Cập nhật BOM bảo dưỡng' : 'Tạo mới BOM bảo dưỡng' }}</h2>
         <a href="{{ route('maintenance-boms.index') }}" class="text-gray-500 hover:underline">&larr; Quay lại danh sách</a>
     </div>
 
     <form wire:submit.prevent="save">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-8">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Mã BOM</label>
                 <input type="text" wire:model="bom_code" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200" required>
@@ -37,7 +37,7 @@
         </div>
 
         @if($asset_id)
-        <div class="p-4 bg-gray-50 rounded-lg border mb-8 flex gap-6">
+        <div class="p-2 bg-gray-50 rounded-lg border mb-8 flex gap-2">
             <div><span class="text-gray-500 text-sm">Tên xe:</span> <span class="font-semibold">{{ $asset_name }}</span></div>
             <div><span class="text-gray-500 text-sm">Model:</span> <span class="font-semibold">{{ $asset_model ?: 'N/A' }}</span></div>
             <div><span class="text-gray-500 text-sm">Hãng:</span> <span class="font-semibold">{{ $asset_manufacturer ?: 'N/A' }}</span></div>
@@ -97,7 +97,7 @@
                         @endforeach
                         @if(count($items) === 0)
                         <tr>
-                            <td colspan="7" class="p-4 text-center text-gray-500">Chưa có vật tư nào. Bấm "Thêm vật tư" để bắt đầu.</td>
+                            <td colspan="7" class="p-2 text-center text-gray-500">Chưa có vật tư nào. Bấm "Thêm vật tư" để bắt đầu.</td>
                         </tr>
                         @endif
                     </tbody>
@@ -105,7 +105,7 @@
             </div>
         </div>
 
-        <div class="flex justify-end gap-4 mt-8">
+        <div class="flex justify-end gap-2 mt-8">
             <a href="{{ route('maintenance-boms.index') }}" class="px-6 py-2 border rounded-lg text-gray-700 hover:bg-gray-50">Hủy</a>
             <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow">
                 {{ $bomId ? 'Cập nhật BOM' : 'Lưu BOM' }}

@@ -1,4 +1,4 @@
-<div class="p-6 max-w-7xl mx-auto" x-data="{
+<div class="p-2 w-full" x-data="{
     selected: @entangle('selectedTransfers').live,
     toggle(id) {
         if (!Array.isArray(this.selected)) {
@@ -20,13 +20,13 @@
     }
 }">
     {{-- Grid Layout --}}
-    <div class="grid grid-cols-1 gap-6">
+    <div class="grid grid-cols-1 gap-2">
 
         {{-- Table Card --}}
         <div class="space-y-6">
 
             {{-- Header Card --}}
-            <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white rounded-2xl p-2 shadow-lg relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
                 <div class="absolute inset-0 bg-white/5 backdrop-blur-3xl -z-10"></div>
                 <div>
                     <h1 class="text-2xl font-black tracking-tight">🚚 ĐIỀU CHUYỂN KHO LIÊN CHI NHÁNH</h1>
@@ -42,20 +42,20 @@
 
             {{-- Flash Messages --}}
             @if(session('success'))
-                <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-3 text-sm shadow-sm">
+                <div class="p-2 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-3 text-sm shadow-sm">
                     <span class="text-xl">✅</span>
                     <span class="font-medium">{{ session('success') }}</span>
                 </div>
             @endif
             @if(session('error'))
-                <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl flex items-center gap-3 text-sm shadow-sm">
+                <div class="p-2 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl flex items-center gap-3 text-sm shadow-sm">
                     <span class="text-xl">❌</span>
                     <span class="font-medium">{{ session('error') }}</span>
                 </div>
             @endif
 
             {{-- Filter & Search Card --}}
-            <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex items-center gap-3">
+            <div class="bg-white rounded-2xl border border-gray-100 p-2 shadow-sm flex items-center gap-3">
                 <div class="relative flex-1">
                     <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">🔍</span>
                     <input wire:model.live.debounce.300ms="search" type="text"
@@ -109,7 +109,7 @@
                                                    @click.stop="toggle('{{ $transfer->id }}')"
                                                    :checked="selected.includes('{{ $transfer->id }}')"
                                                    class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
-                                            <div class="font-mono font-black text-indigo-700 text-sm tracking-tight group-hover:text-indigo-900 cursor-pointer" wire:click="viewDetail({{ $transfer->id }})">
+                                            <div class="font-mono font-black text-indigo-700 text-xs tracking-tight group-hover:text-indigo-900 cursor-pointer" wire:click="viewDetail({{ $transfer->id }})">
                                                 {{ $transfer->transfer_code }}
                                             </div>
                                         </div>
@@ -168,7 +168,7 @@
                                 <tr>
                                     <td colspan="10" class="text-center py-16 text-gray-400">
                                         <div class="text-5xl mb-3">📦</div>
-                                        <div class="text-sm font-semibold">Chưa có giao dịch chuyển kho nào được thực hiện</div>
+                                        <div class="text-xs font-semibold">Chưa có giao dịch chuyển kho nào được thực hiện</div>
                                     </td>
                                 </tr>
                             @endforelse
@@ -195,7 +195,7 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                 <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <h3 class="text-xl font-black text-gray-900 uppercase tracking-tight" id="modal-title">Chi Tiết Phiếu Chuyển Kho</h3>
@@ -206,7 +206,7 @@
                             </button>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-xl">
+                        <div class="grid grid-cols-2 gap-2 mb-6 bg-gray-50 p-2 rounded-xl">
                             <div>
                                 <p class="text-[10px] uppercase font-bold text-gray-400">Ngày chuyển</p>
                                 <p class="text-sm font-semibold text-gray-800">{{ $this->selectedTransferDetail->transfer_date?->format('d/m/Y H:i') ?? '—' }}</p>

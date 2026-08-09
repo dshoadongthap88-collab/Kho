@@ -1,12 +1,12 @@
-<div class="p-4 max-w-5xl mx-auto">
+<div class="p-2 max-w-5xl mx-auto">
     {{-- Flash Messages --}}
     @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-800 rounded-lg flex items-center gap-2">
+        <div class="mb-4 p-2 bg-green-100 border border-green-400 text-green-800 rounded-lg flex items-center gap-2">
             ✅ {{ session('success') }}
         </div>
     @endif
     @if(session('error'))
-        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-800 rounded-lg flex items-center gap-2">
+        <div class="mb-4 p-2 bg-red-100 border border-red-400 text-red-800 rounded-lg flex items-center gap-2">
             ❌ {{ session('error') }}
         </div>
     @endif
@@ -28,9 +28,9 @@
             </a>
         </div>
 
-        <div class="p-6 space-y-6">
+        <div class="p-2 space-y-6">
             {{-- Thông tin phiếu & Nhân sự --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
                 {{-- Chọn nhà đích --}}
                 <div class="lg:col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">
@@ -133,7 +133,7 @@
                                         <input list="products-list" type="text"
                                             wire:model.live="items.{{ $index }}.product_code"
                                             placeholder="Chọn vật tư..."
-                                            class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 uppercase">
+                                            class="w-full border border-gray-300 rounded px-1.5 py-1 text-[11px].5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300 uppercase">
                                         @error("items.{$index}.product_code")
                                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                         @enderror
@@ -145,7 +145,7 @@
                                         <input type="number"
                                             wire:model="items.{{ $index }}.quantity"
                                             min="0.01" step="0.01"
-                                            class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                            class="w-full border border-gray-300 rounded px-1.5 py-1 text-[11px].5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-indigo-300">
                                         @error("items.{$index}.quantity")
                                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                         @enderror
@@ -154,13 +154,13 @@
                                         <input type="text"
                                             wire:model="items.{{ $index }}.location"
                                             placeholder="Kệ A..."
-                                            class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                            class="w-full border border-gray-300 rounded px-1.5 py-1 text-[11px].5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-indigo-300">
                                     </td>
                                     <td class="px-3 py-2">
                                         <input type="text"
                                             wire:model="items.{{ $index }}.note"
                                             placeholder="Ghi chú..."
-                                            class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                            class="w-full border border-gray-300 rounded px-1.5 py-1 text-[11px].5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300">
                                     </td>
                                     <td class="px-3 py-2 text-center">
                                         @if(count($items) > 1)

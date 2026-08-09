@@ -19,9 +19,9 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-8">
         <!-- Khu vực thêm Thành phẩm dự kiến (Bên trái) -->
-        <div class="md:col-span-1 border rounded-xl bg-white shadow-sm p-4 no-print">
+        <div class="md:col-span-1 border rounded-xl bg-white shadow-sm p-2 no-print">
             <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">🎯 Mục tiêu Sản xuất</h3>
             <div class="space-y-4">
                 <div>
@@ -73,7 +73,7 @@
 
         <!-- Khu vực kết quả Tính toán BOM (Bên phải) -->
         <div class="md:col-span-2">
-            <div class="border rounded-xl bg-white shadow-sm p-4 h-full flex flex-col">
+            <div class="border rounded-xl bg-white shadow-sm p-2 h-full flex flex-col">
                 <div class="flex justify-between items-end mb-4 border-b pb-2">
                     <div>
                         <h3 class="font-bold text-gray-800 text-lg">Phân tích Nhu cầu Nguyên vật liệu</h3>

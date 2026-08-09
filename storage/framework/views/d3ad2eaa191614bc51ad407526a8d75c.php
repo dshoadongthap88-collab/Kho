@@ -14,7 +14,7 @@
         }
     </style>
 
-    @php
+    <?php
         $currentHouse = session('current_house', 1);
         if ($currentHouse == 2) {
             $projectName = 'HẬU NGHĨA';
@@ -25,11 +25,11 @@
         } else {
             $projectName = 'HÓC MÔN';
         }
-    @endphp
+    ?>
 
     <div class="hidden print:block text-center mb-6 border-b-2 border-black pb-4">
-        <h1 class="text-2xl font-black uppercase text-black">BÁO CÁO TỔNG HỢP KHO - DỰ ÁN {{ $projectName }}</h1>
-        <p class="text-sm font-bold text-slate-800 mt-1">Giai đoạn: {{ date('d/m/Y', strtotime($dateFrom)) }} - {{ date('d/m/Y', strtotime($dateTo)) }}</p>
+        <h1 class="text-2xl font-black uppercase text-black">BÁO CÁO TỔNG HỢP KHO - DỰ ÁN <?php echo e($projectName); ?></h1>
+        <p class="text-sm font-bold text-slate-800 mt-1">Giai đoạn: <?php echo e(date('d/m/Y', strtotime($dateFrom))); ?> - <?php echo e(date('d/m/Y', strtotime($dateTo))); ?></p>
     </div>
 
     <div class="flex justify-between items-center mb-6 no-print">
@@ -52,22 +52,22 @@
     <div class="grid grid-cols-3 gap-2 mb-6">
         <div class="bg-green-50 border border-green-200 rounded-xl p-2 shadow-sm">
             <p class="text-xs font-bold text-green-600 uppercase mb-1">Tổng nhập trong kỳ</p>
-            <p class="text-2xl font-black text-green-700">{{ number_format($summary->total_import ?? 0) }}</p>
+            <p class="text-2xl font-black text-green-700"><?php echo e(number_format($summary->total_import ?? 0)); ?></p>
         </div>
         <div class="bg-orange-50 border border-orange-200 rounded-xl p-2 shadow-sm">
             <p class="text-xs font-bold text-orange-600 uppercase mb-1">Tổng xuất trong kỳ</p>
-            <p class="text-2xl font-black text-orange-700">{{ number_format($summary->total_export ?? 0) }}</p>
+            <p class="text-2xl font-black text-orange-700"><?php echo e(number_format($summary->total_export ?? 0)); ?></p>
         </div>
         <div class="bg-blue-50 border border-blue-200 rounded-xl p-2 shadow-sm">
             <p class="text-xs font-bold text-blue-600 uppercase mb-1">Tổng điều chỉnh</p>
-            <p class="text-2xl font-black text-blue-700">{{ number_format($summary->total_adjust ?? 0) }}</p>
+            <p class="text-2xl font-black text-blue-700"><?php echo e(number_format($summary->total_adjust ?? 0)); ?></p>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-8" x-data="{ 
-            receiverData: @entangle('receiverData'),
-            assetData: @entangle('assetData'),
-            topExportData: @entangle('topExportData'),
+            receiverData: <?php if ((object) ('receiverData') instanceof \Livewire\WireDirective) : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('receiverData'->value()); ?>')<?php echo e('receiverData'->hasModifier('live') ? '.live' : ''); ?><?php else : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('receiverData'); ?>')<?php endif; ?>,
+            assetData: <?php if ((object) ('assetData') instanceof \Livewire\WireDirective) : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('assetData'->value()); ?>')<?php echo e('assetData'->hasModifier('live') ? '.live' : ''); ?><?php else : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('assetData'); ?>')<?php endif; ?>,
+            topExportData: <?php if ((object) ('topExportData') instanceof \Livewire\WireDirective) : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('topExportData'->value()); ?>')<?php echo e('topExportData'->hasModifier('live') ? '.live' : ''); ?><?php else : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('topExportData'); ?>')<?php endif; ?>,
             charts: { receiver: null, asset: null, topExport: null },
             init() {
                 const common = { chart: { toolbar: { show: false }, animations: { enabled: true } } };
@@ -109,23 +109,25 @@
         <div class="lg:col-span-2 mb-2">
             <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight border-l-4 border-red-600 pl-4 mb-4">Hệ thống Cảnh báo & Phân tích thông minh</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                @forelse($warnings as $warn)
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $warnings; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $warn): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                 <div class="p-2 rounded-xl border-l-4 shadow-sm flex gap-3 
-                    {{ $warn['type'] === 'danger' ? 'bg-red-50 border-red-500 text-red-900' : '' }}
-                    {{ $warn['type'] === 'warning' ? 'bg-orange-50 border-orange-500 text-orange-900' : '' }}
-                    {{ $warn['type'] === 'info' ? 'bg-blue-50 border-blue-500 text-blue-900' : '' }}">
-                    <div class="text-2xl">{{ $warn['icon'] }}</div>
+                    <?php echo e($warn['type'] === 'danger' ? 'bg-red-50 border-red-500 text-red-900' : ''); ?>
+
+                    <?php echo e($warn['type'] === 'warning' ? 'bg-orange-50 border-orange-500 text-orange-900' : ''); ?>
+
+                    <?php echo e($warn['type'] === 'info' ? 'bg-blue-50 border-blue-500 text-blue-900' : ''); ?>">
+                    <div class="text-2xl"><?php echo e($warn['icon']); ?></div>
                     <div>
-                        <p class="text-xs font-black uppercase mb-1">{{ $warn['title'] }}</p>
-                        <p class="text-sm leading-relaxed">{!! $warn['content'] !!}</p>
+                        <p class="text-xs font-black uppercase mb-1"><?php echo e($warn['title']); ?></p>
+                        <p class="text-sm leading-relaxed"><?php echo $warn['content']; ?></p>
                     </div>
                 </div>
-                @empty
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 <div class="lg:col-span-3 p-8 text-center bg-gray-50 rounded-xl border border-dashed text-gray-400">
                     <p class="text-2xl mb-2">✅</p>
                     <p class="text-sm font-medium">Hiện tại không có cảnh báo bất thường nào trong hệ thống.</p>
                 </div>
-                @endforelse
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </div>
 
@@ -139,14 +141,14 @@
             <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-2 shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-xs font-bold text-indigo-600 uppercase mb-1">Tổng mã tài sản xuất</p>
-                    <p class="text-2xl font-black text-indigo-700">{{ number_format($totalAssets) }} <span class="text-sm font-normal">mã</span></p>
+                    <p class="text-2xl font-black text-indigo-700"><?php echo e(number_format($totalAssets)); ?> <span class="text-sm font-normal">mã</span></p>
                 </div>
                 <div class="text-3xl">🏗️</div>
             </div>
             <div class="bg-teal-50 border border-teal-200 rounded-xl p-2 shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-xs font-bold text-teal-600 uppercase mb-1">Tổng số vật tư xuất</p>
-                    <p class="text-2xl font-black text-teal-700">{{ number_format($totalMaterials) }} <span class="text-sm font-normal">đơn vị</span></p>
+                    <p class="text-2xl font-black text-teal-700"><?php echo e(number_format($totalMaterials)); ?> <span class="text-sm font-normal">đơn vị</span></p>
                 </div>
                 <div class="text-3xl">📦</div>
             </div>
@@ -159,29 +161,29 @@
                         Tự động lập KH Mua hàng
                     </button>
                 </div>
-                @if($predictiveStocks->count() > 0)
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($predictiveStocks->count() > 0): ?>
                     <ul class="text-sm text-purple-900 space-y-1">
-                    @foreach($predictiveStocks as $stock)
-                        <li>- <b>{{ $stock->name }}</b> ({{ $stock->code }}): Đã xuất <b>{{ number_format($stock->total_out) }}</b> > Tồn <b>{{ number_format($stock->current_stock) }}</b></li>
-                    @endforeach
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $predictiveStocks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $stock): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                        <li>- <b><?php echo e($stock->name); ?></b> (<?php echo e($stock->code); ?>): Đã xuất <b><?php echo e(number_format($stock->total_out)); ?></b> > Tồn <b><?php echo e(number_format($stock->current_stock)); ?></b></li>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                     </ul>
-                @else
+                <?php else: ?>
                     <p class="text-sm text-purple-700 italic mt-2">Không có mã nào có rủi ro thiếu hụt trong chu kỳ này.</p>
-                @endif
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
 
             <!-- Cảnh báo Dead stock -->
             <div class="bg-stone-50 border border-stone-300 rounded-xl p-2 shadow-sm">
                 <p class="text-xs font-bold text-stone-600 uppercase mb-2 flex items-center gap-1"><span>🕸️</span> Cảnh báo không sử dụng > 300 ngày</p>
-                @if($deadStocks->count() > 0)
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($deadStocks->count() > 0): ?>
                     <ul class="text-sm text-stone-900 space-y-1">
-                    @foreach($deadStocks as $stock)
-                        <li>- <b>{{ $stock->name }}</b> ({{ $stock->code }}): Tồn đọng <b>{{ number_format($stock->quantity) }}</b> (cập nhật cuối {{ $stock->updated_at->format('d/m/Y') }})</li>
-                    @endforeach
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $deadStocks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $stock): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                        <li>- <b><?php echo e($stock->name); ?></b> (<?php echo e($stock->code); ?>): Tồn đọng <b><?php echo e(number_format($stock->quantity)); ?></b> (cập nhật cuối <?php echo e($stock->updated_at->format('d/m/Y')); ?>)</li>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                     </ul>
-                @else
+                <?php else: ?>
                     <p class="text-sm text-stone-700 italic">Hệ thống luân chuyển tốt, không có hàng tồn đọng lâu.</p>
-                @endif
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </div>
 
@@ -196,3 +198,4 @@
         </div>
     </div>
 </div>
+<?php /**PATH D:\Project\resources\views/livewire/warehouse/stock-report.blade.php ENDPATH**/ ?>

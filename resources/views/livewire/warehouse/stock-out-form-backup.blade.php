@@ -20,7 +20,7 @@
         }
     </style>
 
-    <div class="relative flex items-start gap-6">
+    <div class="relative flex items-start gap-2">
         <!-- Sidebar Toolbar (Left) -->
         <div class="sidebar-toolbar sticky top-24 hidden md:flex flex-col gap-3 no-print">
             <button onclick="window.print()" class="group flex flex-col items-center justify-center w-16 h-16 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-indigo-50 hover:border-indigo-200 transition-all duration-200" title="In phiếu xuất">
@@ -41,7 +41,7 @@
         <!-- Main Content -->
         <div class="flex-1 main-content">
             @if(session('success'))
-                <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-lg shadow-sm border border-green-200 no-print">
+                <div class="mb-4 p-2 bg-green-100 text-green-800 rounded-lg shadow-sm border border-green-200 no-print">
                     <span class="flex items-center gap-2">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         {{ session('success') }}
@@ -53,7 +53,7 @@
             @endif
 
             @if(session('error'))
-                <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-lg shadow-sm border border-red-200 no-print">
+                <div class="mb-4 p-2 bg-red-100 text-red-800 rounded-lg shadow-sm border border-red-200 no-print">
                     <span class="flex items-center gap-2">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         {{ session('error') }}
@@ -72,8 +72,8 @@
                     </div>
                 </div>
 
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="p-2">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-8">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-2">Khách hàng / Bộ phận nhận</label>
                             <input type="text" wire:model="customer_name" list="customers_list" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition" placeholder="Chọn hoặc nhập tên...">
@@ -103,13 +103,13 @@
                             <thead>
                                 <tr class="bg-slate-50">
                                     <th class="px-3 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-12 no-print">In</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Sản phẩm</th>
-                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">ĐVT</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Mã Code NCC</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Hạn dùng</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Vị trí kho</th>
-                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-28">Số lượng</th>
-                                    <th class="px-4 py-3 border-b border-slate-200 w-12 no-print"></th>
+                                    <th class="px-2 py-2 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200">Sản phẩm</th>
+                                    <th class="px-2 py-2 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-24">ĐVT</th>
+                                    <th class="px-2 py-2 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Mã Code NCC</th>
+                                    <th class="px-2 py-2 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Hạn dùng</th>
+                                    <th class="px-2 py-2 text-left text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-40">Vị trí kho</th>
+                                    <th class="px-2 py-2 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-28">Số lượng</th>
+                                    <th class="px-2 py-2 border-b border-slate-200 w-12 no-print"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -120,7 +120,7 @@
                                     </td>
                                     <td class="px-4 py-4">
                                         <input type="text" wire:model.live.debounce.250ms="items.{{ $index }}.product_search" list="product_list_{{ $index }}" 
-                                               class="w-full rounded-lg border-slate-300 text-sm font-semibold focus:ring-indigo-500 focus:border-indigo-500 transition placeholder:font-normal"
+                                               class="w-full rounded-lg border-slate-300 text-xs font-semibold focus:ring-indigo-500 focus:border-indigo-500 transition placeholder:font-normal"
                                                placeholder="Gõ mã hoặc tên SP...">
                                         <datalist id="product_list_{{ $index }}">
                                             @foreach($products as $product)
@@ -134,25 +134,25 @@
                                         @error("items.{$index}.product_id") <p class="text-red-500 text-xs mt-1 no-print">{{ $message }}</p> @enderror
                                     </td>
                                     <td class="px-4 py-4 text-center">
-                                        <span class="inline-block px-2 py-1 bg-slate-100 rounded text-xs font-bold text-slate-600 border border-slate-200 min-w-[40px]">
+                                        <span class="inline-block px-1.5 py-1 text-[11px] bg-slate-100 rounded text-xs font-bold text-slate-600 border border-slate-200 min-w-[40px]">
                                             {{ $items[$index]['unit'] ?: '-' }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-4">
                                         <input type="text" wire:model.live="items.{{ $index }}.batch_number" 
-                                               class="w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Mã Code NCC...">
+                                               class="w-full rounded-lg border-slate-300 text-xs focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Mã Code NCC...">
                                     </td>
                                     <td class="px-4 py-4">
                                         <input type="date" wire:model="items.{{ $index }}.expiry_date" 
-                                               class="w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0">
+                                               class="w-full rounded-lg border-slate-300 text-xs focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0">
                                     </td>
                                     <td class="px-4 py-4">
                                         <input type="text" wire:model="items.{{ $index }}.warehouse_location" list="location_list_{{ $index }}"
-                                               class="w-full rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Vị trí lấy hàng...">
+                                               class="w-full rounded-lg border-slate-300 text-xs focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0" placeholder="Vị trí lấy hàng...">
                                     </td>
                                     <td class="px-4 py-4">
                                         <input type="number" wire:model.live="items.{{ $index }}.quantity" step="0.0001" min="0"
-                                               class="w-full text-center rounded-lg border-slate-300 text-sm focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0">
+                                               class="w-full text-center rounded-lg border-slate-300 text-xs focus:ring-indigo-500 focus:border-indigo-500 transition print:border-none print:p-0">
                                         @error("items.{$index}.quantity") <p class="text-red-500 text-xs mt-1 no-print">{{ $message }}</p> @enderror
                                     </td>
                                     <td class="px-4 py-4 text-center no-print">
@@ -177,7 +177,7 @@
                         @endif
                     </div>
 
-                    <div class="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-200 no-print">
+                    <div class="mb-8 p-2 bg-slate-50 rounded-xl border border-slate-200 no-print">
                         <label class="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
                             <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             Ghi chú phiếu xuất
@@ -185,7 +185,7 @@
                         <textarea wire:model="note" rows="3" class="w-full rounded-lg border-slate-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition print:border-none print:p-0" placeholder="Nhập lý do xuất, thông tin vận chuyển..."></textarea>
                     </div>
 
-                    <div class="flex justify-end items-center gap-4 no-print">
+                    <div class="flex justify-end items-center gap-2 no-print">
                         <a href="{{ route('warehouse.inventory') }}" class="px-6 py-2.5 border border-slate-300 rounded-xl text-slate-600 font-semibold hover:bg-slate-50 transition duration-150 shadow-sm">
                             Hủy bỏ
                         </a>
@@ -212,7 +212,7 @@
 
     <!-- Batch Selection Modal -->
     @if($showBatchModal)
-        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] no-print p-4">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] no-print p-2">
             <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-200">
                 <div class="bg-indigo-600 px-6 py-4 flex items-center justify-between">
                     <h3 class="text-lg font-bold text-white flex items-center gap-2">
@@ -224,7 +224,7 @@
                     </button>
                 </div>
                 
-                <div class="p-6">
+                <div class="p-2">
                     <p class="mb-4 text-sm text-slate-500">
                         Hệ thống tìm thấy <strong>{{ count($availableBatches) }} lô hàng</strong> của sản phẩm này. Vui lòng chọn một lô để xuất kho:
                     </p>
@@ -233,11 +233,11 @@
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
-                                    <th class="px-4 py-3 text-left">Mã Code NCC</th>
-                                    <th class="px-4 py-3 text-left">Hạn sử dụng</th>
-                                    <th class="px-4 py-3 text-left">Vị trí kho</th>
-                                    <th class="px-4 py-3 text-right">Tồn khả dụng</th>
-                                    <th class="px-4 py-3 text-center w-24">Thao tác</th>
+                                    <th class="px-2 py-2 text-left">Mã Code NCC</th>
+                                    <th class="px-2 py-2 text-left">Hạn sử dụng</th>
+                                    <th class="px-2 py-2 text-left">Vị trí kho</th>
+                                    <th class="px-2 py-2 text-right">Tồn khả dụng</th>
+                                    <th class="px-2 py-2 text-center w-24">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50">
@@ -254,13 +254,13 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-4 text-slate-600">
-                                            <span class="px-2 py-1 bg-slate-100 rounded text-xs">{{ $batch['warehouse_location'] ?: 'Chưa rõ' }}</span>
+                                            <span class="px-1.5 py-1 text-[11px] bg-slate-100 rounded text-xs">{{ $batch['warehouse_location'] ?: 'Chưa rõ' }}</span>
                                         </td>
                                         <td class="px-4 py-4 text-right">
                                             <span class="font-bold text-indigo-600">{{ number_format($batch['stock'], 4) }}</span>
                                         </td>
                                         <td class="px-4 py-4 text-center">
-                                            <button wire:click="selectBatch({{ $index }})" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-indigo-700 transition">
+                                            <button wire:click="selectBatch({{ $index }})" class="bg-indigo-600 text-white px-1.5 py-1 text-[11px] rounded-lg text-xs font-bold hover:bg-indigo-700 transition">
                                                 Chọn lô
                                             </button>
                                         </td>

@@ -1,6 +1,6 @@
 <div class="px-4 pb-10">
     <!-- Header -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
             <p class="text-sm text-gray-500">Dashboard thống kê tình trạng bảo dưỡng thiết bị</p>
         </div>
@@ -22,9 +22,9 @@
     </div>
 
     <!-- 4 Cards Tổng Quan -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
         <!-- Tổng Thiết Bị -->
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 relative overflow-hidden">
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-2 relative overflow-hidden">
             <div class="flex justify-between items-start relative z-10">
                 <div>
                     <p class="text-sm font-semibold text-gray-500 uppercase">Tổng Thiết Bị</p>
@@ -39,7 +39,7 @@
         </div>
 
         <!-- Bình Thường -->
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-sm p-6 relative overflow-hidden text-white">
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-sm p-2 relative overflow-hidden text-white">
             <div class="flex justify-between items-start relative z-10">
                 <div>
                     <p class="text-sm font-semibold text-green-100 uppercase">Bình Thường</p>
@@ -53,7 +53,7 @@
         </div>
 
         <!-- Sắp Đến Hạn -->
-        <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-sm p-6 relative overflow-hidden text-white">
+        <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-sm p-2 relative overflow-hidden text-white">
             <div class="flex justify-between items-start relative z-10">
                 <div>
                     <p class="text-sm font-semibold text-yellow-100 uppercase">Sắp Đến Hạn</p>
@@ -67,7 +67,7 @@
         </div>
 
         <!-- Quá Hạn -->
-        <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-sm p-6 relative overflow-hidden text-white">
+        <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-sm p-2 relative overflow-hidden text-white">
             <div class="flex justify-between items-start relative z-10">
                 <div>
                     <p class="text-sm font-semibold text-red-100 uppercase">Đến Hạn / Quá Hạn</p>
@@ -82,7 +82,7 @@
     </div>
 
     <!-- 2 Cột Thống Kê Chi Tiết -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-2">
         
         <!-- Cột Trái: Danh Sách Ưu Tiên Cao (Overdue) -->
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm col-span-1">
@@ -93,7 +93,7 @@
             <div class="p-0">
                 <ul class="divide-y divide-gray-100">
                     @forelse($highPriorityAssets as $item)
-                        <li class="p-4 hover:bg-slate-50 transition">
+                        <li class="p-2 hover:bg-slate-50 transition">
                             <div class="flex justify-between items-center">
                                 <div>
                                     <p class="font-bold text-sm text-gray-900">{{ $item['asset']->name }}</p>
@@ -121,13 +121,13 @@
                 <h3 class="font-bold text-gray-800">Lịch sử bảo dưỡng thực tế tháng {{ $month }}/{{ $year }}</h3>
             </div>
             
-            <div class="p-6">
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-100 text-center">
+            <div class="p-2">
+                <div class="grid grid-cols-2 gap-2 mb-6">
+                    <div class="bg-indigo-50 rounded-lg p-2 border border-indigo-100 text-center">
                         <p class="text-xs font-bold text-indigo-800 uppercase mb-1">Số thiết bị đã bảo dưỡng</p>
                         <p class="text-3xl font-black text-indigo-600">{{ number_format($maintainedCount) }}</p>
                     </div>
-                    <div class="bg-sky-50 rounded-lg p-4 border border-sky-100 text-center">
+                    <div class="bg-sky-50 rounded-lg p-2 border border-sky-100 text-center">
                         <p class="text-xs font-bold text-sky-800 uppercase mb-1">Tổng chi phí (nếu có)</p>
                         <p class="text-3xl font-black text-sky-600">{{ number_format($totalCost) }} đ</p>
                     </div>

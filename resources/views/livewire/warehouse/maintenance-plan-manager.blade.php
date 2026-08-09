@@ -1,6 +1,6 @@
 <div class="px-4">
     <!-- Header -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
             <p class="text-sm text-gray-500">Quản lý các kế hoạch bảo dưỡng, bảo trì tài sản thiết bị</p>
         </div>
@@ -10,13 +10,13 @@
     </div>
 
     @if (session()->has('message'))
-        <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
+        <div class="mb-4 p-2 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
             <span>✅</span> {{ session('message') }}
         </div>
     @endif
 
     <!-- Toolbar -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-4 items-center justify-between">
+    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-2 items-center justify-between">
         <div class="w-full md:w-1/3 relative">
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm mã KH, tài sản, hạng mục..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
             <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
@@ -36,26 +36,26 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã Kế Hoạch</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tài Sản</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Hạng Mục</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Dự Kiến</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Odo Hiện Tại</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Odo Bảo Dưỡng</th>
-                        <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng Thái</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã Kế Hoạch</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tài Sản</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Hạng Mục</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Dự Kiến</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Odo Hiện Tại</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Odo Bảo Dưỡng</th>
+                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng Thái</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($plans as $plan)
                         <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-indigo-600">{{ $plan->plan_code }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900 font-semibold">{{ $plan->asset->asset_code ?? '' }}<br><span class="text-xs font-normal text-gray-500">{{ $plan->asset->name ?? '' }}</span></td>
-                            <td class="px-6 py-4 text-sm text-gray-700">{{ $plan->category }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $plan->expected_date ? \Carbon\Carbon::parse($plan->expected_date)->format('d/m/Y') : '—' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{{ number_format($plan->current_odo) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">{{ number_format($plan->maintenance_odo) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-indigo-600">{{ $plan->plan_code }}</td>
+                            <td class="px-2 py-1.5 text-sm text-gray-900 font-semibold">{{ $plan->asset->asset_code ?? '' }}<br><span class="text-xs font-normal text-gray-500">{{ $plan->asset->name ?? '' }}</span></td>
+                            <td class="px-2 py-1.5 text-sm text-gray-700">{{ $plan->category }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm text-gray-700">{{ $plan->expected_date ? \Carbon\Carbon::parse($plan->expected_date)->format('d/m/Y') : '—' }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm text-gray-500 text-right">{{ number_format($plan->current_odo) }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-gray-900 text-right">{{ number_format($plan->maintenance_odo) }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-center">
                                 @if($plan->status === 'pending')
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Đã lập</span>
                                 @elseif($plan->status === 'cho_chuan_bi_vat_tu')
@@ -72,12 +72,12 @@
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">{{ $plan->status }}</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-2 py-1.5 whitespace-nowrap text-right text-sm font-medium">
                                 @if(in_array($plan->status, ['cho_chuan_bi_vat_tu', 'pending', 'thieu_vat_tu']))
-                                    <button wire:click="checkInventory({{ $plan->id }})" class="text-white bg-blue-600 hover:bg-blue-700 px-2 py-1.5 rounded mr-1" title="Kiểm tra tồn kho vật tư">🔍 Kiểm tra kho</button>
+                                    <button wire:click="checkInventory({{ $plan->id }})" class="text-white bg-blue-600 hover:bg-blue-700 px-1.5 py-1 text-[11px].5 rounded mr-1" title="Kiểm tra tồn kho vật tư">🔍 Kiểm tra kho</button>
                                 @endif
                                 @if($plan->status === 'san_sang_xuat')
-                                    <button wire:click="createStockOut({{ $plan->id }})" class="text-white bg-green-600 hover:bg-green-700 px-2 py-1.5 rounded mr-1" title="Tạo phiếu xuất kho">📦 Xuất kho</button>
+                                    <button wire:click="createStockOut({{ $plan->id }})" class="text-white bg-green-600 hover:bg-green-700 px-1.5 py-1 text-[11px].5 rounded mr-1" title="Tạo phiếu xuất kho">📦 Xuất kho</button>
                                 @endif
                                 <button wire:click="edit({{ $plan->id }})" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-1.5 rounded mr-1" title="Sửa">✏️</button>
                                 <button x-on:click="if(confirm('Xóa kế hoạch này?')) $wire.delete({{ $plan->id }})" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded" title="Xóa">🗑️</button>
@@ -108,13 +108,13 @@
 
                 <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full">
                     <form wire:submit.prevent="save">
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                             <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4" id="modal-title">
                                 {{ $planId ? 'Cập nhật kế hoạch bảo dưỡng' : 'Thêm mới kế hoạch bảo dưỡng' }}
                             </h3>
                             
                             <div class="space-y-4">
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Mã kế hoạch <span class="text-red-500">*</span></label>
                                         <input type="text" wire:model="plan_code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -132,7 +132,7 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Hạng mục <span class="text-red-500">*</span></label>
                                         <input type="text" wire:model="category" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -145,7 +145,7 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Odo Hiện Tại (Lúc lập KH)</label>
                                         <input type="number" wire:model="current_odo" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-right">
@@ -156,7 +156,7 @@
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Trạng thái <span class="text-red-500">*</span></label>
                                         <select wire:model="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">

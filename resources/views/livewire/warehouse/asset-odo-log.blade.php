@@ -1,6 +1,6 @@
 <div class="px-4">
     <!-- Header -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
             <p class="text-sm text-gray-500">Cập nhật chỉ số Odo và Giờ máy hàng ngày cho thiết bị</p>
         </div>
@@ -18,14 +18,14 @@
     </div>
 
     @if (session()->has('message'))
-        <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
+        <div class="mb-4 p-2 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
             <span>✅</span> {{ session('message') }}
         </div>
     @endif
 
     <!-- Toolbar -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-4 items-center justify-between">
-        <div class="flex items-center gap-4 w-full md:w-2/3">
+    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-2 items-center justify-between">
+        <div class="flex items-center gap-2 w-full md:w-2/3">
             <div class="flex items-center gap-2">
                 <span class="text-sm font-medium text-gray-700">Ngày cập nhật:</span>
                 <input type="date" wire:model.live="filterDate" class="border-gray-300 rounded-lg shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
@@ -43,27 +43,27 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã tài sản</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thiết bị</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">ODO tích lũy</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">ODO hiện tại</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Số giờ làm việc</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nhân viên lái xe</th>
-                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ghi chú</th>
-                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã tài sản</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thiết bị</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">ODO tích lũy</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">ODO hiện tại</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Số giờ làm việc</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nhân viên lái xe</th>
+                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ghi chú</th>
+                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($logs as $log)
                         <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ $log->asset->asset_code ?? '' }}</td>
-                            <td class="px-6 py-4 text-sm text-indigo-600 font-semibold">{{ $log->asset->name ?? '' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">{{ number_format($log->old_odo) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">{{ number_format($log->new_odo) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600 text-right">{{ number_format($log->hours_diff) }} giờ</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $log->operator }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ Str::limit($log->note, 30) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-gray-900">{{ $log->asset->asset_code ?? '' }}</td>
+                            <td class="px-2 py-1.5 text-sm text-indigo-600 font-semibold">{{ $log->asset->name ?? '' }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm text-gray-500 text-right">{{ number_format($log->old_odo) }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-gray-900 text-right">{{ number_format($log->new_odo) }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-green-600 text-right">{{ number_format($log->hours_diff) }} giờ</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-sm text-gray-700">{{ $log->operator }}</td>
+                            <td class="px-2 py-1.5 text-sm text-gray-500">{{ Str::limit($log->note, 30) }}</td>
+                            <td class="px-2 py-1.5 whitespace-nowrap text-right text-sm font-medium">
                                 <button wire:click="edit({{ $log->id }})" class="text-indigo-600 hover:text-indigo-900 mx-1 p-1.5 rounded bg-indigo-50 hover:bg-indigo-100" title="Sửa">✏️</button>
                                 <button x-on:click="if(confirm('Xóa bản ghi này?')) $wire.delete({{ $log->id }})" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded" title="Xóa">🗑️</button>
                             </td>
@@ -95,13 +95,13 @@
 
                 <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full">
                     <form wire:submit.prevent="save">
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                             <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4" id="modal-title">
                                 Cập nhật Odo / Giờ Máy
                             </h3>
                             
                             <div class="space-y-4">
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Ngày cập nhật <span class="text-red-500">*</span></label>
                                         <input type="date" wire:model="reading_date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -119,8 +119,8 @@
                                     </div>
                                 </div>
 
-                                <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div class="p-2 bg-slate-50 rounded-lg border border-slate-200">
+                                    <div class="grid grid-cols-2 gap-2 mb-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-500">ODO tích lũy (cũ)</label>
                                             <input type="text" disabled wire:model="old_odo" class="mt-1 block w-full bg-gray-100 border-gray-300 rounded-md sm:text-sm text-gray-500 font-bold text-right">
@@ -132,7 +132,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-2 gap-2">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700">Nhân viên lái xe</label>
                                             <input type="text" wire:model="operator" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -174,7 +174,7 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full">
                     <form wire:submit.prevent="importExcel">
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                             <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4" id="modal-title">
                                 Import Dữ Liệu Odo / Giờ Máy
                             </h3>

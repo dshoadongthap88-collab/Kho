@@ -1,6 +1,6 @@
 <div>
-    <div class="bg-white rounded-xl shadow-sm border p-4 mb-6">
-        <div class="flex flex-wrap gap-4 items-end">
+    <div class="bg-white rounded-xl shadow-sm border p-2 mb-6">
+        <div class="flex flex-wrap gap-2 items-end">
             <div>
                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Từ ngày</label>
                 <input type="date" wire:model.live="dateFrom" class="rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
@@ -58,20 +58,20 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead>
                 <tr class="bg-gray-50/50">
-                    <th class="px-4 py-3 text-center w-10">
+                    <th class="px-2 py-2 text-center w-10">
                         <input type="checkbox" 
                                wire:click="toggleSelectAll([{{ implode(',', $transactions->pluck('id')->toArray()) }}])"
                                {{ count(array_intersect($transactions->pluck('id')->map(fn($id) => (string)$id)->toArray(), $selectedIds)) === count($transactions) && count($transactions) > 0 ? 'checked' : '' }}
                                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
                     </th>
-                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Thời gian</th>
-                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Sản phẩm</th>
-                    <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Loại</th>
-                    <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-400 uppercase">Số lượng</th>
-                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Mã tài sản</th>
-                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Người liên hệ</th>
-                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Người thực hiện</th>
-                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-400 uppercase">Ghi chú</th>
+                    <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Thời gian</th>
+                    <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Sản phẩm</th>
+                    <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Loại</th>
+                    <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Số lượng</th>
+                    <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Mã tài sản</th>
+                    <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Người liên hệ</th>
+                    <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Người thực hiện</th>
+                    <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Ghi chú</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -95,32 +95,32 @@
                     ];
                 @endphp
                 <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-4 py-3 text-center">
+                    <td class="px-2 py-1.5 text-center">
                         <input type="checkbox" wire:model.live="selectedIds" value="{{ $tx->id }}" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
                     </td>
-                    <td class="px-4 py-3 text-xs text-gray-400 font-mono">{{ $tx->created_at->format('d/m/Y H:i') }}</td>
-                    <td class="px-4 py-3">
-                        <div class="text-sm font-bold text-gray-800">
+                    <td class="px-2 py-1.5 text-xs text-gray-400 font-mono">{{ $tx->created_at->format('d/m/Y H:i') }}</td>
+                    <td class="px-2 py-1.5">
+                        <div class="text-xs font-bold text-gray-800">
                             <span class="text-indigo-600">[{{ $tx->product->code ?? 'N/A' }}]</span> 
                             {{ $tx->product->name ?? '' }}
                         </div>
                     </td>
-                    <td class="px-4 py-3 text-center">
+                    <td class="px-2 py-1.5 text-center">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold border {{ $typeColors[$tx->type] ?? 'bg-gray-50 text-gray-600' }}">
                             {{ $typeLabels[$tx->type] ?? $tx->type }}
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-center text-sm font-black {{ $tx->quantity >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                    <td class="px-2 py-1.5 text-center text-sm font-black {{ $tx->quantity >= 0 ? 'text-green-600' : 'text-red-600' }}">
                         {{ $tx->quantity >= 0 ? '+' : '' }}{{ number_format($tx->quantity) }}
                     </td>
-                    <td class="px-4 py-3 text-xs font-bold text-slate-700">
+                    <td class="px-2 py-1.5 text-xs font-bold text-slate-700">
                         {{ ($tx->reference && isset($tx->reference->asset_code)) ? $tx->reference->asset_code : '-' }}
                     </td>
-                    <td class="px-4 py-3 text-xs font-medium text-slate-600">
+                    <td class="px-2 py-1.5 text-xs font-medium text-slate-600">
                         {{ ($tx->reference && isset($tx->reference->receiver_name)) ? $tx->reference->receiver_name : '-' }}
                     </td>
-                    <td class="px-4 py-3 text-xs font-medium text-gray-600 italic">👤 {{ $tx->creator->name ?? '-' }}</td>
-                    <td class="px-4 py-3 text-[10px] text-gray-400 leading-tight">{{ \Illuminate\Support\Str::limit($tx->note, 100) }}</td>
+                    <td class="px-2 py-1.5 text-xs font-medium text-gray-600 italic">👤 {{ $tx->creator->name ?? '-' }}</td>
+                    <td class="px-2 py-1.5 text-[10px] text-gray-400 leading-tight">{{ \Illuminate\Support\Str::limit($tx->note, 100) }}</td>
                 </tr>
                 @empty
                 <tr><td colspan="9" class="px-4 py-12 text-center text-gray-400 italic">Dữ liệu trống trong khoảng thời gian này...</td></tr>

@@ -10,18 +10,18 @@
     </div>
 
     @if (session()->has("message"))
-        <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 border border-green-200">
+        <div class="p-2 mb-4 text-sm text-green-800 rounded-lg bg-green-50 border border-green-200">
             {{ session("message") }}
         </div>
     @endif
     @if (session()->has("error"))
-        <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200">
+        <div class="p-2 mb-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200">
             {{ session("error") }}
         </div>
     @endif
 
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div class="p-4 border-b border-slate-200 bg-slate-50">
+        <div class="p-2 border-b border-slate-200 bg-slate-50">
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm kiếm danh mục..." class="w-full md:w-1/3 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
         </div>
         
@@ -29,27 +29,27 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
-                        <th class="p-4 font-semibold">Tên Danh mục</th>
-                        <th class="p-4 font-semibold">Mô tả</th>
-                        <th class="p-4 font-semibold text-center">Số Vật tư</th>
-                        <th class="p-4 font-semibold">Trạng thái</th>
-                        <th class="p-4 font-semibold text-right">Thao tác</th>
+                        <th class="p-2 font-semibold">Tên Danh mục</th>
+                        <th class="p-2 font-semibold">Mô tả</th>
+                        <th class="p-2 font-semibold text-center">Số Vật tư</th>
+                        <th class="p-2 font-semibold">Trạng thái</th>
+                        <th class="p-2 font-semibold text-right">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 text-sm">
                     @forelse($categories as $category)
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 font-medium text-slate-800">{{ $category->name }}</td>
-                        <td class="p-4 text-slate-600">{{ $category->description ?? "-" }}</td>
-                        <td class="p-4 font-medium text-indigo-600 text-center">{{ $category->products_count }}</td>
-                        <td class="p-4">
+                        <td class="p-2 font-medium text-slate-800">{{ $category->name }}</td>
+                        <td class="p-2 text-slate-600">{{ $category->description ?? "-" }}</td>
+                        <td class="p-2 font-medium text-indigo-600 text-center">{{ $category->products_count }}</td>
+                        <td class="p-2">
                             @if($category->status === "active")
-                                <span class="px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 rounded-full">Đang dùng</span>
+                                <span class="px-1.5 py-1 text-[11px] text-xs font-semibold text-emerald-700 bg-emerald-100 rounded-full">Đang dùng</span>
                             @else
-                                <span class="px-2 py-1 text-xs font-semibold text-slate-700 bg-slate-100 rounded-full">Ngừng dùng</span>
+                                <span class="px-1.5 py-1 text-[11px] text-xs font-semibold text-slate-700 bg-slate-100 rounded-full">Ngừng dùng</span>
                             @endif
                         </td>
-                        <td class="p-4 text-right space-x-2">
+                        <td class="p-2 text-right space-x-2">
                             <button wire:click="openModal({{ $category->id }})" class="text-indigo-600 hover:text-indigo-900 font-medium">Sửa</button>
                             <button wire:click="delete({{ $category->id }})" onclick="confirm('Bạn có chắc muốn xóa danh mục này?') || event.stopImmediatePropagation()" class="text-red-600 hover:text-red-900 font-medium">Xóa</button>
                         </td>
@@ -63,7 +63,7 @@
             </table>
         </div>
         @if($categories->hasPages())
-        <div class="p-4 border-t border-slate-200">
+        <div class="p-2 border-t border-slate-200">
             {{ $categories->links() }}
         </div>
         @endif
@@ -78,7 +78,7 @@
                 <button wire:click="$set('showModal', false)" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
             </div>
             
-            <div class="p-6 space-y-4">
+            <div class="p-2 space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Tên Danh mục *</label>
                     <input type="text" wire:model="name" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">

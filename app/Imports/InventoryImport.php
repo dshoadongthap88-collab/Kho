@@ -76,11 +76,13 @@ class InventoryImport implements ToCollection
     private function processRow(array $row)
     {
         // 1. Tìm Mã sản phẩm (Bắt buộc)
-        $productCode = $this->findValue($row, ['masp', 'masanpham', 'code', 'mahang']);
+        $productCode = $this->findValue($row, ['masp', 'masanpham', 'code', 'mahang', 'mavt', 'mavattu', 'ma', 'id']);
         if (!$productCode) return;
 
+        $productCode = strtoupper(trim((string)$productCode));
+
         // 2. Tìm hoặc tạo Sản phẩm
-        $product = Product::where('code', $productCode)->first();
+        $product = Product::withoutGlobalScope('house')->where('code', $productCode)->first();
         
         $productName = $this->findValue($row, ['tensp', 'tensanpham', 'name', 'tenhang']);
         $unit = $this->findValue($row, ['dvt', 'donvitinh', 'unit']);
@@ -128,19 +130,44 @@ class InventoryImport implements ToCollection
             $product->update($productData);
         }
 
-        // 3. Cập nhật Tồn kho
         if ($quantity !== null || $location !== null) {
             $inventoryData = [];
-            if ($quantity !== null) $inventoryData['quantity'] = floatval($quantity);
+            if ($quantity !== null) {
+                // Chuẩn hóa số lượng
+                $val = trim((string)$quantity);
+                if ($val !== '' && $val !== '-') {
+                    $val = preg_replace('/[^\d.,]/', '', $val);
+                    if (str_contains($val, ',') && str_contains($val, '.')) {
+                        $lastComma = strrpos($val, ',');
+                        $lastDot = strrpos($val, '.');
+                        if ($lastComma > $lastDot) {
+                            $val = str_replace('.', '', $val);
+                            $val = str_replace(',', '.', $val);
+                        } else {
+                            $val = str_replace(',', '', $val);
+                        }
+                    } elseif (str_contains($val, ',')) {
+                        $parts = explode(',', $val);
+                        if (count($parts) == 2 && (strlen($parts[1]) == 1 || strlen($parts[1]) == 2)) {
+                            $val = str_replace(',', '.', $val);
+                        } else {
+                            $val = str_replace(',', '', $val);
+                        }
+                    }
+                    $inventoryData['quantity'] = floatval($val);
+                }
+            }
             if ($location !== null) $inventoryData['warehouse_location'] = $location;
 
-            $inventory = Inventory::where('product_id', $product->id)->first();
-            if ($inventory) {
-                $inventory->update($inventoryData);
-            } else {
-                $inventoryData['product_id'] = $product->id;
-                $inventoryData['quantity'] = $inventoryData['quantity'] ?? 0;
-                Inventory::create($inventoryData);
+            if (!empty($inventoryData)) {
+                $inventory = Inventory::withoutGlobalScope('house')->where('product_id', $product->id)->first();
+                if ($inventory) {
+                    $inventory->update($inventoryData);
+                } else {
+                    $inventoryData['product_id'] = $product->id;
+                    $inventoryData['quantity'] = $inventoryData['quantity'] ?? 0;
+                    Inventory::create($inventoryData);
+                }
             }
         }
     }

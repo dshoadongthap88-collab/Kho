@@ -116,9 +116,10 @@
                         <th style="width: 5%">STT</th>
                         <th style="width: 15%">MÃ TÀI SẢN</th>
                         <th style="width: 15%">MÃ VẬT TƯ</th>
-                        <th style="width: 15%">SỐ LƯỢNG</th>
-                        <th style="width: 25%">BP SỬ DỤNG</th>
-                        <th style="width: 25%">GHI CHÚ</th>
+                        <th style="width: 10%">SỐ LƯỢNG</th>
+                        <th style="width: 20%">BP SỬ DỤNG</th>
+                        <th style="width: 20%">GHI CHÚ</th>
+                        <th style="width: 15%">XUẤT APP</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -145,10 +146,14 @@
                                 <?php echo e($tx->item_note ?? $tx->note ?? ''); ?>
 
                             </td>
+                            <td class="text-center font-bold" style="font-size: 10px; <?php echo e($tx->is_exported_app ? 'color: green;' : 'color: red;'); ?>">
+                                <?php echo e($tx->is_exported_app ? 'Đã xuất' : 'Chưa xuất'); ?>
+
+                            </td>
                         </tr>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <tr>
-                            <td colspan="6" class="text-center" style="padding: 20px;">Không có dữ liệu hiển thị</td>
+                            <td colspan="7" class="text-center" style="padding: 20px;">Không có dữ liệu hiển thị</td>
                         </tr>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </tbody>

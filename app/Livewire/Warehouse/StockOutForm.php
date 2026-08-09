@@ -883,13 +883,22 @@ class StockOutForm extends Component
             ->latest()
             ->paginate(15);
 
+        $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
+        $usersQuery = \App\Models\User::orderBy('name');
+        if ($houseId) {
+            $usersQuery->where(function($q) use ($houseId) {
+                $q->whereJsonContains('allowed_houses', (string)$houseId)
+                  ->orWhere('current_house_id', $houseId);
+            });
+        }
+
         return view('livewire.warehouse.stock-out-form', [
             'products' => Product::where('status', 'active')->orderBy('name')->get(),
             'productionProducts' => $productionProducts,
             'locations' => Product::whereNotNull('location')->distinct()->pluck('location'),
             'customers' => Supplier::orderBy('name')->get(),
             'stockOuts' => $stockOuts,
-            'users' => \App\Models\User::orderBy('name')->get()
+            'users' => $usersQuery->get()
         ]);
     }
 

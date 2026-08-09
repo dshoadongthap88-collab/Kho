@@ -401,12 +401,12 @@
                             </div>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Nhân viên sửa chữa</label>
-                                <input type="text" wire:model.live="repair_staff" list="user_list" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Chọn hoặc nhập tên...">
-                                <datalist id="user_list">
+                                <select wire:model.live="repair_staff" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800">
+                                    <option value="">-- Chọn nhân viên --</option>
                                     @foreach($users as $user)
-                                        <option value="{{ $user->name }}"></option>
+                                        <option value="{{ $user->name }}">{{ $user->name }}</option>
                                     @endforeach
-                                </datalist>
+                                </select>
                             </div>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Tổ trưởng / trưởng ca</label>

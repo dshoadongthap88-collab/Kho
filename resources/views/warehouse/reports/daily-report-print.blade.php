@@ -21,7 +21,8 @@
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body onload="initPrint()" id="print-content">
+<body onload="initPrint()">
+<div id="print-content">
     <div class="no-print" style="margin-bottom: 20px; text-align: right;">
         <button onclick="window.print()" style="padding: 8px 16px; background: #000; color: #fff; cursor: pointer;">In Phiếu</button>
         <button onclick="window.close()" style="padding: 8px 16px; background: #ccc; cursor: pointer;">Đóng</button>
@@ -191,6 +192,7 @@
             <br><br><br><br>
         </div>
     </div>
+</div>
     
     <script>
         function initPrint() {
@@ -207,15 +209,24 @@
                       margin:       [15, 15, 15, 15],
                       filename:     'Bao_Cao_Ngay_{{ $date }}.pdf',
                       image:        { type: 'jpeg', quality: 0.98 },
-                      html2canvas:  { scale: 2, useCORS: true },
+                      html2canvas:  { scale: 2, useCORS: true, logging: false },
                       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                     };
                     
-                    html2pdf().set(opt).from(element).save().then(() => {
-                        alert('Đã tải xuống file PDF. Nhấn OK để tự động mở Zalo, sau đó bạn chỉ cần kéo thả file PDF vừa tải vào Zalo để gửi đi.');
-                        window.location.href = 'https://chat.zalo.me/';
-                    });
-                }, 500);
+                    try {
+                        html2pdf().set(opt).from(element).save().then(() => {
+                            alert('Đã tải xuống file PDF Báo Cáo. \n\nHệ thống sẽ mở Zalo Desktop. Bạn hãy KÉO THẢ file PDF vừa tải vào đoạn chat để gửi nhé!');
+                            window.location.href = 'zalo://';
+                            setTimeout(() => { window.close(); }, 3000);
+                        }).catch(err => {
+                            console.error('Lỗi tạo PDF:', err);
+                            alert('Lỗi tạo PDF. Vui lòng tải lại trang.');
+                        });
+                    } catch (e) {
+                        console.error('Lỗi html2pdf:', e);
+                        alert('Không thể tạo PDF. Trình duyệt của bạn có thể đang chặn script.');
+                    }
+                }, 800);
             } else {
                 window.print();
             }

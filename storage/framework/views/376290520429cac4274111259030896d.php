@@ -13,14 +13,12 @@
                     BÁO CÁO NGÀY
                 </label>
                 <label class="flex items-center gap-1 text-[10px] font-bold text-gray-500 cursor-pointer">
-                    <input type="checkbox" wire:model="includeDetailReport" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                    <input type="checkbox" wire:model.live="includeDetailReport" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
                     CHI TIẾT NGÀY
                 </label>
-                <button type="button" wire:click="generateZaloMessage" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer ml-1" title="Copy báo cáo và mở Zalo">
-                    <span wire:loading.remove wire:target="generateZaloMessage" class="text-sm">💬</span>
-                    <span wire:loading wire:target="generateZaloMessage" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    GỬI ZALO
-                </button>
+                <a href="<?php echo e(route('warehouse.reports.daily.print', ['date' => $date, 'detailed' => $includeDetailReport ? 1 : 0, 'zalo' => 1])); ?>" target="_blank" class="flex items-center gap-1.5 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer ml-1" title="Tải PDF báo cáo và mở Zalo">
+                    <span class="text-sm">💬</span> GỬI ZALO
+                </a>
             </div>
         </div>
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('error')): ?>
@@ -53,16 +51,6 @@
             <div class="text-xl font-black text-gray-800"><?php echo e($reportData['stockRecoveryCount']); ?></div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('zalo-pdf-generated', (data) => {
-                const url = data.url;
-                // Mở tab mới để tải file PDF
-                window.open(url, '_blank');
-            });
-        });
-    </script>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div class="bg-white rounded-lg shadow p-2">

@@ -23,6 +23,10 @@ class Reports extends Component
     public $paretoData = ['labels' => [], 'quantities' => [], 'percentages' => []];
     public $heatMapData = [];
 
+    // Zalo selection
+    public $includeDailyReport = true;
+    public $includeDetailReport = true;
+
     public function mount()
     {
         $this->dateFrom = now()->startOfMonth()->format('Y-m-d');
@@ -237,5 +241,81 @@ class Reports extends Component
             'transactions' => $transactions,
             'summary' => $summary,
         ]);
+    }
+
+    public function generateZaloMessage()
+    {
+        if (!$this->includeDailyReport && !$this->includeDetailReport) {
+            session()->flash('error', 'Vui lòng chọn ít nhất 1 loại báo cáo để gửi Zalo.');
+            return;
+        }
+
+        $message = "📊 BÁO CÁO KHO TỪ " . \Carbon\Carbon::parse($this->dateFrom)->format('d/m/Y') . " ĐẾN " . \Carbon\Carbon::parse($this->dateTo)->format('d/m/Y') . "\n";
+        $message .= "-----------------------------------\n";
+
+        if ($this->includeDailyReport) {
+            $summary = InventoryTransaction::selectRaw("
+                SUM(CASE WHEN type = 'import' THEN quantity ELSE 0 END) as total_import,
+                SUM(CASE WHEN type = 'export' THEN ABS(quantity) ELSE 0 END) as total_export,
+                SUM(CASE WHEN type = 'adjust' THEN quantity ELSE 0 END) as total_adjust
+            ")
+            ->whereBetween('created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59'])
+            ->first();
+
+            $message .= "📌 TỔNG HỢP TRONG KỲ:\n";
+            $message .= "- Tổng nhập: " . number_format($summary->total_import ?? 0) . "\n";
+            $message .= "- Tổng xuất: " . number_format($summary->total_export ?? 0) . "\n";
+            $message .= "- Điều chỉnh: " . number_format($summary->total_adjust ?? 0) . "\n";
+            $message .= "-----------------------------------\n";
+        }
+
+        if ($this->includeDetailReport) {
+            $message .= "📌 CHI TIẾT GIAO DỊCH:\n";
+            
+            $query = InventoryTransaction::with('product')
+                ->whereBetween('created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59']);
+                
+            if ($this->filterType) {
+                if ($this->filterType === 'transfer') {
+                    $query->whereIn('type', ['transfer_in', 'transfer_out']);
+                } else {
+                    $query->where('type', $this->filterType);
+                }
+            }
+            if ($this->filterProduct) {
+                $query->whereHas('product', function ($q) {
+                    $q->where('name', 'like', "%{$this->filterProduct}%")
+                      ->orWhere('code', 'like', "%{$this->filterProduct}%");
+                });
+            }
+
+            $transactions = $query->orderBy('created_at', 'desc')->get();
+            
+            if ($transactions->count() > 0) {
+                $count = 0;
+                foreach($transactions as $tx) {
+                    $count++;
+                    if ($count > 30) {
+                        $message .= "... (còn nữa)\n";
+                        break;
+                    }
+                    $sign = $tx->quantity >= 0 ? '+' : '';
+                    $typeStr = match($tx->type) {
+                        'import' => 'Nhập',
+                        'export' => 'Xuất',
+                        'adjust' => 'Đ/chỉnh',
+                        'transfer_in' => 'Nhập chuyển',
+                        'transfer_out' => 'Xuất chuyển',
+                        default => $tx->type
+                    };
+                    $productName = $tx->product->name ?? 'N/A';
+                    $message .= "• {$typeStr}: {$productName} | {$sign}" . number_format($tx->quantity) . "\n";
+                }
+            } else {
+                $message .= "(Không có giao dịch)\n";
+            }
+        }
+
+        $this->dispatch('zalo-message-generated', message: $message);
     }
 }

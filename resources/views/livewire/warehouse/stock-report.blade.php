@@ -19,9 +19,9 @@
         if ($currentHouse == 2) {
             $projectName = 'HẬU NGHĨA';
         } elseif ($currentHouse == 3) {
-            $projectName = 'CẦN GIUỘC';
-        } elseif ($currentHouse == 4) {
             $projectName = 'CẦN GIỜ';
+        } elseif ($currentHouse == 4) {
+            $projectName = 'CẦN GIUỘC';
         } else {
             $projectName = 'HÓC MÔN';
         }

@@ -48,7 +48,7 @@
     <div style="display: flex; margin-bottom: 20px;">
         <!-- Bên trái: Tên dự án -->
         <div style="font-weight: bold; font-size: 14px; text-transform: uppercase; width: 25%;">
-            DỰ ÁN: {{ session('current_house') == 2 ? 'HẬU NGHĨA' : (session('current_house') == 3 ? 'CẦN GIUỘC' : (session('current_house') == 4 ? 'CẦN GIỜ' : 'HÓC MÔN')) }}
+            DỰ ÁN: {{ session('current_house') == 2 ? 'HẬU NGHĨA' : (session('current_house') == 3 ? 'CẦN GIỜ' : (session('current_house') == 4 ? 'CẦN GIUỘC' : 'HÓC MÔN')) }}
         </div>
         <!-- Ở giữa: Tiêu đề báo cáo -->
         <div class="text-center" style="flex: 1;">

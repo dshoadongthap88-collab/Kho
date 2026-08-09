@@ -56,16 +56,10 @@
 
     <script>
         document.addEventListener('livewire:initialized', () => {
-            Livewire.on('zalo-message-generated', (data) => {
-                const message = data.message;
-                
-                navigator.clipboard.writeText(message).then(() => {
-                    alert('Đã copy nội dung báo cáo ngày. Hệ thống sẽ mở Zalo để bạn dán (Ctrl+V) và gửi.');
-                    window.open('https://chat.zalo.me/', '_blank');
-                }).catch(err => {
-                    console.error('Không thể copy: ', err);
-                    alert('Có lỗi xảy ra khi copy nội dung. Vui lòng thử lại.');
-                });
+            Livewire.on('zalo-pdf-generated', (data) => {
+                const url = data.url;
+                // Mở tab mới để tải file PDF
+                window.open(url, '_blank');
             });
         });
     </script>

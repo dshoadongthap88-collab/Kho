@@ -19,8 +19,9 @@
             body { padding: 15mm; margin: 0; }
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body onload="window.print()">
+<body onload="initPrint()" id="print-content">
     <div class="no-print" style="margin-bottom: 20px; text-align: right;">
         <button onclick="window.print()" style="padding: 8px 16px; background: #000; color: #fff; cursor: pointer;">In Phiếu</button>
         <button onclick="window.close()" style="padding: 8px 16px; background: #ccc; cursor: pointer;">Đóng</button>
@@ -197,6 +198,36 @@
             <br><br><br><br>
         </div>
     </div>
+    
+    <script>
+        function initPrint() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isZalo = urlParams.get('zalo') === '1';
+            
+            if (isZalo) {
+                // Hide buttons before PDF generation
+                document.querySelector('.no-print').style.display = 'none';
+                
+                setTimeout(() => {
+                    var element = document.getElementById('print-content');
+                    var opt = {
+                      margin:       [15, 15, 15, 15],
+                      filename:     'Bao_Cao_Ngay_<?php echo e($date); ?>.pdf',
+                      image:        { type: 'jpeg', quality: 0.98 },
+                      html2canvas:  { scale: 2, useCORS: true },
+                      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+                    
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        alert('Đã tải xuống file PDF. Nhấn OK để tự động mở Zalo, sau đó bạn chỉ cần kéo thả file PDF vừa tải vào Zalo để gửi đi.');
+                        window.location.href = 'https://chat.zalo.me/';
+                    });
+                }, 500);
+            } else {
+                window.print();
+            }
+        }
+    </script>
 </body>
 </html>
 <?php /**PATH D:\Project\resources\views/warehouse/reports/daily-report-print.blade.php ENDPATH**/ ?>

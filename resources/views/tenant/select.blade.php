@@ -131,13 +131,15 @@
                 <p class="text-slate-500 text-sm">Vui lòng nhập lại mật khẩu để vào <span id="modalHouseName" class="font-bold text-sky-700"></span></p>
             </div>
 
-            <form id="verifyForm" onsubmit="verifyHouse(event)">
+            <form id="verifyForm" onsubmit="verifyHouse(event)" autocomplete="off">
                 @csrf
                 <input type="hidden" id="houseId" name="house_id">
                 
                 <div class="mb-6">
-                    <input type="password" id="password" name="password" required
+                    <input type="text" id="password" name="password" required
                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 text-center tracking-widest text-lg font-bold"
+                       style="-webkit-text-security: disc; text-security: disc;"
+                       autocomplete="new-password"
                        placeholder="••••••••" autofocus>
                     <p id="errorMessage" class="text-red-500 font-medium text-sm mt-2 text-center hidden"></p>
                 </div>

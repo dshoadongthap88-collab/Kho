@@ -32,7 +32,7 @@
             @endif
 
             <!-- Login Form -->
-            <form method="POST" action="{{ route('login') }}" class="space-y-6">
+            <form method="POST" action="{{ route('login') }}" class="space-y-6" autocomplete="off">
                 @csrf
 
                 <!-- Identifier (Phone or Email) -->
@@ -46,6 +46,7 @@
                         value="{{ old('identifier') }}"
                         placeholder="0123456789 hoặc user@example.com"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        autocomplete="off"
                     >
                     @error('identifier')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
@@ -62,6 +63,7 @@
                         name="password" 
                         placeholder="Nhập mật khẩu"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        autocomplete="new-password"
                     >
                     @error('password')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
@@ -90,16 +92,7 @@
                 </button>
             </form>
 
-            <!-- Info -->
-            <div class="mt-8 p-2 bg-indigo-50 rounded-lg border border-indigo-200">
-                <p class="text-sm text-gray-700 mb-2">
-                    <strong>💡 Thông tin đăng nhập test:</strong>
-                </p>
-                <div class="text-xs text-gray-600 space-y-1">
-                    <p>👤 Admin: <span class="font-mono bg-white px-2 py-1 rounded">0123456789</span> | Mật khẩu: <span class="font-mono bg-white px-2 py-1 rounded">123456</span></p>
-                    <p>👥 Staff: <span class="font-mono bg-white px-2 py-1 rounded">0987654321</span> | Mật khẩu: <span class="font-mono bg-white px-2 py-1 rounded">123456</span></p>
-                </div>
-            </div>
+
         </div>
     </div>
 </body>

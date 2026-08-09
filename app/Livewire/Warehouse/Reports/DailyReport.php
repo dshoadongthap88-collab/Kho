@@ -76,4 +76,60 @@ class DailyReport extends Component
             'reportData' => $this->reportData
         ]);
     }
+    // Zalo selection
+    public $includeDailyReport = true;
+    public $includeDetailReport = true;
+
+    public function generateZaloMessage()
+    {
+        if (!$this->includeDailyReport && !$this->includeDetailReport) {
+            session()->flash('error', 'Vui lòng chọn ít nhất 1 loại báo cáo để gửi Zalo.');
+            return;
+        }
+
+        $dateStr = Carbon::parse($this->date)->format('d/m/Y');
+        $message = "📊 BÁO CÁO NGÀY: " . $dateStr . "\n";
+        $message .= "-----------------------------------\n";
+
+        if ($this->includeDailyReport) {
+            $reportData = $this->reportData;
+            $message .= "📌 TỔNG HỢP TRONG NGÀY:\n";
+            $message .= "- Số mã Nhập kho: " . ($reportData['stockInCount'] ?? 0) . "\n";
+            $message .= "- Số mã Xuất kho: " . ($reportData['stockOutCount'] ?? 0) . "\n";
+            $message .= "- Số mã Chuyển kho: " . ($reportData['stockTransferCount'] ?? 0) . "\n";
+            $message .= "- Số mã Thu hồi: " . ($reportData['stockRecoveryCount'] ?? 0) . "\n";
+            $message .= "-----------------------------------\n";
+            $message .= "- Tổng số đơn xuất trong ngày: " . ($reportData['totalStockOutOrders'] ?? 0) . "\n";
+            $message .= "- Số mã tài sản xuất kho: " . ($reportData['assetExportCount'] ?? 0) . "\n";
+            $message .= "- Số mã vật tư xuất kho: " . ($reportData['materialExportCount'] ?? 0) . "\n";
+            $message .= "-----------------------------------\n";
+        }
+
+        if ($this->includeDetailReport) {
+            $message .= "📌 CHI TIẾT XUẤT KHO TRONG NGÀY:\n";
+            
+            $transactions = StockOutItem::with(['stockOut', 'product'])
+                ->whereHas('stockOut', function($q) {
+                    $q->whereDate('created_at', $this->date);
+                })
+                ->get();
+                
+            if ($transactions->count() > 0) {
+                $count = 0;
+                foreach($transactions as $tx) {
+                    $count++;
+                    if ($count > 30) {
+                        $message .= "... (còn nữa)\n";
+                        break;
+                    }
+                    $productName = $tx->product->name ?? 'N/A';
+                    $message .= "• {$productName} | SL: " . number_format($tx->quantity) . "\n";
+                }
+            } else {
+                $message .= "(Không có giao dịch xuất kho)\n";
+            }
+        }
+
+        $this->dispatch('zalo-message-generated', message: $message);
+    }
 }

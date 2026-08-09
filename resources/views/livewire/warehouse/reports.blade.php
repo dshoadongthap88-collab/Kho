@@ -53,36 +53,17 @@
             </div>
             
             <!-- Export Buttons -->
-            <div class="flex gap-2 mb-0.5 items-center">
+            <div class="flex gap-2 mb-0.5">
                 <button type="button" wire:click="exportExcel" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer">
                     <span wire:loading.remove wire:target="exportExcel" class="text-sm">📊</span>
                     <span wire:loading wire:target="exportExcel" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                     Excel
                 </button>
                 <button type="button" onclick="window.print()" class="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-black text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer" title="Xuất báo cáo PDF/In">
-                    <span class="text-sm">📄</span> IN BÁO CÁO
+                    <span class="text-sm">📄</span> PDF / IN
                 </button>
-                
-                <div class="flex items-center gap-2 ml-2 pl-2 border-l border-gray-200">
-                    <label class="flex items-center gap-1 text-[10px] font-bold text-gray-500 cursor-pointer">
-                        <input type="checkbox" wire:model="includeDailyReport" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
-                        BÁO CÁO NGÀY
-                    </label>
-                    <label class="flex items-center gap-1 text-[10px] font-bold text-gray-500 cursor-pointer">
-                        <input type="checkbox" wire:model="includeDetailReport" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
-                        CHI TIẾT NGÀY
-                    </label>
-                    <button type="button" wire:click="generateZaloMessage" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer ml-1" title="Copy báo cáo và mở Zalo">
-                        <span wire:loading.remove wire:target="generateZaloMessage" class="text-sm">💬</span>
-                        <span wire:loading wire:target="generateZaloMessage" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                        GỬI ZALO
-                    </button>
-                </div>
             </div>
         </div>
-        @if (session()->has('error'))
-            <div class="mt-2 text-xs font-bold text-red-500">{{ session('error') }}</div>
-        @endif
     </div>
 
     <!-- Charts Dashboard Area -->
@@ -254,23 +235,4 @@
     </div>
 
     <div class="mt-4">{{ $transactions->links() }}</div>
-
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('zalo-message-generated', (data) => {
-                const message = data.message;
-                
-                // Copy to clipboard
-                navigator.clipboard.writeText(message).then(() => {
-                    alert('Đã copy nội dung báo cáo. Hệ thống sẽ mở Zalo để bạn dán (Ctrl+V) và gửi.');
-                    
-                    // Mở Zalo (PC / Web)
-                    window.open('https://chat.zalo.me/', '_blank');
-                }).catch(err => {
-                    console.error('Không thể copy: ', err);
-                    alert('Có lỗi xảy ra khi copy nội dung. Vui lòng thử lại.');
-                });
-            });
-        });
-    </script>
 </div>

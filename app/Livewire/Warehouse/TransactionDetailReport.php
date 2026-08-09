@@ -49,6 +49,18 @@ class TransactionDetailReport extends Component
         return redirect()->route('warehouse.reports.transaction-detail.print', ['ids' => implode(',', $this->selectedIds)]);
     }
 
+    public function deleteSelected()
+    {
+        if (empty($this->selectedIds)) {
+            session()->flash('error', 'Vui lòng chọn ít nhất 1 giao dịch để xóa.');
+            return;
+        }
+
+        InventoryTransaction::whereIn('id', $this->selectedIds)->delete();
+        $this->selectedIds = [];
+        session()->flash('message', 'Đã xóa thành công các giao dịch được chọn.');
+    }
+
     public function exportExcel()
     {
         $query = InventoryTransaction::with(['product', 'creator'])

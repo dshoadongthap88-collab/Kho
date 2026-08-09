@@ -11,7 +11,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <nav class="bg-sky-100 text-sky-950 border-b border-sky-200 shadow-md sticky top-0 z-50 no-print">
-        <div class="w-full px-4 py-3 flex items-center justify-between overflow-x-auto">
+        <div class="w-full px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2 md:gap-4 shrink-0">
                 <a href="<?php echo e(route('warehouse.inventory')); ?>" class="flex items-center gap-2 text-xl font-extrabold tracking-tight text-sky-900 hover:text-sky-950 transition-all shrink-0">
                     <span class="bg-sky-600 text-white p-1.5 rounded-lg shadow-sm">📦</span>

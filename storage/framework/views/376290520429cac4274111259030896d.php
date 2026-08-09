@@ -3,11 +3,29 @@
         <h2 class="text-2xl font-bold text-gray-800">Báo Cáo Ngày</h2>
         <div class="flex space-x-4">
             <input type="date" wire:model.live="date" class="border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-            <a href="<?php echo e(route('warehouse.reports.daily.print', ['date' => $date, 'detailed' => $printDetailed ? 1 : 0])); ?>" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
+            <a href="<?php echo e(route('warehouse.reports.daily.print', ['date' => $date, 'detailed' => $printDetailed ? 1 : 0])); ?>" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center shrink-0">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                 In Báo Cáo
             </a>
+            <div class="flex items-center gap-2 ml-2 pl-2 border-l border-gray-200">
+                <label class="flex items-center gap-1 text-[10px] font-bold text-gray-500 cursor-pointer">
+                    <input type="checkbox" wire:model="includeDailyReport" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                    BÁO CÁO NGÀY
+                </label>
+                <label class="flex items-center gap-1 text-[10px] font-bold text-gray-500 cursor-pointer">
+                    <input type="checkbox" wire:model="includeDetailReport" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                    CHI TIẾT NGÀY
+                </label>
+                <button type="button" wire:click="generateZaloMessage" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer ml-1" title="Copy báo cáo và mở Zalo">
+                    <span wire:loading.remove wire:target="generateZaloMessage" class="text-sm">💬</span>
+                    <span wire:loading wire:target="generateZaloMessage" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    GỬI ZALO
+                </button>
+            </div>
         </div>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('error')): ?>
+            <div class="absolute top-0 right-0 mt-16 mr-4 text-xs font-bold text-red-500 bg-red-100 px-3 py-2 rounded"><?php echo e(session('error')); ?></div>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
@@ -35,6 +53,22 @@
             <div class="text-xl font-black text-gray-800"><?php echo e($reportData['stockRecoveryCount']); ?></div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('zalo-message-generated', (data) => {
+                const message = data.message;
+                
+                navigator.clipboard.writeText(message).then(() => {
+                    alert('Đã copy nội dung báo cáo ngày. Hệ thống sẽ mở Zalo để bạn dán (Ctrl+V) và gửi.');
+                    window.open('https://chat.zalo.me/', '_blank');
+                }).catch(err => {
+                    console.error('Không thể copy: ', err);
+                    alert('Có lỗi xảy ra khi copy nội dung. Vui lòng thử lại.');
+                });
+            });
+        });
+    </script>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div class="bg-white rounded-lg shadow p-2">

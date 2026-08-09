@@ -47,8 +47,6 @@
                         placeholder="0123456789 hoặc user@example.com"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         autocomplete="new-password"
-                        readonly 
-                        onfocus="this.removeAttribute('readonly');"
                     >
                     @error('identifier')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
@@ -61,13 +59,12 @@
                         Mật khẩu
                     </label>
                     <input 
-                        type="password" 
+                        type="text" 
                         name="password" 
                         placeholder="Nhập mật khẩu"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         autocomplete="new-password"
-                        readonly 
-                        onfocus="this.removeAttribute('readonly');"
+                        style="-webkit-text-security: disc; text-security: disc;"
                     >
                     @error('password')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>

@@ -57,6 +57,14 @@ class LoginController extends Controller
         // Đăng nhập
         Auth::login($user, remember: $request->boolean('remember'));
 
+        if ($request->boolean('remember')) {
+            cookie()->queue('remembered_identifier', $identifier, 60 * 24 * 30);
+            cookie()->queue('remembered_password', $password, 60 * 24 * 30);
+        } else {
+            cookie()->queue(cookie()->forget('remembered_identifier'));
+            cookie()->queue(cookie()->forget('remembered_password'));
+        }
+
         return redirect()->route('tenant.select-house');
     }
 

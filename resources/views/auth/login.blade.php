@@ -43,7 +43,7 @@
                     <input 
                         type="text" 
                         name="identifier" 
-                        value="{{ old('identifier') }}"
+                        value="{{ old('identifier', request()->cookie('remembered_identifier')) }}"
                         placeholder="0123456789 hoặc user@example.com"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         autocomplete="new-password"
@@ -61,6 +61,7 @@
                     <input 
                         type="text" 
                         name="password" 
+                        value="{{ request()->cookie('remembered_password') }}"
                         placeholder="Nhập mật khẩu"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         autocomplete="new-password"
@@ -77,6 +78,7 @@
                         type="checkbox" 
                         name="remember" 
                         id="remember"
+                        {{ request()->cookie('remembered_identifier') ? 'checked' : '' }}
                         class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     >
                     <label for="remember" class="ml-2 block text-sm text-gray-700">

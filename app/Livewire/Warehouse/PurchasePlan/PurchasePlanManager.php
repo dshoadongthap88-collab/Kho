@@ -70,28 +70,65 @@ class PurchasePlanManager extends Component
         $products = Product::with('inventory')->get();
         
         $count = 0;
+        $daysToAnalyze = 60; // Số ngày phân tích
+        $leadTime = 30; // Thời gian chờ hàng về (ngày)
+        $sixtyDaysAgo = now()->subDays($daysToAnalyze);
+
         foreach ($products as $product) {
             $currentStock = $product->inventory ? $product->inventory->quantity : 0;
-            // Kiểm tra sắp hết tồn (<= tồn tối thiểu)
-            if ($currentStock <= $product->min_stock) {
-                // Kiểm tra xem đã có kế hoạch mua hàng đang pending hoặc unreceived/partial chưa
+            
+            // Tính tổng lượng xuất kho trong 60 ngày
+            $totalUsed = \App\Models\StockOutItem::where('product_id', $product->id)
+                ->where('created_at', '>=', $sixtyDaysAgo)
+                ->sum('quantity');
+                
+            // Tốc độ tiêu hao trung bình 1 ngày (Daily Usage Rate)
+            $dailyUsage = $totalUsed / $daysToAnalyze;
+            
+            // Reorder Point (ROP) = (Tốc độ tiêu hao * Lead time) + Tồn kho an toàn (Min Stock)
+            $rop = ($dailyUsage * $leadTime) + $product->min_stock;
+            
+            // Kiểm tra mức tồn kho so với ROP
+            if ($currentStock <= $rop) {
+                // Kiểm tra xem đã có kế hoạch mua hàng đang chờ chưa
                 $existing = PurchasePlan::where('product_id', $product->id)
                     ->whereNotIn('status', ['completed'])
                     ->first();
                     
                 if (!$existing) {
+                    // Số lượng đề xuất mua để duy trì qua lead time và giữ lại mức min stock
+                    $proposedQty = ceil(($dailyUsage * $leadTime) + $product->min_stock - $currentStock);
+                    if ($proposedQty < 1) {
+                        $proposedQty = $product->min_stock > 0 ? $product->min_stock : 1;
+                    }
+
+                    // Tự động phân loại khẩn cấp (Nếu tồn kho không đủ dùng trong 10 ngày)
+                    $urgency = ($currentStock <= ($dailyUsage * 10)) ? 'urgent' : 'normal';
+
+                    // Ghi chú AI
+                    if ($dailyUsage > 0) {
+                        $notes = sprintf(
+                            "AI: Tiêu thụ %.1f cái/ngày. Cần đặt trước để kịp cấp phát trong %d ngày (ROP: %d).",
+                            $dailyUsage, $leadTime, ceil($rop)
+                        );
+                    } else {
+                        $notes = "Tự động đề xuất do tồn kho (".$currentStock.") <= tồn tối thiểu (".$product->min_stock.").";
+                    }
+
                     PurchasePlan::create([
                         'product_id' => $product->id,
-                        'proposed_quantity' => $product->min_stock > 0 ? $product->min_stock : 1,
+                        'proposed_quantity' => $proposedQty,
                         'status' => 'pending',
-                        'notes' => 'Tự động đề xuất do tồn kho (' . $currentStock . ') <= tồn tối thiểu (' . $product->min_stock . ')',
+                        'notes' => $notes,
+                        'expected_delivery_date' => now()->addDays($leadTime),
+                        'urgency' => $urgency,
                     ]);
                     $count++;
                 }
             }
         }
         
-        session()->flash('message', "Đã tự động đề xuất mua cho $count vật tư.");
+        session()->flash('message', "Đã phân tích AI và tự động tạo đề xuất mua cho $count vật tư.");
     }
 
     public function openAddModal()
@@ -115,6 +152,8 @@ class PurchasePlanManager extends Component
             'proposed_quantity' => $this->new_quantity,
             'status' => 'pending',
             'notes' => $this->new_notes,
+            'expected_delivery_date' => now()->addDays(30),
+            'urgency' => 'normal',
         ]);
 
         $this->dispatch('close-modal', 'add-plan-modal');
@@ -143,6 +182,26 @@ class PurchasePlanManager extends Component
             
             $plan->save();
             session()->flash('message', 'Đã cập nhật số lượng đề xuất.');
+        }
+    }
+
+    public function updateUrgency($id, $urgency)
+    {
+        $plan = PurchasePlan::findOrFail($id);
+        if ($plan->status !== 'completed') {
+            $plan->urgency = $urgency;
+            $plan->save();
+            session()->flash('message', 'Đã cập nhật tình trạng khẩn cấp.');
+        }
+    }
+
+    public function updateExpectedDate($id, $date)
+    {
+        $plan = PurchasePlan::findOrFail($id);
+        if ($plan->status !== 'completed' && $date) {
+            $plan->expected_delivery_date = $date;
+            $plan->save();
+            session()->flash('message', 'Đã cập nhật ngày nhận.');
         }
     }
 

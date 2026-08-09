@@ -77,7 +77,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/global-report', \App\Livewire\Hr\GlobalReport::class)->name('global-report');
             Route::get('/notifications', \App\Livewire\Hr\NotificationManager::class)->name('notifications');
             Route::get('/purchase-center', \App\Livewire\Hr\PurchaseCenter::class)->name('purchase-center');
-            Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['create', 'show', 'edit']);
+            Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
         });
 
         // Maintenance ERP Route

@@ -73,6 +73,7 @@ class PurchasePlan extends Model
         'delivered_quantity',
         'expected_delivery_date',
         'status',
+        'urgency',
         'notes',
     ];
 

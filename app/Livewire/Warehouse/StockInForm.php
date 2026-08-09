@@ -44,7 +44,6 @@ class StockInForm extends Component
     public $excelFile = null;
 
     protected $rules = [
-        'items.*.product_id' => 'required|exists:products,id',
         'items.*.quantity' => 'required|numeric|min:0.0001',
     ];
 

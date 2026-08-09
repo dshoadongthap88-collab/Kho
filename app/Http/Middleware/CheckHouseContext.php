@@ -18,9 +18,8 @@ class CheckHouseContext
         if (auth()->check()) {
             $user = auth()->user();
             
-            // Bỏ qua cho HR vì HR có thể xem toàn bộ
-            if ($user->role !== 'hr') {
-                if (empty($user->current_house_id)) {
+            // Gán house context cho user nếu chưa có
+            if (empty($user->current_house_id)) {
                     // Nếu chưa có, tự động lấy house đầu tiên trong allowed_houses
                     $allowed = is_array($user->allowed_houses) ? $user->allowed_houses : json_decode($user->allowed_houses, true);
                     
@@ -34,7 +33,6 @@ class CheckHouseContext
                     }
                 }
             }
-        }
 
         return $next($request);
     }

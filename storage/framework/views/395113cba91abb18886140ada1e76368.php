@@ -25,19 +25,20 @@
 <body onload="window.print()">
     <div class="no-print" style="margin-bottom: 20px; text-align: right;">
         <button onclick="window.print()" style="padding: 8px 16px; background: #000; color: #fff; cursor: pointer;">In Phiếu</button>
-        <button onclick="window.location.href='{{ route('purchase-plan') }}'" style="padding: 8px 16px; background: #ccc; cursor: pointer;">Đóng</button>
+        <button onclick="window.location.href='<?php echo e(route('purchase-plan')); ?>'" style="padding: 8px 16px; background: #ccc; cursor: pointer;">Đóng</button>
     </div>
 
     <div style="margin-bottom: 20px;">
         <div style="font-weight: bold; font-size: 18px; text-transform: uppercase;">PHÒNG KỸ THUẬT SỮA CHỮA</div>
         <div style="font-weight: bold; font-size: 14px;">
-            DỰ ÁN: {{ session('current_house', 1) == 2 ? 'HẬU NGHĨA' : (session('current_house', 1) == 3 ? 'CẦN GIUỘC' : (session('current_house', 1) == 4 ? 'CẦN GIỜ' : 'HÓC MÔN')) }}
+            DỰ ÁN: <?php echo e(session('current_house', 1) == 2 ? 'HẬU NGHĨA' : (session('current_house', 1) == 3 ? 'CẦN GIUỘC' : (session('current_house', 1) == 4 ? 'CẦN GIỜ' : 'HÓC MÔN'))); ?>
+
         </div>
     </div>
 
     <div class="header" style="text-align: center; margin-bottom: 30px;">
         <div class="title" style="font-size: 24px; font-weight: bold; text-transform: uppercase; margin: 10px 0;">PHIẾU ĐỀ XUẤT MUA HÀNG</div>
-        @php
+        <?php
             $houseId = session('current_house', 1);
             $housePrefix = $houseId == 2 ? 'HN' : ($houseId == 3 ? 'CG' : 'HM');
             $dateStr = now()->format('dmY');
@@ -54,9 +55,9 @@
             }
             
             $poNumber = 'PO_' . $housePrefix . '_' . $dateStr . '_' . str_pad($count, 2, '0', STR_PAD_LEFT);
-        @endphp
-        <div style="font-size: 16px;">Số PO: <strong>{{ $poNumber }}</strong></div>
-        <div style="font-style: italic; margin-top: 5px;">Ngày in: {{ now()->format('d/m/Y H:i') }}</div>
+        ?>
+        <div style="font-size: 16px;">Số PO: <strong><?php echo e($poNumber); ?></strong></div>
+        <div style="font-style: italic; margin-top: 5px;">Ngày in: <?php echo e(now()->format('d/m/Y H:i')); ?></div>
     </div>
 
     <table>
@@ -74,8 +75,8 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($plans as $index => $plan)
-                @php
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $plans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $plan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                <?php
                     $latestPoItem = \App\Models\PurchaseOrderItem::where('product_id', $plan->product_id)
                         ->whereHas('purchaseOrder', function($q) {
                             $q->whereNotNull('supplier_id');
@@ -98,30 +99,32 @@
                                         ? $latestStockInItem->stockIn->supplier_name 
                                         : '';
                     }
-                @endphp
+                ?>
                 <tr>
-                    <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="text-center">{{ $plan->created_at->format('d/m/Y') }}</td>
+                    <td class="text-center"><?php echo e($index + 1); ?></td>
+                    <td class="text-center"><?php echo e($plan->created_at->format('d/m/Y')); ?></td>
                     <td>
-                        <strong>{{ $plan->product?->code }}</strong><br>
-                        {{ $plan->product?->name }}
+                        <strong><?php echo e($plan->product?->code); ?></strong><br>
+                        <?php echo e($plan->product?->name); ?>
+
                     </td>
-                    <td class="text-right">{{ number_format($plan->proposed_quantity, 0) }} {{ $plan->product?->unit }}</td>
-                    <td>{{ $supplierName }}</td>
+                    <td class="text-right"><?php echo e(number_format($plan->proposed_quantity, 0)); ?> <?php echo e($plan->product?->unit); ?></td>
+                    <td><?php echo e($supplierName); ?></td>
                     <td class="text-center">
-                        @if($plan->status === 'pending') Đề xuất
-                        @elseif($plan->status === 'ordered') Đã đặt
-                        @elseif($plan->status === 'unreceived') Chưa giao
-                        @elseif($plan->status === 'partial') Giao thiếu
-                        @else Đủ hàng @endif
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status === 'pending'): ?> Đề xuất
+                        <?php elseif($plan->status === 'ordered'): ?> Đã đặt
+                        <?php elseif($plan->status === 'unreceived'): ?> Chưa giao
+                        <?php elseif($plan->status === 'partial'): ?> Giao thiếu
+                        <?php else: ?> Đủ hàng <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </td>
-                    <td class="text-center" style="{{ $plan->urgency === 'urgent' ? 'font-weight:bold;color:red;' : '' }}">
-                        {{ $plan->urgency === 'urgent' ? 'Cần gấp' : 'Bình thường' }}
+                    <td class="text-center" style="<?php echo e($plan->urgency === 'urgent' ? 'font-weight:bold;color:red;' : ''); ?>">
+                        <?php echo e($plan->urgency === 'urgent' ? 'Cần gấp' : 'Bình thường'); ?>
+
                     </td>
-                    <td class="text-center">{{ $plan->expected_delivery_date ? $plan->expected_delivery_date->format('d/m/Y') : '' }}</td>
-                    <td>{{ $plan->notes }}</td>
+                    <td class="text-center"><?php echo e($plan->expected_delivery_date ? $plan->expected_delivery_date->format('d/m/Y') : ''); ?></td>
+                    <td><?php echo e($plan->notes); ?></td>
                 </tr>
-            @endforeach
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
         </tbody>
     </table>
 
@@ -144,3 +147,4 @@
     </div>
 </body>
 </html>
+<?php /**PATH D:\Project\resources\views/warehouse/purchase-plan-print.blade.php ENDPATH**/ ?>

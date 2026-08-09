@@ -20,6 +20,32 @@ class UserController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return redirect()->route('hr.users.index');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(User $user)
+    {
+        // UI uses modal, fallback to index
+        return redirect()->route('hr.users.index');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(User $user)
+    {
+        // UI uses modal, fallback to index
+        return redirect()->route('hr.users.index');
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -50,7 +76,7 @@ class UserController extends Controller
 
         User::create($data);
 
-        return redirect()->back()->with('success', 'Thêm nhân viên thành công!');
+        return redirect()->route('hr.users.index')->with('success', 'Thêm nhân viên thành công!');
     }
 
     /**
@@ -86,7 +112,7 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return redirect()->back()->with('success', 'Cập nhật nhân viên thành công!');
+        return redirect()->route('hr.users.index')->with('success', 'Cập nhật nhân viên thành công!');
     }
 
     /**
@@ -95,10 +121,10 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         if ($user->id === auth()->id()) {
-            return redirect()->back()->with('error', 'Không thể xóa chính tài khoản đang đăng nhập!');
+            return redirect()->route('hr.users.index')->with('error', 'Không thể xóa chính tài khoản đang đăng nhập!');
         }
 
         $user->delete();
-        return redirect()->back()->with('success', 'Đã xóa nhân viên!');
+        return redirect()->route('hr.users.index')->with('success', 'Đã xóa nhân viên!');
     }
 }

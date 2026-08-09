@@ -16,9 +16,9 @@
             <button wire:click="printSelected" class="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-bold shadow transition">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 In phiếu
-                @if(count($selected) > 0)
-                    <span class="bg-white text-slate-800 text-xs px-2 py-0.5 rounded-full ml-1">{{ count($selected) }}</span>
-                @endif
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($selected) > 0): ?>
+                    <span class="bg-white text-slate-800 text-xs px-2 py-0.5 rounded-full ml-1"><?php echo e(count($selected)); ?></span>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </button>
             <button wire:click="openAddModal" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold shadow transition">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -35,11 +35,12 @@
         </div>
     </div>
 
-    @if (session()->has('message'))
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('message')): ?>
         <div class="mb-4 bg-emerald-50 text-emerald-700 p-4 rounded-lg border border-emerald-200 font-medium">
-            {{ session('message') }}
+            <?php echo e(session('message')); ?>
+
         </div>
-    @endif
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     <!-- Table -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -64,94 +65,99 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
-                    @forelse($plans as $plan)
-                        @php
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $plans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $plan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                        <?php
                             $missing = $plan->proposed_quantity - $plan->delivered_quantity;
                             $missing = $missing > 0 ? $missing : 0;
-                        @endphp
+                        ?>
                         <tr class="hover:bg-slate-50 transition">
                             <td class="px-4 py-3 text-center">
-                                <input type="checkbox" wire:model.live="selected" value="{{ $plan->id }}" class="rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer">
+                                <input type="checkbox" wire:model.live="selected" value="<?php echo e($plan->id); ?>" class="rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap">{{ $plan->created_at->format('d/m/Y') }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap"><?php echo e($plan->created_at->format('d/m/Y')); ?></td>
                             <td class="px-4 py-3 font-medium text-slate-900">
-                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs mr-1">{{ $plan->product?->code ?? 'N/A' }}</span>
-                                {{ $plan->product?->name ?? 'Vật tư đã bị xóa' }}
+                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs mr-1"><?php echo e($plan->product?->code ?? 'N/A'); ?></span>
+                                <?php echo e($plan->product?->name ?? 'Vật tư đã bị xóa'); ?>
+
                             </td>
                             <td class="px-4 py-3 text-right font-bold text-slate-600">
-                                {{ number_format($plan->product?->inventory?->quantity ?? 0, 0) }}
+                                <?php echo e(number_format($plan->product?->inventory?->quantity ?? 0, 0)); ?>
+
                             </td>
                             <td class="px-4 py-3 text-right">
-                                @if($plan->status !== 'completed')
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status !== 'completed'): ?>
                                     <input type="number" 
-                                           value="{{ $plan->proposed_quantity }}" 
-                                           wire:change="updateProposedQuantity({{ $plan->id }}, $event.target.value)"
+                                           value="<?php echo e($plan->proposed_quantity); ?>" 
+                                           wire:change="updateProposedQuantity(<?php echo e($plan->id); ?>, $event.target.value)"
                                            class="w-20 text-right p-1 text-sm border-slate-300 rounded font-bold text-slate-700 focus:ring-sky-500 focus:border-sky-500">
-                                @else
-                                    <span class="font-bold text-slate-700">{{ number_format($plan->proposed_quantity, 0) }}</span>
-                                @endif
+                                <?php else: ?>
+                                    <span class="font-bold text-slate-700"><?php echo e(number_format($plan->proposed_quantity, 0)); ?></span>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
-                            <td class="px-4 py-3 text-right font-bold text-emerald-600">{{ number_format($plan->delivered_quantity, 0) }}</td>
-                            <td class="px-4 py-3 text-right font-bold text-rose-600">{{ number_format($missing, 0) }}</td>
+                            <td class="px-4 py-3 text-right font-bold text-emerald-600"><?php echo e(number_format($plan->delivered_quantity, 0)); ?></td>
+                            <td class="px-4 py-3 text-right font-bold text-rose-600"><?php echo e(number_format($missing, 0)); ?></td>
                             <td class="px-4 py-3 text-center">
-                                @if($plan->status === 'pending')
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status === 'pending'): ?>
                                     <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">Đề xuất</span>
-                                @elseif($plan->status === 'ordered')
+                                <?php elseif($plan->status === 'ordered'): ?>
                                     <span class="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-bold">Đã đặt</span>
-                                @elseif($plan->status === 'unreceived')
+                                <?php elseif($plan->status === 'unreceived'): ?>
                                     <span class="px-2 py-1 bg-rose-100 text-rose-600 rounded-full text-xs font-bold">Chưa giao</span>
-                                @elseif($plan->status === 'partial')
+                                <?php elseif($plan->status === 'partial'): ?>
                                     <span class="px-2 py-1 bg-amber-100 text-amber-600 rounded-full text-xs font-bold">Giao thiếu</span>
-                                @else
+                                <?php else: ?>
                                     <span class="px-2 py-1 bg-emerald-100 text-emerald-600 rounded-full text-xs font-bold">Đủ hàng</span>
-                                @endif
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                @if($plan->status !== 'completed')
-                                    <select wire:change="updateUrgency({{ $plan->id }}, $event.target.value)" class="p-1 text-xs border-slate-300 rounded focus:ring-sky-500 focus:border-sky-500 {{ $plan->urgency === 'urgent' ? 'text-rose-600 font-bold bg-rose-50' : 'text-slate-600' }}">
-                                        <option value="normal" {{ $plan->urgency === 'normal' ? 'selected' : '' }}>Bình thường</option>
-                                        <option value="urgent" {{ $plan->urgency === 'urgent' ? 'selected' : '' }}>Cần gấp</option>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status !== 'completed'): ?>
+                                    <select wire:change="updateUrgency(<?php echo e($plan->id); ?>, $event.target.value)" class="p-1 text-xs border-slate-300 rounded focus:ring-sky-500 focus:border-sky-500 <?php echo e($plan->urgency === 'urgent' ? 'text-rose-600 font-bold bg-rose-50' : 'text-slate-600'); ?>">
+                                        <option value="normal" <?php echo e($plan->urgency === 'normal' ? 'selected' : ''); ?>>Bình thường</option>
+                                        <option value="urgent" <?php echo e($plan->urgency === 'urgent' ? 'selected' : ''); ?>>Cần gấp</option>
                                     </select>
-                                @else
-                                    <span class="text-xs px-2 py-1 rounded {{ $plan->urgency === 'urgent' ? 'text-rose-600 font-bold bg-rose-50' : 'text-slate-600' }}">
-                                        {{ $plan->urgency === 'urgent' ? 'Cần gấp' : 'Bình thường' }}
+                                <?php else: ?>
+                                    <span class="text-xs px-2 py-1 rounded <?php echo e($plan->urgency === 'urgent' ? 'text-rose-600 font-bold bg-rose-50' : 'text-slate-600'); ?>">
+                                        <?php echo e($plan->urgency === 'urgent' ? 'Cần gấp' : 'Bình thường'); ?>
+
                                     </span>
-                                @endif
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                @if($plan->status !== 'completed')
-                                    <input type="date" value="{{ $plan->expected_delivery_date ? $plan->expected_delivery_date->format('Y-m-d') : '' }}"
-                                           wire:change="updateExpectedDate({{ $plan->id }}, $event.target.value)"
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status !== 'completed'): ?>
+                                    <input type="date" value="<?php echo e($plan->expected_delivery_date ? $plan->expected_delivery_date->format('Y-m-d') : ''); ?>"
+                                           wire:change="updateExpectedDate(<?php echo e($plan->id); ?>, $event.target.value)"
                                            class="p-1 text-xs w-28 border-slate-300 rounded focus:ring-sky-500 focus:border-sky-500 text-slate-600">
-                                @else
-                                    <span class="text-xs text-slate-600 font-medium">{{ $plan->expected_delivery_date ? $plan->expected_delivery_date->format('d/m/Y') : '' }}</span>
-                                @endif
+                                <?php else: ?>
+                                    <span class="text-xs text-slate-600 font-medium"><?php echo e($plan->expected_delivery_date ? $plan->expected_delivery_date->format('d/m/Y') : ''); ?></span>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
-                            <td class="px-4 py-3 text-slate-600 max-w-xs truncate" title="{{ $plan->notes }}">
-                                {{ $plan->notes }}
+                            <td class="px-4 py-3 text-slate-600 max-w-xs truncate" title="<?php echo e($plan->notes); ?>">
+                                <?php echo e($plan->notes); ?>
+
                             </td>
                             <td class="px-4 py-3 text-right space-x-1 whitespace-nowrap">
-                                @if($plan->status === 'pending')
-                                    <button wire:click="placeOrder({{ $plan->id }})" class="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded text-xs font-bold transition">Đặt hàng</button>
-                                @endif
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status === 'pending'): ?>
+                                    <button wire:click="placeOrder(<?php echo e($plan->id); ?>)" class="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded text-xs font-bold transition">Đặt hàng</button>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 
-                                @if($plan->status !== 'completed')
-                                    <button wire:click="openUpdateModal({{ $plan->id }})" class="px-2 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded text-xs font-bold transition">Cập nhật giao</button>
-                                @endif
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->status !== 'completed'): ?>
+                                    <button wire:click="openUpdateModal(<?php echo e($plan->id); ?>)" class="px-2 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded text-xs font-bold transition">Cập nhật giao</button>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                <button wire:click="delete({{ $plan->id }})" wire:confirm="Bạn có chắc chắn muốn xóa?" class="px-2 py-1 text-rose-600 hover:bg-rose-50 rounded text-xs transition">Xóa</button>
+                                <button wire:click="delete(<?php echo e($plan->id); ?>)" wire:confirm="Bạn có chắc chắn muốn xóa?" class="px-2 py-1 text-rose-600 hover:bg-rose-50 rounded text-xs transition">Xóa</button>
                             </td>
                         </tr>
-                    @empty
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <tr>
                             <td colspan="10" class="px-4 py-8 text-center text-slate-500 font-medium">Chưa có kế hoạch mua hàng nào.</td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </tbody>
             </table>
         </div>
         <div class="px-4 py-3 border-t border-slate-200">
-            {{ $plans->links() }}
+            <?php echo e($plans->links()); ?>
+
         </div>
     </div>
 
@@ -175,7 +181,14 @@
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1">Số lượng đã giao</label>
                             <input type="number" wire:model="delivered_quantity" class="w-full rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500">
-                            @error('delivered_quantity') <span class="text-rose-600 text-xs mt-1">{{ $message }}</span> @enderror
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['delivered_quantity'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-rose-600 text-xs mt-1"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
 
                         <div>
@@ -216,17 +229,31 @@
                             <label class="block text-sm font-bold text-slate-700 mb-1">Vật tư / Sản phẩm <span class="text-rose-500">*</span></label>
                             <select wire:model="new_product_id" class="w-full rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500">
                                 <option value="">-- Chọn vật tư --</option>
-                                @foreach($allProducts as $product)
-                                    <option value="{{ $product->id }}">[{{ $product->code }}] {{ $product->name }}</option>
-                                @endforeach
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $allProducts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                    <option value="<?php echo e($product->id); ?>">[<?php echo e($product->code); ?>] <?php echo e($product->name); ?></option>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                             </select>
-                            @error('new_product_id') <span class="text-rose-600 text-xs mt-1">{{ $message }}</span> @enderror
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['new_product_id'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-rose-600 text-xs mt-1"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
 
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-1">Số lượng <span class="text-rose-500">*</span></label>
                             <input type="number" wire:model="new_quantity" class="w-full rounded-lg border-slate-300 focus:border-sky-500 focus:ring-sky-500">
-                            @error('new_quantity') <span class="text-rose-600 text-xs mt-1">{{ $message }}</span> @enderror
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['new_quantity'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-rose-600 text-xs mt-1"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
 
                         <div>
@@ -247,3 +274,4 @@
         </div>
     </div>
 </div>
+<?php /**PATH D:\Project\resources\views/livewire/warehouse/purchase-plan/purchase-plan-manager.blade.php ENDPATH**/ ?>

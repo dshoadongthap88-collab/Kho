@@ -16,28 +16,28 @@
             <h1 class="text-xl font-bold tracking-wide">QUẢN LÝ NHÂN VIÊN & PHÂN QUYỀN</h1>
         </div>
         <!-- Nút Đóng (X) -->
-        <a href="{{ route('warehouse.inventory') }}" class="w-10 h-10 rounded-full hover:bg-red-500 bg-indigo-800 flex items-center justify-center transition-colors shadow focus:outline-none" title="Đóng">
+        <a href="<?php echo e(route('warehouse.inventory')); ?>" class="w-10 h-10 rounded-full hover:bg-red-500 bg-indigo-800 flex items-center justify-center transition-colors shadow focus:outline-none" title="Đóng">
             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </a>
     </div>
 
-    @if (session('success'))
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
     <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 absolute top-20 right-4 z-50 shadow-md transform transition-all duration-300 rounded" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
-        <p>{{ session('success') }}</p>
+        <p><?php echo e(session('success')); ?></p>
     </div>
-    @endif
-    @if ($errors->any())
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
     <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 absolute top-20 right-4 z-50 shadow-md transform transition-all duration-300 rounded" x-data="{ show: true }" x-show="show">
         <div class="flex justify-between items-start">
             <ul class="list-disc pl-4 text-sm mt-1">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                    <li><?php echo e($error); ?></li>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             </ul>
             <button @click="show = false" class="text-red-700 hover:text-red-900 ml-4">&times;</button>
         </div>
     </div>
-    @endif
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
     <!-- Main Content -->
     <div class="flex-1 flex overflow-hidden relative z-10 px-4 py-4 gap-6">
@@ -47,7 +47,7 @@
             <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <h2 class="text-lg font-bold text-gray-700 flex items-center gap-2">
                     <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-                    Danh sách nhân viên ({{ count($users) }})
+                    Danh sách nhân viên (<?php echo e(count($users)); ?>)
                 </h2>
                 <button @click="openCreate()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow transition-colors flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
@@ -69,34 +69,34 @@
                         </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100">
-                        @foreach ($users as $user)
-                        <tr class="hover:bg-indigo-50/50 transition-colors cursor-pointer {{ session('edited_user_id') == $user->id ? 'bg-indigo-50' : '' }}" 
-                            @click="editUser({{ $user->toJson() }})">
-                            <td class="px-4 py-3 font-medium text-gray-800">{{ $user->code }}</td>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                        <tr class="hover:bg-indigo-50/50 transition-colors cursor-pointer <?php echo e(session('edited_user_id') == $user->id ? 'bg-indigo-50' : ''); ?>" 
+                            @click="editUser(<?php echo e($user->toJson()); ?>)">
+                            <td class="px-4 py-3 font-medium text-gray-800"><?php echo e($user->code); ?></td>
                             <td class="px-4 py-3 text-gray-800 flex items-center gap-2">
-                                <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs uppercase">{{ substr($user->name, 0, 1) }}</div>
-                                <span>{{ $user->name }}</span>
+                                <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs uppercase"><?php echo e(substr($user->name, 0, 1)); ?></div>
+                                <span><?php echo e($user->name); ?></span>
                             </td>
-                            <td class="px-4 py-3 text-gray-600">{{ $user->role === 'admin' ? 'Quản trị viên' : ($user->role === 'staff' ? 'Nhân viên' : 'Xem') }}</td>
-                            <td class="px-4 py-3 text-gray-600">{{ $user->department ?? '-' }}</td>
-                            <td class="px-4 py-3 text-gray-600">{{ $user->username ?? $user->email ?? '-' }}</td>
+                            <td class="px-4 py-3 text-gray-600"><?php echo e($user->role === 'admin' ? 'Quản trị viên' : ($user->role === 'staff' ? 'Nhân viên' : 'Xem')); ?></td>
+                            <td class="px-4 py-3 text-gray-600"><?php echo e($user->department ?? '-'); ?></td>
+                            <td class="px-4 py-3 text-gray-600"><?php echo e($user->username ?? $user->email ?? '-'); ?></td>
                             <td class="px-4 py-3 text-gray-400 text-xl leading-none tracking-widest mt-1 inline-block">******</td>
                             <td class="px-4 py-3 text-center" @click.stop>
-                                <form action="{{ route('hr.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');" class="inline-block">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors" title="Xóa" {{ $user->id === auth()->id() ? 'disabled' : '' }}>
+                                <form action="<?php echo e(route('hr.users.destroy', $user->id)); ?>" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');" class="inline-block">
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('DELETE'); ?>
+                                    <button type="submit" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors" title="Xóa" <?php echo e($user->id === auth()->id() ? 'disabled' : ''); ?>>
                                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
                                 </form>
                             </td>
                         </tr>
-                        @endforeach
-                        @if(count($users) === 0)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($users) === 0): ?>
                         <tr>
                             <td colspan="7" class="px-4 py-8 text-center text-gray-500">Chưa có dữ liệu nhân viên.</td>
                         </tr>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -119,7 +119,7 @@
 
             <div class="p-5 overflow-auto flex-1 custom-scrollbar">
                 <form :action="formAction" method="POST" id="userForm">
-                    @csrf
+                    <?php echo csrf_field(); ?>
                     <template x-if="isEdit">
                         <input type="hidden" name="_method" value="PUT">
                     </template>
@@ -187,12 +187,12 @@
                         
                         <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4">
                             <div class="grid grid-cols-2 gap-2">
-                                @for($i = 1; $i <= 5; $i++)
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php for($i = 1; $i <= 5; $i++): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                                 <label class="flex items-center p-1.5 hover:bg-white rounded cursor-pointer transition-colors border border-transparent hover:border-gray-200">
-                                    <input type="checkbox" name="allowed_houses[]" value="{{ $i }}" x-model="formData.allowed_houses" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500 focus:ring-2">
-                                    <span class="ml-2 text-sm text-gray-700 font-medium">{{ $i == 1 ? 'Dự án Hóc Môn' : ($i == 2 ? 'Dự án Hậu Nghĩa' : ($i == 3 ? 'Dự án Cần Giuộc' : ($i == 4 ? 'Dự án Cần Giờ' : 'Ngôi nhà HR'))) }}</span>
+                                    <input type="checkbox" name="allowed_houses[]" value="<?php echo e($i); ?>" x-model="formData.allowed_houses" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500 focus:ring-2">
+                                    <span class="ml-2 text-sm text-gray-700 font-medium"><?php echo e($i == 1 ? 'Dự án Hóc Môn' : ($i == 2 ? 'Dự án Hậu Nghĩa' : ($i == 3 ? 'Dự án Cần Giuộc' : ($i == 4 ? 'Dự án Cần Giờ' : 'Ngôi nhà HR')))); ?></span>
                                 </label>
-                                @endfor
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endfor; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                             </div>
                         </div>
 
@@ -203,7 +203,7 @@
                         </h4>
                         
                         <div class="space-y-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                            @php
+                            <?php
                                 // Nhóm các module theo group_name
                                 $dbModules = \App\Models\SystemModule::where('is_active', true)->get()->groupBy('group_name');
                                 $moduleGroups = [];
@@ -213,22 +213,22 @@
                                         $moduleGroups[$groupName][$module->route_name] = $module->label;
                                     }
                                 }
-                            @endphp
+                            ?>
                             
                             <div class="h-64 overflow-y-auto custom-scrollbar pr-2 space-y-4">
-                                @foreach($moduleGroups as $groupName => $permissions)
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $moduleGroups; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $groupName => $permissions): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                                 <div class="bg-white p-3 rounded border border-gray-200">
-                                    <h5 class="text-sm font-bold text-indigo-700 mb-2 border-b border-gray-100 pb-1">{{ $groupName }}</h5>
+                                    <h5 class="text-sm font-bold text-indigo-700 mb-2 border-b border-gray-100 pb-1"><?php echo e($groupName); ?></h5>
                                     <div class="space-y-1">
-                                        @foreach($permissions as $key => $label)
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $permissions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                                         <label class="flex items-center p-1.5 hover:bg-gray-50 rounded cursor-pointer transition-colors">
-                                            <input type="checkbox" name="permissions[]" value="{{ $key }}" x-model="formData.permissions" class="w-4 h-4 text-indigo-600 bg-white border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
-                                            <span class="ml-2 text-sm text-gray-700">{{ $label }}</span>
+                                            <input type="checkbox" name="permissions[]" value="<?php echo e($key); ?>" x-model="formData.permissions" class="w-4 h-4 text-indigo-600 bg-white border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
+                                            <span class="ml-2 text-sm text-gray-700"><?php echo e($label); ?></span>
                                         </label>
-                                        @endforeach
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                     </div>
                                 </div>
-                                @endforeach
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -308,7 +308,7 @@
                 openCreate() {
                     this.isEdit = false;
                     this.showPassword = false;
-                    this.formAction = '{{ route('hr.users.store') }}';
+                    this.formAction = '<?php echo e(route('hr.users.store')); ?>';
                     this.formData = {
                         id: '',
                         code: '',
@@ -355,3 +355,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH D:\Project\resources\views/hr/users/index.blade.php ENDPATH**/ ?>

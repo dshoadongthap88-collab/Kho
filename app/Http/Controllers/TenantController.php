@@ -58,9 +58,34 @@ class TenantController extends Controller
             ]);
         }
 
+        // Determine the best redirect route for warehouse
+        $redirectRoute = 'warehouse.inventory'; // Fallback
+        if ($user->role !== 'admin') {
+            $permissions = $user->permissions ?? [];
+            
+            $routeMap = [
+                'warehouse.inventory' => 'warehouse.inventory',
+                'warehouse.stock-out' => 'warehouse.stock-out',
+                'warehouse.stock-in' => 'warehouse.stock-in',
+                'warehouse.stock-transfer.index' => 'warehouse.stock-transfer.index',
+                'warehouse.stock-count' => 'warehouse.stock-count',
+                'warehouse.product-catalog' => 'warehouse.product-catalog',
+                'warehouse.contacts' => 'warehouse.contacts',
+                'warehouse.asset-manager' => 'warehouse.asset-manager',
+                'warehouse.maintenance-dashboard' => 'warehouse.maintenance-dashboard',
+            ];
+
+            foreach ($routeMap as $perm => $routeName) {
+                if (in_array($perm, $permissions)) {
+                    $redirectRoute = $routeName;
+                    break;
+                }
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'redirect' => route('warehouse.inventory')
+            'redirect' => route($redirectRoute)
         ]);
     }
 }

@@ -14,14 +14,33 @@ class InventoryService
     public function import(int $productId, float $quantity, string $referenceType = null, int $referenceId = null, string $note = null, string $batchNumber = null, $expiryDate = null, string $location = null)
     {
         return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId, $note, $batchNumber, $expiryDate, $location) {
-            $inventory = Inventory::firstOrCreate(['product_id' => $productId]);
-            $inventory->increment('quantity', $quantity);
+            // Sử dụng lockForUpdate và withoutGlobalScopes để tránh lỗi 404 Not Found nếu bản ghi cũ có house_id = null
+            $inventory = Inventory::withoutGlobalScopes()->where('product_id', $productId)->lockForUpdate()->first();
+            
+            if (!$inventory) {
+                try {
+                    $inventory = Inventory::create(['product_id' => $productId]);
+                } catch (\Exception $e) {
+                    $inventory = Inventory::withoutGlobalScopes()->where('product_id', $productId)->lockForUpdate()->firstOrFail();
+                }
+            }
+
+            $inventory->quantity += $quantity;
             
             // Nếu có vị trí mới, cập nhật luôn vị trí chính trong bảng tồn kho
             if ($location) {
                 $inventory->warehouse_location = $location;
-                $inventory->save();
             }
+            
+            // Cập nhật house_id nếu đang bị null
+            if (empty($inventory->house_id)) {
+                $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
+                if ($houseId) {
+                    $inventory->house_id = $houseId;
+                }
+            }
+            
+            $inventory->save();
 
             return InventoryTransaction::create([
                 'product_id' => $productId,
@@ -44,7 +63,7 @@ class InventoryService
     public function export(int $productId, float $quantity, string $referenceType = null, int $referenceId = null, string $note = null, string $batchNumber = null, $expiryDate = null, string $location = null)
     {
         return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId, $note, $batchNumber, $expiryDate, $location) {
-            $inventory = Inventory::where('product_id', $productId)->firstOrFail();
+            $inventory = Inventory::withoutGlobalScopes()->where('product_id', $productId)->firstOrFail();
 
             if ($inventory->quantity < $quantity) {
                 throw new \Exception("Không đủ hàng trong kho để xuất.");

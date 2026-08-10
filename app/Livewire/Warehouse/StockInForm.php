@@ -342,14 +342,22 @@ class StockInForm extends Component
         $service = app(InventoryService::class);
 
         return DB::transaction(function () use ($service) {
+            $baseCode = 'SI-' . date('Ymd') . '-';
+            $nextId = \App\Models\StockIn::max('id') + 1;
+            $code = $baseCode . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            while (\App\Models\StockIn::where('code', $code)->exists()) {
+                $nextId++;
+                $code = $baseCode . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            }
+
             $stockIn = \App\Models\StockIn::create([
-                'code' => 'SI-' . date('Ymd') . '-' . str_pad(\App\Models\StockIn::count() + 1, 4, '0', STR_PAD_LEFT),
+                'code' => $code,
                 'supplier_name' => $this->supplier_name,
                 'manufacturer' => $this->manufacturer,
                 'type' => $this->type,
                 'status' => 'completed',
-            'stock_in_date' => $this->stock_in_date,
-            'marked_received' => $this->marked_received,
+                'stock_in_date' => $this->stock_in_date,
+                'marked_received' => $this->marked_received,
                 'note' => $this->note,
                 'created_by' => auth()->id(),
             ]);

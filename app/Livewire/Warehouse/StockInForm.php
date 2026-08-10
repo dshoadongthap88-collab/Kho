@@ -43,6 +43,14 @@ class StockInForm extends Component
     public $showImportModal = false;
     public $excelFile = null;
 
+    // Chỉnh sửa phiếu nhập
+    public $showEditModal = false;
+    public $editingStockInId = null;
+    public $editDate = '';
+    public $editSupplier = '';
+    public $editType = '';
+    public $editNote = '';
+
     protected $rules = [
         'items.*.quantity' => 'required|numeric|min:0.0001',
     ];
@@ -564,6 +572,51 @@ class StockInForm extends Component
         $stockIn = \App\Models\StockIn::findOrFail($id);
         $stockIn->update(['marked_received' => !$stockIn->marked_received]);
         $this->dispatch('show-success-effect');
+    }
+
+    public function openEditModal()
+    {
+        if (count($this->selectedIds) !== 1) {
+            $this->dispatch('show-error-effect', ['message' => 'Vui lòng chỉ chọn 1 phiếu để sửa.']);
+            return;
+        }
+
+        $id = $this->selectedIds[0];
+        $stockIn = StockIn::find($id);
+        if (!$stockIn) {
+            $this->dispatch('show-error-effect', ['message' => 'Không tìm thấy phiếu.']);
+            return;
+        }
+
+        $this->editingStockInId = $id;
+        $this->editDate = $stockIn->stock_in_date ? $stockIn->stock_in_date->format('Y-m-d') : $stockIn->created_at->format('Y-m-d');
+        $this->editSupplier = $stockIn->supplier_name ?: $stockIn->manufacturer;
+        $this->editType = $stockIn->type;
+        $this->editNote = $stockIn->note;
+
+        $this->showEditModal = true;
+    }
+
+    public function saveEdit()
+    {
+        $this->validate([
+            'editDate' => 'required|date',
+            'editType' => 'required|string',
+        ]);
+
+        $stockIn = StockIn::find($this->editingStockInId);
+        if ($stockIn) {
+            $stockIn->update([
+                'stock_in_date' => $this->editDate,
+                'supplier_name' => $this->editSupplier,
+                'type' => $this->editType,
+                'note' => $this->editNote,
+            ]);
+            
+            $this->showEditModal = false;
+            $this->selectedIds = [];
+            $this->dispatch('show-edit-success-effect');
+        }
     }
 
     public function importExcelData()

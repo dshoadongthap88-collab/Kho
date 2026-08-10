@@ -195,17 +195,24 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         })->name('reports.stock');
         Route::get('/reports/daily', \App\Livewire\Warehouse\Reports\DailyReport::class)->name('reports.daily');
         Route::get('/reports/daily/print', function() {
-            $date = request('date', now()->format('Y-m-d'));
-            $parsedDate = \Carbon\Carbon::parse($date);
-            $stockInCount = \App\Models\StockInItem::whereHas('stockIn', function($q) use ($parsedDate) { $q->whereDate('stock_in_date', $parsedDate); })->distinct('product_id')->count('product_id');
-            $stockOutCount = \App\Models\StockOutItem::whereHas('stockOut', function($q) use ($parsedDate) { $q->whereDate('created_at', $parsedDate); })->distinct('product_id')->count('product_id');
-            $stockTransferCount = \App\Models\StockTransferItem::whereHas('stockTransfer', function($q) use ($parsedDate) { $q->whereDate('transfer_date', $parsedDate); })->distinct('product_id')->count('product_id');
-            $stockRecoveryCount = \App\Models\StockRecovery::whereDate('recovery_date', $parsedDate)->distinct('product_id')->count('product_id');
-            $totalStockOutOrders = \App\Models\StockOut::whereDate('created_at', $parsedDate)->count();
-            $assetExportCount = \App\Models\StockOut::whereDate('created_at', $parsedDate)->whereNotNull('asset_code')->where('asset_code', '!=', '')->distinct('asset_code')->count('asset_code');
+            $dateFrom = request('dateFrom', now()->startOfMonth()->format('Y-m-d'));
+            $dateTo = request('dateTo', now()->format('Y-m-d'));
+            $start = \Carbon\Carbon::parse($dateFrom)->startOfDay();
+            $end = \Carbon\Carbon::parse($dateTo)->endOfDay();
+            
+            $stockInCount = \App\Models\StockInItem::whereHas('stockIn', function($q) use ($start, $end) { $q->whereBetween('stock_in_date', [$start, $end]); })->distinct('product_id')->count('product_id');
+            $stockOutCount = \App\Models\StockOutItem::whereHas('stockOut', function($q) use ($start, $end) { $q->whereBetween('created_at', [$start, $end]); })->distinct('product_id')->count('product_id');
+            $stockTransferCount = \App\Models\StockTransferItem::whereHas('stockTransfer', function($q) use ($start, $end) { $q->whereBetween('transfer_date', [$start, $end]); })->distinct('product_id')->count('product_id');
+            $stockRecoveryCount = \App\Models\StockRecovery::whereBetween('recovery_date', [$start, $end])->distinct('product_id')->count('product_id');
+            $totalStockOutOrders = \App\Models\StockOut::whereBetween('created_at', [$start, $end])->count();
+            $assetExportCount = \App\Models\StockOut::whereBetween('created_at', [$start, $end])->whereNotNull('asset_code')->where('asset_code', '!=', '')->distinct('asset_code')->count('asset_code');
+            $totalStockInOrders = \App\Models\StockIn::whereBetween('stock_in_date', [$start, $end])->count();
+            $supplierDeliveryCount = \App\Models\StockIn::whereBetween('stock_in_date', [$start, $end])->whereNotNull('supplier_name')->where('supplier_name', '!=', '')->distinct('supplier_name')->count('supplier_name');
+            
             $reportData = [
                 'stockInCount' => $stockInCount, 'stockOutCount' => $stockOutCount, 'stockTransferCount' => $stockTransferCount,
                 'stockRecoveryCount' => $stockRecoveryCount, 'totalStockOutOrders' => $totalStockOutOrders, 'assetExportCount' => $assetExportCount, 'materialExportCount' => $stockOutCount,
+                'totalStockInOrders' => $totalStockInOrders, 'supplierDeliveryCount' => $supplierDeliveryCount,
             ];
             
             $detailed = request('detailed') == '1';
@@ -215,12 +222,12 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
             
             if ($detailed) {
                 $transactions = \App\Models\InventoryTransaction::with(['product', 'creator', 'reference'])
-                    ->whereDate('created_at', $parsedDate)->orderBy('created_at', 'desc')->get();
+                    ->whereBetween('created_at', [$start, $end])->orderBy('created_at', 'desc')->get();
                 $assetCodesCount = $transactions->filter(function($tx) { return $tx->reference && isset($tx->reference->asset_code) && !empty($tx->reference->asset_code); })->pluck('reference.asset_code')->unique()->count();
                 $productCodesCount = $transactions->filter(function($tx) { return $tx->product_id; })->pluck('product_id')->unique()->count();
             }
 
-            return view('warehouse.reports.daily-report-print', compact('reportData', 'date', 'detailed', 'transactions', 'assetCodesCount', 'productCodesCount'));
+            return view('warehouse.reports.daily-report-print', compact('reportData', 'dateFrom', 'dateTo', 'detailed', 'transactions', 'assetCodesCount', 'productCodesCount'));
         })->name('reports.daily.print');
     });
 

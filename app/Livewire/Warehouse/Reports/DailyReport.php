@@ -12,45 +12,48 @@ use Carbon\Carbon;
 
 class DailyReport extends Component
 {
-    public $date;
+    public $dateFrom;
+    public $dateTo;
     public $printDetailed = false;
 
     public function mount()
     {
-        $this->date = Carbon::today()->format('Y-m-d');
+        $this->dateFrom = Carbon::now()->startOfMonth()->format('Y-m-d');
+        $this->dateTo = Carbon::today()->format('Y-m-d');
     }
 
     public function getReportDataProperty()
     {
-        $date = Carbon::parse($this->date);
+        $start = Carbon::parse($this->dateFrom)->startOfDay();
+        $end = Carbon::parse($this->dateTo)->endOfDay();
         
         // 1. Tổng hợp số lượng mã vật tư nhập kho, xuất kho, chuyển kho, thu hồi
         // Nhập kho
-        $stockInCount = StockInItem::whereHas('stockIn', function($q) use ($date) {
-            $q->whereDate('stock_in_date', $date);
+        $stockInCount = StockInItem::whereHas('stockIn', function($q) use ($start, $end) {
+            $q->whereBetween('stock_in_date', [$start, $end]);
         })->distinct('product_id')->count('product_id');
 
         // Xuất kho
-        $stockOutCount = StockOutItem::whereHas('stockOut', function($q) use ($date) {
-            $q->whereDate('created_at', $date);
+        $stockOutCount = StockOutItem::whereHas('stockOut', function($q) use ($start, $end) {
+            $q->whereBetween('created_at', [$start, $end]);
         })->distinct('product_id')->count('product_id');
 
         // Chuyển kho
-        $stockTransferCount = StockTransferItem::whereHas('stockTransfer', function($q) use ($date) {
-            $q->whereDate('transfer_date', $date);
+        $stockTransferCount = StockTransferItem::whereHas('stockTransfer', function($q) use ($start, $end) {
+            $q->whereBetween('transfer_date', [$start, $end]);
         })->distinct('product_id')->count('product_id');
 
         // Thu hồi
-        $stockRecoveryCount = StockRecovery::whereDate('recovery_date', $date)
+        $stockRecoveryCount = StockRecovery::whereBetween('recovery_date', [$start, $end])
             ->distinct('product_id')
             ->count('product_id');
 
-        // 2. Tổng số đơn xuất 1 ngày
-        $totalStockOutOrders = StockOut::whereDate('created_at', $date)->count();
+        // 2. Tổng số đơn xuất 1 khoảng thời gian
+        $totalStockOutOrders = StockOut::whereBetween('created_at', [$start, $end])->count();
 
         // 3. Phân loại mã xuất kho (Tài sản vs Vật tư)
         // Mã tài sản xuất kho (asset_code is not null in StockOut)
-        $assetExportCount = StockOut::whereDate('created_at', $date)
+        $assetExportCount = StockOut::whereBetween('created_at', [$start, $end])
             ->whereNotNull('asset_code')
             ->where('asset_code', '!=', '')
             ->distinct('asset_code')
@@ -58,6 +61,15 @@ class DailyReport extends Component
 
         // Mã vật tư xuất kho
         $materialExportCount = $stockOutCount;
+
+        // Thống kê Nhập Kho chi tiết
+        $totalStockInOrders = \App\Models\StockIn::whereBetween('stock_in_date', [$start, $end])->count();
+        
+        $supplierDeliveryCount = \App\Models\StockIn::whereBetween('stock_in_date', [$start, $end])
+            ->whereNotNull('supplier_name')
+            ->where('supplier_name', '!=', '')
+            ->distinct('supplier_name')
+            ->count('supplier_name');
 
         return [
             'stockInCount' => $stockInCount,
@@ -67,6 +79,8 @@ class DailyReport extends Component
             'totalStockOutOrders' => $totalStockOutOrders,
             'assetExportCount' => $assetExportCount,
             'materialExportCount' => $materialExportCount,
+            'totalStockInOrders' => $totalStockInOrders,
+            'supplierDeliveryCount' => $supplierDeliveryCount,
         ];
     }
 
@@ -88,7 +102,8 @@ class DailyReport extends Component
         }
 
         $url = route('warehouse.reports.daily.print', [
-            'date' => $this->date,
+            'dateFrom' => $this->dateFrom,
+            'dateTo' => $this->dateTo,
             'detailed' => $this->includeDetailReport ? 1 : 0,
             'zalo' => 1
         ]);

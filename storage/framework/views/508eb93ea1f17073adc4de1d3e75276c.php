@@ -1,4 +1,4 @@
-<div class="bg-white p-6 rounded-lg shadow">
+<div class="bg-white p-2 rounded-lg shadow">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold text-gray-800">Cập Nhật ODO & Giờ Máy Hàng Ngày</h2>
         
@@ -19,7 +19,7 @@
     </div>
 
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('message')): ?>
-        <div class="mb-4 p-4 text-green-700 bg-green-100 rounded-lg">
+        <div class="mb-4 p-2 text-green-700 bg-green-100 rounded-lg">
             <?php echo e(session('message')); ?>
 
         </div>
@@ -56,9 +56,9 @@
                     <tr class="<?php echo e($record['status'] == 'approved' ? 'bg-gray-50' : ''); ?>">
                         <td class="px-3 py-3 whitespace-nowrap text-sm">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($record['status'] == 'approved'): ?>
-                                <span class="px-2 py-1 text-xs font-bold rounded bg-gray-200 text-gray-600">Đã chốt</span>
+                                <span class="px-1.5 py-1 text-[11px] text-xs font-bold rounded bg-gray-200 text-gray-600">Đã chốt</span>
                             <?php else: ?>
-                                <span class="px-2 py-1 text-xs font-bold rounded bg-yellow-100 text-yellow-800">Chờ duyệt</span>
+                                <span class="px-1.5 py-1 text-[11px] text-xs font-bold rounded bg-yellow-100 text-yellow-800">Chờ duyệt</span>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900 font-bold"><?php echo e($record['asset_code']); ?></td>
@@ -69,17 +69,17 @@
 
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
-                            <input type="number" wire:model.live="dailyRecords.<?php echo e($index); ?>.hours_diff" <?php echo e($record['status'] == 'approved' ? 'disabled' : ''); ?> class="w-20 border-gray-300 rounded-md shadow-sm text-sm" step="0.1">
+                            <input type="number" wire:model.live="dailyRecords.<?php echo e($index); ?>.hours_diff" <?php echo e($record['status'] == 'approved' ? 'disabled' : ''); ?> class="w-20 border-gray-300 rounded-md shadow-sm text-xs" step="0.1">
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
-                            <input type="text" wire:model="dailyRecords.<?php echo e($index); ?>.operator" <?php echo e($record['status'] == 'approved' ? 'disabled' : ''); ?> class="w-full border-gray-300 rounded-md shadow-sm text-sm" placeholder="Nhập tên">
+                            <input type="text" wire:model="dailyRecords.<?php echo e($index); ?>.operator" <?php echo e($record['status'] == 'approved' ? 'disabled' : ''); ?> class="w-full border-gray-300 rounded-md shadow-sm text-xs" placeholder="Nhập tên">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($record['status'] == 'approved' && $record['updated_by_name']): ?>
                                 <div class="text-xs text-sky-600 mt-1">Bởi: <?php echo e($record['updated_by_name']); ?></div>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap text-center text-sm font-medium">
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($record['status'] != 'approved'): ?>
-                                <button wire:click="updateSingleRecord(<?php echo e($index); ?>)" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-md shadow-sm transition text-xs font-bold">CẬP NHẬT</button>
+                                <button wire:click="updateSingleRecord(<?php echo e($index); ?>)" class="text-white bg-blue-600 hover:bg-blue-700 px-1.5 py-1 text-[11px].5 rounded-md shadow-sm transition text-xs font-bold">CẬP NHẬT</button>
                             <?php else: ?>
                                 <span class="text-gray-400 text-xs">Đã khóa</span>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>

@@ -40,7 +40,7 @@
     </div>
 
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('message')): ?>
-        <div class="mb-4 bg-emerald-50 text-emerald-700 p-4 rounded-lg border border-emerald-200 font-medium">
+        <div class="mb-4 bg-emerald-50 text-emerald-700 p-2 rounded-lg border border-emerald-200 font-medium">
             <?php echo e(session('message')); ?>
 
         </div>
@@ -92,9 +92,9 @@
                                     <input type="number" 
                                            value="<?php echo e($plan->proposed_quantity); ?>" 
                                            wire:change="updateProposedQuantity(<?php echo e($plan->id); ?>, $event.target.value)"
-                                           class="w-16 text-right p-1 text-sm border-slate-300 rounded font-bold text-slate-700 focus:ring-sky-500 focus:border-sky-500 h-8">
+                                           class="w-16 text-right p-1 text-xs border-slate-300 rounded font-bold text-slate-700 focus:ring-sky-500 focus:border-sky-500 h-8">
                                 <?php else: ?>
-                                    <span class="font-bold text-slate-700 text-sm"><?php echo e(number_format($plan->proposed_quantity, 0)); ?></span>
+                                    <span class="font-bold text-slate-700 text-xs"><?php echo e(number_format($plan->proposed_quantity, 0)); ?></span>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
                             <td class="px-2 py-1.5 text-right font-bold text-emerald-600 text-sm whitespace-nowrap"><?php echo e(number_format($plan->delivered_quantity, 0)); ?></td>
@@ -179,7 +179,7 @@
 
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-            <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-2">
                 <div>
                     <h3 class="text-lg font-black text-slate-900 mb-4">Cập nhật số lượng giao hàng</h3>
                     
@@ -226,7 +226,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-            <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-2">
                 <div>
                     <h3 class="text-lg font-black text-slate-900 mb-4">Thêm đề xuất mua hàng thủ công</h3>
                     

@@ -152,6 +152,8 @@ class StockInForm extends Component
 
             // === ĐÃ TÌM THẤY SẢN PHẨM ===
             $this->items[$index]['product_id'] = $product->id;
+            $this->items[$index]['product_search'] = $product->code . ' - ' . $product->name;
+            $this->items[$index]['product_name'] = $product->name;
             $this->items[$index]['new_code'] = '';
             $this->items[$index]['new_name'] = '';
             

@@ -84,7 +84,7 @@ class InventoryImport implements ToCollection
         // 2. Tìm hoặc tạo Sản phẩm
         $product = Product::withoutGlobalScope('house')->where('code', $productCode)->first();
         
-        $productName = $this->findValue($row, ['tensp', 'tensanpham', 'name', 'tenhang']);
+        $productName = $this->findValue($row, ['tensp', 'tensanpham', 'name', 'tenhang', 'tenvattu', 'ten']);
         $unit = $this->findValue($row, ['dvt', 'donvitinh', 'unit']);
         $brand = $this->findValue($row, ['hangsx', 'thuonghieu', 'brand']);
         $batch = $this->findValue($row, ['solo', 'batch', 'lo']);

@@ -256,7 +256,7 @@ class ProductCatalog extends Component
                     ]);
                     session()->flash('message', 'Thêm thiết bị mới thành công.');
                 }
-                $this->showModal = false;
+                $this->dispatch('item-saved');
                 return;
             }
 
@@ -346,7 +346,7 @@ class ProductCatalog extends Component
             }
 
             $this->reset(['image', 'confirmDuplicate']); // Xoá ảnh tạm sau khi lưu
-            $this->showModal = false;
+            $this->dispatch('item-saved');
         } catch (\Exception $e) {
             session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }

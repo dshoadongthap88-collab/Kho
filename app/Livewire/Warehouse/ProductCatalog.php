@@ -26,6 +26,7 @@ class ProductCatalog extends Component
     public $showImportModal = false;
     public $isEdit = false;
     public $productId;
+    public $confirmDuplicate = false;
 
     public $image;
 
@@ -41,7 +42,7 @@ class ProductCatalog extends Component
     public $expiry_date;
     public $quantity;
     public $min_stock = 0;
-    public $type = 'product_produced';
+    public $type = 'product_purchased';
     
     // Form fields (Asset)
     public $equipment_code;
@@ -90,6 +91,16 @@ class ProductCatalog extends Component
             ];
         }
     }
+
+    public function messages()
+    {
+        return [
+            'code.unique' => 'Mã vật tư này đã tồn tại trong hệ thống.',
+            'equipment_code.unique' => 'Mã thiết bị này đã tồn tại trong hệ thống.',
+            'asset_code.unique' => 'Mã tài sản này đã tồn tại trong hệ thống.',
+        ];
+    }
+
 
     public function setFilterMode($mode)
     {
@@ -150,6 +161,7 @@ class ProductCatalog extends Component
     public function openModal($id = null)
     {
         $this->resetValidation();
+        $this->confirmDuplicate = false;
         $this->reset(['code', 'name', 'brand', 'description', 'status', 'location', 'quantity', 'productId', 'image', 'type', 'category_id', 'equipment_code', 'asset_code', 'machine_type', 'manager', 'warranty_status']);
         
         $this->warranty_status = 'Còn bảo hành';
@@ -169,7 +181,7 @@ class ProductCatalog extends Component
                 $this->expiry_date = $product->expiry_date?->format('Y-m-d');
                 $this->quantity = $product->inventory?->quantity ?? 0;
                 $this->min_stock = $product->min_stock;
-                $this->type = in_array($product->type, ['product_produced', 'product_purchased']) ? $product->type : 'product_produced';
+                $this->type = in_array($product->type, ['product_produced', 'product_purchased']) ? $product->type : 'product_purchased';
             } else {
                 $this->isEdit = false;
                 $this->min_stock = 0;
@@ -194,9 +206,29 @@ class ProductCatalog extends Component
         $this->showModal = true;
     }
 
+    public function confirmSave()
+    {
+        $this->confirmDuplicate = true;
+        $this->save();
+    }
+
     public function save()
     {
         $this->validate();
+
+        if (!$this->isEdit && !$this->confirmDuplicate) {
+            $exists = false;
+            if ($this->activeTab === 'materials') {
+                $exists = \App\Models\Product::where('name', trim($this->name))->exists();
+            } else {
+                $exists = \App\Models\Asset::where('name', trim($this->name))->exists();
+            }
+
+            if ($exists) {
+                $this->dispatch('confirm-duplicate');
+                return;
+            }
+        }
 
         try {
             if ($this->activeTab === 'equipments') {
@@ -313,7 +345,7 @@ class ProductCatalog extends Component
                 session()->flash('message', 'Thêm vật tư mới thành công.');
             }
 
-            $this->reset(['image']); // Xoá ảnh tạm sau khi lưu
+            $this->reset(['image', 'confirmDuplicate']); // Xoá ảnh tạm sau khi lưu
             $this->showModal = false;
         } catch (\Exception $e) {
             session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());

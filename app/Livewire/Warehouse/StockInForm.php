@@ -224,7 +224,7 @@ class StockInForm extends Component
         if ($this->type === 'import_material') {
             $productType = 'material';
         } elseif ($this->type === 'production') {
-            $productType = 'product_produced';
+            $productType = 'product_purchased';
         }
 
         $product = Product::create([
@@ -383,7 +383,7 @@ class StockInForm extends Component
                         if ($this->type === 'import_material') {
                             $productType = 'material';
                         } elseif ($this->type === 'production') {
-                            $productType = 'product_produced';
+                            $productType = 'product_purchased';
                         }
 
                         $newProduct = Product::create([

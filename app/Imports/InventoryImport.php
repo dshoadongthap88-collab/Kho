@@ -95,7 +95,7 @@ class InventoryImport implements ToCollection
 
         if (!$product) {
             // Tạo mới nếu chưa có
-            $type = str_starts_with(strtoupper((string)$productCode), 'NVL') ? 'material' : 'product_produced';
+            $type = str_starts_with(strtoupper((string)$productCode), 'NVL') ? 'material' : 'product_purchased';
             $product = Product::create([
                 'code' => strtoupper((string)$productCode),
                 'name' => $productName ?: 'Sản phẩm ' . $productCode,

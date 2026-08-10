@@ -1,5 +1,7 @@
-<div style="font-family: 'Times New Roman', Times, serif;">
-    <div x-data="{ showLightbox: false, lightboxUrl: '' }">
+<div style="font-family: 'Times New Roman', Times, serif;" 
+     x-data="{ showLightbox: false, lightboxUrl: '' }"
+     @confirm-duplicate.window="if(confirm('Bạn có thông tin nhập giống nhau. Bạn chắc nhập thêm không?')) { $wire.confirmSave() }">
+    <div>
         <!-- Lightbox Modal -->
         <div x-show="showLightbox"
              x-transition:enter="transition ease-out duration-300"

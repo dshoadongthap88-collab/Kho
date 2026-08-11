@@ -267,7 +267,7 @@ class StockOutForm extends Component
                                 'quantity' => (float) $bomItem->quantity,
                                 'requested_quantity' => (float) $bomItem->quantity,
                                 'recovered_quantity' => 0,
-                                'item_note' => '',
+                                'item_note' => $bomItem->note ?? '',
                                 'unit_price' => $product->price ?? 0,
                                 'vat_rate' => 0,
                                 'total_amount' => ($product->price ?? 0) * (float) $bomItem->quantity,

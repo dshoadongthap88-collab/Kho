@@ -192,27 +192,30 @@ class StockCountForm extends Component
 
         $code = 'KKD-' . date('Ymd') . '-' . str_pad(StockCount::count() + 1, 4, '0', STR_PAD_LEFT);
 
-        $stockCount = StockCount::create([
-            'code' => $code,
-            'status' => 'pending',
-            'type' => 'daily',
-            'note' => 'Kiểm kê hàng ngày tự động',
-            'created_by' => auth()->id(),
-        ]);
-
-        foreach ($inventories as $inv) {
-            StockCountItem::create([
-                'stock_count_id' => $stockCount->id,
-                'product_id' => $inv->product_id,
-                'system_quantity' => $inv->quantity,
-                'actual_quantity' => null,
-                'physical_quantity' => 0,
-                'difference' => 0,
+        DB::transaction(function () use ($code, $inventories) {
+            $stockCount = StockCount::create([
+                'code' => $code,
+                'status' => 'pending',
+                'type' => 'daily',
+                'note' => 'Kiểm kê hàng ngày tự động',
+                'created_by' => auth()->id(),
             ]);
-        }
+
+            foreach ($inventories as $inv) {
+                StockCountItem::create([
+                    'stock_count_id' => $stockCount->id,
+                    'product_id' => $inv->product_id,
+                    'system_quantity' => $inv->quantity,
+                    'actual_quantity' => null,
+                    'physical_quantity' => 0,
+                    'difference' => 0,
+                ]);
+            }
+
+            $this->currentCountId = $stockCount->id;
+        });
 
         $this->selectedStockCounts = [];
-        $this->currentCountId = $stockCount->id;
         $this->activeTab = 'stocktake';
         session()->flash('success', "Đã tạo phiếu kiểm kê hàng ngày {$code} với " . $inventories->count() . " vật tư.");
     }
@@ -271,7 +274,11 @@ class StockCountForm extends Component
 
     public function deleteStockCount($id)
     {
-        StockCount::findOrFail($id)->delete();
+        DB::transaction(function () use ($id) {
+            $stockCount = StockCount::findOrFail($id);
+            $stockCount->items()->delete();
+            $stockCount->delete();
+        });
         session()->flash('success', 'Đã xóa phiếu kiểm kê.');
     }
 
@@ -294,7 +301,11 @@ class StockCountForm extends Component
             $ids = collect($this->selectedStockCounts)->map(fn($id) => (int)$id)->filter()->toArray();
             
             if (!empty($ids)) {
-                StockCount::destroy($ids);
+                DB::transaction(function () use ($ids) {
+                    \App\Models\StockCountItem::whereIn('stock_count_id', $ids)->delete();
+                    StockCount::whereIn('id', $ids)->delete();
+                });
+                
                 $this->selectedStockCounts = [];
                 $this->resetPage();
                 session()->flash('success', 'Đã xóa thành công ' . count($ids) . ' phiếu kiểm kê.');

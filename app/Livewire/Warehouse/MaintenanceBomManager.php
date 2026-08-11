@@ -8,6 +8,7 @@ use App\Models\MaintenanceBom;
 use App\Models\MaintenanceBomItem;
 use App\Models\Product;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class MaintenanceBomManager extends Component
 {
@@ -150,20 +151,22 @@ class MaintenanceBomManager extends Component
             return;
         }
 
-        foreach ($this->selectedProductIds as $pid) {
-            $exists = MaintenanceBomItem::where('maintenance_bom_id', $this->selectedBomId)
-                ->where('product_id', $pid)
-                ->exists();
-                
-            if (!$exists) {
-                MaintenanceBomItem::create([
-                    'maintenance_bom_id' => $this->selectedBomId,
-                    'product_id' => $pid,
-                    'quantity' => 1,
-                    'note' => '',
-                ]);
+        DB::transaction(function () {
+            foreach ($this->selectedProductIds as $pid) {
+                $exists = MaintenanceBomItem::where('maintenance_bom_id', $this->selectedBomId)
+                    ->where('product_id', $pid)
+                    ->exists();
+                    
+                if (!$exists) {
+                    MaintenanceBomItem::create([
+                        'maintenance_bom_id' => $this->selectedBomId,
+                        'product_id' => $pid,
+                        'quantity' => 1,
+                        'note' => '',
+                    ]);
+                }
             }
-        }
+        });
 
         $this->loadBomItemsData();
         $this->showProductPickerModal = false;
@@ -174,19 +177,21 @@ class MaintenanceBomManager extends Component
     {
         if (empty($this->bomItemQuantities)) return;
 
-        foreach ($this->bomItemQuantities as $itemId => $qty) {
-            $item = MaintenanceBomItem::find($itemId);
-            if ($item) {
-                // Xử lý data rác cho số lượng định mức
-                $validQty = (is_numeric($qty) && $qty >= 0) ? (float)$qty : 0;
-                $note = trim($this->bomItemNotes[$itemId] ?? '');
-                
-                $item->update([
-                    'quantity' => $validQty,
-                    'note' => $note,
-                ]);
+        DB::transaction(function () {
+            foreach ($this->bomItemQuantities as $itemId => $qty) {
+                $item = MaintenanceBomItem::find($itemId);
+                if ($item) {
+                    // Xử lý data rác cho số lượng định mức
+                    $validQty = (is_numeric($qty) && $qty >= 0) ? (float)$qty : 0;
+                    $note = trim($this->bomItemNotes[$itemId] ?? '');
+                    
+                    $item->update([
+                        'quantity' => $validQty,
+                        'note' => $note,
+                    ]);
+                }
             }
-        }
+        });
         
         $this->dispatch('bom-saved-success');
     }
@@ -224,21 +229,23 @@ class MaintenanceBomManager extends Component
         $sourceBom = MaintenanceBom::with('items')->find($this->copyFromBomId);
         if (!$sourceBom) return;
 
-        foreach ($sourceBom->items as $item) {
-            // only copy if not exists
-            $exists = MaintenanceBomItem::where('maintenance_bom_id', $this->selectedBomId)
-                ->where('product_id', $item->product_id)
-                ->exists();
-                
-            if (!$exists) {
-                MaintenanceBomItem::create([
-                    'maintenance_bom_id' => $this->selectedBomId,
-                    'product_id' => $item->product_id,
-                    'quantity' => $item->quantity,
-                    'note' => $item->note,
-                ]);
+        DB::transaction(function () use ($sourceBom) {
+            foreach ($sourceBom->items as $item) {
+                // only copy if not exists
+                $exists = MaintenanceBomItem::where('maintenance_bom_id', $this->selectedBomId)
+                    ->where('product_id', $item->product_id)
+                    ->exists();
+                    
+                if (!$exists) {
+                    MaintenanceBomItem::create([
+                        'maintenance_bom_id' => $this->selectedBomId,
+                        'product_id' => $item->product_id,
+                        'quantity' => $item->quantity,
+                        'note' => $item->note,
+                    ]);
+                }
             }
-        }
+        });
 
         $this->loadBomItemsData();
         session()->flash('message', 'Đã sao chép vật tư thành công.');

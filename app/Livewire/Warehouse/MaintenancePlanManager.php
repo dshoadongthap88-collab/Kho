@@ -12,6 +12,8 @@ use App\Models\PurchasePlan;
 use App\Models\StockOut;
 use App\Models\StockOutItem;
 use Illuminate\Support\Str;
+use App\Services\InventoryService;
+use Illuminate\Support\Facades\DB;
 
 class MaintenancePlanManager extends Component
 {
@@ -206,37 +208,42 @@ class MaintenancePlanManager extends Component
             return;
         }
 
-        $stockOut = StockOut::create([
-            'house_id' => $plan->house_id,
-            'maintenance_plan_id' => $plan->id,
-            'code' => 'XK-BD-' . date('YmdHis'),
-            'type' => 'bao_duong',
-            'status' => 'approved',
-            'asset_code' => $plan->asset->asset_code,
-            'created_by' => auth()->id() ?? 1,
-        ]);
-
-        $totalCost = 0;
-        foreach ($plan->maintenanceBom->items as $item) {
-            StockOutItem::create([
-                'stock_out_id' => $stockOut->id,
-                'product_id' => $item->product_id,
-                'quantity' => $item->quantity,
-                'price' => 0, // Should take average price
+        DB::transaction(function () use ($plan) {
+            $stockOut = StockOut::create([
+                'house_id' => $plan->house_id,
+                'maintenance_plan_id' => $plan->id,
+                'code' => 'XK-BD-' . date('YmdHis'),
+                'type' => 'bao_duong',
+                'status' => 'approved',
+                'asset_code' => $plan->asset->asset_code,
+                'created_by' => auth()->id() ?? 1,
             ]);
-            
-            // Deduct inventory
-            $inv = Inventory::where('product_id', $item->product_id)
-                ->where('house_id', $plan->house_id)
-                ->first();
-            if ($inv) {
-                $inv->quantity -= $item->quantity;
-                $inv->save();
-            }
-        }
 
-        $plan->status = 'dang_bao_duong';
-        $plan->save();
+            $invService = app(InventoryService::class);
+
+            foreach ($plan->maintenanceBom->items as $item) {
+                StockOutItem::create([
+                    'stock_out_id' => $stockOut->id,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'price' => 0, // Should take average price
+                    'item_note' => $item->note,
+                ]);
+                
+                // Deduct inventory via service to maintain log
+                $invService->export(
+                    $item->product_id,
+                    $item->quantity,
+                    'stock_out',
+                    $stockOut->id,
+                    'Xuất kho cho kế hoạch BD ' . $plan->plan_code,
+                    null, null, null
+                );
+            }
+
+            $plan->status = 'dang_bao_duong';
+            $plan->save();
+        });
 
         session()->flash('message', 'Đã tạo phiếu xuất kho thành công và trừ tồn kho.');
     }

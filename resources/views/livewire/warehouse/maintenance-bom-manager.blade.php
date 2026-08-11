@@ -105,8 +105,8 @@
                                 <th class="px-3 py-2 border-b border-slate-200">Mã VT</th>
                                 <th class="px-3 py-2 border-b border-slate-200">Tên vật tư</th>
                                 <th class="px-3 py-2 border-b border-slate-200 text-center">ĐVT</th>
-                                <th class="px-3 py-2 border-b border-slate-200 text-right">Tồn kho</th>
                                 <th class="px-3 py-2 border-b border-slate-200 text-right w-32">Định mức</th>
+                                <th class="px-3 py-2 border-b border-slate-200 text-left">Ghi chú</th>
                                 <th class="px-3 py-2 border-b border-slate-200 text-center w-16">Xóa</th>
                             </tr>
                         </thead>
@@ -116,11 +116,11 @@
                                     <td class="px-3 py-2 text-xs font-mono text-indigo-600">{{ $item->product->code ?? 'N/A' }}</td>
                                     <td class="px-3 py-2 text-sm font-bold text-slate-800">{{ $item->product->name ?? 'N/A' }}</td>
                                     <td class="px-3 py-2 text-xs text-center text-slate-600 uppercase">{{ $item->product->box_spec ?? 'Cái' }}</td>
-                                    <td class="px-3 py-2 text-sm font-semibold text-right {{ ($item->product->inventory->quantity ?? 0) < $item->quantity ? 'text-red-500' : 'text-green-600' }}">
-                                        {{ number_format($item->product->inventory->quantity ?? 0, 2) }}
-                                    </td>
                                     <td class="px-3 py-2">
                                         <input type="number" step="0.01" wire:model="bomItemQuantities.{{ $item->id }}" class="w-full border-gray-300 rounded text-right font-bold text-indigo-700 py-1 px-2 text-xs shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        <input type="text" wire:model="bomItemNotes.{{ $item->id }}" class="w-full border-gray-300 rounded text-left py-1 px-2 text-xs shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Ghi chú...">
                                     </td>
                                     <td class="px-3 py-2 text-center">
                                         <button onclick="if(confirm('Xóa vật tư này khỏi BOM?')) @this.deleteItem({{ $item->id }})" class="text-red-600 hover:text-red-800 bg-red-50 p-1.5 rounded" title="Xóa"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>

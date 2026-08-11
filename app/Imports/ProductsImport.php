@@ -2,100 +2,150 @@
 
 namespace App\Imports;
 
-use App\Models\Product;
 use App\Models\Inventory;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
-use Maatwebsite\Excel\Concerns\WithValidation;
+use App\Models\Product;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
-class ProductsImport implements ToModel, WithHeadingRow, WithUpserts, WithValidation
+class ProductsImport implements ToCollection
 {
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
+    private function findValue($row, $keywords)
     {
-        // Handle date conversion if needed
-        $expiry_date = null;
-        if (isset($row['han_dung']) && !empty($row['han_dung'])) {
-            try {
-                // If it's a numeric value from Excel (Excel serial date)
-                if (is_numeric($row['han_dung'])) {
-                    $expiry_date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['han_dung']);
-                } else {
-                    $expiry_date = Carbon::parse($row['han_dung']);
+        foreach ($row as $key => $value) {
+            if ($value === null || $value === '') continue;
+            // Dùng Str::slug để tự động bỏ dấu tiếng Việt, viết thường, và bỏ khoảng trắng (vd: "Mã SP" -> "masp")
+            $normalizedKey = Str::slug((string)$key, '');
+            foreach ($keywords as $kw) {
+                if (str_contains($normalizedKey, $kw)) {
+                    return $value;
                 }
-            } catch (\Exception $e) {
-                // Ignore invalid date formats
+            }
+        }
+        return null;
+    }
+
+    public function collection(Collection $rows)
+    {
+        $headerRowIndex = -1;
+
+        // 1. Tìm dòng tiêu đề (Dòng có chứa cột Mã vật tư)
+        foreach ($rows as $index => $row) {
+            foreach ($row as $cellValue) {
+                if ($cellValue === null) continue;
+                $valStr = Str::slug((string)$cellValue, '');
+                if (
+                    str_contains($valStr, 'masp') || 
+                    str_contains($valStr, 'masanpham') || 
+                    str_contains($valStr, 'mahang') || 
+                    str_contains($valStr, 'mavt') || 
+                    str_contains($valStr, 'mavattu') || 
+                    $valStr === 'ma' || 
+                    $valStr === 'code' || 
+                    $valStr === 'id'
+                ) {
+                    $headerRowIndex = $index;
+                    break 2;
+                }
             }
         }
 
-        $product = Product::updateOrCreate(
-            ['code' => $row['ma_sp']],
-            [
-                'name'         => $row['ten_san_pham'],
-                'brand'        => $row['hang_san_xuat'] ?? null,
-                'box_spec'     => $row['qc_hop'] ?? null,
-                'carton_spec'  => $row['qc_thung'] ?? null,
-                'status'       => 'active',
-                'location'     => $row['vi_tri'] ?? null,
-                'batch_number' => $row['so_lo'],
-                'expiry_date'  => $expiry_date,
-            ]
-        );
+        if ($headerRowIndex === -1) {
+            throw new \Exception("Không tìm thấy dòng tiêu đề chứa cột Mã vật tư trong file Excel. Vui lòng đảm bảo có 1 cột mang ý nghĩa là Mã vật tư (ví dụ: 'Mã SP', 'Mã hàng', 'Mã VT').");
+        }
 
-        // Also ensure inventory record exists
-        if (!$product->inventory) {
-            Inventory::create([
-                'product_id' => $product->id,
-                'quantity'   => $row['so_luong'] ?? 0,
-                'warehouse_location' => $row['vi_tri'] ?? null,
-            ]);
-        } else {
-            // Update inventory if location or quantity is provided
-            $product->inventory->update([
-                'warehouse_location' => $row['vi_tri'] ?? $product->inventory->warehouse_location,
-                'quantity' => isset($row['so_luong']) ? $row['so_luong'] : $product->inventory->quantity,
+        $headers = $rows[$headerRowIndex];
+        
+        // 2. Xử lý từng dòng dữ liệu phía dưới dòng tiêu đề
+        for ($i = $headerRowIndex + 1; $i < count($rows); $i++) {
+            $row = $rows[$i];
+            
+            // Lọc bỏ dòng hoàn toàn trống
+            $isEmpty = true;
+            foreach ($row as $cell) {
+                if ($cell !== null && $cell !== '') {
+                    $isEmpty = false;
+                    break;
+                }
+            }
+            if ($isEmpty) continue;
+
+            // Map dữ liệu cột theo header
+            $mappedRow = [];
+            foreach ($headers as $colIndex => $headerName) {
+                if ($headerName) {
+                    $mappedRow[(string)$headerName] = $row[$colIndex] ?? null;
+                }
+            }
+
+            $this->processRow($mappedRow);
+        }
+    }
+
+    private function processRow(array $row)
+    {
+        // 1. Tìm Mã sản phẩm (Bắt buộc)
+        $productCode = $this->findValue($row, ['masp', 'masanpham', 'code', 'mahang', 'mavt', 'mavattu', 'ma', 'id']);
+        if (!$productCode) return;
+
+        $productCode = strtoupper(trim((string)$productCode));
+
+        // 2. Tìm hoặc tạo Sản phẩm
+        $product = Product::withoutGlobalScope('house')->where('code', $productCode)->first();
+        
+        $productName = $this->findValue($row, ['tensp', 'tensanpham', 'name', 'tenhang', 'tenvattu', 'ten']);
+        $unit = $this->findValue($row, ['dvt', 'donvitinh', 'unit']);
+        $brand = $this->findValue($row, ['hangsx', 'thuonghieu', 'brand']);
+        $batch = $this->findValue($row, ['solo', 'batch', 'lo', 'codencc']);
+        $expiry = $this->findValue($row, ['handung', 'hsd', 'expiry', 'hansudung']);
+        $minStock = $this->findValue($row, ['tontoithieu', 'minstock']);
+        $location = $this->findValue($row, ['vitri', 'kho', 'location']);
+        $quantity = $this->findValue($row, ['soluong', 'sl', 'qty', 'quantity', 'tonkho']);
+        $desc = $this->findValue($row, ['ghichu', 'mota', 'description', 'desc']);
+        $boxSpec = $this->findValue($row, ['qchop', 'quycachhop']);
+        $cartonSpec = $this->findValue($row, ['qcthung', 'quycachthung']);
+
+        if (!$product) {
+            // Tạo mới nếu chưa có
+            $type = str_starts_with(strtoupper((string)$productCode), 'NVL') ? 'material' : 'product_purchased';
+            $product = Product::create([
+                'code' => strtoupper((string)$productCode),
+                'name' => $productName ?: 'Vật tư ' . $productCode,
+                'unit' => $unit ?: 'Cái',
+                'status' => 'active',
+                'type' => $type,
             ]);
         }
 
-        return $product;
-    }
+        // Cập nhật thông tin sản phẩm
+        $productData = [];
+        if ($productName) $productData['name'] = $productName;
+        if ($unit) $productData['unit'] = $unit;
+        if ($brand) $productData['brand'] = $brand;
+        if ($batch) $productData['batch_number'] = $batch;
+        if ($minStock !== null) $productData['min_stock'] = floatval($minStock);
+        if ($location) $productData['location'] = $location;
+        if ($desc) $productData['description'] = $desc;
+        if ($boxSpec) $productData['box_spec'] = $boxSpec;
+        if ($cartonSpec) $productData['carton_spec'] = $cartonSpec;
 
-    /**
-     * Unique key for upsert
-     */
-    public function uniqueBy()
-    {
-        return 'code';
-    }
+        if ($expiry) {
+            if (is_numeric($expiry)) {
+                try {
+                    $productData['expiry_date'] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($expiry)->format('Y-m-d');
+                } catch (\Exception $e) {}
+            } else {
+                try {
+                    $productData['expiry_date'] = Carbon::parse(str_replace('/', '-', $expiry))->format('Y-m-d');
+                } catch (\Exception $e) {}
+            }
+        }
 
-    /**
-     * Validation rules
-     */
-    public function rules(): array
-    {
-        return [
-            'ma_sp'        => 'required',
-            'ten_san_pham' => 'required',
-            'so_lo'        => 'required',
-        ];
-    }
+        if (!empty($productData)) {
+            $product->update($productData);
+        }
 
-    /**
-     * Custom validation messages
-     */
-    public function customValidationMessages()
-    {
-        return [
-            'ma_sp.required'        => 'Thiếu mã sản phẩm.',
-            'ten_san_pham.required' => 'Thiếu tên sản phẩm.',
-            'so_lo.required'        => 'Thiếu mã Code NCC.',
-        ];
+
     }
 }

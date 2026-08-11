@@ -214,14 +214,27 @@ class ProductCatalog extends Component
 
     public function save()
     {
+        // Loại bỏ khoảng trắng thừa (data rác)
+        $this->code = trim($this->code ?? '');
+        $this->name = preg_replace('/\s+/', ' ', trim($this->name ?? '')); // Xóa khoảng trắng giữa các từ nếu có quá nhiều
+        $this->brand = trim($this->brand ?? '');
+        $this->description = trim($this->description ?? '');
+        $this->location = trim($this->location ?? '');
+        $this->batch_number = trim($this->batch_number ?? '');
+        
+        $this->equipment_code = trim($this->equipment_code ?? '');
+        $this->asset_code = trim($this->asset_code ?? '');
+        $this->machine_type = trim($this->machine_type ?? '');
+        $this->manager = trim($this->manager ?? '');
+
         $this->validate();
 
         if (!$this->isEdit && !$this->confirmDuplicate) {
             $exists = false;
             if ($this->activeTab === 'materials') {
-                $exists = \App\Models\Product::where('name', trim($this->name))->exists();
+                $exists = \App\Models\Product::where('name', $this->name)->exists();
             } else {
-                $exists = \App\Models\Asset::where('name', trim($this->name))->exists();
+                $exists = \App\Models\Asset::where('name', $this->name)->exists();
             }
 
             if ($exists) {

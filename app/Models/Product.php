@@ -20,6 +20,7 @@ class Product extends Model
         'unit',
         'price',
         'min_stock',
+        'max_stock',
         'category_id',
         'type',
         'status',

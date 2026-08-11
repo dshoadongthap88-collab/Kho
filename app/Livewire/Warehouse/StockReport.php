@@ -409,10 +409,18 @@ class StockReport extends Component
         // 4. Dead stock (Hơn 300 ngày)
         $deadStockLimit = now()->subDays(300);
         $deadStocks = \App\Models\Inventory::join('products', 'inventories.product_id', '=', 'products.id')
-            ->select('products.name', 'products.code', 'inventories.quantity', 'inventories.updated_at')
+            ->select('products.name', 'products.code', 'products.unit', 'inventories.quantity', 'inventories.updated_at')
             ->where('inventories.quantity', '>', 0)
             ->where('inventories.updated_at', '<', $deadStockLimit)
-            ->orderBy('inventories.quantity', 'desc')->take(5)->get();
+            ->orderBy('inventories.quantity', 'desc')->get();
+
+        // 5. Excess stock (Hàng thừa)
+        $excessStocks = \App\Models\Inventory::join('products', 'inventories.product_id', '=', 'products.id')
+            ->select('products.name', 'products.code', 'products.unit', 'products.max_stock', 'inventories.quantity')
+            ->where('products.max_stock', '>', 0)
+            ->whereRaw('inventories.quantity > products.max_stock')
+            ->orderByRaw('(inventories.quantity - products.max_stock) DESC')
+            ->get();
 
         return view('livewire.warehouse.stock-report', [
             'summary' => $summary,
@@ -421,6 +429,7 @@ class StockReport extends Component
             'totalMaterials' => $totalMaterials,
             'predictiveStocks' => $predictiveStocks,
             'deadStocks' => $deadStocks,
+            'excessStocks' => $excessStocks,
         ]);
     }
 }

@@ -171,16 +171,237 @@
             </div>
 
             <!-- Cảnh báo Dead stock -->
-            <div class="bg-stone-50 border border-stone-300 rounded-xl p-2 shadow-sm">
-                <p class="text-xs font-bold text-stone-600 uppercase mb-2 flex items-center gap-1"><span>🕸️</span> Cảnh báo không sử dụng > 300 ngày</p>
+            <div class="bg-stone-50 border border-stone-300 rounded-xl p-2 shadow-sm" x-data="{
+                selectAll: false,
+                selectedItems: [],
+                toggleAll() {
+                    if (this.selectAll) {
+                        this.selectedItems = Array.from(document.querySelectorAll('.dead-stock-item')).map(el => el.value);
+                    } else {
+                        this.selectedItems = [];
+                    }
+                },
+                printDeadStock() {
+                    if (this.selectedItems.length === 0) {
+                        alert('Vui lòng chọn ít nhất 1 vật tư để in báo cáo.');
+                        return;
+                    }
+                    
+                    let printHtml = `
+                        <div style='font-family: sans-serif; margin: 20px;'>
+                            <h2 style='margin:0; text-transform:uppercase; font-size:18px;'>KHO KỸ THUẬT SỬA CHỮA</h2>
+                            <h3 style='margin:5px 0 15px 0; font-size:16px;'>DỰ ÁN : {{ $projectName }}</h3>
+                            <h1 style='text-align:center; font-size: 22px; font-weight: bold; margin-bottom: 20px;'>BÁO CÁO VẬT TƯ CHƯA SỬ DỤNG</h1>
+                            <table style='width: 100%; border-collapse: collapse; margin-top: 20px;'>
+                                <thead>
+                                    <tr>
+                                        <th style='border: 1px solid #000; padding: 8px;'>STT</th>
+                                        <th style='border: 1px solid #000; padding: 8px;'>Mã vật tư</th>
+                                        <th style='border: 1px solid #000; padding: 8px;'>Tên vật tư</th>
+                                        <th style='border: 1px solid #000; padding: 8px;'>ĐVT</th>
+                                        <th style='border: 1px solid #000; padding: 8px;'>Số lượng</th>
+                                        <th style='border: 1px solid #000; padding: 8px;'>Ngày đặt</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    this.selectedItems.forEach((item, index) => {
+                        let obj = JSON.parse(item);
+                        printHtml += `
+                            <tr>
+                                <td style='border: 1px solid #000; padding: 8px; text-align: center;'>${index + 1}</td>
+                                <td style='border: 1px solid #000; padding: 8px;'>${obj.code}</td>
+                                <td style='border: 1px solid #000; padding: 8px;'>${obj.name}</td>
+                                <td style='border: 1px solid #000; padding: 8px; text-align: center;'>${obj.unit || ''}</td>
+                                <td style='border: 1px solid #000; padding: 8px; text-align: right;'>${obj.quantity}</td>
+                                <td style='border: 1px solid #000; padding: 8px; text-align: center;'>${obj.date}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    printHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    
+                    let printFrame = document.createElement('iframe');
+                    printFrame.style.position = 'fixed';
+                    printFrame.style.right = '0';
+                    printFrame.style.bottom = '0';
+                    printFrame.style.width = '0';
+                    printFrame.style.height = '0';
+                    printFrame.style.border = '0';
+                    document.body.appendChild(printFrame);
+                    
+                    let frameDoc = printFrame.contentWindow.document;
+                    frameDoc.open();
+                    frameDoc.write('<html><head><title>In báo cáo tồn đọng</title></head><body>' + printHtml + '</body></html>');
+                    frameDoc.close();
+                    
+                    setTimeout(() => {
+                        printFrame.contentWindow.focus();
+                        printFrame.contentWindow.print();
+                        document.body.removeChild(printFrame);
+                    }, 500);
+                }
+            }">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-xs font-bold text-stone-600 uppercase flex items-center gap-1"><span>🕸️</span> Cảnh báo không sử dụng > 300 ngày</p>
+                    @if($deadStocks->count() > 0)
+                    <button @click="printDeadStock()" class="px-3 py-1 bg-stone-700 hover:bg-stone-900 text-white text-[10px] font-bold rounded shadow-sm transition flex items-center gap-1 no-print">
+                        <span>🖨️</span> In báo cáo
+                    </button>
+                    @endif
+                </div>
+                
                 @if($deadStocks->count() > 0)
-                    <ul class="text-sm text-stone-900 space-y-1">
+                    <div class="mb-2 px-2 flex items-center gap-2 border-b border-stone-200 pb-2 no-print">
+                        <input type="checkbox" x-model="selectAll" @change="toggleAll()" class="rounded border-gray-300 text-stone-600 focus:ring-stone-500">
+                        <span class="text-xs font-bold text-stone-700">Chọn tất cả</span>
+                    </div>
+                    <ul class="text-sm text-stone-900 space-y-1 max-h-60 overflow-y-auto px-2">
                     @foreach($deadStocks as $stock)
-                        <li>- <b>{{ $stock->name }}</b> ({{ $stock->code }}): Tồn đọng <b>{{ number_format($stock->quantity) }}</b> (cập nhật cuối {{ $stock->updated_at->format('d/m/Y') }})</li>
+                        @php
+                            $stockData = json_encode([
+                                'code' => $stock->code,
+                                'name' => $stock->name,
+                                'unit' => $stock->unit,
+                                'quantity' => number_format($stock->quantity),
+                                'date' => $stock->updated_at->format('d/m/Y')
+                            ]);
+                        @endphp
+                        <li class="flex items-start gap-2 hover:bg-stone-100 p-1 rounded">
+                            <input type="checkbox" x-model="selectedItems" value="{{ $stockData }}" class="dead-stock-item mt-1 rounded border-gray-300 text-stone-600 focus:ring-stone-500 no-print">
+                            <div>
+                                <b>{{ $stock->name }}</b> ({{ $stock->code }})
+                                <span class="text-xs text-stone-600 ml-1">ĐVT: {{ $stock->unit ?? '-' }}</span><br>
+                                <span class="text-xs text-stone-600">Tồn đọng: <b>{{ number_format($stock->quantity) }}</b> (Ngày nhập: {{ $stock->updated_at->format('d/m/Y') }})</span>
+                            </div>
+                        </li>
                     @endforeach
                     </ul>
                 @else
                     <p class="text-sm text-stone-700 italic">Hệ thống luân chuyển tốt, không có hàng tồn đọng lâu.</p>
+                @endif
+            </div>
+
+            <!-- Cảnh báo Excess stock (Hàng thừa) -->
+            <div class="bg-rose-50 border border-rose-300 rounded-xl p-2 shadow-sm mt-2" x-data="{
+                selectAllExcess: false,
+                selectedExcessItems: [],
+                toggleAllExcess() {
+                    if (this.selectAllExcess) {
+                        this.selectedExcessItems = Array.from(document.querySelectorAll('.excess-stock-item')).map(el => el.value);
+                    } else {
+                        this.selectedExcessItems = [];
+                    }
+                },
+                printExcessStock() {
+                    if (this.selectedExcessItems.length === 0) {
+                        alert('Vui lòng chọn ít nhất 1 vật tư để in báo cáo.');
+                        return;
+                    }
+                    
+                    let printHtml = `
+                        <div style='font-family: sans-serif; margin: 20px;'>
+                            <h2 style='margin:0; text-transform:uppercase; font-size:18px;'>KHO KỸ THUẬT SỮA CHỮA VINALPHA</h2>
+                            <h3 style='margin:5px 0 15px 0; font-size:16px;'>DỰ ÁN : {{ $projectName }}</h3>
+                            <h1 style='text-align:center; font-size: 22px; font-weight: bold; margin-bottom: 20px;'>VẬT TƯ DƯ THỪA</h1>
+                            <table style='width: 100%; border-collapse: collapse; margin-top: 20px;'>
+                                <thead>
+                                    <tr>
+                                        <th style='border: 1px solid #000; padding: 8px;'>STT</th>
+                                        <th style='border: 1px solid #000; padding: 8px;'>Mã vật tư</th>
+                                        <th style='border: 1px solid #000; padding: 8px;'>Tên vật tư</th>
+                                        <th style='border: 1px solid #000; padding: 8px;'>ĐVT</th>
+                                        <th style='border: 1px solid #000; padding: 8px;'>Tồn kho</th>
+                                        <th style='border: 1px solid #000; padding: 8px;'>Dư thừa</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    this.selectedExcessItems.forEach((item, index) => {
+                        let obj = JSON.parse(item);
+                        printHtml += `
+                            <tr>
+                                <td style='border: 1px solid #000; padding: 8px; text-align: center;'>${index + 1}</td>
+                                <td style='border: 1px solid #000; padding: 8px;'>${obj.code}</td>
+                                <td style='border: 1px solid #000; padding: 8px;'>${obj.name}</td>
+                                <td style='border: 1px solid #000; padding: 8px; text-align: center;'>${obj.unit || ''}</td>
+                                <td style='border: 1px solid #000; padding: 8px; text-align: right;'>${obj.quantity}</td>
+                                <td style='border: 1px solid #000; padding: 8px; text-align: right; color: red; font-weight: bold;'>${obj.excess}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    printHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    
+                    let printFrame = document.createElement('iframe');
+                    printFrame.style.position = 'fixed';
+                    printFrame.style.right = '0';
+                    printFrame.style.bottom = '0';
+                    printFrame.style.width = '0';
+                    printFrame.style.height = '0';
+                    printFrame.style.border = '0';
+                    document.body.appendChild(printFrame);
+                    
+                    let frameDoc = printFrame.contentWindow.document;
+                    frameDoc.open();
+                    frameDoc.write('<html><head><title>In báo cáo hàng thừa</title></head><body>' + printHtml + '</body></html>');
+                    frameDoc.close();
+                    
+                    setTimeout(() => {
+                        printFrame.contentWindow.focus();
+                        printFrame.contentWindow.print();
+                        document.body.removeChild(printFrame);
+                    }, 500);
+                }
+            }">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-xs font-bold text-rose-600 uppercase flex items-center gap-1"><span>📦</span> Cảnh báo hàng dư thừa (> Tồn tối đa)</p>
+                    @if(isset($excessStocks) && $excessStocks->count() > 0)
+                    <button @click="printExcessStock()" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded shadow-sm transition flex items-center gap-1 no-print">
+                        <span>🖨️</span> In báo cáo
+                    </button>
+                    @endif
+                </div>
+                
+                @if(isset($excessStocks) && $excessStocks->count() > 0)
+                    <div class="mb-2 px-2 flex items-center gap-2 border-b border-rose-200 pb-2 no-print">
+                        <input type="checkbox" x-model="selectAllExcess" @change="toggleAllExcess()" class="rounded border-gray-300 text-rose-600 focus:ring-rose-500">
+                        <span class="text-xs font-bold text-rose-700">Chọn tất cả</span>
+                    </div>
+                    <ul class="text-sm text-rose-900 space-y-1 max-h-60 overflow-y-auto px-2">
+                    @foreach($excessStocks as $stock)
+                        @php
+                            $excessQty = $stock->quantity - $stock->max_stock;
+                            $stockData = json_encode([
+                                'code' => $stock->code,
+                                'name' => $stock->name,
+                                'unit' => $stock->unit,
+                                'quantity' => number_format($stock->quantity),
+                                'excess' => number_format($excessQty)
+                            ]);
+                        @endphp
+                        <li class="flex items-start gap-2 hover:bg-rose-100 p-1 rounded">
+                            <input type="checkbox" x-model="selectedExcessItems" value="{{ $stockData }}" class="excess-stock-item mt-1 rounded border-gray-300 text-rose-600 focus:ring-rose-500 no-print">
+                            <div>
+                                <b>{{ $stock->name }}</b> ({{ $stock->code }})
+                                <span class="text-xs text-rose-600 ml-1">ĐVT: {{ $stock->unit ?? '-' }}</span><br>
+                                <span class="text-xs text-rose-600">Tồn kho: <b>{{ number_format($stock->quantity) }}</b> | Tồn max: {{ number_format($stock->max_stock) }} | Dư: <b class="text-red-600">{{ number_format($excessQty) }}</b></span>
+                            </div>
+                        </li>
+                    @endforeach
+                    </ul>
+                @else
+                    <p class="text-sm text-rose-700 italic">Không có vật tư nào vượt quá định mức tồn kho tối đa.</p>
                 @endif
             </div>
         </div>

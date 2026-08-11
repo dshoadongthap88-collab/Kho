@@ -505,7 +505,7 @@ class ProductCatalog extends Component
             $warnings = [];
 
             foreach ($this->maxStocks as $productId => $value) {
-                $product = App\Models\Product::with('inventory')->find($productId);
+                $product = \App\Models\Product::with('inventory')->find($productId);
                 if ($product) {
                     $newVal = (float)($value ?: 0);
                     $currentQty = (float)($product->inventory?->quantity ?? 0);

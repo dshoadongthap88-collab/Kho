@@ -47,3 +47,17 @@ Tài liệu này quy định các yêu cầu và loại biểu đồ cần sử 
   - **Phân loại xuất kho**: Thống kê chi tiết đã xuất bao nhiêu mã **Tài sản** và bao nhiêu mã **Vật tư** cho dự án.
 - **Yêu cầu Phiếu in (Print/Export)**:
   - Khi người dùng in báo cáo, **Phiếu in phải thể hiện rõ tên nhân viên đang đăng nhập** (người xuất/in báo cáo) đối với dự án hiện tại, để đảm bảo minh bạch thông tin người lập báo cáo.
+
+## 7. Phân tích Xuất kho chuyên sâu
+- **Khối hiển thị (Dashboard/Block)**: Hiển thị khối thông tin **"CẢNH BÁO KHÔNG SỬ DỤNG > 300 NGÀY"**. (Nếu không có tồn đọng, hiển thị dòng text: *"Hệ thống luân chuyển tốt, không có hàng tồn đọng lâu."*)
+- **Thao tác (Giao diện UI)**: 
+  - Tại khối cảnh báo này (khi có dữ liệu tồn đọng), bố trí **checkbox (tick chọn)** ở từng vật tư và một **nút "In báo cáo"** gắn liền với khối để thao tác thuận tiện nhất.
+  - Tự động hóa: Người dùng chỉ cần tick chọn các vật tư và bấm nút in, hệ thống sẽ tự động xử lý và xuất/in báo cáo.
+- **Mẫu phiếu in (Export/Print Layout)**:
+  - Báo cáo bao gồm các cột: mã vật tư, tên vật tư, đơn vị tính, số lượng, tên nhà cung cấp, ngày đặt. *(Lưu ý: hiện tại đang tính ngày đặt = ngày nhập kho)*
+  - **Tiêu đề đầu trang của phiếu in** bắt buộc hiển thị theo form sau:
+    ```text
+    KHO KỸ THUẬT SỬA CHỮA
+    DỰ ÁN : ( Tên dự án đang thao tác )
+    BÁO CÁO VẬT TƯ CHƯA SỬ DỤNG
+    ```

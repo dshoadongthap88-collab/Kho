@@ -11,8 +11,10 @@ class TenantController extends Controller
     public function selectHouse()
     {
         $user = Auth::user();
-        $allowedHouses = $user->allowed_houses ?? []; // Default empty
         $projects = \App\Models\Project::all();
+        $allowedHouses = $user->role === 'admin' 
+            ? $projects->pluck('id')->toArray() 
+            : ($user->allowed_houses ?? []);
         
         return view('tenant.select', compact('allowedHouses', 'projects'));
     }
@@ -25,7 +27,9 @@ class TenantController extends Controller
         ]);
 
         $user = Auth::user();
-        $allowedHouses = $user->allowed_houses ?? [1];
+        $allowedHouses = $user->role === 'admin' 
+            ? \App\Models\Project::pluck('id')->toArray() 
+            : ($user->allowed_houses ?? [1]);
 
         // Check if user has permission for this house
         if (!in_array((int)$request->house_id, $allowedHouses)) {

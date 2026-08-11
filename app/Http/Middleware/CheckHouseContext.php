@@ -21,7 +21,9 @@ class CheckHouseContext
             // Gán house context cho user nếu chưa có
             if (empty($user->current_house_id)) {
                     // Nếu chưa có, tự động lấy house đầu tiên trong allowed_houses
-                    $allowed = is_array($user->allowed_houses) ? $user->allowed_houses : json_decode($user->allowed_houses, true);
+                    $allowed = $user->role === 'admin'
+                        ? \App\Models\Project::pluck('id')->toArray()
+                        : (is_array($user->allowed_houses) ? $user->allowed_houses : json_decode($user->allowed_houses, true));
                     
                     if (!empty($allowed)) {
                         $user->current_house_id = $allowed[0];

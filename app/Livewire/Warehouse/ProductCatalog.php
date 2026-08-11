@@ -54,13 +54,13 @@ class ProductCatalog extends Component
     public $filterMode = 'all';
 
     public $excelFile;
-    public $dateFrom = '';
-    public $dateTo = '';
+    
     public $selectedIds = []; 
     public $printItems = []; // Thêm mảng chứa dữ liệu để in
-    public $minStocks = []; 
+    public $minStocks = [];
+    public $maxStocks = []; 
 
-    protected $queryString = ['search', 'dateFrom', 'dateTo', 'filterMode', 'activeTab'];
+    protected $queryString = ['search', 'filterMode', 'activeTab'];
 
     public function rules()
     {
@@ -453,12 +453,8 @@ class ProductCatalog extends Component
                       ->orWhere('brand', 'like', '%' . $this->search . '%')
                       ->orWhere('batch_number', 'like', '%' . $this->search . '%');
                 })
-                ->when($this->dateFrom, function($q) {
-                    $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
-                })
-                ->when($this->dateTo, function($q) {
-                    $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
-                })
+                
+                
                 ->when($this->filterMode === 'low_stock', function($q) {
                     return $this->applyLowStockFilter($q);
                 })
@@ -472,12 +468,8 @@ class ProductCatalog extends Component
                       ->orWhere('equipment_code', 'like', '%' . $this->search . '%')
                       ->orWhere('manager', 'like', '%' . $this->search . '%');
                 })
-                ->when($this->dateFrom, function($q) {
-                    $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
-                })
-                ->when($this->dateTo, function($q) {
-                    $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
-                })
+                
+                
                 ->orderBy('created_at', 'desc')
                 ->get();
         }
@@ -500,6 +492,41 @@ class ProductCatalog extends Component
             
             $this->reset(['excelFile', 'showImportModal']);
             session()->flash('message', 'Nhập dữ liệu từ Excel thành công!');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
+    }
+
+    
+    public function saveMaxStocks()
+    {
+        try {
+            $count = 0;
+            $warnings = [];
+
+            foreach ($this->maxStocks as $productId => $value) {
+                $product = App\Models\Product::with('inventory')->find($productId);
+                if ($product) {
+                    $newVal = (float)($value ?: 0);
+                    $currentQty = (float)($product->inventory?->quantity ?? 0);
+
+                    if ($newVal > 0 && $newVal < $currentQty) {
+                        $warnings[] = "{$product->code} (tồn: {$currentQty}, max: {$newVal})";
+                    }
+
+                    if ($product->max_stock != $newVal) {
+                        $product->update(['max_stock' => $newVal]);
+                        $count++;
+                    }
+                }
+            }
+
+            if (count($warnings) > 0) {
+                session()->flash('warning', 'Đã lưu ' . $count . ' vật tư. CẢNH BÁO: ' . count($warnings) . ' mặt hàng đang vượt mức tồn tối đa: ' . implode(', ', $warnings));
+            } else {
+                session()->flash('message', "Đã lưu thành công định mức tồn tối đa cho {$count} vật tư!");
+            }
+            $this->dispatch('max-stocks-saved');
         } catch (\Exception $e) {
             session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
@@ -565,12 +592,8 @@ class ProductCatalog extends Component
                       ->orWhere('brand', 'like', '%' . $this->search . '%')
                       ->orWhere('batch_number', 'like', '%' . $this->search . '%');
                 })
-                ->when($this->dateFrom, function($q) {
-                    $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
-                })
-                ->when($this->dateTo, function($q) {
-                    $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
-                })
+                
+                
                 ->when($this->filterMode === 'low_stock', function($q) {
                     return $this->applyLowStockFilter($q);
                 })
@@ -582,6 +605,9 @@ class ProductCatalog extends Component
                 if (!isset($this->minStocks[$product->id])) {
                     $this->minStocks[$product->id] = $product->min_stock > 0 ? $product->min_stock : '';
                 }
+                if (!isset($this->maxStocks[$product->id])) {
+                    $this->maxStocks[$product->id] = $product->max_stock > 0 ? $product->max_stock : '';
+                }
             }
         } else {
             // Tab equipments
@@ -592,12 +618,8 @@ class ProductCatalog extends Component
                       ->orWhere('equipment_code', 'like', '%' . $this->search . '%')
                       ->orWhere('manager', 'like', '%' . $this->search . '%');
                 })
-                ->when($this->dateFrom, function($q) {
-                    $q->where('created_at', '>=', $this->dateFrom . ' 00:00:00');
-                })
-                ->when($this->dateTo, function($q) {
-                    $q->where('created_at', '<=', $this->dateTo . ' 23:59:59');
-                })
+                
+                
                 ->orderBy('created_at', 'desc')
                 ->paginate(8);
         }

@@ -29,9 +29,10 @@ Module quản lý việc xuất sản phẩm từ kho cho sản xuất hoặc kh
 4. **Lưu phiếu**: Hệ thống trừ tồn kho thực tế và tạo lịch sử giao dịch.
 
 ## 4. Cấu hình Chữ ký (Khi in Phiếu xuất kho)
-- Giao diện In ấn hiển thị **4 chữ ký** trên cùng một hàng theo đúng thứ tự:
-  1. **Nv sửa chữa** (Chọn lọc từ danh sách nhân viên trên hệ thống)
-  2. **Thủ kho** (Mặc định gợi ý từ lần nhập trước, VD: ĐẶNG HỮU HÒA)
-  3. **Tổ trưởng/ trưởng ca QLTB / vận hành** (Mặc định gợi ý, VD: LÊ HOÀNG NAM)
-  4. **Tổ trưởng / trưởng ca**
-- **Trường nhập liệu**: Các ô nhập tên người ký được cung cấp trong form xuất kho, tự động lưu lại vào `Session` để tự động điền trong các lần xuất kho tiếp theo. Riêng ô *Nhân viên sửa chữa* hỗ trợ lọc từ danh sách người dùng hệ thống.
+- Giao diện In ấn hiển thị **5 chữ ký** trên cùng một hàng theo đúng thứ tự:
+  1. **Nhân viên vận hành**
+  2. **Tổ trưởng/ trưởng ca QLTB / vận hành** (Mặc định gợi ý, VD: LÊ HOÀNG NAM)
+  3. **Nhân viên KTSC** (Chọn lọc từ danh sách nhân viên trên hệ thống)
+  4. **Thủ kho** (Mặc định gợi ý từ lần nhập trước, VD: ĐẶNG HỮU HÒA)
+  5. **Tổ trưởng / trưởng ca** (Mặc định gợi ý, VD: LÊ ĐÌNH HƯƠNG)
+- **Trường nhập liệu**: Các ô nhập tên người ký được cung cấp trong form xuất kho, tự động lưu lại vào `Session` để tự động điền trong các lần xuất kho tiếp theo. Riêng ô *Nhân viên KTSC* hỗ trợ lọc từ danh sách người dùng hệ thống.

@@ -82,6 +82,12 @@ class MaintenanceBomManager extends Component
 
     public function saveBom()
     {
+        // Loại bỏ khoảng trắng thừa (data rác)
+        $this->maintenance_level = preg_replace('/\s+/', ' ', trim($this->maintenance_level ?? ''));
+        if ($this->cycle === '' || $this->cycle === null) {
+            $this->cycle = 0;
+        }
+
         $this->validate([
             'maintenance_level' => 'required|string|max:255',
             'cycle' => 'required|numeric|min:0',
@@ -171,9 +177,13 @@ class MaintenanceBomManager extends Component
         foreach ($this->bomItemQuantities as $itemId => $qty) {
             $item = MaintenanceBomItem::find($itemId);
             if ($item) {
+                // Xử lý data rác cho số lượng định mức
+                $validQty = (is_numeric($qty) && $qty >= 0) ? (float)$qty : 0;
+                $note = trim($this->bomItemNotes[$itemId] ?? '');
+                
                 $item->update([
-                    'quantity' => $qty,
-                    'note' => $this->bomItemNotes[$itemId] ?? '',
+                    'quantity' => $validQty,
+                    'note' => $note,
                 ]);
             }
         }

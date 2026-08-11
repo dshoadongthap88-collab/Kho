@@ -1,10 +1,4 @@
 <div>
-    <div class="mb-6 flex flex-wrap justify-between items-center gap-2">
-        <div>
-            <h1 class="text-2xl font-bold text-slate-800 uppercase">Trang chủ Thiết bị & Bảo dưỡng (ERP)</h1>
-            <p class="text-sm text-slate-500">Trung tâm quản lý, vận hành và theo dõi tình trạng thiết bị toàn diện</p>
-        </div>
-    </div>
 
     <!-- Navigation Tabs -->
     <div class="mb-6 overflow-x-auto custom-scrollbar pb-1">

@@ -416,17 +416,17 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                 <input type="text" wire:model.live="supervisor_qltb" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên tổ trưởng QLTB...">
                             </div>
                             <div class="space-y-1">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên THỦ KHO</label>
-                                <input type="text" wire:model.live="warehouse_keeper" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên thủ kho...">
-                            </div>
-                            <div class="space-y-1">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Nhân viên sửa chữa</label>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Nhân viên KTSC</label>
                                 <select wire:model.live="repair_staff" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800">
                                     <option value="">-- Chọn nhân viên --</option>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                                         <option value="<?php echo e($user->name); ?>"><?php echo e($user->name); ?></option>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên THỦ KHO</label>
+                                <input type="text" wire:model.live="warehouse_keeper" class="w-full rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-sm transition py-2 px-3 text-[12px] font-bold text-slate-800" placeholder="Họ tên thủ kho...">
                             </div>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tên Tổ trưởng / trưởng ca</label>
@@ -927,16 +927,16 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                     <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->supervisor_qltb ?: '........................'); ?></p>
                 </div>
                 <div>
+                    <p>Nhân viên KTSC</p>
+                    <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                    <div style="height: 50px;"></div>
+                    <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->repair_staff ?: '........................'); ?></p>
+                </div>
+                <div>
                     <p>Thủ kho</p>
                     <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                     <div style="height: 50px;"></div>
                     <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->warehouse_keeper ?: '........................'); ?></p>
-                </div>
-                <div>
-                    <p>Nhân viên sửa chữa</p>
-                    <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
-                    <div style="height: 50px;"></div>
-                    <p class="font-bold text-slate-800 text-[11px] mt-1"><?php echo e($pItem->repair_staff ?: '........................'); ?></p>
                 </div>
                 <div>
                     <p>Tổ trưởng / trưởng ca</p>

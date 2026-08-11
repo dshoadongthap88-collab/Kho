@@ -602,6 +602,18 @@
                         <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $supervisor_qltb ?: '........................' }}</p>
                     </div>
                     <div>
+                        <p>Nhân viên KTSC</p>
+                        <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                        <div style="height: 50px;"></div>
+                        <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $repair_staff ?: '........................' }}</p>
+                    </div>
+                    <div>
+                        <p>Thủ kho</p>
+                        <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
+                        <div style="height: 50px;"></div>
+                        <p class="font-bold text-slate-800 text-[11px] mt-1">{{ $warehouse_keeper ?: '........................' }}</p>
+                    </div>
+                    <div>
                         <p>Tổ trưởng / trưởng ca</p>
                         <p class="text-[8px] italic font-normal">(Ký, ghi rõ họ và tên)</p>
                         <div style="height: 50px;"></div>

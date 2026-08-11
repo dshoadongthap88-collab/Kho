@@ -188,7 +188,7 @@
                     }
                     
                     let printHtml = `
-                        <div style='font-family: sans-serif; margin: 20px;'>
+                        <div style='font-family: Times New Roman, Times, serif; margin: 20px;'>
                             <h2 style='margin:0; text-transform:uppercase; font-size:18px;'>KHO KỸ THUẬT SỬA CHỮA</h2>
                             <h3 style='margin:5px 0 15px 0; font-size:16px;'>DỰ ÁN : {{ $projectName }}</h3>
                             <h1 style='text-align:center; font-size: 22px; font-weight: bold; margin-bottom: 20px;'>BÁO CÁO VẬT TƯ CHƯA SỬ DỤNG</h1>
@@ -223,6 +223,12 @@
                     printHtml += `
                                 </tbody>
                             </table>
+                            <div style='margin-top: 50px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; font-size: 14px;'>
+                                <div style='flex: 1;'>Thủ kho<br><span style='font-weight: normal; font-size: 12px; font-style: italic;'>(Ký và ghi rõ họ tên)</span></div>
+                                <div style='flex: 1;'>Tổ Trưởng KTSC.<br><span style='font-weight: normal; font-size: 12px; font-style: italic;'>(Ký và ghi rõ họ tên)</span></div>
+                                <div style='flex: 1;'>Quản Lý Kho<br><span style='font-weight: normal; font-size: 12px; font-style: italic;'>(Ký và ghi rõ họ tên)</span></div>
+                                <div style='flex: 1;'>TBP. KTSC.<br><span style='font-weight: normal; font-size: 12px; font-style: italic;'>(Ký và ghi rõ họ tên)</span></div>
+                            </div>
                         </div>
                     `;
                     
@@ -237,7 +243,7 @@
                     
                     let frameDoc = printFrame.contentWindow.document;
                     frameDoc.open();
-                    frameDoc.write('<html><head><title>In báo cáo tồn đọng</title></head><body>' + printHtml + '</body></html>');
+                    frameDoc.write('<html' + '><head><title>In báo cáo tồn đọng</title></head><body' + '>' + printHtml + '</body' + '></html' + '>');
                     frameDoc.close();
                     
                     setTimeout(() => {
@@ -305,7 +311,7 @@
                     }
                     
                     let printHtml = `
-                        <div style='font-family: sans-serif; margin: 20px;'>
+                        <div style='font-family: Times New Roman, Times, serif; margin: 20px;'>
                             <h2 style='margin:0; text-transform:uppercase; font-size:18px;'>KHO KỸ THUẬT SỮA CHỮA VINALPHA</h2>
                             <h3 style='margin:5px 0 15px 0; font-size:16px;'>DỰ ÁN : {{ $projectName }}</h3>
                             <h1 style='text-align:center; font-size: 22px; font-weight: bold; margin-bottom: 20px;'>VẬT TƯ DƯ THỪA</h1>
@@ -340,6 +346,12 @@
                     printHtml += `
                                 </tbody>
                             </table>
+                            <div style='margin-top: 50px; display: flex; justify-content: space-between; text-align: center; font-weight: bold; font-size: 14px;'>
+                                <div style='flex: 1;'>Thủ kho<br><span style='font-weight: normal; font-size: 12px; font-style: italic;'>(Ký và ghi rõ họ tên)</span></div>
+                                <div style='flex: 1;'>Tổ Trưởng KTSC.<br><span style='font-weight: normal; font-size: 12px; font-style: italic;'>(Ký và ghi rõ họ tên)</span></div>
+                                <div style='flex: 1;'>Quản Lý Kho<br><span style='font-weight: normal; font-size: 12px; font-style: italic;'>(Ký và ghi rõ họ tên)</span></div>
+                                <div style='flex: 1;'>TBP. KTSC.<br><span style='font-weight: normal; font-size: 12px; font-style: italic;'>(Ký và ghi rõ họ tên)</span></div>
+                            </div>
                         </div>
                     `;
                     
@@ -354,7 +366,7 @@
                     
                     let frameDoc = printFrame.contentWindow.document;
                     frameDoc.open();
-                    frameDoc.write('<html><head><title>In báo cáo hàng thừa</title></head><body>' + printHtml + '</body></html>');
+                    frameDoc.write('<html' + '><head><title>In báo cáo hàng thừa</title></head><body' + '>' + printHtml + '</body' + '></html' + '>');
                     frameDoc.close();
                     
                     setTimeout(() => {

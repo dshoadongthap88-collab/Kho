@@ -449,6 +449,32 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                 </div>
             </div>
 
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showZeroStockConfirm): ?>
+            <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm no-print">
+                <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-[slideIn_0.2s_ease-out]">
+                    <div class="p-6">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                <span class="text-2xl">⚠️</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-black text-slate-900 uppercase">Cảnh báo tồn kho</h3>
+                                <p class="text-sm text-slate-500 mt-1">Có vật tư với số lượng tồn kho = 0. Bạn vẫn xác nhận xuất kho?</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-end gap-3 mt-8">
+                            <button wire:click="cancelSave" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition">
+                                Không Đồng Ý
+                            </button>
+                            <button wire:click="confirmSave" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm shadow transition">
+                                Đồng Ý Xuất Kho
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
             <!-- PHẦN IN PDF BỊ ẨN KHI XEM THƯỜNG (KIỂU V-ALPHA ĐỀ NGHỊ CẤP VẬT TƯ SỬA CHỮA) -->
             <div class="hidden print-only print-container inset-0 bg-white w-full text-black" style="font-family: 'Times New Roman', serif; padding: 5mm; line-height: 1.3;">
                 <!-- Logo & Title Section -->

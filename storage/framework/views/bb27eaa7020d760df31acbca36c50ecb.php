@@ -34,18 +34,7 @@
         </div>
         
         <div class="flex items-center gap-2 w-full overflow-x-auto pb-1 hide-scrollbar">
-            <!-- Date Filter Standard -->
-            <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 shadow-inner focus-within:ring-2 focus-within:ring-indigo-100 transition-all h-[38px] shrink-0">
-                <div class="flex items-center gap-2">
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Từ ngày</label>
-                    <input type="date" wire:model.live="dateFrom" class="text-[12px] border-none bg-transparent focus:ring-0 p-0 font-bold text-slate-700">
-                </div>
-                <div class="w-px h-3 bg-slate-300 mx-1"></div>
-                <div class="flex items-center gap-2">
-                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Đến ngày</label>
-                    <input type="date" wire:model.live="dateTo" class="text-[12px] border-none bg-transparent focus:ring-0 p-0 font-bold text-slate-700">
-                </div>
-            </div>
+
 
             <!-- Search Standard -->
             <div class="relative w-64 h-[38px] shrink-0">
@@ -126,6 +115,17 @@
                     ĐÃ LƯU
                 </span>
             </button>
+            <button type="button" wire:click="saveMaxStocks" wire:loading.attr="disabled" 
+                    x-data="{ saved: false }" 
+                    @max-stocks-saved.window="saved = true; setTimeout(() => saved = false, 3000)"
+                    class="h-[38px] shrink-0 bg-gradient-to-r from-rose-500 to-rose-600 font-black hover:from-rose-600 hover:to-rose-700 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
+                <span x-show="!saved">💾</span> 
+                <span x-show="!saved">LƯU TỒN TỐI ĐA</span>
+                <span x-cloak x-show="saved" class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    ĐÃ LƯU
+                </span>
+            </button>
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
     </div>
@@ -182,6 +182,7 @@
                     <th class="px-2 py-2">Vị trí</th>
                     <th class="px-2 py-2">Tình trạng</th>
                     <th class="px-2 py-2">Tồn tối thiểu</th>
+                    <th class="px-2 py-2 text-rose-600">Tồn tối đa</th>
                     <th class="px-2 py-2">Ghi chú</th>
                 </tr>
             </thead>
@@ -249,6 +250,12 @@
                             <input type="number" 
                                    wire:model.defer="minStocks.<?php echo e($product->id); ?>"
                                    class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded px-1.5 py-1 text-[11px] transition-all text-center shadow-inner placeholder-slate-400"
+                                   placeholder="0">
+                        </td>
+                        <td class="px-4 py-2 text-center">
+                            <input type="number" 
+                                   wire:model.defer="maxStocks.<?php echo e($product->id); ?>"
+                                   class="w-20 text-xs font-black text-slate-800 bg-slate-50 border border-slate-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded px-1.5 py-1 text-[11px] transition-all text-center shadow-inner placeholder-slate-400"
                                    placeholder="0">
                         </td>
                         <td class="px-2 py-1.5 text-xs text-gray-600 truncate max-w-[150px]" title="<?php echo e($product->description); ?>"><?php echo e($product->description); ?></td>
@@ -516,6 +523,18 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                                 <label class="block text-sm font-medium text-gray-700">Tồn tối thiểu</label>
                                 <input type="text" inputmode="numeric" wire:model.lazy="min_stock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="0">
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['min_stock'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-sm font-medium text-rose-700">Tồn tối đa</label>
+                                <input type="text" inputmode="numeric" wire:model.lazy="max_stock" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 border-rose-200" placeholder="0">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['max_stock'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }

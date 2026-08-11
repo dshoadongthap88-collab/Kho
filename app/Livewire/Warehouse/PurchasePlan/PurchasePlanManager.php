@@ -69,64 +69,56 @@ class PurchasePlanManager extends Component
 
     public function autoSuggest()
     {
-        // Lấy tất cả vật tư (không giới hạn)
-        $products = Product::with('inventory')->get();
-        
-        $count = 0;
-        $daysToAnalyze = 60; // Số ngày phân tích
-        $leadTime = (int) $this->reserveDays; // Thời gian chờ hàng/dự trù linh hoạt (ngày)
-        if ($leadTime <= 0) $leadTime = 30;
-        
-        $sixtyDaysAgo = now()->subDays($daysToAnalyze);
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
 
-        foreach ($products as $product) {
-            $currentStock = $product->inventory ? $product->inventory->quantity : 0;
+            $products = Product::with('inventory')->get();
             
-            // Tính tổng lượng xuất kho trong 60 ngày
-            $totalUsed = \App\Models\StockOutItem::where('product_id', $product->id)
-                ->where('created_at', '>=', $sixtyDaysAgo)
-                ->sum('quantity');
-                
-            // Tốc độ tiêu hao trung bình 1 ngày (Daily Usage Rate)
-            $dailyUsage = $totalUsed / $daysToAnalyze;
-            
-            // Reorder Point (ROP) = (Tốc độ tiêu hao * Lead time) + Tồn kho an toàn (Min Stock)
-            $rop = ($dailyUsage * $leadTime) + $product->min_stock;
-            
-            // Kiểm tra mức tồn kho so với ROP
-            if ($currentStock <= $rop) {
-                // Kiểm tra xem đã có kế hoạch mua hàng đang chờ chưa
-                $existing = PurchasePlan::where('product_id', $product->id)
-                    ->whereNotIn('status', ['completed'])
-                    ->first();
-                    
-                if (!$existing) {
-                    // Số lượng đề xuất mua để duy trì qua lead time và giữ lại mức min stock
-                    $proposedQty = ceil(($dailyUsage * $leadTime) + $product->min_stock - $currentStock);
-                    if ($proposedQty < 1) {
-                        $proposedQty = $product->min_stock > 0 ? $product->min_stock : 1;
+            $count = 0;
+            $leadTime = (int) $this->reserveDays;
+            if ($leadTime <= 0) $leadTime = 30;
+
+            foreach ($products as $product) {
+                $currentStock = $product->inventory ? $product->inventory->quantity : 0;
+                $minStock = $product->min_stock ?? 0;
+                $maxStock = $product->max_stock ?? 0;
+
+                // Nếu tồn kho <= tồn tối thiểu thì mới đề xuất (và phải có cấu hình tồn tối thiểu > 0 để tránh bắt nhầm vật tư ko quản lý)
+                if ($minStock > 0 && $currentStock <= $minStock) {
+                    // Kiểm tra xem đã có kế hoạch mua hàng đang chờ chưa
+                    $existing = PurchasePlan::where('product_id', $product->id)
+                        ->whereNotIn('status', ['completed'])
+                        ->first();
+                        
+                    if (!$existing) {
+                        // Số lượng đề xuất = Tồn tối đa - Tồn hiện tại
+                        $proposedQty = $maxStock - $currentStock;
+                        if ($proposedQty <= 0) {
+                            $proposedQty = $minStock > 0 ? $minStock : 1;
+                        }
+
+                        // Phân loại khẩn cấp nếu tồn kho dưới mức 50% của min_stock
+                        $urgency = ($currentStock <= ($minStock / 2)) ? 'urgent' : 'normal';
+
+                        PurchasePlan::create([
+                            'product_id' => $product->id,
+                            'proposed_quantity' => $proposedQty,
+                            'status' => 'pending',
+                            'notes' => '',
+                            'expected_delivery_date' => now()->addDays($leadTime),
+                            'urgency' => $urgency,
+                        ]);
+                        $count++;
                     }
-
-                    // Tự động phân loại khẩn cấp (Nếu tồn kho không đủ dùng trong 10 ngày)
-                    $urgency = ($currentStock <= ($dailyUsage * 10)) ? 'urgent' : 'normal';
-
-                    // Ghi chú AI (Người dùng yêu cầu để trống hoàn toàn mặc định)
-                    $notes = '';
-
-                    PurchasePlan::create([
-                        'product_id' => $product->id,
-                        'proposed_quantity' => $proposedQty,
-                        'status' => 'pending',
-                        'notes' => $notes,
-                        'expected_delivery_date' => now()->addDays($leadTime),
-                        'urgency' => $urgency,
-                    ]);
-                    $count++;
                 }
             }
+
+            \Illuminate\Support\Facades\DB::commit();
+            session()->flash('message', "Đã tạo đề xuất mua hàng tự động cho $count vật tư.");
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            session()->flash('error', 'Lỗi khi đề xuất tự động: ' . $e->getMessage());
         }
-        
-        session()->flash('message', "Đã phân tích AI và tự động tạo đề xuất mua cho $count vật tư.");
     }
 
     public function openAddModal()

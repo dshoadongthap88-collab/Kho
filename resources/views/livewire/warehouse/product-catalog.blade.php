@@ -679,3 +679,4 @@
     </script>
     @endscript
 </div>
+</div>

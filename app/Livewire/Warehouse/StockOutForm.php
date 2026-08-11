@@ -652,7 +652,39 @@ class StockOutForm extends Component
         $this->activeTab = 'list';
     }
 
+    public $showZeroStockConfirm = false;
+
+    public function confirmSave()
+    {
+        $this->showZeroStockConfirm = false;
+        $this->forceSave();
+    }
+
+    public function cancelSave()
+    {
+        $this->showZeroStockConfirm = false;
+        $this->cancelEdit();
+    }
+
     public function save()
+    {
+        $hasZeroStock = false;
+        foreach ($this->items as $item) {
+            if (isset($item['available_qty']) && floatval($item['available_qty']) <= 0) {
+                $hasZeroStock = true;
+                break;
+            }
+        }
+
+        if ($hasZeroStock) {
+            $this->showZeroStockConfirm = true;
+            return;
+        }
+
+        $this->forceSave();
+    }
+
+    public function forceSave()
     {
         $this->validate([
             'items.*.product_id' => 'required|exists:products,id',
@@ -745,6 +777,7 @@ class StockOutForm extends Component
                 $recoverySequence = ($lastRecovery ? intval(preg_replace('/[^0-9]/', '', $lastRecovery->recovery_number)) : 0);
 
                 foreach ($this->items as $item) {
+                    $isZeroStock = (isset($item['available_qty']) && floatval($item['available_qty']) <= 0);
                     StockOutItem::create([
                         'stock_out_id' => $stockOut->id,
                         'product_id' => $item['product_id'],
@@ -752,7 +785,7 @@ class StockOutForm extends Component
                         'expiry_date' => $item['expiry_date'] ?: null,
                         'warehouse_location' => $item['warehouse_location'],
                         'quantity' => $item['quantity'],
-                        'requested_quantity' => $item['requested_quantity'] ?: $item['quantity'],
+                        'requested_quantity' => $isZeroStock ? 0 : ($item['requested_quantity'] ?: $item['quantity']),
                         'recovered_quantity' => $item['recovered_quantity'] ?: 0,
                         'item_note' => $item['item_note'] ?: '',
                         'unit_price' => $item['unit_price'],

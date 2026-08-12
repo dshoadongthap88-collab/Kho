@@ -448,10 +448,23 @@ class ProductCatalog extends Component
                       ->orWhereNull('type');
                 })
                 ->where(function($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('code', 'like', '%' . $this->search . '%')
-                      ->orWhere('brand', 'like', '%' . $this->search . '%')
-                      ->orWhere('batch_number', 'like', '%' . $this->search . '%');
+                    $searchTerm = '%' . $this->search . '%';
+                    $q->where('products.name', 'like', $searchTerm)
+                      ->orWhere('products.code', 'like', $searchTerm)
+                      ->orWhere('products.brand', 'like', $searchTerm)
+                      ->orWhere('products.batch_number', 'like', $searchTerm)
+                      ->orWhere('products.location', 'like', $searchTerm)
+                      ->orWhere('products.status', 'like', $searchTerm)
+                      ->orWhere('products.description', 'like', $searchTerm)
+                      ->orWhere('products.min_stock', 'like', $searchTerm)
+                      ->orWhere('products.max_stock', 'like', $searchTerm)
+                      ->orWhere('products.expiry_date', 'like', $searchTerm)
+                      ->orWhereHas('category', function ($subQ) use ($searchTerm) {
+                          $subQ->where('name', 'like', $searchTerm);
+                      })
+                      ->orWhereHas('inventory', function ($subQ) use ($searchTerm) {
+                          $subQ->where('quantity', 'like', $searchTerm);
+                      });
                 })
                 
                 
@@ -587,10 +600,23 @@ class ProductCatalog extends Component
                       ->orWhereNull('type');
                 })
                 ->where(function($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('code', 'like', '%' . $this->search . '%')
-                      ->orWhere('brand', 'like', '%' . $this->search . '%')
-                      ->orWhere('batch_number', 'like', '%' . $this->search . '%');
+                    $searchTerm = '%' . $this->search . '%';
+                    $q->where('products.name', 'like', $searchTerm)
+                      ->orWhere('products.code', 'like', $searchTerm)
+                      ->orWhere('products.brand', 'like', $searchTerm)
+                      ->orWhere('products.batch_number', 'like', $searchTerm)
+                      ->orWhere('products.location', 'like', $searchTerm)
+                      ->orWhere('products.status', 'like', $searchTerm)
+                      ->orWhere('products.description', 'like', $searchTerm)
+                      ->orWhere('products.min_stock', 'like', $searchTerm)
+                      ->orWhere('products.max_stock', 'like', $searchTerm)
+                      ->orWhere('products.expiry_date', 'like', $searchTerm)
+                      ->orWhereHas('category', function ($subQ) use ($searchTerm) {
+                          $subQ->where('name', 'like', $searchTerm);
+                      })
+                      ->orWhereHas('inventory', function ($subQ) use ($searchTerm) {
+                          $subQ->where('quantity', 'like', $searchTerm);
+                      });
                 })
                 
                 

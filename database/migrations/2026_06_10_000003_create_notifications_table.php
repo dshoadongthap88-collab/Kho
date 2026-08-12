@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('type'); // chat, system, alert, reminder
             $table->string('title');
             $table->text('message');
-            $table->json('data')->nullable();
+            $table->longText('data')->nullable();
             $table->boolean('is_read')->default(false);
             $table->timestamp('read_at')->nullable();
             $table->timestamps();

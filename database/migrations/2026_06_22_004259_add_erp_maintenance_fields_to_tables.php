@@ -24,7 +24,7 @@ return new class extends Migration
         });
 
         Schema::table('maintenance_tickets', function (Blueprint $table) {
-            $table->json('replaced_materials')->nullable()->after('description');
+            $table->longText('replaced_materials')->nullable()->after('description');
             $table->decimal('total_cost', 15, 2)->default(0)->after('replaced_materials');
         });
     }

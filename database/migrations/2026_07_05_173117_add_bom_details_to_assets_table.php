@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('assets', function (Blueprint $table) {
-            $table->json('bom_details')->nullable()->after('maintenance_cycle');
+            $table->longText('bom_details')->nullable()->after('maintenance_cycle');
         });
     }
 

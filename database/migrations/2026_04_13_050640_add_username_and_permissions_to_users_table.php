@@ -16,7 +16,7 @@ return new class extends Migration
                 $table->string('username')->unique()->nullable()->after('name');
             }
             if (!Schema::hasColumn('users', 'permissions')) {
-                $table->json('permissions')->nullable()->after('status');
+                $table->longText('permissions')->nullable()->after('status');
             }
         });
     }

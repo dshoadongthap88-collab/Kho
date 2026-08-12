@@ -16,7 +16,7 @@ return new class extends Migration
             $table->decimal('cycle_hours', 15, 2)->default(0); // Chu kỳ giờ máy
             $table->integer('cycle_months')->default(0); // Chu kỳ tháng
             $table->text('content')->nullable(); // Nội dung bảo dưỡng
-            $table->json('material_needed')->nullable(); // Vật tư cần thay (lưu ID product)
+            $table->longText('material_needed')->nullable(); // Vật tư cần thay (lưu ID product)
             $table->string('created_by')->nullable();
             $table->timestamps();
             $table->softDeletes();

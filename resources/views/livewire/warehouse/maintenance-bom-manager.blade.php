@@ -105,8 +105,8 @@
                                 <th class="px-3 py-2 border-b border-slate-200">Mã VT</th>
                                 <th class="px-3 py-2 border-b border-slate-200">Tên vật tư</th>
                                 <th class="px-3 py-2 border-b border-slate-200 text-center">ĐVT</th>
-                                <th class="px-3 py-2 border-b border-slate-200 text-right w-32">Định mức</th>
-                                <th class="px-3 py-2 border-b border-slate-200 text-left">Ghi chú</th>
+                                <th class="px-3 py-2 border-b border-slate-200 text-right w-24">Định mức</th>
+                                <th class="px-3 py-2 border-b border-slate-200 text-left w-64">Ghi chú</th>
                                 <th class="px-3 py-2 border-b border-slate-200 text-center w-16">Xóa</th>
                             </tr>
                         </thead>

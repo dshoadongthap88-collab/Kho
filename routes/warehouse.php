@@ -190,6 +190,30 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
     });
 
     Route::middleware('permission:warehouse.reports.stock')->group(function() {
+        Route::get('/reports/dashboard', \App\Livewire\Warehouse\Reports\ReportDashboard::class)->name('reports.dashboard');
+        Route::get('/prints/dead-stock', function () {
+            $ids = request('ids');
+            if (!$ids) return redirect()->route('warehouse.reports.dashboard')->with('error', 'Không có vật tư nào được chọn.');
+            $idsArr = explode(',', $ids);
+            
+            $products = [];
+            foreach ($idsArr as $pId) {
+                $inv = \App\Models\Inventory::where('product_id', $pId)->first();
+                if ($inv) {
+                    $stockInDate = \App\Models\InventoryTransaction::where('product_id', $pId)->where('type', 'import')->latest('created_at')->value('created_at');
+                    $products[] = [
+                        'code' => $inv->product->code ?? '',
+                        'name' => $inv->product->name ?? '',
+                        'unit' => $inv->product->unit ?? '',
+                        'quantity' => $inv->quantity,
+                        'supplier' => $inv->product->supplier->name ?? 'N/A',
+                        'stock_in_date' => $stockInDate ? \Carbon\Carbon::parse($stockInDate)->format('d/m/Y') : 'N/A'
+                    ];
+                }
+            }
+            return view('warehouse.prints.dead-stock-report', compact('products'));
+        })->name('prints.dead-stock');
+
         Route::get('/reports/stock', function () {
             return view('warehouse.stock-report');
         })->name('reports.stock');

@@ -41,6 +41,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Stock In
     Route::get('/stock-in', [StockInController::class, 'index']);
     Route::post('/stock-in', [StockInController::class, 'store']);
+    Route::post('/stock-in/import', [StockInController::class, 'import']);
+    Route::get('/stock-in/{stockIn}', [StockInController::class, 'show']);
+    Route::put('/stock-in/{stockIn}', [StockInController::class, 'update']);
+    Route::delete('/stock-in/{stockIn}', [StockInController::class, 'destroy']);
 
     // Stock Out
     Route::get('/stock-out', [StockOutController::class, 'index']);

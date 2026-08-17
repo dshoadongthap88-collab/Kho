@@ -41,6 +41,7 @@ class StockInForm extends Component
 
     // Nhập tệp đa phương thức tự động
     public $showImportModal = false;
+    public $activeImportTab = 'excel';
     public $excelFile = null;
 
     // Chỉnh sửa phiếu nhập

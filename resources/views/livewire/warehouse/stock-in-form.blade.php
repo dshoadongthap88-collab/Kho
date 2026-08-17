@@ -1,5 +1,5 @@
 <div class="h-full flex flex-col space-y-4" x-data="{
-    activeImportTab: 'excel',
+    activeTab: 'form',
     ocrProgress: 0,
     ocrStatus: '',
     ocrRunning: false,
@@ -936,13 +936,7 @@
         this.ocrMaximized = false; // Tự động đóng/thu nhỏ cửa sổ khi đã xác nhận đưa dữ liệu vào tồn kho
     }
 }">
-    <!-- Thư viện PDF.js và Tesseract.js phục vụ đọc PDF và quét OCR trực tiếp ở Browser -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script>
-        // Chỉ định đường dẫn worker cho PDF.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-    </script>
+    <!-- Thư viện OCR (Đã chuyển xuống dưới để tương thích Livewire) -->
 
     <!-- Top Bar: Tabs & Header Info -->
     <div class="flex items-center justify-between gap-2 mb-4">
@@ -1030,7 +1024,7 @@
                     </h2>
 
                     <!-- Nút Nhập Tự Động cực kỳ sang trọng -->
-                    <button type="button" wire:click="$set('showImportModal', true)" 
+                    <button type="button" @click="$wire.set('showImportModal', true)" 
                             class="px-3 py-1.5 text-xs font-black text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg shadow-sm transition-all duration-150 flex items-center gap-1.5 active:scale-95 no-print">
                         ⚡ Nhập từ Excel / PDF / Ảnh AI
                     </button>
@@ -1271,7 +1265,7 @@
     @if($showImportModal)
         <div class="fixed inset-0 z-50 no-print" :class="ocrMaximized ? 'overflow-hidden h-screen w-screen' : 'overflow-y-auto'">
             <div class="flex items-center justify-center min-h-screen text-center" :class="ocrMaximized ? 'h-screen w-screen p-0 items-stretch' : 'pt-4 px-4 pb-20 align-middle'">
-                <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false); ocrMaximized = false"></div>
+                <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity" @click="$wire.set('showImportModal', false); ocrMaximized = false"></div>
                 
                 <div :class="ocrMaximized ? 'w-screen h-screen max-w-full my-0 rounded-none flex flex-col' : 'inline-block align-middle sm:max-w-4xl sm:w-full rounded-2xl sm:my-8 border border-slate-150'"
                      class="bg-white text-left overflow-hidden shadow-2xl transform transition-all">
@@ -1279,20 +1273,17 @@
                     <!-- Tab Header -->
                     <div class="bg-slate-55 border-b border-slate-150 px-6 py-4 flex items-center justify-between shrink-0 bg-slate-50">
                         <div class="flex gap-2">
-                            <button @click="activeImportTab = 'excel'" 
-                                    :class="activeImportTab === 'excel' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
-                                    class="py-2 px-1 text-[13px] border-b-2 transition duration-150">
+                            <button type="button" wire:click="$set('activeImportTab', 'excel')" 
+                                    class="py-2 px-1 text-[13px] border-b-2 transition duration-150 {{ $activeImportTab === 'excel' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700' }}">
                                 📥 Nhập từ Excel/CSV linh hoạt
                             </button>
-                            <button @click="activeImportTab = 'pdf'" 
-                                    :class="activeImportTab === 'pdf' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
-                                    class="py-2 px-1 text-[13px] border-b-2 transition duration-150 flex items-center gap-1">
+                            <button type="button" wire:click="$set('activeImportTab', 'pdf')" 
+                                    class="py-2 px-1 text-[13px] border-b-2 transition duration-150 flex items-center gap-1 {{ $activeImportTab === 'pdf' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700' }}">
                                 📋 Nhập từ tệp tin PDF
                                 <span class="bg-red-100 text-red-700 text-[9px] px-1.5 py-0.5 rounded font-black uppercase">Mới</span>
                             </button>
-                            <button @click="activeImportTab = 'ocr'" 
-                                    :class="activeImportTab === 'ocr' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
-                                    class="py-2 px-1 text-[13px] border-b-2 transition duration-150 flex items-center gap-1.5">
+                            <button type="button" wire:click="$set('activeImportTab', 'ocr')" 
+                                    class="py-2 px-1 text-[13px] border-b-2 transition duration-150 flex items-center gap-1.5 {{ $activeImportTab === 'ocr' ? 'border-indigo-650 text-indigo-650 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700' }}">
                                 📷 Nhận diện từ Ảnh chụp (AI OCR)
                                 <span class="bg-indigo-100 text-indigo-800 text-[9px] px-1.5 py-0.5 rounded font-black uppercase">Thông minh</span>
                             </button>
@@ -1306,14 +1297,15 @@
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4h4m12 4V4h-4M4 16v4h4m12-4v4h-4"></path></svg>
                                 </template>
                             </button>
-                            <button type="button" wire:click="$set('showImportModal', false)" @click="ocrMaximized = false" class="text-slate-450 hover:text-slate-650 text-lg p-1">✕</button>
+                            <button type="button" @click="$wire.set('showImportModal', false); ocrMaximized = false" class="text-slate-450 hover:text-slate-650 text-lg p-1">✕</button>
                         </div>
                     </div>
 
                     <!-- Tab Content Wrapper -->
                     <div :class="ocrMaximized ? 'flex-1 overflow-y-auto' : ''">
                         <!-- Tab 1: Nhập từ Excel/CSV -->
-                        <div x-show="activeImportTab === 'excel'" class="p-2 space-y-4">
+                        @if($activeImportTab === 'excel')
+                        <div class="p-2 space-y-4">
                             @if(session('error'))
                                 <div class="p-3 bg-red-100 text-red-800 rounded-lg text-xs font-bold border border-red-200">
                                     ❌ {{ session('error') }}
@@ -1335,14 +1327,15 @@
                         </div>
 
                         <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
-                            <button type="button" wire:click="$set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                            <button type="button" @click="$wire.set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
                                 Hủy bỏ
                             </button>
                             <button type="button" wire:click="importExcelData" class="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-black text-white transition">
                                 Xác nhận nhập Excel
                             </button>
                         </div>
-                    </div>
+                        </div>
+                        @endif
 
                     <!-- Tab 2: Nhập từ tệp tin PDF -->
                     <div x-show="activeImportTab === 'pdf'" class="p-2 space-y-4">
@@ -1353,12 +1346,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <!-- PDF Drag and Drop Zone -->
                             <div class="border-2 border-dashed border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center min-h-[200px] bg-slate-50 relative hover:border-red-400 hover:bg-slate-100/50 transition-all cursor-pointer"
-                                 @click="$refs.pdfInput.click()"
+                                 onclick="document.getElementById('pdfInputFile').click()"
                                  @dragover.prevent="$el.classList.add('border-red-400', 'bg-slate-100')"
                                  @dragleave.prevent="$el.classList.remove('border-red-400', 'bg-slate-100')"
                                  @drop.prevent="$el.classList.remove('border-red-400', 'bg-slate-100'); handlePdfUpload($event)">
                                 
-                                <input type="file" x-ref="pdfInput" @change="handlePdfUpload($event)" accept="application/pdf" class="hidden" />
+                                <input type="file" id="pdfInputFile" @change="handlePdfUpload($event)" accept="application/pdf" class="hidden" />
 
                                 <div class="text-center space-y-3 select-none">
                                     <div class="p-3 bg-red-50 text-red-650 rounded-full inline-block">
@@ -1469,7 +1462,7 @@
                         </template>
 
                         <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
-                            <button type="button" wire:click="$set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                            <button type="button" @click="$wire.set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
                                 Hủy bỏ
                             </button>
                             <button type="button" @click="submitParsedData()" :disabled="ocrParsedRows.length === 0"
@@ -1621,7 +1614,7 @@
                         </template>
 
                         <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
-                            <button type="button" wire:click="$set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                            <button type="button" @click="$wire.set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
                                 Hủy bỏ
                             </button>
                             <button type="button" @click="submitParsedData()" :disabled="ocrParsedRows.length === 0"
@@ -1958,3 +1951,14 @@
     </script>
     @endscript
 </div>
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        }
+    });
+</script>
+@endpush

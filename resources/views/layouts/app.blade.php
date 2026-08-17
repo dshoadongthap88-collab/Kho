@@ -144,6 +144,7 @@
     </main>
 
     @livewireScripts
+    @stack('scripts')
     <script>
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {

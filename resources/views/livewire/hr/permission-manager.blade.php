@@ -22,6 +22,7 @@
                     <th class="p-2 font-bold border-b border-slate-200">Họ và Tên</th>
                     <th class="p-2 font-bold border-b border-slate-200">Vai trò</th>
                     <th class="p-2 font-bold border-b border-slate-200">Ngôi nhà được phép truy cập</th>
+                    <th class="p-2 font-bold border-b border-slate-200">Phân quyền Module</th>
                     <th class="p-2 font-bold border-b border-slate-200 text-right">Thao tác</th>
                 </tr>
             </thead>
@@ -52,13 +53,25 @@
                             @endforelse
                         </div>
                     </td>
+                    <td class="p-2 text-sm">
+                        <div class="flex flex-wrap gap-1">
+                            @php
+                                $userPermissions = is_array($user->permissions) ? $user->permissions : [];
+                            @endphp
+                            @if(empty($userPermissions))
+                                <span class="text-slate-400 italic text-xs">Chưa cấp quyền</span>
+                            @else
+                                <span class="text-indigo-600 font-medium text-xs">{{ count($userPermissions) }} quyền tính năng</span>
+                            @endif
+                        </div>
+                    </td>
                     <td class="p-2 text-right">
                         <button wire:click="edit({{ $user->id }})" class="px-1.5 py-1 text-[11px].5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg font-bold text-xs transition-colors border border-indigo-200">Phân quyền</button>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="p-8 text-center text-slate-500">Không tìm thấy nhân viên.</td>
+                    <td colspan="6" class="p-8 text-center text-slate-500">Không tìm thấy nhân viên.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -72,39 +85,56 @@
     <!-- Modal Form -->
     @if($showModal)
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2">
-        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+        <div class="bg-white rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
                 <h2 class="text-lg font-bold text-slate-800">Phân quyền: {{ $userName }}</h2>
                 <button wire:click="$set('showModal', false)" class="text-slate-400 hover:text-slate-600">&times;</button>
             </div>
             
-            <div class="p-2 space-y-6">
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Vai trò Hệ thống</label>
-                    <select wire:model="role" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="staff">Nhân viên (Chỉ xem/thao tác Ngôi nhà được cấp)</option>
-                        <option value="admin">Quản trị viên (Quyền Admin Ngôi nhà HR)</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-3">Ngôi nhà (Dự án) được phép truy cập</label>
-                    <div class="space-y-3 max-h-64 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-xl">
-                        @foreach($projects as $project)
-                        <label class="flex items-center p-2 rounded hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-slate-200">
-                            <input wire:model="selectedHouses" type="checkbox" value="{{ $project->id }}" class="w-5 h-5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500">
-                            <div class="ml-3">
-                                <span class="block text-sm font-bold text-slate-800">{{ $project->name }}</span>
-                                <span class="block text-xs text-slate-500">{{ $project->code ?? 'N/A' }}</span>
+            <div class="p-4 space-y-6 overflow-y-auto flex-1">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Cột trái: Vai trò và Nhà -->
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Vai trò Hệ thống</label>
+                            <select wire:model="role" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="staff">Nhân viên (Chỉ xem/thao tác Ngôi nhà được cấp)</option>
+                                <option value="admin">Quản trị viên (Quyền Admin Ngôi nhà HR)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-3">Ngôi nhà (Dự án) được phép truy cập</label>
+                            <div class="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                @foreach($projects as $project)
+                                <label class="flex items-center p-2 rounded hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-slate-200">
+                                    <input wire:model="selectedHouses" type="checkbox" value="{{ $project->id }}" class="w-5 h-5 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500">
+                                    <div class="ml-3">
+                                        <span class="block text-sm font-bold text-slate-800">{{ $project->name }}</span>
+                                    </div>
+                                </label>
+                                @endforeach
                             </div>
-                        </label>
-                        @endforeach
+                            <p class="text-xs text-slate-500 mt-2 italic">* Chỉ những ngôi nhà được chọn mới xuất hiện ở màn hình Đăng nhập của nhân viên này.</p>
+                        </div>
                     </div>
-                    <p class="text-xs text-slate-500 mt-2 italic">* Chỉ những ngôi nhà được chọn mới xuất hiện ở màn hình Đăng nhập của nhân viên này.</p>
+
+                    <!-- Cột phải: Quyền tính năng -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-3">Phân quyền tính năng (Module Permissions)</label>
+                        <div class="grid grid-cols-1 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl h-full content-start">
+                            @foreach($availablePermissions as $key => $label)
+                            <label class="flex items-center p-2 rounded hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-slate-200">
+                                <input wire:model="selectedPermissions" type="checkbox" value="{{ $key }}" class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                                <span class="ml-2 text-sm font-medium text-slate-700">{{ $label }}</span>
+                            </label>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 shrink-0">
                 <button wire:click="$set('showModal', false)" class="px-4 py-2 text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 font-medium">Hủy</button>
                 <button wire:click="save" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold shadow-sm">Lưu phân quyền</button>
             </div>

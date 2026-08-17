@@ -17,73 +17,99 @@
                     <span class="whitespace-nowrap">ERP KHO</span>
                 </a>
 
+                @php
+                    $user = auth()->user();
+                    $isAdmin = $user && $user->role === 'admin';
+                    $permissions = $user ? ($user->permissions ?? []) : [];
+                    
+                    $hasContacts = $isAdmin || in_array('warehouse.contacts', $permissions);
+                    $hasKho = $isAdmin || array_intersect(['warehouse.product-catalog', 'warehouse.asset-manager', 'warehouse.stock-in', 'warehouse.stock-out', 'warehouse.inventory', 'warehouse.stock-transfer.index', 'warehouse.stock-recovery-report', 'warehouse.stock-count', 'warehouse.settings.warehouses'], $permissions);
+                    $hasMaintenance = $isAdmin || array_intersect(['warehouse.asset-manager', 'warehouse.maintenance-dashboard', 'warehouse.maintenance-tracking', 'warehouse.maintenance-rules', 'warehouse.maintenance-plans', 'warehouse.maintenance-tickets'], $permissions);
+                    $hasPurchase = $isAdmin || array_intersect(['warehouse.purchase-plan', 'warehouse.purchase-plan.history'], $permissions);
+                    $hasReports = $isAdmin || array_intersect(['warehouse.reports.transaction-detail', 'warehouse.reports.daily', 'warehouse.reports.stock'], $permissions);
+                    $hasChat = $isAdmin || in_array('warehouse.chat', $permissions);
+                @endphp
+
                 <div class="hidden md:flex items-center gap-1 shrink-0">
                     <!-- Module 1: NCC/KH -->
+                    @if($hasContacts)
                     <a href="{{ route('warehouse.contacts') }}" class="px-2 py-1.5 rounded-md text-xs whitespace-nowrap shrink-0 font-bold transition duration-150 hover:bg-sky-200 hover:text-sky-950 {{ request()->routeIs('warehouse.contacts') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                         1. NCC/KH
                     </a>
+                    @endif
 
                     <!-- Module 2: KHO -->
+                    @if($hasKho)
                     <div class="relative group shrink-0">
                         <button class="px-2 py-1.5 rounded-md text-xs whitespace-nowrap shrink-0 font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.stock-*') || request()->routeIs('warehouse.inventory') || request()->routeIs('warehouse.product-*') || request()->routeIs('warehouse.asset-manager') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             2. KHO
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
-                            <a href="{{ route('warehouse.product-catalog') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 font-bold border-b border-slate-100">DANH MỤC VẬT TƯ</a>
-                            <a href="{{ route('warehouse.asset-manager') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 font-bold border-b border-slate-100">DANH MỤC THIẾT BỊ</a>
-                            <a href="{{ route('warehouse.stock-in') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Nhập kho</a>
-                            <a href="{{ route('warehouse.stock-out') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Xuất kho</a>
-                            <a href="{{ route('warehouse.inventory') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Tồn kho</a>
-                            <a href="{{ route('warehouse.stock-transfer.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Chuyển kho</a>
-                            <a href="{{ route('warehouse.stock-recovery-report') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Thu hồi phế phẩm</a>
-                            <a href="{{ route('warehouse.stock-count') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Kiểm kê kho</a>
-                            <a href="{{ route('warehouse.settings.warehouses') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Cấu hình kho</a>
+                            @if($isAdmin || in_array('warehouse.product-catalog', $permissions)) <a href="{{ route('warehouse.product-catalog') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 font-bold border-b border-slate-100">DANH MỤC VẬT TƯ</a> @endif
+                            @if($isAdmin || in_array('warehouse.asset-manager', $permissions)) <a href="{{ route('warehouse.asset-manager') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 font-bold border-b border-slate-100">DANH MỤC THIẾT BỊ</a> @endif
+                            @if($isAdmin || in_array('warehouse.stock-in', $permissions)) <a href="{{ route('warehouse.stock-in') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Nhập kho</a> @endif
+                            @if($isAdmin || in_array('warehouse.stock-out', $permissions)) <a href="{{ route('warehouse.stock-out') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Xuất kho</a> @endif
+                            @if($isAdmin || in_array('warehouse.inventory', $permissions)) <a href="{{ route('warehouse.inventory') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Tồn kho</a> @endif
+                            @if($isAdmin || in_array('warehouse.stock-transfer.index', $permissions)) <a href="{{ route('warehouse.stock-transfer.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Chuyển kho</a> @endif
+                            @if($isAdmin || in_array('warehouse.stock-recovery-report', $permissions)) <a href="{{ route('warehouse.stock-recovery-report') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Thu hồi phế phẩm</a> @endif
+                            @if($isAdmin || in_array('warehouse.stock-count', $permissions)) <a href="{{ route('warehouse.stock-count') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Kiểm kê kho</a> @endif
+                            @if($isAdmin || in_array('warehouse.settings.warehouses', $permissions)) <a href="{{ route('warehouse.settings.warehouses') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Cấu hình kho</a> @endif
                         </div>
                     </div>
+                    @endif
 
 
                     <!-- Module 3: THEO DÕI BẢO DƯỠNG -->
+                    @if($hasMaintenance)
                     <div class="relative group shrink-0">
                         <button class="px-2 py-1.5 rounded-md text-xs whitespace-nowrap shrink-0 font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.asset-manager') || request()->routeIs('maintenance.*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             3. THEO DÕI BẢO DƯỠNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-72 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left">
+                            @if($isAdmin || in_array('warehouse.asset-manager', $permissions))
                             <a href="{{ route('warehouse.asset-manager') }}" class="block px-4 py-2 text-sm text-gray-700 font-bold bg-sky-50 hover:bg-sky-100 border-b border-sky-100">TRANG CHỦ TỔNG HỢP (7 IN 1)</a>
                             <a href="{{ route('warehouse.asset-manager', ['activeTab' => 'odo-manager']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100">Cập nhật giờ ODO hàng ngày</a>
                             <a href="{{ route('warehouse.asset-manager', ['activeTab' => 'bom-manager']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">Định mức bảo dưỡng (BOM)</a>
                             <a href="{{ route('warehouse.asset-manager', ['activeTab' => 'ticket-list']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">Phiếu bảo dưỡng & Lịch</a>
                             <a href="{{ route('warehouse.asset-manager', ['activeTab' => 'shift-log']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-50 border-t border-slate-50">Giao ca / Nhật ký</a>
+                            @endif
                         </div>
                     </div>
+                    @endif
 
                     <!-- Module 4: KẾ HOẠCH & MUA HÀNG -->
+                    @if($hasPurchase)
                     <div class="relative group ml-2 shrink-0">
                         <button class="px-2 py-1.5 rounded-md text-xs whitespace-nowrap shrink-0 font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('purchase-plan*') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             4. KẾ HOẠCH & MUA HÀNG
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left z-50">
-                            <a href="{{ route('purchase-plan') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 font-bold text-indigo-700 hover:bg-indigo-50">1. Quản lý Kế hoạch</a>
-                            <a href="{{ route('purchase-plan.history') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">2. Lịch sử mua hàng</a>
+                            @if($isAdmin || in_array('warehouse.purchase-plan', $permissions)) <a href="{{ route('purchase-plan') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 font-bold text-indigo-700 hover:bg-indigo-50">1. Quản lý Kế hoạch</a> @endif
+                            @if($isAdmin || in_array('warehouse.purchase-plan.history', $permissions)) <a href="{{ route('purchase-plan.history') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 border-t border-slate-50">2. Lịch sử mua hàng</a> @endif
                         </div>
                     </div>
+                    @endif
 
                     <!-- Module 5: BÁO CÁO -->
+                    @if($hasReports)
                     <div class="relative group ml-2 shrink-0">
                         <button class="px-2 py-1.5 rounded-md text-xs whitespace-nowrap shrink-0 font-bold transition duration-150 group-hover:bg-sky-200 group-hover:text-sky-950 flex items-center gap-1 {{ request()->routeIs('warehouse.purchase-*') || request()->routeIs('warehouse.delivery-note') || request()->routeIs('warehouse.reports') || request()->routeIs('purchase-request') ? 'bg-sky-200 text-sky-950 shadow-inner' : 'text-sky-900' }}">
                             5. BÁO CÁO
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         <div class="absolute left-0 mt-0 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left -translate-y-2 group-hover:translate-y-0 text-left z-50">
-                            <a href="{{ route('warehouse.reports.transaction-detail') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.transaction-detail') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo chi tiết giao dịch</a>
-                            <a href="{{ route('warehouse.reports.daily') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.daily') ? 'bg-slate-100 font-bold' : '' }}">Báo Cáo Ngày</a>
-                            <a href="{{ route('warehouse.reports.stock') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : '' }}">Báo Cáo Kho Tổng Hợp</a>
+                            @if($isAdmin || in_array('warehouse.reports.transaction-detail', $permissions)) <a href="{{ route('warehouse.reports.transaction-detail') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.transaction-detail') ? 'bg-slate-100 font-bold' : '' }}">Báo cáo chi tiết giao dịch</a> @endif
+                            @if($isAdmin || in_array('warehouse.reports.daily', $permissions)) <a href="{{ route('warehouse.reports.daily') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.daily') ? 'bg-slate-100 font-bold' : '' }}">Báo Cáo Ngày</a> @endif
+                            @if($isAdmin || in_array('warehouse.reports.stock', $permissions)) <a href="{{ route('warehouse.reports.stock') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 {{ request()->routeIs('warehouse.reports.stock') ? 'bg-slate-100 font-bold' : '' }}">Báo Cáo Kho Tổng Hợp</a> @endif
                         </div>
                     </div>
+                    @endif
 
                     <!-- Module 6: CHAT KHO -->
+                    @if($hasChat)
                     @php
                         $lastRead = auth()->user()->last_read_chat_at ?? '2000-01-01 00:00:00';
                         $unreadCount = \App\Models\ChatMessage::where('created_at', '>', $lastRead)
@@ -98,6 +124,7 @@
                             </span>
                         @endif
                     </a>
+                    @endif
                 </div>
             </div>
 

@@ -456,6 +456,22 @@ class StockInForm extends Component
                     $productUpdates['type'] = 'material';
                 }
                 
+                // Luôn cập nhật tên và đơn vị tính dựa theo dữ liệu import (nếu có mới)
+                $updateName = !empty($item['csv_name']) ? trim($item['csv_name']) : (!empty($item['new_name']) ? trim($item['new_name']) : '');
+                if (empty($updateName) && !empty($item['product_search'])) {
+                    $searchParts = explode(' - ', $item['product_search']);
+                    if (count($searchParts) > 1) {
+                        $updateName = trim($searchParts[1]);
+                    }
+                }
+                if (!empty($updateName)) {
+                    $productUpdates['name'] = $updateName;
+                }
+                $updateUnit = !empty($item['csv_unit']) ? trim($item['csv_unit']) : (!empty($item['unit']) ? $item['unit'] : '');
+                if (!empty($updateUnit)) {
+                    $productUpdates['unit'] = $updateUnit;
+                }
+                
                 if (!empty($productUpdates)) {
                     Product::where('id', $productId)->update($productUpdates);
                 }
@@ -715,6 +731,8 @@ class StockInForm extends Component
                             $currentIndices['warehouse_location'] = $colIndex; $matchCount++;
                         } elseif ($currentIndices['unit_price'] === null && (str_contains($norm, 'dongia') || str_contains($norm, 'price') || str_contains($norm, 'unitprice') || str_contains($norm, 'gia'))) {
                             $currentIndices['unit_price'] = $colIndex; $matchCount++;
+                        } elseif (!isset($currentIndices['unit']) && (str_contains($norm, 'dvt') || str_contains($norm, 'donvitinh') || str_contains($norm, 'unit'))) {
+                            $currentIndices['unit'] = $colIndex; $matchCount++;
                         }
                     }
 
@@ -785,16 +803,20 @@ class StockInForm extends Component
                         $newName = !empty($nameVal) ? $nameVal : $codeVal;
                     }
 
+                    $unitVal = isset($indices['unit']) && isset($row[$indices['unit']]) ? trim($row[$indices['unit']]) : '';
+
                     $this->items[] = [
                         'product_id' => $product?->id ?? '',
                         'product_search' => $product ? ($product->code . ' - ' . $product->name) : ($newCode . ($newName ? ' - ' . $newName : '')),
                         'new_code' => $newCode,
                         'new_name' => $newName,
+                        'csv_name' => $nameVal, // Capture the name from CSV directly
+                        'csv_unit' => $unitVal, // Capture the unit from CSV directly
                         'batch_number' => $batchVal,
                         'expiry_date' => $expiryVal,
                         'warehouse_location' => $locationVal ?: ($product?->location ?? ''),
                         'quantity' => $qtyVal,
-                        'unit' => $product?->unit ?: ($product?->box_spec ?: ($product?->carton_spec ?: 'Cái')),
+                        'unit' => $unitVal ?: ($product?->unit ?: ($product?->box_spec ?: ($product?->carton_spec ?: 'Cái'))),
                         'unit_price' => $priceVal,
                         'vat_rate' => 0,
                         'total_amount' => is_numeric($qtyVal) ? ($qtyVal * $priceVal) : 0

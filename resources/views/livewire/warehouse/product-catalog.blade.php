@@ -163,8 +163,8 @@
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
                     <th class="px-2 py-2 w-10 text-center no-print">
-                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
-                               {{ count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
+                        <input type="checkbox" wire:click="toggleSelectAll" 
+                               {{ count($selectedIds) === ($activeTab === 'materials' ? $products->total() : $equipments->total()) && ($activeTab === 'materials' ? $products->total() : $equipments->total()) > 0 ? 'checked' : '' }}
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
                     <th class="px-3 py-4 text-[11px] font-black uppercase tracking-tighter text-slate-500">Mã vật tư</th>
@@ -269,8 +269,8 @@
             <thead>
                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-widest">
                     <th class="px-2 py-2 w-10 text-center no-print">
-                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
-                               {{ count(array_intersect(array_map('strval', $allProductIdsOnPage), $selectedIds)) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
+                        <input type="checkbox" wire:click="toggleSelectAll" 
+                               {{ count($selectedIds) === ($activeTab === 'materials' ? $products->total() : $equipments->total()) && ($activeTab === 'materials' ? $products->total() : $equipments->total()) > 0 ? 'checked' : '' }}
                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                     </th>
                     <th class="px-2 py-2">MÃ THIẾT BỊ</th>
@@ -588,7 +588,8 @@
                 text-transform: uppercase;
                 font-size: 12px !important;
             }
-            @page { size: A4 portrait; margin: 10mm; }
+            @page { size: A4 portrait; margin: 0; }
+            body { padding: 15mm; }
         }
         .print-only { display: none; }
     </style>
@@ -597,9 +598,8 @@
     <div class="print-only print-container" style="font-family: 'Times New Roman', Times, serif;">
         <!-- Header công ty -->
         <div style="margin-bottom: 20px;">
-            <h1 style="font-size: 20px; font-weight: bold; text-transform: uppercase; margin: 0;">CTY TNHH ABC</h1>
-            <p style="font-size: 14px; margin: 4px 0;">Quản lý kho: HÓC MÔN</p>
-            <p style="font-size: 14px; margin: 4px 0;">SĐT: 0708091050</p>
+            <h1 style="font-size: 20px; font-weight: bold; text-transform: uppercase; margin: 0;">KHO KỸ THUẬT SỮA CHỮA VINALPHA</h1>
+            <p style="font-size: 16px; font-weight: bold; margin: 4px 0;">DỰ ÁN: {{ \App\Models\Project::find(auth()->user()->current_house_id)->name ?? '...' }}</p>
         </div>
 
         <div style="border-bottom: 2px solid black; margin-bottom: 20px;"></div>

@@ -95,12 +95,32 @@ class MaterialCatalog extends Component
             ->toArray();
     }
 
-    public function toggleSelectAll($productIds)
+    public function toggleSelectAll()
     {
-        if (count($this->selectedProducts) === count($productIds)) {
+        $query = Product::query()
+            ->where('type', 'material')
+            ->where(function($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('code', 'like', '%' . $this->search . '%')
+                  ->orWhere('brand', 'like', '%' . $this->search . '%')
+                  ->orWhere('batch_number', 'like', '%' . $this->search . '%');
+            })
+            ->when($this->filterMode === 'expiring', function($q) {
+                $q->whereNotNull('expiry_date')
+                  ->where('expiry_date', '<=', now()->addMonths(6));
+            })
+            ->when($this->filterMode === 'low_stock', function($q) {
+                $q->whereHas('inventory', function($iq) {
+                    $iq->whereColumn('quantity', '<=', 'products.min_stock');
+                })->where('min_stock', '>', 0);
+            });
+
+        $allIds = $query->pluck('id')->map(fn($id) => (string)$id)->toArray();
+
+        if (count($this->selectedProducts) === count($allIds) && count($allIds) > 0) {
             $this->selectedProducts = [];
         } else {
-            $this->selectedProducts = collect($productIds)->map(fn($id) => (string)$id)->toArray();
+            $this->selectedProducts = $allIds;
         }
     }
 
@@ -165,71 +185,73 @@ class MaterialCatalog extends Component
             // Đảm bảo quantity là số
             $qty = (float)($this->quantity ?: 0);
 
-            if ($this->isEdit) {
-                $product = Product::findOrFail($this->productId);
-                $product->update([
-                    'code' => $this->code,
-                    'name' => $this->name,
-                    'brand' => $this->brand,
-                    'box_spec' => $this->box_spec,
-                    'carton_spec' => $this->carton_spec,
-                    'unit' => $this->unit,
-                    'status' => $this->status,
-                    'location' => $this->location,
-                    'batch_number' => $this->batch_number,
-                    'expiry_date' => $this->expiry_date ?: null,
-                    'min_stock' => (float)($this->min_stock ?: 0),
-                    'type' => $this->type,
-                    'description' => $this->description,
-                ]);
-                
-                if ($imagePath) {
-                    $product->update(['image' => $imagePath]);
-                }
-                
-                // Đồng bộ với bảng Inventory
-                $inventory = Inventory::where('product_id', $product->id)->first();
-                if ($inventory) {
-                    $inventory->update([
-                        'quantity' => $qty,
-                        'warehouse_location' => $this->location
+            DB::transaction(function () use ($qty, $imagePath) {
+                if ($this->isEdit) {
+                    $product = Product::findOrFail($this->productId);
+                    $product->update([
+                        'code' => $this->code,
+                        'name' => $this->name,
+                        'brand' => $this->brand,
+                        'box_spec' => $this->box_spec,
+                        'carton_spec' => $this->carton_spec,
+                        'unit' => $this->unit,
+                        'status' => $this->status,
+                        'location' => $this->location,
+                        'batch_number' => $this->batch_number,
+                        'expiry_date' => $this->expiry_date ?: null,
+                        'min_stock' => (float)($this->min_stock ?: 0),
+                        'type' => $this->type,
+                        'description' => $this->description,
                     ]);
+                    
+                    if ($imagePath) {
+                        $product->update(['image' => $imagePath]);
+                    }
+                    
+                    // Đồng bộ với bảng Inventory
+                    $inventory = Inventory::where('product_id', $product->id)->first();
+                    if ($inventory) {
+                        $inventory->update([
+                            'quantity' => $qty,
+                            'warehouse_location' => $this->location
+                        ]);
+                    } else {
+                        Inventory::create([
+                            'product_id' => $product->id,
+                            'quantity' => $qty,
+                            'warehouse_location' => $this->location
+                        ]);
+                    }
+
+                    session()->flash('message', 'Cập nhật nguyên vật liệu thành công.');
                 } else {
+                    $product = Product::create([
+                        'code' => $this->code,
+                        'name' => $this->name,
+                        'brand' => $this->brand,
+                        'box_spec' => $this->box_spec,
+                        'carton_spec' => $this->carton_spec,
+                        'unit' => $this->unit,
+                        'status' => $this->status,
+                        'location' => $this->location,
+                        'batch_number' => $this->batch_number,
+                        'expiry_date' => $this->expiry_date ?: null,
+                        'min_stock' => (float)($this->min_stock ?: 0),
+                        'type' => $this->type,
+                        'image' => $imagePath,
+                        'description' => $this->description,
+                    ]);
+
+                    // Tạo luôn record bên Inventory
                     Inventory::create([
                         'product_id' => $product->id,
                         'quantity' => $qty,
                         'warehouse_location' => $this->location
                     ]);
+
+                    session()->flash('message', 'Thêm nguyên vật liệu mới thành công.');
                 }
-
-                session()->flash('message', 'Cập nhật nguyên vật liệu thành công.');
-            } else {
-                $product = Product::create([
-                    'code' => $this->code,
-                    'name' => $this->name,
-                    'brand' => $this->brand,
-                    'box_spec' => $this->box_spec,
-                    'carton_spec' => $this->carton_spec,
-                    'unit' => $this->unit,
-                    'status' => $this->status,
-                    'location' => $this->location,
-                    'batch_number' => $this->batch_number,
-                    'expiry_date' => $this->expiry_date ?: null,
-                    'min_stock' => (float)($this->min_stock ?: 0),
-                    'type' => $this->type,
-                    'image' => $imagePath,
-                    'description' => $this->description,
-                ]);
-
-                // Tạo luôn record bên Inventory
-                Inventory::create([
-                    'product_id' => $product->id,
-                    'quantity' => $qty,
-                    'warehouse_location' => $this->location
-                ]);
-
-                session()->flash('message', 'Thêm nguyên vật liệu mới thành công.');
-            }
+            });
 
             $this->reset(['image']); // Xoá ảnh tạm sau khi lưu
             $this->showModal = false;

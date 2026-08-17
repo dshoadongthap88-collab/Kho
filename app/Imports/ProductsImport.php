@@ -108,7 +108,7 @@ class ProductsImport implements ToCollection
 
         if (!$product) {
             // Tạo mới nếu chưa có
-            $type = str_starts_with(strtoupper((string)$productCode), 'NVL') ? 'material' : 'product_purchased';
+            $type = 'material'; // Luôn cho vào danh mục vật tư
             $product = Product::create([
                 'code' => strtoupper((string)$productCode),
                 'name' => $productName ?: 'Vật tư ' . $productCode,
@@ -120,6 +120,7 @@ class ProductsImport implements ToCollection
 
         // Cập nhật thông tin sản phẩm
         $productData = [];
+        $productData['type'] = 'material'; // Đảm bảo tự động cập nhật vào module Danh mục vật tư
         if ($productName) $productData['name'] = $productName;
         if ($unit) $productData['unit'] = $unit;
         if ($brand) $productData['brand'] = $brand;

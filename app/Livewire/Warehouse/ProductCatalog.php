@@ -141,15 +141,52 @@ class ProductCatalog extends Component
             ->toArray();
     }
 
-    public function toggleSelectAll($idsOnPage)
+    public function toggleSelectAll()
     {
-        $idsOnPage = collect($idsOnPage)->map(fn($id) => (string)$id)->toArray();
-        $isAllSelectedOnPage = count(array_intersect($idsOnPage, $this->selectedIds)) === count($idsOnPage);
-
-        if ($isAllSelectedOnPage) {
-            $this->selectedIds = array_values(array_diff($this->selectedIds, $idsOnPage));
+        if ($this->activeTab === 'materials') {
+            $query = Product::query()
+                ->where(function($q) {
+                    $q->whereIn('type', ['material', 'product_purchased', 'product_produced'])
+                      ->orWhereNull('type');
+                })
+                ->where(function($q) {
+                    $searchTerm = '%' . $this->search . '%';
+                    $q->where('products.name', 'like', $searchTerm)
+                      ->orWhere('products.code', 'like', $searchTerm)
+                      ->orWhere('products.brand', 'like', $searchTerm)
+                      ->orWhere('products.batch_number', 'like', $searchTerm)
+                      ->orWhere('products.location', 'like', $searchTerm)
+                      ->orWhere('products.status', 'like', $searchTerm)
+                      ->orWhere('products.description', 'like', $searchTerm)
+                      ->orWhere('products.min_stock', 'like', $searchTerm)
+                      ->orWhere('products.max_stock', 'like', $searchTerm)
+                      ->orWhere('products.expiry_date', 'like', $searchTerm)
+                      ->orWhereHas('category', function ($subQ) use ($searchTerm) {
+                          $subQ->where('name', 'like', $searchTerm);
+                      })
+                      ->orWhereHas('inventory', function ($subQ) use ($searchTerm) {
+                          $subQ->where('quantity', 'like', $searchTerm);
+                      });
+                })
+                ->when($this->filterMode === 'low_stock', function($q) {
+                    return $this->applyLowStockFilter($q);
+                });
+            $allIds = $query->pluck('id')->map(fn($id) => (string)$id)->toArray();
         } else {
-            $this->selectedIds = array_values(array_unique(array_merge($this->selectedIds, $idsOnPage)));
+            $query = \App\Models\Asset::query()
+                ->where(function($q) {
+                    $q->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('asset_code', 'like', '%' . $this->search . '%')
+                      ->orWhere('equipment_code', 'like', '%' . $this->search . '%')
+                      ->orWhere('manager', 'like', '%' . $this->search . '%');
+                });
+            $allIds = $query->pluck('id')->map(fn($id) => (string)$id)->toArray();
+        }
+
+        if (count($this->selectedIds) === count($allIds) && count($allIds) > 0) {
+            $this->selectedIds = [];
+        } else {
+            $this->selectedIds = $allIds;
         }
     }
 
@@ -294,70 +331,72 @@ class ProductCatalog extends Component
             // Đảm bảo quantity là số
             $qty = (float)($this->quantity ?: 0);
 
-            if ($this->isEdit) {
-                $product = Product::findOrFail($this->productId);
-                $product->update([
-                    'code' => $this->code,
-                    'name' => $this->name,
-                    'brand' => $this->brand,
-                    'description' => $this->description,
-                    'status' => $this->status,
-                    'category_id' => $this->category_id ?: null,
-                    'location' => $this->location,
-                    'batch_number' => $this->batch_number ?: '',
-                    'expiry_date' => $this->expiry_date ?: null,
-                    'min_stock' => (float)($this->min_stock ?: 0),
-                    'type' => $this->type,
-                ]);
-                
-                if ($imagePath) {
-                    $product->update(['image' => $imagePath]);
-                }
-                
-                // Đồng bộ với bảng Inventory
-                $inventory = Inventory::where('product_id', $product->id)->first();
-                if ($inventory) {
-                    $inventory->update([
-                        'quantity' => $qty,
-                        'warehouse_location' => $this->location
+            DB::transaction(function () use ($qty, $imagePath) {
+                if ($this->isEdit) {
+                    $product = Product::findOrFail($this->productId);
+                    $product->update([
+                        'code' => $this->code,
+                        'name' => $this->name,
+                        'brand' => $this->brand,
+                        'description' => $this->description,
+                        'status' => $this->status,
+                        'category_id' => $this->category_id ?: null,
+                        'location' => $this->location,
+                        'batch_number' => $this->batch_number ?: '',
+                        'expiry_date' => $this->expiry_date ?: null,
+                        'min_stock' => (float)($this->min_stock ?: 0),
+                        'type' => $this->type,
                     ]);
+                    
+                    if ($imagePath) {
+                        $product->update(['image' => $imagePath]);
+                    }
+                    
+                    // Đồng bộ với bảng Inventory
+                    $inventory = Inventory::where('product_id', $product->id)->first();
+                    if ($inventory) {
+                        $inventory->update([
+                            'quantity' => $qty,
+                            'warehouse_location' => $this->location
+                        ]);
+                    } else {
+                        Inventory::create([
+                            'product_id' => $product->id,
+                            'quantity' => $qty,
+                            'warehouse_location' => $this->location
+                        ]);
+                    }
+
+                    // Cập nhật lại mảng minStocks hiển thị trên bảng
+                    $this->minStocks[$product->id] = $this->min_stock > 0 ? $this->min_stock : '';
+
+                    session()->flash('message', 'Cập nhật vật tư thành công.');
                 } else {
+                    $product = Product::create([
+                        'code' => $this->code,
+                        'name' => $this->name,
+                        'brand' => $this->brand,
+                        'description' => $this->description,
+                        'status' => $this->status,
+                        'category_id' => $this->category_id ?: null,
+                        'location' => $this->location,
+                        'batch_number' => $this->batch_number ?: '',
+                        'expiry_date' => $this->expiry_date ?: null,
+                        'min_stock' => (float)($this->min_stock ?: 0),
+                        'type' => $this->type,
+                        'image' => $imagePath,
+                    ]);
+
+                    // Tạo luôn record bên Inventory
                     Inventory::create([
                         'product_id' => $product->id,
                         'quantity' => $qty,
                         'warehouse_location' => $this->location
                     ]);
+
+                    session()->flash('message', 'Thêm vật tư mới thành công.');
                 }
-
-                // Cập nhật lại mảng minStocks hiển thị trên bảng
-                $this->minStocks[$product->id] = $this->min_stock > 0 ? $this->min_stock : '';
-
-                session()->flash('message', 'Cập nhật vật tư thành công.');
-            } else {
-                $product = Product::create([
-                    'code' => $this->code,
-                    'name' => $this->name,
-                    'brand' => $this->brand,
-                    'description' => $this->description,
-                    'status' => $this->status,
-                    'category_id' => $this->category_id ?: null,
-                    'location' => $this->location,
-                    'batch_number' => $this->batch_number ?: '',
-                    'expiry_date' => $this->expiry_date ?: null,
-                    'min_stock' => (float)($this->min_stock ?: 0),
-                    'type' => $this->type,
-                    'image' => $imagePath,
-                ]);
-
-                // Tạo luôn record bên Inventory
-                Inventory::create([
-                    'product_id' => $product->id,
-                    'quantity' => $qty,
-                    'warehouse_location' => $this->location
-                ]);
-
-                session()->flash('message', 'Thêm vật tư mới thành công.');
-            }
+            });
 
             $this->reset(['image', 'confirmDuplicate']); // Xoá ảnh tạm sau khi lưu
             $this->showModal = false;
@@ -444,7 +483,7 @@ class ProductCatalog extends Component
             $this->printItems = Product::query()
                 ->with(['inventory'])
                 ->where(function($q) {
-                    $q->where('type', '!=', 'material')
+                    $q->whereIn('type', ['material', 'product_purchased', 'product_produced'])
                       ->orWhereNull('type');
                 })
                 ->where(function($q) {
@@ -596,7 +635,7 @@ class ProductCatalog extends Component
             $products = Product::query()
                 ->with(['inventory'])
                 ->where(function($q) {
-                    $q->where('type', '!=', 'material')
+                    $q->whereIn('type', ['material', 'product_purchased', 'product_produced'])
                       ->orWhereNull('type');
                 })
                 ->where(function($q) {

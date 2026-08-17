@@ -87,40 +87,45 @@ class StockCountForm extends Component
     {
         $code = 'KK-' . date('Ymd') . '-' . str_pad(StockCount::count() + 1, 4, '0', STR_PAD_LEFT);
 
-        $stockCount = StockCount::create([
-            'code' => $code,
-            'status' => 'pending',
-            'type' => $type,
-            'note' => $this->countNote,
-            'created_by' => auth()->id(),
-        ]);
+        DB::transaction(function () use ($code, $type) {
+            $stockCount = StockCount::create([
+                'code' => $code,
+                'status' => 'pending',
+                'type' => $type,
+                'note' => $this->countNote,
+                'created_by' => auth()->id(),
+            ]);
 
-        // Thêm tất cả items vào phiếu, sắp xếp theo vị trí kệ A-B-C...
-        $inventories = Inventory::with('product')
-            ->join('products', 'inventories.product_id', '=', 'products.id')
-            ->where('inventories.quantity', '>=', 0)
-            ->orderBy('products.location')
-            ->select('inventories.*')
-            ->get();
+            // Thêm tất cả items vào phiếu, sắp xếp theo vị trí kệ A-B-C...
+            $inventories = Inventory::with('product')
+                ->join('products', 'inventories.product_id', '=', 'products.id')
+                ->where('inventories.quantity', '>=', 0)
+                ->where(function($q) {
+                    $q->whereIn('products.type', ['material', 'product_purchased', 'product_produced'])
+                      ->orWhereNull('products.type');
+                })
+                ->orderBy('products.location')
+                ->select('inventories.*')
+                ->get();
 
-        // Lọc trùng lặp mã vật tư và tên vật tư
-        $uniqueInventories = collect();
-        $seenNames = [];
-        $seenCodes = [];
-        foreach ($inventories as $inv) {
-            if (!$inv->product) continue;
-            $pCode = trim($inv->product->code);
-            $pName = trim($inv->product->name);
-            if (in_array($pCode, $seenCodes) || in_array($pName, $seenNames)) {
-                continue;
+            // Lọc trùng lặp mã vật tư và tên vật tư
+            $uniqueInventories = collect();
+            $seenNames = [];
+            $seenCodes = [];
+            foreach ($inventories as $inv) {
+                if (!$inv->product) continue;
+                $pCode = trim($inv->product->code);
+                $pName = trim($inv->product->name);
+                if (in_array($pCode, $seenCodes) || in_array($pName, $seenNames)) {
+                    continue;
+                }
+                $seenCodes[] = $pCode;
+                $seenNames[] = $pName;
+                $uniqueInventories->push($inv);
             }
-            $seenCodes[] = $pCode;
-            $seenNames[] = $pName;
-            $uniqueInventories->push($inv);
-        }
-        $inventories = $uniqueInventories;
+            $inventories = $uniqueInventories;
 
-        foreach ($inventories as $inv) {
+            foreach ($inventories as $inv) {
                 StockCountItem::create([
                     'stock_count_id' => $stockCount->id,
                     'product_id' => $inv->product_id,
@@ -130,10 +135,12 @@ class StockCountForm extends Component
                     'difference' => 0,
                 ]);
             }
-        session()->flash('success', "Đã tạo phiếu kiểm kê {$code} với " . $inventories->count() . " sản phẩm.");
 
-        $this->selectedStockCounts = [];
-        $this->currentCountId = $stockCount->id;
+            session()->flash('success', "Đã tạo phiếu kiểm kê {$code} với " . $inventories->count() . " sản phẩm.");
+
+            $this->selectedStockCounts = [];
+            $this->currentCountId = $stockCount->id;
+        });
     }
 
     public function createDailyStockCount()
@@ -152,6 +159,10 @@ class StockCountForm extends Component
             ->join('products', 'inventories.product_id', '=', 'products.id')
             ->whereNotIn('inventories.product_id', $recentProductIds)
             ->where('inventories.quantity', '>=', 0)
+            ->where(function($q) {
+                $q->whereIn('products.type', ['material', 'product_purchased', 'product_produced'])
+                  ->orWhereNull('products.type');
+            })
             ->orderBy('products.location')
             ->select('inventories.*')
             ->get();
@@ -161,6 +172,10 @@ class StockCountForm extends Component
              $inventories = Inventory::with('product')
                 ->join('products', 'inventories.product_id', '=', 'products.id')
                 ->where('inventories.quantity', '>=', 0)
+                ->where(function($q) {
+                    $q->whereIn('products.type', ['material', 'product_purchased', 'product_produced'])
+                      ->orWhereNull('products.type');
+                })
                 ->orderBy('products.location')
                 ->select('inventories.*')
                 ->get();
@@ -361,6 +376,10 @@ class StockCountForm extends Component
             $query = Inventory::with('product')
                 ->join('products', 'inventories.product_id', '=', 'products.id')
                 ->where('inventories.quantity', '>=', 0)
+                ->where(function($q) {
+                    $q->whereIn('products.type', ['material', 'product_purchased', 'product_produced'])
+                      ->orWhereNull('products.type');
+                })
                 ->orderBy('products.location')
                 ->select('inventories.*');
 

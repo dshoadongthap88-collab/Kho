@@ -98,8 +98,8 @@
             <thead>
                 <tr class="bg-slate-800 border-b border-slate-700 text-white uppercase text-[11px] font-black tracking-widest">
                     <th class="px-2 py-2 w-10 no-print text-center">
-                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $allProductIdsOnPage) }}])" 
-                               {{ count($selectedProducts) === count($allProductIdsOnPage) && count($allProductIdsOnPage) > 0 ? 'checked' : '' }}
+                        <input type="checkbox" wire:click="toggleSelectAll" 
+                               {{ count($selectedProducts) === $products->total() && $products->total() > 0 ? 'checked' : '' }}
                                class="rounded border-slate-600 bg-slate-700 text-indigo-500 focus:ring-indigo-500">
                     </th>
                     <th class="px-3 py-4 text-center w-12">STT</th>
@@ -392,7 +392,8 @@
             th, td { border: 1px solid #ddd !important; padding: 8px !important; }
             tr:not(.ring-2) { display: none !important; }
             tr.ring-2 { display: table-row !important; }
-            @page { size: landscape; margin: 1cm; }
+            @page { size: landscape; margin: 0; }
+            body { padding: 15mm; }
         }
     </style>
 </div>

@@ -7,9 +7,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     @livewireStyles
-</head>
+<style>@media print { .no-print { display: none !important; } }</style></head>
 <body class="bg-gray-100 min-h-screen">
-    <nav class="bg-sky-100 text-sky-950 border-b border-sky-200 shadow-md sticky top-0 z-50 no-print">
+    <nav class="bg-sky-100 text-sky-950 border-b border-sky-200 shadow-md sticky top-0 z-50 print:hidden">
         <div class="w-full px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2 md:gap-4 shrink-0">
                 <a href="{{ route('warehouse.inventory') }}" class="flex items-center gap-2 text-xl font-extrabold tracking-tight text-sky-900 hover:text-sky-950 transition-all shrink-0">
@@ -153,7 +153,7 @@
     </nav>
 
     <main class="w-full px-2 py-2">
-        <h1 class="text-2xl font-black text-slate-900 mb-1 uppercase tracking-tight no-print" style="font-family: 'Times New Roman', Times, serif;">
+        <h1 class="text-2xl font-black text-slate-900 mb-1 uppercase tracking-tight print:hidden" style="font-family: 'Times New Roman', Times, serif;">
             {{ mb_strtoupper($title ?? '') }}
         </h1>
         {{ $slot }}

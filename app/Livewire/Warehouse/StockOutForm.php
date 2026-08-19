@@ -668,6 +668,12 @@ class StockOutForm extends Component
 
     public function save()
     {
+        if (empty($this->items)) {
+            $this->addError('general', 'Vui lòng thêm ít nhất một sản phẩm vào phiếu xuất.');
+            $this->addItem();
+            return;
+        }
+
         $hasZeroStock = false;
         foreach ($this->items as $item) {
             if (isset($item['available_qty']) && floatval($item['available_qty']) <= 0) {

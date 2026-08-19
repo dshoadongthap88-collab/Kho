@@ -24,7 +24,7 @@ class CheckPermission
         }
 
         // Kiểm tra quyền
-        $permissions = $user->permissions ?? [];
+        $permissions = is_array($user->permissions) ? $user->permissions : [];
         if (in_array($permission, $permissions)) {
             return $next($request);
         }

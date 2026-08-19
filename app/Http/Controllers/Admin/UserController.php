@@ -66,13 +66,8 @@ class UserController extends Controller
         $password = $request->filled('password') ? $request->password : '123456';
         $data['password'] = Hash::make($password);
 
-        if (!$request->has('permissions')) {
-            $data['permissions'] = [];
-        }
-
-        if (!$request->has('allowed_houses')) {
-            $data['allowed_houses'] = [];
-        }
+        $data['permissions'] = is_array($request->permissions) ? $request->permissions : [];
+        $data['allowed_houses'] = is_array($request->allowed_houses) ? $request->allowed_houses : [];
 
         User::create($data);
 
@@ -101,14 +96,8 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
-        // Đảm bảo không bị null (khi không checkbox nào được chọn, request sẽ không có 'permissions')
-        if (!$request->has('permissions')) {
-            $data['permissions'] = [];
-        }
-
-        if (!$request->has('allowed_houses')) {
-            $data['allowed_houses'] = [];
-        }
+        $data['permissions'] = is_array($request->permissions) ? $request->permissions : [];
+        $data['allowed_houses'] = is_array($request->allowed_houses) ? $request->allowed_houses : [];
 
         $user->update($data);
 

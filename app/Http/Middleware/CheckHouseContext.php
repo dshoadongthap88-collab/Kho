@@ -23,7 +23,7 @@ class CheckHouseContext
                     // Nếu chưa có, tự động lấy house đầu tiên trong allowed_houses
                     $allowed = $user->role === 'admin'
                         ? \App\Models\Project::pluck('id')->toArray()
-                        : (is_array($user->allowed_houses) ? $user->allowed_houses : json_decode($user->allowed_houses, true));
+                        : (is_array($user->allowed_houses) ? $user->allowed_houses : []);
                     
                     if (!empty($allowed)) {
                         $user->current_house_id = $allowed[0];

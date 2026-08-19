@@ -326,6 +326,14 @@
                     this.isEdit = true;
                     this.showPassword = false;
                     this.formAction = `/hr/users/${user.id}`;
+                    let permissionsData = [];
+                    try { permissionsData = Array.isArray(user.permissions) ? user.permissions : (user.permissions ? JSON.parse(user.permissions) : []); } catch(e) {}
+                    if (!Array.isArray(permissionsData)) permissionsData = [];
+
+                    let housesData = [];
+                    try { housesData = Array.isArray(user.allowed_houses) ? user.allowed_houses : (user.allowed_houses ? JSON.parse(user.allowed_houses) : []); } catch(e) {}
+                    if (!Array.isArray(housesData)) housesData = [];
+
                     this.formData = {
                         id: user.id,
                         code: user.code || '',
@@ -334,8 +342,8 @@
                         department: user.department || '',
                         username: user.username || user.email || '',
                         password: '', // Khi edit mặc định để trống
-                        permissions: Array.isArray(user.permissions) ? user.permissions : [],
-                        allowed_houses: Array.isArray(user.allowed_houses) ? user.allowed_houses : (user.allowed_houses ? JSON.parse(user.allowed_houses) : [])
+                        permissions: permissionsData,
+                        allowed_houses: housesData
                     };
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     this.isFormOpen = true;

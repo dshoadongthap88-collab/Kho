@@ -14,7 +14,7 @@ class TenantController extends Controller
         $projects = \App\Models\Project::all();
         $allowedHouses = $user->role === 'admin' 
             ? $projects->pluck('id')->toArray() 
-            : ($user->allowed_houses ?? []);
+            : (is_array($user->allowed_houses) ? $user->allowed_houses : []);
         
         return view('tenant.select', compact('allowedHouses', 'projects'));
     }
@@ -29,7 +29,7 @@ class TenantController extends Controller
         $user = Auth::user();
         $allowedHouses = $user->role === 'admin' 
             ? \App\Models\Project::pluck('id')->toArray() 
-            : ($user->allowed_houses ?? [1]);
+            : (is_array($user->allowed_houses) ? $user->allowed_houses : []);
 
         // Check if user has permission for this house
         if (!in_array((int)$request->house_id, $allowedHouses)) {
@@ -65,7 +65,7 @@ class TenantController extends Controller
         // Determine the best redirect route for warehouse
         $redirectRoute = 'warehouse.inventory'; // Fallback
         if ($user->role !== 'admin') {
-            $permissions = $user->permissions ?? [];
+            $permissions = is_array($user->permissions) ? $user->permissions : [];
             
             $routeMap = [
                 'warehouse.inventory' => 'warehouse.inventory',

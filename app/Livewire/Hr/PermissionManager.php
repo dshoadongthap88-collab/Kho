@@ -63,13 +63,15 @@ class PermissionManager extends Component
     {
         $user = User::findOrFail($this->userId);
         
-        // Ensure array is stored correctly (cast to integer)
-        $houses = array_map('intval', $this->selectedHouses);
+        $selectedHouses = is_array($this->selectedHouses) ? $this->selectedHouses : [];
+        $houses = array_map('intval', $selectedHouses);
+        
+        $permissions = is_array($this->selectedPermissions) ? $this->selectedPermissions : [];
         
         $user->update([
             'role' => $this->role,
             'allowed_houses' => $houses,
-            'permissions' => $this->selectedPermissions,
+            'permissions' => $permissions,
         ]);
 
         session()->flash('success', 'Cập nhật phân quyền thành công!');

@@ -6,80 +6,180 @@ use Livewire\Component;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Models\StockOut;
+use App\Models\StockOutItem;
 
 class GlobalReport extends Component
 {
+    public $activeTab = 'overview';
+    public $selectedProject = '';
+    public $startDate = '';
+    public $endDate = '';
+    
+    public $warningProject = ''; // Thêm filter cho tab cảnh báo
+
+    public function setTab($tab)
+    {
+        $this->activeTab = $tab;
+    }
+
     public function render()
     {
-        $projects = \App\Models\House::where('status', 'active')
-            ->where('name', 'not like', '%HR%')
+        $projects = \App\Models\Project::where('status', 'active')
+            ->where('id', '!=', 5) // Exclude HR
             ->get();
         $totalUsers = User::count();
         
-        $stats = [];
         $now = now();
-        $days300Ago = now()->subDays(300);
+        $thirtyDaysAgo = now()->subDays(30)->startOfDay();
 
-        foreach ($projects as $project) {
-            $houseId = $project->id;
-            $inventoryCount = \App\Models\Inventory::withoutGlobalScope('house')->where('house_id', $houseId)->sum('quantity');
-            $stockInCount = \App\Models\StockIn::withoutGlobalScope('house')->where('house_id', $houseId)->count();
-            
-            // 1. Top 5 mã tài sản sử dụng nhiều nhất (theo số lần xuất)
-            $topAssets = \App\Models\StockOut::withoutGlobalScope('house')
-                ->where('house_id', $houseId)
-                ->whereNotNull('asset_code')
-                ->where('asset_code', '!=', '')
-                ->select('asset_code', DB::raw('count(*) as usage_count'))
-                ->groupBy('asset_code')
-                ->orderByDesc('usage_count')
-                ->limit(5)
-                ->get();
+        // 1. Tổng số đơn xuất kho / dự án
+        $ordersPerProject = StockOut::withoutGlobalScope('house')
+            ->where('house_id', '!=', 5)
+            ->select('house_id', DB::raw('count(*) as total_orders'))
+            ->groupBy('house_id')
+            ->pluck('total_orders', 'house_id')
+            ->toArray();
 
-            // 2. Top 5 mã vật tư sử dụng nhiều nhất (theo tổng số lượng xuất)
-            $topMaterials = DB::table('stock_out_items')
-                ->join('stock_outs', 'stock_out_items.stock_out_id', '=', 'stock_outs.id')
-                ->join('products', 'stock_out_items.product_id', '=', 'products.id')
-                ->where('stock_outs.house_id', $houseId)
-                ->select('products.code', 'products.name', DB::raw('SUM(stock_out_items.quantity) as total_used'))
-                ->groupBy('products.id', 'products.code', 'products.name')
-                ->orderByDesc('total_used')
-                ->limit(5)
-                ->get();
+        // 2. Tổng mã vật tư xuất / dự án (Tổng số lượng)
+        $itemsPerProject = DB::table('stock_out_items')
+            ->join('stock_outs', 'stock_out_items.stock_out_id', '=', 'stock_outs.id')
+            ->where('stock_outs.house_id', '!=', 5)
+            ->select('stock_outs.house_id', DB::raw('SUM(stock_out_items.quantity) as total_items'))
+            ->groupBy('stock_outs.house_id')
+            ->pluck('total_items', 'house_id')
+            ->toArray();
 
-            // 3. Bao nhiêu mã vật tư sắp hết tồn kho
-            $lowStockCount = \App\Models\Inventory::withoutGlobalScope('house')
-                ->join('products', 'inventories.product_id', '=', 'products.id')
-                ->where('inventories.house_id', $houseId)
-                ->where('inventories.quantity', '>', 0)
-                ->whereRaw('inventories.quantity <= products.min_stock')
-                ->count();
+        // 3. Tổng số đơn xuất kho tất cả dự án / ngày (30 ngày qua)
+        $ordersPerDay = StockOut::withoutGlobalScope('house')
+            ->where('house_id', '!=', 5)
+            ->where('created_at', '>=', $thirtyDaysAgo)
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total_orders'))
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->orderBy('date', 'asc')
+            ->get();
 
-            // 4. Mã vật tư không sử dụng trên 300 ngày kể từ ngày nhập kho
-            // Tìm trong inventories có tồn > 0 nhưng giao dịch cuối (max transaction_date) < 300 ngày trước
-            $obsoleteStockCount = DB::table('inventories')
-                ->join('inventory_transactions', 'inventories.product_id', '=', 'inventory_transactions.product_id')
-                ->where('inventories.house_id', $houseId)
-                ->where('inventory_transactions.house_id', $houseId)
-                ->where('inventories.quantity', '>', 0)
-                ->select('inventories.product_id')
-                ->groupBy('inventories.product_id')
-                ->havingRaw('MAX(inventory_transactions.transaction_date) < ?', [$days300Ago])
-                ->get()
-                ->count();
-
-            $stats[$houseId] = [
-                'users' => User::whereJsonContains('allowed_houses', (int)$houseId)->orWhereJsonContains('allowed_houses', (string)$houseId)->count(),
-                'stock_value' => $inventoryCount,
-                'active_orders' => $stockInCount,
-                'top_assets' => $topAssets,
-                'top_materials' => $topMaterials,
-                'low_stock_count' => $lowStockCount,
-                'obsolete_stock_count' => $obsoleteStockCount,
-            ];
+        // Chuẩn bị dữ liệu cho biểu đồ đường (Time-series)
+        $dates = [];
+        $orderCounts = [];
+        
+        // Lấp đầy các ngày trống
+        $currentDate = clone $thirtyDaysAgo;
+        $orderMap = $ordersPerDay->pluck('total_orders', 'date')->toArray();
+        
+        while ($currentDate <= $now) {
+            $dateStr = $currentDate->format('Y-m-d');
+            $dates[] = $currentDate->format('d/m');
+            $orderCounts[] = $orderMap[$dateStr] ?? 0;
+            $currentDate->addDay();
         }
 
-        return view('livewire.hr.global-report', compact('projects', 'totalUsers', 'stats'))
-            ->layout('layouts.app');
+        // 4. Tổng mã vật tư xuất kho tất cả dự án
+        $totalItemsAllProjects = array_sum($itemsPerProject);
+        $totalOrdersAllProjects = array_sum($ordersPerProject);
+
+        // Chuẩn bị dữ liệu cho biểu đồ cột và tròn
+        $projectNames = [];
+        $projectOrders = [];
+        $projectItems = [];
+
+        foreach ($projects as $project) {
+            $projectNames[] = $project->name;
+            $projectOrders[] = $ordersPerProject[$project->id] ?? 0;
+            $projectItems[] = (int)($itemsPerProject[$project->id] ?? 0);
+        }
+
+        // --- Tab 2: Cảnh báo tồn kho ---
+        $lowStockProducts = [];
+        $highStockProducts = [];
+        if ($this->activeTab === 'inventory_warnings') {
+            $allProducts = \App\Models\Product::select('id', 'code', 'name', 'unit', 'min_stock', 'max_stock')->get()->keyBy('id');
+            
+            $inventoryQuery = DB::table('inventories')
+                ->where('inventories.house_id', '!=', 5)
+                ->join('projects', 'inventories.house_id', '=', 'projects.id')
+                ->select('inventories.product_id', 'inventories.house_id', 'projects.name as project_name', DB::raw('SUM(inventories.quantity) as total_qty'))
+                ->groupBy('inventories.product_id', 'inventories.house_id', 'projects.name');
+                
+            if ($this->warningProject) {
+                $inventoryQuery->where('inventories.house_id', $this->warningProject);
+            }
+            
+            $inventoryList = $inventoryQuery->get();
+
+            foreach ($inventoryList as $inv) {
+                $product = $allProducts->get($inv->product_id);
+                if (!$product) continue;
+                
+                $qty = $inv->total_qty;
+                if ($product->min_stock > 0 && $qty < $product->min_stock) {
+                    $lowStockProducts[] = (object)[
+                        'code' => $product->code,
+                        'name' => $product->name,
+                        'unit' => $product->unit,
+                        'min_stock' => $product->min_stock,
+                        'quantity' => $qty,
+                        'project_name' => $inv->project_name
+                    ];
+                }
+                if ($product->max_stock > 0 && $qty > $product->max_stock) {
+                    $highStockProducts[] = (object)[
+                        'code' => $product->code,
+                        'name' => $product->name,
+                        'unit' => $product->unit,
+                        'max_stock' => $product->max_stock,
+                        'quantity' => $qty,
+                        'project_name' => $inv->project_name
+                    ];
+                }
+            }
+        }
+
+        // --- Tab 3: Báo cáo chi tiết xuất kho ---
+        $stockOutDetails = [];
+        if ($this->activeTab === 'stock_out_details') {
+            $query = StockOut::withoutGlobalScope('house')
+                ->where('stock_outs.house_id', '!=', 5)
+                ->join('stock_out_items', 'stock_outs.id', '=', 'stock_out_items.stock_out_id')
+                ->join('products', 'stock_out_items.product_id', '=', 'products.id')
+                ->leftJoin('projects', 'stock_outs.house_id', '=', 'projects.id')
+                ->select(
+                    'stock_outs.created_at as date',
+                    'projects.name as project_name',
+                    'stock_outs.asset_code',
+                    'stock_outs.repair_staff',
+                    'products.code as product_code',
+                    'products.name as product_name',
+                    'stock_out_items.quantity'
+                );
+
+            if ($this->selectedProject) {
+                $query->where('stock_outs.house_id', $this->selectedProject);
+            }
+            if ($this->startDate) {
+                $query->whereDate('stock_outs.created_at', '>=', $this->startDate);
+            }
+            if ($this->endDate) {
+                $query->whereDate('stock_outs.created_at', '<=', $this->endDate);
+            }
+
+            $stockOutDetails = $query->orderBy('stock_outs.created_at', 'desc')->limit(500)->get();
+        }
+
+        return view('livewire.hr.global-report', [
+            'projects' => $projects,
+            'totalUsers' => $totalUsers,
+            'projectNames' => $projectNames,
+            'projectOrders' => $projectOrders,
+            'projectItems' => $projectItems,
+            'dates' => $dates,
+            'orderCounts' => $orderCounts,
+            'totalItemsAllProjects' => $totalItemsAllProjects,
+            'totalOrdersAllProjects' => $totalOrdersAllProjects,
+            'lowStockProducts' => $lowStockProducts,
+            'highStockProducts' => $highStockProducts,
+            'stockOutDetails' => $stockOutDetails,
+            'totalOrdersAllProjects' => $totalOrdersAllProjects,
+        ])->layout('components.warehouse-layout');
     }
 }

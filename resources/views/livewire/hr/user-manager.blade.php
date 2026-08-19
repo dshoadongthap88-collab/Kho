@@ -72,11 +72,17 @@
                             </td>
                             <td class="px-4 py-3 text-sm">
                                 @if($user->role === 'admin')
-                                    <span class="bg-red-100 text-red-800 text-xs font-bold px-2 py-0.5 rounded-md uppercase">Admin</span>
+                                    <span class="bg-red-100 text-red-800 text-xs font-bold px-2 py-0.5 rounded-md uppercase">QUẢN TRỊ</span>
                                 @elseif($user->role === 'manager')
-                                    <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-md uppercase">Manager</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-md uppercase">QUẢN LÝ</span>
+                                @elseif($user->role === 'team_leader_ktsc')
+                                    <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-0.5 rounded-md uppercase">TỔ TRƯỞNG KTSC</span>
+                                @elseif($user->role === 'staff_ktsc' || ($user->role === 'staff' && str_contains(mb_strtoupper($user->department ?? ''), 'KTSC')))
+                                    <span class="bg-orange-100 text-orange-800 text-xs font-bold px-2 py-0.5 rounded-md uppercase">NV KỸ THUẬT SỬA CHỮA</span>
+                                @elseif($user->role === 'staff_kho' || $user->role === 'staff')
+                                    <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-0.5 rounded-md uppercase">NHÂN VIÊN KHO</span>
                                 @else
-                                    <span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-0.5 rounded-md uppercase">Staff</span>
+                                    <span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-0.5 rounded-md uppercase">{{ $user->role ?: 'STAFF' }}</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-center">
@@ -145,7 +151,7 @@
                                         @error('name') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Email <span class="text-red-500">*</span></label>
+                                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Email</label>
                                         <input type="email" wire:model.defer="email" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                         @error('email') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                     </div>
@@ -175,10 +181,14 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Phòng ban</label>
-                                        <select wire:model.defer="department" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                        <select wire:model.live="department" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                                             <option value="">-- Chọn phòng ban --</option>
+                                            <option value="BỘ PHẬN KHO">BỘ PHẬN KHO</option>
+                                            <option value="PHÒNG KTSC">PHÒNG KTSC</option>
                                             @foreach($departments as $dept)
-                                                <option value="{{ $dept->name }}">{{ $dept->name }}</option>
+                                                @if(!in_array(mb_strtoupper($dept->name), ['BỘ PHẬN KHO', 'PHÒNG KTSC']))
+                                                    <option value="{{ $dept->name }}">{{ $dept->name }}</option>
+                                                @endif
                                             @endforeach
                                         </select>
                                         @error('department') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
@@ -187,9 +197,24 @@
                                         <div>
                                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Vai trò</label>
                                             <select wire:model.defer="role" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                                <option value="staff">Nhân viên (Staff)</option>
-                                                <option value="manager">Quản lý (Manager)</option>
-                                                <option value="admin">Quản trị (Admin)</option>
+                                                @if(str_contains(mb_strtoupper($department), 'KHO'))
+                                                    <option value="staff_kho">NHÂN VIÊN KHO</option>
+                                                    <option value="manager">QUẢN LÝ</option>
+                                                    <option value="admin">QUẢN TRỊ</option>
+                                                @elseif(str_contains(mb_strtoupper($department), 'KTSC'))
+                                                    <option value="staff_ktsc">NHÂN VIÊN KỸ THUẬT SỬA CHỮA</option>
+                                                    <option value="team_leader_ktsc">TỔ TRƯỞNG KTSC</option>
+                                                    <option value="manager">QUẢN LÝ</option>
+                                                    <option value="admin">QUẢN TRỊ</option>
+                                                @else
+                                                    <option value="staff_kho">NHÂN VIÊN KHO</option>
+                                                    <option value="staff_ktsc">NHÂN VIÊN KỸ THUẬT SỬA CHỮA</option>
+                                                    <option value="team_leader_ktsc">TỔ TRƯỞNG KTSC</option>
+                                                    <option value="manager">QUẢN LÝ</option>
+                                                    <option value="admin">QUẢN TRỊ</option>
+                                                @endif
+                                                <!-- Fallback cho dữ liệu cũ -->
+                                                <option value="staff" class="hidden">Nhân viên (Staff)</option>
                                             </select>
                                             @error('role') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                         </div>
@@ -271,9 +296,16 @@
                             <button type="submit" class="hidden"></button>
                         </form>
                     </div>
-                    <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse gap-3 border-t">
-                        <button type="button" wire:click="save" class="inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2 bg-indigo-600 text-sm font-black text-white hover:bg-indigo-700 focus:outline-none transition-all w-32">
-                            LƯU LẠI
+                    <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse gap-3 border-t" x-data="{ saved: false }" @user-saved.window="saved = true; setTimeout(() => { saved = false; @this.closeModal() }, 2000)">
+                        <button type="button" wire:click="save" class="inline-flex justify-center items-center rounded-lg border border-transparent shadow-sm px-5 py-2 bg-indigo-600 text-sm font-black text-white hover:bg-indigo-700 focus:outline-none transition-all w-36 relative">
+                            <span x-show="!saved" wire:loading.remove wire:target="save">LƯU LẠI</span>
+                            <span wire:loading wire:target="save">
+                                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            </span>
+                            <span x-show="saved" style="display: none;" class="flex items-center gap-1">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                Đã lưu
+                            </span>
                         </button>
                         <button type="button" wire:click="closeModal" class="inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-2 bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 focus:outline-none transition-all w-32">
                             HỦY BỎ

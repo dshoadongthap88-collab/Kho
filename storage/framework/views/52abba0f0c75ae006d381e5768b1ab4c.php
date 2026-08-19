@@ -1,0 +1,886 @@
+<div class="space-y-4" x-data="{ 
+    activeTab: 'excel',
+    ocrProgress: 0,
+    ocrStatus: '',
+    ocrRunning: false,
+    ocrImageSrc: '',
+    ocrParsedRows: [],
+    
+    // Xử lý kéo thả và dán ảnh chụp
+    handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            this.readImage(file);
+        }
+    },
+    handleImagePaste(event) {
+        const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                this.readImage(file);
+                break;
+            }
+        }
+    },
+    readImage(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.ocrImageSrc = e.target.result;
+            this.ocrStatus = 'Hình ảnh đã sẵn sàng để nhận diện!';
+            this.ocrParsedRows = [];
+        };
+        reader.readAsDataURL(file);
+    },
+    
+    // Chạy OCR sử dụng Tesseract.js
+    async runOCR() {
+        if (!this.ocrImageSrc) {
+            alert('Vui lòng chọn hoặc dán ảnh chụp thiết bị/bảng định mức trước!');
+            return;
+        }
+        
+        this.ocrRunning = true;
+        this.ocrProgress = 10;
+        this.ocrStatus = 'Đang khởi tạo công cụ nhận diện AI...';
+        
+        try {
+            const worker = await Tesseract.createWorker('vie+eng', 1, {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        this.ocrProgress = Math.round(15 + m.progress * 80);
+                        this.ocrStatus = `Đang phân tích cấu trúc bảng định mức: ${Math.round(m.progress * 100)}%`;
+                    }
+                }
+            });
+            
+            this.ocrStatus = 'Đang quét và nhận diện chữ tiếng Việt...';
+            const { data: { text } } = await worker.recognize(this.ocrImageSrc);
+            await worker.terminate();
+            
+            this.ocrProgress = 95;
+            this.ocrStatus = 'Đang bóc tách cột và chuẩn hóa định mức bảo dưỡng...';
+            
+            // Phân tích văn bản nhận diện được
+            this.ocrParsedRows = this.parseTextToBoms(text);
+            
+            this.ocrProgress = 100;
+            this.ocrRunning = false;
+            this.ocrStatus = `Nhận diện xong! Tìm thấy ${this.ocrParsedRows.length} dòng thiết bị. Vui lòng xem bảng xem trước phía dưới.`;
+        } catch (error) {
+            console.error(error);
+            this.ocrRunning = false;
+            this.ocrStatus = 'Lỗi nhận diện: ' + error.message;
+            alert('Nhận diện thất bại! Hãy thử ảnh có độ sắc nét tốt hơn.');
+        }
+    },
+    
+    // Giải thuật bóc tách và phân tích văn bản OCR thông minh
+    parseTextToBoms(text) {
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+        const parsed = [];
+        
+        lines.forEach(line => {
+            // Định dạng Mã tài sản: TS-XXX hoặc tương tự
+            const assetCodeMatch = line.match(/(TS-\d+|TS\d+|[A-Z0-9]{3,8}-\d+)/i);
+            if (!assetCodeMatch) return;
+            const assetCode = assetCodeMatch[0].toUpperCase();
+            
+            let rest = line.replace(assetCodeMatch[0], '').trim();
+            
+            // Định dạng mã các lọc nhớt, thủy lực, gió (dạng LF-XXX, HF-XXX, AF-XXX)
+            const filterMatches = rest.match(/([A-Z]{2,3}-\d+|[A-Z]{2}\d{3,5})/g) || [];
+            let engineFilter = '';
+            let hydraulicFilter = '';
+            let airFilter = '';
+            
+            filterMatches.forEach(filter => {
+                rest = rest.replace(filter, '').trim();
+                const fUpper = filter.toUpperCase();
+                if (fUpper.startsWith('LF') || fUpper.includes('LF') || fUpper.includes('ENG')) {
+                    engineFilter = fUpper;
+                } else if (fUpper.startsWith('HF') || fUpper.includes('HF') || fUpper.includes('HYD')) {
+                    hydraulicFilter = fUpper;
+                } else if (fUpper.startsWith('AF') || fUpper.includes('AF') || fUpper.includes('AIR')) {
+                    airFilter = fUpper;
+                } else {
+                    if (!engineFilter) engineFilter = fUpper;
+                    else if (!hydraulicFilter) hydraulicFilter = fUpper;
+                    else if (!airFilter) airFilter = fUpper;
+                }
+            });
+            
+            // Định dạng Chu kỳ (ví dụ: 250 giờ, 500 gio, 250h, 5000km)
+            const cycleMatch = rest.match(/(\d+\s*(giờ|gio|h|km|hours))/i);
+            let cycle = '';
+            if (cycleMatch) {
+                cycle = cycleMatch[0];
+                rest = rest.replace(cycleMatch[0], '').trim();
+            }
+            
+            // Bóc tách dung tích dầu động cơ và dầu thủy lực (các số lẻ còn lại)
+            const numberMatches = rest.match(/(\b\d+\b)/g) || [];
+            let engineOil = '';
+            let hydraulicOil = '';
+            
+            numberMatches.forEach(numStr => {
+                rest = rest.replace(numStr, '').trim();
+                const val = parseInt(numStr);
+                if (val > 0) {
+                    if (val >= 30 && !hydraulicOil) {
+                        hydraulicOil = val;
+                    } else if (!engineOil) {
+                        engineOil = val;
+                    } else if (!hydraulicOil) {
+                        hydraulicOil = val;
+                    }
+                }
+            });
+            
+            // Bóc tách Tên thiết bị và Bộ phận từ phần chữ còn lại
+            let name = '';
+            let department = '';
+            const words = rest.split(/\s+/).filter(w => w.length > 0);
+            
+            if (words.length > 0) {
+                if (words.length <= 3) {
+                    name = words.join(' ');
+                } else {
+                    const lastTwo = words.slice(-2).join(' ');
+                    if (/kho|van|co|gioi|bao|tri|truong|xi|nghiep/i.test(lastTwo)) {
+                        department = lastTwo;
+                        name = words.slice(0, -2).join(' ');
+                    } else {
+                        name = words.slice(0, -1).join(' ');
+                        department = words.slice(-1).join(' ');
+                    }
+                }
+            }
+            
+            parsed.push({
+                asset_code: assetCode,
+                name: name || 'Thiết bị mới',
+                department: department || 'Cơ giới',
+                engine_oil_cap: engineOil || '',
+                hydraulic_oil_cap: hydraulicOil || '',
+                engine_oil_filter: engineFilter || '',
+                hydraulic_filter: hydraulicFilter || '',
+                air_filter: airFilter || '',
+                maintenance_cycle: cycle || '250 giờ'
+            });
+        });
+        
+        return parsed;
+    },
+    
+    // Lưu kết quả nhận diện xuống DB qua Livewire
+    submitOcrData() {
+        if (this.ocrParsedRows.length === 0) {
+            alert('Không có dữ liệu thiết bị nào để đồng bộ!');
+            return;
+        }
+        
+        // Gọi Livewire action
+        $wire.saveOcrData(this.ocrParsedRows);
+        
+        // Reset state
+        this.ocrParsedRows = [];
+        this.ocrImageSrc = '';
+        this.ocrStatus = '';
+        this.ocrProgress = 0;
+    }
+}">
+    <!-- Thư viện Tesseract.js phục vụ AI OCR trực tiếp ở trình duyệt -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <!-- CSS để in ấn -->
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body {
+                background: white !important;
+                font-family: 'Times New Roman', Times, serif !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                color: black !important;
+            }
+            main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+            .print-only { display: block !important; }
+            .print-container { width: 100%; padding: 10mm; }
+            table.print-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin-top: 15px;
+            }
+            table.print-table th, table.print-table td {
+                border: 1.5px solid black !important;
+                padding: 6px 8px !important;
+                font-size: 13px !important;
+                color: black !important;
+            }
+            table.print-table th {
+                background-color: #f3f4f6 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-weight: bold;
+                text-transform: uppercase;
+                font-size: 12px !important;
+            }
+            @page { size: A4 landscape; margin: 10mm; }
+        }
+        .print-only { display: none; }
+    </style>
+
+    <!-- Thống báo trạng thái -->
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('message')): ?>
+        <div class="p-2 mb-4 text-sm text-emerald-800 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center gap-2 shadow-sm transition-all duration-300 no-print">
+            <span class="text-base">✨</span>
+            <div class="font-semibold"><?php echo e(session('message')); ?></div>
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session()->has('error')): ?>
+        <div class="p-2 mb-4 text-sm text-rose-800 rounded-lg bg-rose-50 border border-rose-100 flex items-center gap-2 shadow-sm transition-all duration-300 no-print">
+            <span class="text-base">⚠️</span>
+            <div class="font-semibold"><?php echo e(session('error')); ?></div>
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+    <!-- Thanh công cụ tìm kiếm & nút thao tác -->
+    <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-100 flex flex-wrap items-center justify-between gap-2 no-print">
+        <div class="flex items-center gap-3 w-full lg:w-auto">
+            <div class="relative w-full lg:w-80">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                    🔍
+                </span>
+                <input type="text" 
+                       wire:model.live.debounce.300ms="search" 
+                       placeholder="Tìm kiếm mã tài sản, tên, bộ phận..." 
+                       class="pl-9 pr-4 py-2 w-full text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-slate-50 hover:bg-slate-100/50 transition-colors"
+                />
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+            <!-- Nút Thêm thiết bị nhanh -->
+            <button wire:click="toggleAddAsset" 
+                    class="px-3 py-2 text-sm font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-lg border border-sky-200 transition duration-150 flex items-center gap-1.5 shadow-sm">
+                ➕ Thêm thiết bị
+            </button>
+
+            <!-- Nút NHẬP EXCEL / OCR -->
+            <button wire:click="$set('showImportModal', true)" 
+                    class="px-3 py-2 text-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 shadow-sm transition duration-150 flex items-center gap-1">
+                📥 Nhập Excel & Ảnh
+            </button>
+
+            <!-- Nút XUẤT EXCEL -->
+            <button wire:click="exportExcel" 
+                    class="px-3 py-2 text-sm font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-lg border border-teal-200 shadow-sm transition duration-150 flex items-center gap-1">
+                📤 Xuất Excel
+            </button>
+
+            <!-- Nút SỬA -->
+            <button wire:click="openEditModal" 
+                    <?php if(count($selectedIds) !== 1): ?> disabled class="px-3 py-2 text-sm font-bold text-slate-400 bg-slate-50 rounded-lg cursor-not-allowed border border-slate-200"
+                    <?php else: ?> class="px-3 py-2 text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 shadow-sm transition duration-150 flex items-center gap-1"
+                    <?php endif; ?>>
+                ✏️ Sửa
+            </button>
+
+            <!-- Nút XÓA -->
+            <button wire:click="deleteSelected" 
+                    onclick="confirm('Anh/chị có chắc chắn muốn xóa các thiết bị đang chọn?') || event.stopImmediatePropagation()"
+                    <?php if(empty($selectedIds)): ?> disabled class="px-3 py-2 text-sm font-bold text-slate-400 bg-slate-50 rounded-lg cursor-not-allowed border border-slate-200"
+                    <?php else: ?> class="px-3 py-2 text-sm font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 shadow-sm transition duration-150 flex items-center gap-1"
+                    <?php endif; ?>>
+                🗑️ Xóa
+            </button>
+
+            <!-- Nút IN TICK CHỌN -->
+            <button wire:click="printSelected" 
+                    <?php if(empty($selectedIds)): ?> disabled class="px-3 py-2 text-sm font-bold text-slate-400 bg-slate-50 rounded-lg cursor-not-allowed border border-slate-200"
+                    <?php else: ?> class="px-3 py-2 text-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 shadow-sm transition duration-150 flex items-center gap-1"
+                    <?php endif; ?>>
+                🖨️ In tích chọn
+            </button>
+        </div>
+    </div>
+
+    <!-- Form thêm thiết bị nhanh -->
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($isAddingAsset): ?>
+        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-inner max-w-2xl transition-all duration-300 no-print">
+            <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight mb-4 flex items-center gap-1.5">
+                <span class="bg-sky-600 text-white p-1 rounded-md text-xs">📝</span>
+                Thêm thiết bị mới vào hệ thống
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Mã tài sản <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model.defer="new_asset_code" placeholder="Ví dụ: TS-003" 
+                           class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white" />
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['new_asset_code'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-xs text-red-600 font-bold block mt-1"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tên thiết bị <span class="text-red-500">*</span></label>
+                    <input type="text" wire:model.defer="new_name" placeholder="Ví dụ: Xe ben Howo" 
+                           class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white" />
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['new_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-xs text-red-600 font-bold block mt-1"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Bộ phận sử dụng</label>
+                    <input type="text" wire:model.defer="new_department" placeholder="Ví dụ: Cơ giới, Vận chuyển" 
+                           class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white" />
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 mt-4 justify-end">
+                <button wire:click="toggleAddAsset" type="button" class="px-4 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-lg">
+                    Hủy bỏ
+                </button>
+                <button wire:click="addAsset" type="button" class="px-4 py-1.5 text-xs font-black text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-sm">
+                    Xác nhận thêm
+                </button>
+            </div>
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+    <!-- Bảng danh sách định mức tài sản (BOM) -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden no-print">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-800 uppercase text-[11px] font-black tracking-tight border-b border-slate-200 select-none">
+                        <th class="py-3.5 px-3 text-center w-10">
+                            <input type="checkbox" 
+                                   wire:model.live="selectAll" 
+                                   class="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" 
+                            />
+                        </th>
+                        <th class="py-3.5 px-4 font-black text-slate-900 min-w-[90px] w-24">Mã TS</th>
+                        <th class="py-3.5 px-4 font-black text-slate-900 min-w-[150px] w-48">Tên thiết bị</th>
+                        <th class="py-3.5 px-4 font-black text-slate-900 min-w-[110px] w-32">Bộ phận</th>
+                        <th class="py-3.5 px-4 font-black text-slate-900 min-w-[300px]">Định mức bảo dưỡng (BOMs) đã cấu hình</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $assets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $asset): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                        <tr class="hover:bg-slate-50/50 transition-colors <?php echo e(in_array((string)$asset->id, $selectedIds) ? 'bg-sky-50/40' : ''); ?>" <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'row-'.e($asset->id).''; ?>wire:key="row-<?php echo e($asset->id); ?>">
+                            <!-- Checkbox -->
+                            <td class="py-3 px-3 text-center">
+                                <input type="checkbox" 
+                                       wire:model.live="selectedIds" 
+                                       value="<?php echo e($asset->id); ?>" 
+                                       class="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" 
+                                />
+                            </td>
+                            
+                            <!-- Mã tài sản -->
+                            <td class="py-3 px-4 font-bold text-sky-800 select-all uppercase">
+                                <?php echo e($asset->asset_code); ?>
+
+                            </td>
+                            
+                            <!-- Tên thiết bị -->
+                            <td class="py-3 px-4 text-slate-900 font-extrabold uppercase text-[11px] tracking-tight">
+                                <?php echo e($asset->name); ?>
+
+                            </td>
+                            
+                            <!-- Bộ phận -->
+                            <td class="py-3 px-4 text-slate-600 font-semibold">
+                                <?php echo e($asset->department ?: '---'); ?>
+
+                            </td>
+
+                            <!-- Định mức bảo dưỡng (BOMs) -->
+                            <td class="py-3 px-4">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($asset->maintenanceBoms && $asset->maintenanceBoms->count() > 0): ?>
+                                    <div class="flex flex-wrap gap-2">
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $asset->maintenanceBoms->sortBy('cycle'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bom): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                            <div x-data="{ open: false }" class="relative">
+                                                <!-- Button / Badge -->
+                                                <button type="button" @click="open = !open" @click.away="open = false" 
+                                                        class="text-[11px] font-black text-sky-700 bg-sky-50 border border-sky-200 px-1.5 py-1 text-[11px] rounded-md hover:bg-sky-100 transition shadow-sm flex items-center gap-1">
+                                                    <svg class="w-3 h-3 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                    <?php echo e($bom->cycle); ?>h
+                                                    <span class="text-[9px] px-1 bg-sky-200 text-sky-800 rounded-full"><?php echo e($bom->items->count()); ?></span>
+                                                </button>
+
+                                                <!-- Dropdown / Popover => Changed to Modal -->
+                                                <div x-show="open" x-transition.opacity style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-2 no-print">
+                                                    <!-- Backdrop -->
+                                                    <div class="fixed inset-0 bg-slate-800/60 backdrop-blur-sm" @click="open = false"></div>
+                                                    
+                                                    <!-- Modal Content -->
+                                                    <div class="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[85vh] transform transition-all">
+                                                        <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-xl">
+                                                            <div class="flex items-center gap-2">
+                                                                <h3 class="text-base font-black text-slate-800 uppercase tracking-tight">Chi tiết định mức <?php echo e($bom->cycle); ?>h</h3>
+                                                                <span class="px-2 py-0.5 text-[10px] font-bold bg-sky-100 text-sky-700 rounded"><?php echo e($asset->asset_code); ?> - <?php echo e($asset->name); ?></span>
+                                                            </div>
+                                                            <button @click="open = false" class="text-slate-400 hover:text-slate-600 bg-white hover:bg-slate-100 rounded-lg p-1.5 transition">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                            </button>
+                                                        </div>
+                                                        <div class="p-5 overflow-y-auto">
+                                                            <div class="border border-slate-200 rounded-lg overflow-hidden">
+                                                                <table class="w-full text-left border-collapse">
+                                                                    <thead class="bg-slate-50 border-b border-slate-200 text-[11px] uppercase font-bold text-slate-600">
+                                                                        <tr>
+                                                                            <th class="px-2 py-2 w-12 text-center">#</th>
+                                                                            <th class="px-2 py-2">Tên vật tư</th>
+                                                                            <th class="px-2 py-2 w-32 text-center">Số lượng</th>
+                                                                            <th class="px-2 py-2 w-32 text-center">SL Dự phòng</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody class="divide-y divide-slate-100 text-xs">
+                                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_2 = true; $__currentLoopData = $bom->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_2 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                                                            <tr class="hover:bg-slate-50/50">
+                                                                                <td class="px-1.5 py-1 text-[11px].5 text-center text-slate-400 font-medium"><?php echo e($i + 1); ?></td>
+                                                                                <td class="px-4 py-2.5 font-bold text-slate-700"><?php echo e($item->product ? $item->product->name : 'N/A'); ?></td>
+                                                                                <td class="px-4 py-2.5 text-center">
+                                                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($item->quantity > 0): ?>
+                                                                                        <span class="text-sky-700 font-black bg-sky-50 px-2.5 py-1 rounded-md border border-sky-100"><?php echo e(number_format($item->quantity, 2)); ?></span>
+                                                                                    <?php else: ?>
+                                                                                        -
+                                                                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                                                </td>
+                                                                                <td class="px-4 py-2.5 text-center text-amber-700 font-medium">
+                                                                                    <?php echo e($item->backup_quantity > 0 ? number_format($item->backup_quantity, 2) : '-'); ?>
+
+                                                                                </td>
+                                                                            </tr>
+                                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_2): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                                                            <tr>
+                                                                                <td colspan="4" class="px-4 py-8 text-center text-slate-400 italic">Không có vật tư nào trong mốc này.</td>
+                                                                            </tr>
+                                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <span class="text-xs italic text-slate-400 bg-slate-50 px-2 py-1 rounded">Chưa cấu hình</span>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                        <tr>
+                            <td colspan="10" class="py-12 px-4 text-center text-slate-400 font-bold text-sm bg-slate-25/50">
+                                📭 Không tìm thấy mã tài sản hay thiết bị nào phù hợp.
+                            </td>
+                        </tr>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Phân trang -->
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($assets->hasPages()): ?>
+            <div class="px-6 py-4 border-t border-slate-100 no-print bg-slate-50/50">
+                <?php echo e($assets->links()); ?>
+
+            </div>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+    </div>
+
+    <!-- MODAL NHẬP ĐA PHƯƠNG THỨC (EXCEL & OCR ẢNH CHỤP) -->
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showImportModal): ?>
+        <div class="fixed inset-0 z-50 overflow-y-auto no-print">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+                <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
+                
+                <div class="inline-block align-middle bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-slate-100">
+                    
+                    <!-- Tab Header -->
+                    <div class="bg-slate-50 border-b border-slate-150 px-6 py-3 flex items-center justify-between">
+                        <div class="flex gap-2">
+                            <button @click="activeTab = 'excel'" 
+                                    :class="activeTab === 'excel' ? 'border-sky-600 text-sky-600 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
+                                    class="py-2 px-1 text-sm border-b-2 transition duration-150">
+                                📥 Nhập từ Excel/CSV linh hoạt
+                            </button>
+                            <button @click="activeTab = 'ocr'" 
+                                    :class="activeTab === 'ocr' ? 'border-sky-600 text-sky-600 font-black' : 'border-transparent text-slate-500 font-bold hover:text-slate-700'"
+                                    class="py-2 px-1 text-sm border-b-2 transition duration-150 flex items-center gap-1.5">
+                                📷 Nhận diện từ Ảnh chụp (AI OCR)
+                                <span class="bg-indigo-100 text-indigo-800 text-[10px] px-1.5 py-0.5 rounded font-black uppercase">Mới</span>
+                            </button>
+                        </div>
+                        <button wire:click="$set('showImportModal', false)" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+                    </div>
+
+                    <!-- Tab 1: Nhập từ Excel/CSV -->
+                    <div x-show="activeTab === 'excel'" class="p-2 space-y-4">
+                        <div class="p-3.5 bg-emerald-50 text-emerald-850 rounded-lg text-xs font-semibold leading-relaxed border border-emerald-100">
+                            ✨ <span class="font-extrabold text-emerald-950">Hệ thống đồng bộ cột thông minh:</span> Anh/chị có thể sắp xếp các cột Excel/CSV theo thứ tự tùy ý! Hệ thống sẽ quét các dòng tiêu đề như 
+                            <i>"Mã tài sản", "Tên thiết bị", "Bộ phận", "Dầu động cơ", "Lọc nhớt"...</i> để tự động phân tích và trích xuất thông tin một cách chuẩn xác nhất.
+                        </div>
+
+                        <div>
+                            <p class="text-xs text-slate-500 mb-2">Tải tệp mẫu để điền thông tin nhanh chóng và đúng định dạng:</p>
+                            <button wire:click="downloadTemplate" class="text-sky-650 hover:text-sky-850 text-xs font-black underline flex items-center gap-1">
+                                📥 Tải tệp tin Excel/CSV mẫu tiêu chuẩn tại đây
+                            </button>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Chọn tệp Excel/CSV từ máy tính</label>
+                            <input type="file" wire:model="excelFile" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border file:border-slate-200 file:text-xs file:font-bold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100" />
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['excelFile'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-red-500 text-xs font-bold block mt-1"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        </div>
+
+                        <div wire:loading wire:target="excelFile" class="text-xs text-sky-600 font-bold flex items-center gap-1.5">
+                            ⏳ Đang tải tệp tin lên hệ thống...
+                        </div>
+
+                        <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                            <button type="button" wire:click="$set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                                Hủy bỏ
+                            </button>
+                            <button type="button" wire:click="importExcel" class="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-black text-white transition">
+                                Xác nhận nhập tệp
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Nhận diện từ Ảnh chụp AI OCR -->
+                    <div x-show="activeTab === 'ocr'" class="p-2 space-y-4" @paste="handleImagePaste($event)">
+                        <div class="p-3 bg-indigo-50 text-indigo-850 rounded-lg text-xs font-semibold leading-relaxed border border-indigo-100">
+                            📷 <span class="font-extrabold text-indigo-950">Giải pháp nhận diện ảnh thông minh:</span> Anh/chị chỉ cần **chụp ảnh màn hình bảng Excel hoặc chụp ảnh thiết bị**, rồi nhấn **Ctrl + V** để dán ảnh trực tiếp vào đây hoặc chọn ảnh chụp để AI bóc tách định mức nhanh chóng!
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <!-- Khu vực tải ảnh & Preview -->
+                            <div class="border-2 border-dashed border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center min-h-[220px] bg-slate-50 relative hover:border-sky-350 transition-colors">
+                                <template x-if="!ocrImageSrc">
+                                    <div class="text-center space-y-2 pointer-events-none select-none">
+                                        <span class="text-3xl block">📋</span>
+                                        <p class="text-xs font-bold text-slate-600">Nhấp Ctrl + V để dán ảnh chụp</p>
+                                        <p class="text-[10px] text-slate-400">Hoặc click nút chọn tệp bên dưới</p>
+                                        <input type="file" @change="handleImageUpload($event)" accept="image/*" class="mt-2 text-xs text-slate-500 w-44" />
+                                    </div>
+                                </template>
+                                
+                                <template x-if="ocrImageSrc">
+                                    <div class="w-full flex flex-col items-center relative">
+                                        <img :src="ocrImageSrc" class="max-h-[160px] rounded-lg shadow-sm border border-slate-200 object-contain" />
+                                        <button @click="ocrImageSrc = ''; ocrParsedRows = []" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow hover:bg-red-700">✕</button>
+                                        <span class="text-[10px] text-slate-500 font-bold block mt-2">Ảnh đã sẵn sàng. Bấm bắt đầu bên phải ➡️</span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Trạng thái quét AI -->
+                            <div class="bg-slate-50 p-2 rounded-xl border border-slate-150 flex flex-col justify-between">
+                                <div class="space-y-3">
+                                    <h4 class="text-xs font-bold text-slate-700 uppercase">Trạng thái nhận diện AI</h4>
+                                    <p class="text-xs font-semibold text-slate-600" x-text="ocrStatus || 'Chưa tải ảnh chụp lên...'"></p>
+                                    
+                                    <!-- Thanh tiến trình quét -->
+                                    <template x-if="ocrRunning">
+                                        <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                                            <div class="bg-indigo-650 h-2.5 rounded-full transition-all duration-300" :style="`width: ${ocrProgress}%`"></div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div class="pt-4">
+                                    <button type="button" @click="runOCR()" :disabled="ocrRunning || !ocrImageSrc" 
+                                            class="w-full py-2.5 rounded-lg text-xs font-black text-white shadow bg-indigo-600 hover:bg-indigo-750 disabled:bg-slate-350 disabled:cursor-not-allowed transition flex items-center justify-center gap-1">
+                                        🔍 Bắt đầu phân tích AI OCR
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kết quả phân tích dạng lưới xem trước -->
+                        <template x-if="ocrParsedRows.length > 0">
+                            <div class="border border-slate-200 rounded-lg overflow-hidden bg-white mt-4">
+                                <div class="bg-slate-50 px-4 py-2 border-b border-slate-150">
+                                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-tight">📋 Kết quả xem trước (Có thể sửa lại nếu sai sót)</h4>
+                                </div>
+                                <div class="max-h-[220px] overflow-y-auto">
+                                    <table class="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr class="bg-slate-100 font-bold border-b border-slate-200 text-slate-800">
+                                                <th class="p-2 w-20">MÃ TÀI SẢN</th>
+                                                <th class="p-2">Tên thiết bị</th>
+                                                <th class="p-2">Bộ phận</th>
+                                                <th class="p-2 text-center w-12">Dầu máy</th>
+                                                <th class="p-2 text-center w-12">Thủy lực</th>
+                                                <th class="p-2 w-16">Lọc nhớt</th>
+                                                <th class="p-2 w-16">Lọc TL</th>
+                                                <th class="p-2 w-16">Lọc gió</th>
+                                                <th class="p-2 w-16 text-center">Chu kỳ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="(row, idx) in ocrParsedRows" :key="idx">
+                                                <tr class="border-b border-slate-100 hover:bg-slate-50/50">
+                                                    <td class="p-1.5"><input type="text" x-model="row.asset_code" class="w-full p-1 text-[11px] font-bold text-sky-850 uppercase border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.name" class="w-full p-1 text-[11px] font-bold uppercase border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.department" class="w-full p-1 text-[11px] border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.engine_oil_cap" class="w-full p-1 text-[11px] text-center font-bold border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.hydraulic_oil_cap" class="w-full p-1 text-[11px] text-center font-bold border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.engine_oil_filter" class="w-full p-1 text-[11px] uppercase border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.hydraulic_filter" class="w-full p-1 text-[11px] uppercase border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.air_filter" class="w-full p-1 text-[11px] uppercase border rounded bg-slate-50 focus:bg-white" /></td>
+                                                    <td class="p-1.5"><input type="text" x-model="row.maintenance_cycle" class="w-full p-1 text-[11px] text-center border rounded bg-slate-50 focus:bg-white" /></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                            <button type="button" wire:click="$set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+                                Hủy bỏ
+                            </button>
+                            <button type="button" @click="submitOcrData()" :disabled="ocrParsedRows.length === 0"
+                                    class="rounded-lg bg-indigo-650 hover:bg-indigo-750 disabled:bg-slate-300 disabled:cursor-not-allowed px-5 py-2 text-xs font-black text-white shadow-sm transition">
+                                💾 Đồng bộ dữ liệu nhận diện vào hệ thống
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+    <!-- MODAL SỬA THÔNG TIN THIẾT BỊ -->
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showEditModal): ?>
+        <div class="fixed inset-0 z-50 overflow-y-auto no-print">
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+                <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity" wire:click="$set('showEditModal', false)"></div>
+                
+                <div class="inline-block align-middle bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-100">
+                    <div class="bg-white px-6 pt-6 pb-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-base font-black text-slate-800 uppercase tracking-tight">✏️ Sửa thông tin thiết bị</h3>
+                            <button wire:click="$set('showEditModal', false)" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Mã tài sản <span class="text-red-500">*</span></label>
+                                <input type="text" wire:model.defer="edit_asset_code" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white" />
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['edit_asset_code'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-xs text-red-600 font-bold block mt-1"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tên thiết bị <span class="text-red-500">*</span></label>
+                                <input type="text" wire:model.defer="edit_name" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white" />
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['edit_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> <span class="text-xs text-red-600 font-bold block mt-1"><?php echo e($message); ?></span> <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Bộ phận sử dụng</label>
+                                <input type="text" wire:model.defer="edit_department" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-white" />
+                            </div>
+                            
+                            <!-- Định mức vật tư (BOM) theo chu kỳ -->
+                            <div class="mt-4 pt-4 border-t border-slate-200">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-tight">⚙️ Định mức vật tư (BOM)</h4>
+                                </div>
+                                
+                                <!-- Tabs -->
+                                <div class="flex space-x-2 border-b border-slate-200 mb-4">
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = ['250', '500', '1000', '2000', '4000']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cycle): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                        <button type="button" 
+                                                wire:click="setActiveCycleTab('<?php echo e($cycle); ?>')" 
+                                                class="px-4 py-2 text-xs font-bold transition-colors border-b-2 <?php echo e($activeCycleTab == $cycle ? 'border-sky-500 text-sky-700 bg-sky-50' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'); ?>">
+                                            <?php echo e($cycle); ?>h
+                                        </button>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                </div>
+
+                                <!-- Tab Content -->
+                                <div>
+                                    <div class="flex justify-end mb-2">
+                                        <button type="button" wire:click="addBomItem('<?php echo e($activeCycleTab); ?>')" class="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded hover:bg-emerald-200 transition shadow-sm">
+                                            + Thêm vật tư
+                                        </button>
+                                    </div>
+
+                                    <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(empty($bomItemsByCycle[$activeCycleTab])): ?>
+                                            <div class="text-xs text-slate-400 italic text-center py-4 bg-slate-50 rounded-lg border border-dashed border-slate-300">
+                                                Chưa có vật tư bảo dưỡng cho mức <?php echo e($activeCycleTab); ?>h.
+                                            </div>
+                                        <?php else: ?>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $bomItemsByCycle[$activeCycleTab]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                            <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200" <?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::$currentLoop['key'] = 'bom-item-'.e($activeCycleTab).'-'.e($index).''; ?>wire:key="bom-item-<?php echo e($activeCycleTab); ?>-<?php echo e($index); ?>">
+                                                <div class="flex-1 min-w-[200px]">
+                                                    <select wire:model.defer="bomItemsByCycle.<?php echo e($activeCycleTab); ?>.<?php echo e($index); ?>.product_id" class="w-full text-xs px-2 py-1.5 rounded border border-slate-200 focus:ring-1 focus:ring-sky-500 font-medium bg-white">
+                                                        <option value="">-- Chọn vật tư --</option>
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $availableProducts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                                            <option value="<?php echo e($product['id']); ?>"><?php echo e($product['code']); ?> - <?php echo e($product['name']); ?></option>
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                                    </select>
+                                                </div>
+                                                <div class="w-20">
+                                                    <input type="number" step="0.01" wire:model.defer="bomItemsByCycle.<?php echo e($activeCycleTab); ?>.<?php echo e($index); ?>.quantity" placeholder="SL" class="w-full text-xs px-2 py-1.5 rounded border border-slate-200 focus:ring-1 focus:ring-sky-500 text-center font-bold text-sky-800 bg-white" title="Số lượng">
+                                                </div>
+                                                <div class="w-20">
+                                                    <input type="number" step="0.01" wire:model.defer="bomItemsByCycle.<?php echo e($activeCycleTab); ?>.<?php echo e($index); ?>.backup_quantity" placeholder="SL DP" class="w-full text-xs px-2 py-1.5 rounded border border-slate-200 focus:ring-1 focus:ring-amber-500 text-center text-amber-800 bg-white" title="Số lượng dự phòng">
+                                                </div>
+                                                <div class="w-32">
+                                                    <input type="text" wire:model.defer="bomItemsByCycle.<?php echo e($activeCycleTab); ?>.<?php echo e($index); ?>.note" placeholder="Ghi chú" class="w-full text-xs px-2 py-1.5 rounded border border-slate-200 focus:ring-1 focus:ring-sky-500 bg-white">
+                                                </div>
+                                                <button type="button" wire:click="removeBomItem('<?php echo e($activeCycleTab); ?>', <?php echo e($index); ?>)" class="text-rose-500 hover:text-rose-700 p-1.5 bg-white rounded shadow-sm border border-slate-100 hover:bg-rose-50 transition" title="Xóa">
+                                                    ✕
+                                                </button>
+                                            </div>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-6 py-3 sm:flex sm:flex-row-reverse gap-2">
+                        <button type="button" wire:click="updateAsset" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-sky-600 hover:bg-sky-700 text-xs font-black text-white sm:w-auto transition">
+                            Lưu thay đổi
+                        </button>
+                        <button type="button" wire:click="$set('showEditModal', false)" class="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-200 shadow-sm px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 sm:mt-0 sm:w-auto transition">
+                            Hủy bỏ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+    <!-- BẢNG IN ĐỊNH MỨC MÃ TÀI SẢN -->
+    <div class="print-only print-container" style="font-family: 'Times New Roman', Times, serif;">
+        <!-- Header công ty -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+                <h1 style="font-size: 16px; font-weight: bold; text-transform: uppercase; margin: 0;">CÔNG TY CỔ PHẦN ĐẦU TƯ XÂY DỰNG</h1>
+                <p style="font-size: 11px; margin: 4px 0;">BỘ PHẬN QUẢN LÝ THIẾT BỊ & CƠ GIỚI</p>
+                <p style="font-size: 11px; margin: 4px 0;">Điện thoại hỗ trợ: 0708091050</p>
+            </div>
+            <div style="text-align: right;">
+                <p style="font-size: 11px; margin: 0;">Mẫu số: 03-BOM/TS</p>
+                <p style="font-size: 11px; margin: 4px 0; font-style: italic;">Ngày in: <?php echo e(now()->format('d/m/Y H:i')); ?></p>
+            </div>
+        </div>
+
+        <div style="border-bottom: 1.5px solid black; margin-bottom: 15px;"></div>
+
+        <!-- Tiêu đề phiếu -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin: 0;">BẢNG ĐỊNH MỨC VẬT TƯ & BẢO DƯỠNG MÃ TÀI SẢN</h2>
+            <p style="font-size: 11px; font-style: italic; margin-top: 4px;">
+                (Danh sách thiết bị cơ giới chọn lọc phục vụ công tác bảo dưỡng định kỳ)
+            </p>
+        </div>
+
+        <!-- Bảng in -->
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Mã tài sản</th>
+                    <th style="width: 22%;">Tên thiết bị</th>
+                    <th style="width: 13%;">Bộ phận</th>
+                    <th style="width: 11%; text-align: center;">Dầu động cơ (Lít)</th>
+                    <th style="width: 11%; text-align: center;">Dầu thủy lực (Lít)</th>
+                    <th style="width: 11%;">Lọc nhớt</th>
+                    <th style="width: 11%;">Lọc thủy lực</th>
+                    <th style="width: 11%;">Lọc gió</th>
+                    <th style="width: 10%; text-align: center;">Chu kỳ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = App\Models\Asset::whereIn('id', $selectedIds)->get(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                    <tr>
+                        <td style="font-weight: bold; text-align: center; text-transform: uppercase;"><?php echo e($item->asset_code); ?></td>
+                        <td style="font-weight: bold; text-transform: uppercase; font-size: 12px !important;"><?php echo e($item->name); ?></td>
+                        <td><?php echo e($item->department ?: '---'); ?></td>
+                        <td style="text-align: center;"><?php echo e($item->engine_oil_cap ?: '---'); ?></td>
+                        <td style="text-align: center;"><?php echo e($item->hydraulic_oil_cap ?: '---'); ?></td>
+                        <td><?php echo e($item->engine_oil_filter ?: '---'); ?></td>
+                        <td><?php echo e($item->hydraulic_filter ?: '---'); ?></td>
+                        <td><?php echo e($item->air_filter ?: '---'); ?></td>
+                        <td style="text-align: center; font-weight: bold;"><?php echo e($item->maintenance_cycle ?: '---'); ?></td>
+                    </tr>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+            </tbody>
+        </table>
+
+        <!-- Chữ ký -->
+        <div style="margin-top: 40px; display: flex; justify-content: space-between; text-align: center;">
+            <div style="width: 40%;">
+                <p style="font-weight: bold; text-transform: uppercase; margin-bottom: 2px;">Người lập bảng</p>
+                <p style="font-size: 10px; font-style: italic; margin: 0;">(Ký, ghi rõ họ tên)</p>
+                <div style="height: 50px;"></div>
+                <p style="font-weight: bold; text-transform: uppercase;"><?php echo e(auth()->user()->name ?? '........................'); ?></p>
+            </div>
+            <div style="width: 40%;">
+                <p style="font-weight: bold; text-transform: uppercase; margin-bottom: 2px;">Trưởng bộ phận cơ giới</p>
+                <p style="font-size: 10px; font-style: italic; margin: 0;">(Ký, ghi rõ họ tên)</p>
+                <div style="height: 50px;"></div>
+                <p style="font-weight: bold;">.................................</p>
+            </div>
+        </div>
+    </div>
+
+        <?php
+        $__scriptKey = '2069590040-2';
+        ob_start();
+    ?>
+    <script>
+        $wire.on('trigger-print', () => {
+            setTimeout(() => { window.print(); }, 400);
+        });
+    </script>
+        <?php
+        $__output = ob_get_clean();
+
+        \Livewire\store($this)->push('scripts', $__output, $__scriptKey)
+    ?>
+</div>
+<?php /**PATH D:\Project\resources\views\livewire\warehouse\asset\asset-bom-manager.blade.php ENDPATH**/ ?>

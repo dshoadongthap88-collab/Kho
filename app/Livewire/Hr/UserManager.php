@@ -26,7 +26,7 @@ class UserManager extends Component
     public $phone;
     public $username;
     public $password;
-    public $role = 'staff';
+    public $role = 'staff_kho';
     public $department = '';
     public $status = 'active';
     public $hire_date;
@@ -45,9 +45,9 @@ class UserManager extends Component
         $rules = [
             'name' => 'required|string|max:255',
             'code' => ['required', 'string', 'max:50', Rule::unique('users')->ignore($this->userId)],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($this->userId)],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('users')->ignore($this->userId)],
             'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($this->userId)],
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'string', 'max:20', Rule::unique('users')->ignore($this->userId)],
             'role' => 'required|string',
             'department' => 'nullable|string',
             'status' => 'required|in:active,inactive',
@@ -87,7 +87,7 @@ class UserManager extends Component
         $this->phone = '';
         $this->username = '';
         $this->password = '';
-        $this->role = 'staff';
+        $this->role = 'staff_kho';
         $this->department = '';
         $this->status = 'active';
         $this->hire_date = null;
@@ -95,6 +95,15 @@ class UserManager extends Component
         $this->newAvatar = null;
         $this->permissions = [];
         $this->allowed_houses = [];
+    }
+
+    public function updatedDepartment($value)
+    {
+        if (str_contains(mb_strtoupper($value), 'KHO')) {
+            $this->role = 'staff_kho';
+        } elseif (str_contains(mb_strtoupper($value), 'KTSC')) {
+            $this->role = 'staff_ktsc';
+        }
     }
 
     public function edit($id)
@@ -131,8 +140,8 @@ class UserManager extends Component
         $data = [
             'code' => $this->code,
             'name' => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone,
+            'email' => $this->email === '' ? null : $this->email,
+            'phone' => $this->phone === '' ? null : $this->phone,
             'username' => $this->username,
             'role' => $this->role,
             'department' => $this->department,
@@ -153,7 +162,7 @@ class UserManager extends Component
 
         User::updateOrCreate(['id' => $this->userId], $data);
 
-        $this->closeModal();
+        $this->dispatch('user-saved');
         session()->flash('message', $this->userId ? 'Cập nhật nhân viên thành công.' : 'Thêm nhân viên thành công.');
     }
 

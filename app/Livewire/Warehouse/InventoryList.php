@@ -72,7 +72,7 @@ class InventoryList extends Component
         if (empty($this->selectedItems)) return;
         
         try {
-            Inventory::whereIn('id', $this->selectedItems)->delete();
+            Inventory::whereIn('product_id', $this->selectedItems)->delete();
             $this->selectedItems = [];
             session()->flash('success', 'Đã xóa tồn kho thành công.');
         } catch (\Exception $e) {
@@ -163,8 +163,14 @@ class InventoryList extends Component
 
     public function exportExcel()
     {
+        $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
         $query = Product::query()
-            ->leftJoin('inventories', 'products.id', '=', 'inventories.product_id')
+            ->leftJoin('inventories', function($join) use ($houseId) {
+                $join->on('products.id', '=', 'inventories.product_id');
+                if ($houseId) {
+                    $join->where('inventories.house_id', $houseId);
+                }
+            })
             ->where('products.status', 'active')
             ->select(
                 'products.id',
@@ -230,8 +236,14 @@ class InventoryList extends Component
 
     public function render()
     {
+        $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
         $query = Product::query()
-            ->leftJoin('inventories', 'products.id', '=', 'inventories.product_id')
+            ->leftJoin('inventories', function($join) use ($houseId) {
+                $join->on('products.id', '=', 'inventories.product_id');
+                if ($houseId) {
+                    $join->where('inventories.house_id', $houseId);
+                }
+            })
             ->where('products.status', 'active')
             ->select(
                 'products.id', // Giữ nguyên 'id' là ID sản phẩm để không hỏng loop Blade

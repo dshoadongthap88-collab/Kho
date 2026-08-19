@@ -100,6 +100,11 @@
             <button type="button" wire:click="$set('showImportModal', true)" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-emerald-600 to-emerald-700 font-black hover:from-emerald-700 hover:to-emerald-800 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
                 <span>📥</span> IMPORT EXCEL
             </button>
+            <button type="button" wire:click="exportExcel" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-teal-600 to-teal-700 font-black hover:from-teal-700 hover:to-teal-800 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
+                <span wire:loading.remove wire:target="exportExcel">📤</span>
+                <span wire:loading wire:target="exportExcel" class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                XUẤT EXCEL
+            </button>
             <button type="button" wire:click="printAll" wire:loading.attr="disabled" class="h-[38px] shrink-0 bg-gradient-to-r from-slate-800 to-slate-900 font-black hover:from-indigo-600 hover:to-indigo-700 text-white px-3 rounded-lg text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md active:scale-95 uppercase">
                 <span>🖨️</span> IN FILE PDF
             </button>

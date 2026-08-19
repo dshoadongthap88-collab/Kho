@@ -459,8 +459,38 @@ class ProductCatalog extends Component
 
     public function exportExcel()
     {
-        // Tôi sẽ tạo class ProductExport sau
-        session()->flash('info', 'Tính năng Xuất Excel danh mục đang được chuẩn bị.');
+        $products = Product::query()
+            ->with(['inventory', 'category'])
+            ->where(function($q) {
+                $q->whereIn('type', ['material', 'product_purchased', 'product_produced'])
+                  ->orWhereNull('type');
+            })
+            ->where(function($q) {
+                $searchTerm = '%' . $this->search . '%';
+                $q->where('products.name', 'like', $searchTerm)
+                  ->orWhere('products.code', 'like', $searchTerm)
+                  ->orWhere('products.brand', 'like', $searchTerm)
+                  ->orWhere('products.batch_number', 'like', $searchTerm)
+                  ->orWhere('products.location', 'like', $searchTerm)
+                  ->orWhere('products.status', 'like', $searchTerm)
+                  ->orWhere('products.description', 'like', $searchTerm)
+                  ->orWhere('products.min_stock', 'like', $searchTerm)
+                  ->orWhere('products.max_stock', 'like', $searchTerm)
+                  ->orWhere('products.expiry_date', 'like', $searchTerm)
+                  ->orWhereHas('category', function ($subQ) use ($searchTerm) {
+                      $subQ->where('name', 'like', $searchTerm);
+                  })
+                  ->orWhereHas('inventory', function ($subQ) use ($searchTerm) {
+                      $subQ->where('quantity', 'like', $searchTerm);
+                  });
+            })
+            ->when($this->filterMode === 'low_stock', function($q) {
+                return $this->applyLowStockFilter($q);
+            })
+            ->orderBy('products.created_at', 'desc')
+            ->get();
+
+        return Excel::download(new \App\Exports\ProductExport($products), 'danh_muc_vat_tu_' . date('YmdHis') . '.xlsx');
     }
 
     public function printLabels()

@@ -22,56 +22,55 @@
     <!-- TAB 1: TỔNG QUAN -->
     <div x-show="tab === 'overview'" class="print:hidden">
         <!-- Stat Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">Tổng Số Dự Án</p>
-                    <h3 class="text-3xl font-black text-slate-800 mt-1">{{ $projects->count() }}</h3>
+                    <p class="text-xs font-medium text-slate-500 uppercase">Tổng Số Dự Án</p>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ $projects->count() }}</h3>
                 </div>
-                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-xl">🏢</div>
+                <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-lg">🏢</div>
             </div>
-            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">Tổng Số Nhân Sự</p>
-                    <h3 class="text-3xl font-black text-slate-800 mt-1">{{ $totalUsers }}</h3>
+                    <p class="text-xs font-medium text-slate-500 uppercase">Tổng Số Nhân Sự</p>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ $totalUsers }}</h3>
                 </div>
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-xl">👥</div>
+                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-lg">👥</div>
             </div>
-            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">Tổng Số Đơn Xuất</p>
-                    <h3 class="text-3xl font-black text-slate-800 mt-1">{{ number_format($totalOrdersAllProjects) }}</h3>
+                    <p class="text-xs font-medium text-slate-500 uppercase">Tổng Số Đơn Xuất</p>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ number_format($totalOrdersAllProjects) }}</h3>
                 </div>
-                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center text-xl">📄</div>
+                <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center text-lg">📄</div>
             </div>
-            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">Tổng SL Vật Tư Xuất</p>
-                    <h3 class="text-3xl font-black text-slate-800 mt-1">{{ number_format($totalItemsAllProjects) }}</h3>
+                    <p class="text-xs font-medium text-slate-500 uppercase">Tổng SL Vật Tư Xuất</p>
+                    <h3 class="text-2xl font-black text-slate-800 mt-1">{{ number_format($totalItemsAllProjects) }}</h3>
                 </div>
-                <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center text-xl">🔧</div>
+                <div class="w-10 h-10 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center text-lg">🔧</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8" wire:ignore>
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4" wire:ignore>
             <!-- Biểu đồ Đường -->
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <h3 class="text-base font-bold text-slate-800 mb-4">Biến Động Đơn Xuất Kho (30 Ngày Qua)</h3>
-                <div id="chart-orders-timeline" class="w-full h-[350px]"></div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-3">
+                <h3 class="text-sm font-bold text-slate-800 mb-2">Biến Động Đơn Xuất (30 Ngày)</h3>
+                <div id="chart-orders-timeline" class="w-full h-[260px]"></div>
             </div>
             
             <!-- Biểu đồ Tròn -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <h3 class="text-base font-bold text-slate-800 mb-4">Tỷ Trọng SL Vật Tư / Dự Án</h3>
-                <div id="chart-items-donut" class="w-full h-[350px] flex items-center justify-center"></div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-3">
+                <h3 class="text-sm font-bold text-slate-800 mb-2">Tỷ Trọng SL Vật Tư / Dự Án</h3>
+                <div id="chart-items-donut" class="w-full h-[260px] flex items-center justify-center"></div>
             </div>
-        </div>
 
-        <div class="grid grid-cols-1 gap-6" wire:ignore>
             <!-- Biểu đồ Cột -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <h3 class="text-base font-bold text-slate-800 mb-4">So Sánh Tổng Số Đơn Xuất Kho Giữa Các Dự Án</h3>
-                <div id="chart-orders-bar" class="w-full h-[400px]"></div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-3">
+                <h3 class="text-sm font-bold text-slate-800 mb-2">So Sánh Tổng Số Đơn Xuất</h3>
+                <div id="chart-orders-bar" class="w-full h-[260px]"></div>
             </div>
         </div>
     </div>

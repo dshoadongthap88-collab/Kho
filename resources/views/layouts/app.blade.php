@@ -8,9 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     @livewireStyles
 <style>
+    @page { margin: 0; }
     @media print { 
-        @page { margin: 0; }
-        body { padding: 1cm; }
+        body { padding: 1.5cm; }
         .no-print { display: none !important; } 
     }
 </style>

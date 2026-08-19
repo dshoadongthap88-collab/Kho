@@ -190,27 +190,32 @@
             </div>
 
             <!-- Table for Low Stock -->
-            <div :class="{ 'hidden': selectedWarningHigh.length > 0 && selectedWarningLow.length === 0 }" class="mb-8">
+            <div :class="{ 'hidden': selectedWarningHigh.length > 0 && selectedWarningLow.length === 0 }" class="mb-4">
                 <h3 class="font-bold uppercase mb-2 text-sm">I. Danh sách vật tư sắp hết hàng (< Tồn tối thiểu)</h3>
                 @if(count($lowStockProducts ?? []) > 0)
                     <table class="w-full text-sm border-collapse border border-gray-400">
                         <thead>
                             <tr class="bg-gray-100">
-                                <th class="border border-gray-400 p-2 text-center w-12">STT</th>
-                                <th class="border border-gray-400 p-2 text-center w-32">Mã vật tư</th>
-                                <th class="border border-gray-400 p-2 text-left">Tên vật tư</th>
-                                <th class="border border-gray-400 p-2 text-center w-20">ĐVT</th>
-                                <th class="border border-gray-400 p-2 text-right w-32">Số lượng dư</th>
+                                <th class="border border-gray-400 p-1 text-center w-10">STT</th>
+                                <th class="border border-gray-400 p-1 text-center w-28">Mã vật tư</th>
+                                <th class="border border-gray-400 p-1 text-left">Tên vật tư</th>
+                                <th class="border border-gray-400 p-1 text-center w-16">ĐVT</th>
+                                <th class="border border-gray-400 p-1 text-right w-24">Số lượng tồn</th>
+                                <th class="border border-gray-400 p-1 text-right w-24">Số lượng thiếu</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($lowStockProducts ?? [] as $index => $item)
+                                @php
+                                    $missingQty = $item->min_stock - $item->quantity;
+                                @endphp
                                 <tr :class="{ 'hidden': selectedWarningLow.length > 0 && !selectedWarningLow.includes('{{ $index }}') }">
-                                    <td class="border border-gray-400 p-2 text-center">{{ $index + 1 }}</td>
-                                    <td class="border border-gray-400 p-2 text-center">{{ $item->code }}</td>
-                                    <td class="border border-gray-400 p-2">{{ $item->name }}</td>
-                                    <td class="border border-gray-400 p-2 text-center">{{ $item->unit ?? '-' }}</td>
-                                    <td class="border border-gray-400 p-2 text-right font-bold">{{ number_format($item->quantity) }}</td>
+                                    <td class="border border-gray-400 p-1 text-center">{{ $index + 1 }}</td>
+                                    <td class="border border-gray-400 p-1 text-center">{{ $item->code }}</td>
+                                    <td class="border border-gray-400 p-1">{{ $item->name }}</td>
+                                    <td class="border border-gray-400 p-1 text-center">{{ $item->unit ?? '-' }}</td>
+                                    <td class="border border-gray-400 p-1 text-right font-bold">{{ number_format($item->quantity) }}</td>
+                                    <td class="border border-gray-400 p-1 text-right font-bold text-red-600">{{ number_format($missingQty > 0 ? $missingQty : 0) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -221,27 +226,32 @@
             </div>
 
             <!-- Table for High Stock -->
-            <div :class="{ 'hidden': selectedWarningLow.length > 0 && selectedWarningHigh.length === 0 }" class="mb-8">
+            <div :class="{ 'hidden': selectedWarningLow.length > 0 && selectedWarningHigh.length === 0 }" class="mb-4">
                 <h3 class="font-bold uppercase mb-2 text-sm">II. Danh sách vật tư dư thừa (> Tồn tối đa)</h3>
                 @if(count($highStockProducts ?? []) > 0)
                     <table class="w-full text-sm border-collapse border border-gray-400">
                         <thead>
                             <tr class="bg-gray-100">
-                                <th class="border border-gray-400 p-2 text-center w-12">STT</th>
-                                <th class="border border-gray-400 p-2 text-center w-32">Mã vật tư</th>
-                                <th class="border border-gray-400 p-2 text-left">Tên vật tư</th>
-                                <th class="border border-gray-400 p-2 text-center w-20">ĐVT</th>
-                                <th class="border border-gray-400 p-2 text-right w-32">Số lượng dư</th>
+                                <th class="border border-gray-400 p-1 text-center w-10">STT</th>
+                                <th class="border border-gray-400 p-1 text-center w-28">Mã vật tư</th>
+                                <th class="border border-gray-400 p-1 text-left">Tên vật tư</th>
+                                <th class="border border-gray-400 p-1 text-center w-16">ĐVT</th>
+                                <th class="border border-gray-400 p-1 text-right w-24">Số lượng tồn</th>
+                                <th class="border border-gray-400 p-1 text-right w-24">Số lượng dư</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($highStockProducts ?? [] as $index => $item)
+                                @php
+                                    $excessQty = $item->quantity - $item->max_stock;
+                                @endphp
                                 <tr :class="{ 'hidden': selectedWarningHigh.length > 0 && !selectedWarningHigh.includes('{{ $index }}') }">
-                                    <td class="border border-gray-400 p-2 text-center">{{ $index + 1 }}</td>
-                                    <td class="border border-gray-400 p-2 text-center">{{ $item->code }}</td>
-                                    <td class="border border-gray-400 p-2">{{ $item->name }}</td>
-                                    <td class="border border-gray-400 p-2 text-center">{{ $item->unit ?? '-' }}</td>
-                                    <td class="border border-gray-400 p-2 text-right font-bold">{{ number_format($item->quantity) }}</td>
+                                    <td class="border border-gray-400 p-1 text-center">{{ $index + 1 }}</td>
+                                    <td class="border border-gray-400 p-1 text-center">{{ $item->code }}</td>
+                                    <td class="border border-gray-400 p-1">{{ $item->name }}</td>
+                                    <td class="border border-gray-400 p-1 text-center">{{ $item->unit ?? '-' }}</td>
+                                    <td class="border border-gray-400 p-1 text-right font-bold">{{ number_format($item->quantity) }}</td>
+                                    <td class="border border-gray-400 p-1 text-right font-bold text-red-600">{{ number_format($excessQty > 0 ? $excessQty : 0) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -252,7 +262,7 @@
             </div>
 
             <!-- Print Signatures -->
-            <div class="flex mt-12 w-full justify-between px-10 pb-20 text-center">
+            <div class="flex mt-6 w-full justify-between px-10 text-center">
                 <div class="w-1/3">
                     <p class="font-bold text-sm uppercase">Trưởng nhóm kho</p>
                     <p class="text-xs mt-1 text-gray-500 italic">(Ký và ghi rõ họ tên)</p>

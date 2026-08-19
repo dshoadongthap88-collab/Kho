@@ -122,13 +122,25 @@
                     <!-- Cột phải: Quyền tính năng -->
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-3">Phân quyền tính năng (Module Permissions)</label>
-                        <div class="grid grid-cols-1 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl h-full content-start">
-                            @foreach($availablePermissions as $key => $label)
-                            <label class="flex items-center p-2 rounded hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-slate-200">
-                                <input wire:model="selectedPermissions" type="checkbox" value="{{ $key }}" class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
-                                <span class="ml-2 text-sm font-medium text-slate-700">{{ $label }}</span>
-                            </label>
-                            @endforeach
+                        <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                            @php
+                                $dbModules = \App\Models\SystemModule::where('is_active', true)->get()->groupBy('group_name');
+                            @endphp
+                            <div class="h-64 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                                @foreach($dbModules as $groupName => $modules)
+                                <div class="bg-white p-3 rounded border border-slate-200">
+                                    <h5 class="text-sm font-bold text-indigo-700 mb-2 border-b border-slate-100 pb-1">{{ $groupName }}</h5>
+                                    <div class="space-y-1">
+                                        @foreach($modules as $module)
+                                        <label class="flex items-center p-1.5 hover:bg-slate-50 rounded cursor-pointer transition-colors">
+                                            <input type="checkbox" wire:model="selectedPermissions" value="{{ $module->route_name }}" class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                                            <span class="ml-2 text-sm text-slate-700">{{ $module->label }}</span>
+                                        </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 </div>

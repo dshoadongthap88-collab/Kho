@@ -20,26 +20,7 @@ class PermissionManager extends Component
     public $selectedPermissions = [];
     public $role = 'staff';
 
-    public $availablePermissions = [
-        'warehouse.inventory' => 'Tồn kho (Xem)',
-        'warehouse.stock-in' => 'Nhập kho',
-        'warehouse.stock-out' => 'Xuất kho',
-        'warehouse.stock-transfer.index' => 'Chuyển kho',
-        'warehouse.stock-count' => 'Kiểm kê kho',
-        'warehouse.product-catalog' => 'Danh mục vật tư',
-        'warehouse.contacts' => 'Đối tác / NCC',
-        'warehouse.asset-manager' => 'Quản lý Tài sản',
-        'warehouse.maintenance-dashboard' => 'Báo cáo bảo trì',
-        'warehouse.maintenance-tracking' => 'Theo dõi bảo trì',
-        'warehouse.maintenance-rules' => 'Cấu hình bảo trì',
-        'warehouse.maintenance-plans' => 'Kế hoạch bảo trì',
-        'warehouse.maintenance-tickets' => 'Phiếu bảo trì',
-        'warehouse.purchase-plan' => 'Kế hoạch mua sắm',
-        'warehouse.purchase-plan.history' => 'Lịch sử mua sắm',
-        'warehouse.reports.transaction-detail' => 'Báo cáo giao dịch',
-        'warehouse.reports.stock' => 'Báo cáo kho tổng hợp',
-        'warehouse.chat' => 'Nhắn tin nội bộ',
-    ];
+    public $availablePermissions = [];
 
     public function updatingSearch()
     {

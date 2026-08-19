@@ -122,7 +122,7 @@
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="closeModal"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                 
-                <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
                     <div class="bg-indigo-600 px-6 py-4">
                         <h3 class="text-lg font-black text-white uppercase tracking-wider">
                             {{ $userId ? 'Chỉnh sửa nhân viên' : 'Thêm mới nhân viên' }}
@@ -216,6 +216,58 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Thêm phân quyền -->
+                            <div class="mt-6 border-t border-gray-200 pt-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <!-- Phân quyền Ngôi nhà -->
+                                    <div>
+                                        <h4 class="text-sm font-bold text-gray-700 flex items-center gap-1 mb-3">
+                                            <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                                            Phân quyền Ngôi Nhà (Cơ sở)
+                                        </h4>
+                                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                            <div class="grid grid-cols-1 gap-2">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                <label class="flex items-center p-1.5 hover:bg-white rounded cursor-pointer transition-colors border border-transparent hover:border-gray-200">
+                                                    <input type="checkbox" name="allowed_houses[]" value="{{ $i }}" wire:model="allowed_houses" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500 focus:ring-2">
+                                                    <span class="ml-2 text-sm text-gray-700 font-medium">{{ $i == 1 ? 'Dự án Hóc Môn' : ($i == 2 ? 'Dự án Hậu Nghĩa' : ($i == 3 ? 'Dự án Cần Giờ' : ($i == 4 ? 'Dự án Cần Giuộc' : 'Ngôi nhà HR'))) }}</span>
+                                                </label>
+                                                @endfor
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Phân quyền Module -->
+                                    <div>
+                                        <h4 class="text-sm font-bold text-gray-700 flex items-center gap-1 mb-3">
+                                            <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                                            Phân quyền Module (Tick vào để cấp quyền)
+                                        </h4>
+                                        <div class="space-y-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                            @php
+                                                $dbModules = \App\Models\SystemModule::where('is_active', true)->get()->groupBy('group_name');
+                                            @endphp
+                                            <div class="h-48 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                                                @foreach($dbModules as $groupName => $modules)
+                                                <div class="bg-white p-3 rounded border border-gray-200">
+                                                    <h5 class="text-sm font-bold text-indigo-700 mb-2 border-b border-gray-100 pb-1">{{ $groupName }}</h5>
+                                                    <div class="space-y-1">
+                                                        @foreach($modules as $module)
+                                                        <label class="flex items-center p-1.5 hover:bg-gray-50 rounded cursor-pointer transition-colors">
+                                                            <input type="checkbox" name="permissions[]" value="{{ $module->route_name }}" wire:model="permissions" class="w-4 h-4 text-indigo-600 bg-white border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
+                                                            <span class="ml-2 text-sm text-gray-700">{{ $module->label }}</span>
+                                                        </label>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <button type="submit" class="hidden"></button>
                         </form>
                     </div>

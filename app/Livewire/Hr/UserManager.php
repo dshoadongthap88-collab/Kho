@@ -32,6 +32,8 @@ class UserManager extends Component
     public $hire_date;
     public $avatar;
     public $newAvatar;
+    public $permissions = [];
+    public $allowed_houses = [];
 
     public function updatingSearch()
     {
@@ -51,6 +53,8 @@ class UserManager extends Component
             'status' => 'required|in:active,inactive',
             'hire_date' => 'nullable|date',
             'newAvatar' => 'nullable|image|max:2048', // max 2MB
+            'permissions' => 'nullable|array',
+            'allowed_houses' => 'nullable|array',
         ];
 
         if (!$this->userId) {
@@ -89,6 +93,8 @@ class UserManager extends Component
         $this->hire_date = null;
         $this->avatar = null;
         $this->newAvatar = null;
+        $this->permissions = [];
+        $this->allowed_houses = [];
     }
 
     public function edit($id)
@@ -109,6 +115,11 @@ class UserManager extends Component
         $this->avatar = $user->avatar;
         $this->password = ''; // không hiện pass cũ
         $this->newAvatar = null;
+        $this->permissions = is_array($user->permissions) ? $user->permissions : (is_string($user->permissions) ? json_decode($user->permissions, true) : []);
+        $this->allowed_houses = is_array($user->allowed_houses) ? $user->allowed_houses : (is_string($user->allowed_houses) ? json_decode($user->allowed_houses, true) : []);
+        
+        if (!is_array($this->permissions)) $this->permissions = [];
+        if (!is_array($this->allowed_houses)) $this->allowed_houses = [];
 
         $this->isModalOpen = true;
     }
@@ -127,6 +138,8 @@ class UserManager extends Component
             'department' => $this->department,
             'status' => $this->status,
             'hire_date' => $this->hire_date,
+            'permissions' => $this->permissions,
+            'allowed_houses' => $this->allowed_houses,
         ];
 
         if ($this->password) {

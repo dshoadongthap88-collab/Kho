@@ -117,7 +117,7 @@
                             </div>
 
                             @if(Auth::user()->role === 'admin' && session('current_house', 1) == 5)
-                                <a href="{{ route('hr.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 text-left">👥 Quản lý nhân viên</a>
+                                <a href="{{ route('hr.users') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-slate-100 text-left">👥 Quản lý nhân viên</a>
                             @endif
 
                             <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100 mt-1 text-left">

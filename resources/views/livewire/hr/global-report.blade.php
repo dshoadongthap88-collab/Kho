@@ -504,8 +504,7 @@
                 overflow: visible !important;
             }
             @page {
-                size: A4 landscape;
-                margin: 1cm;
+                size: A4 portrait;
             }
         }
     </style>

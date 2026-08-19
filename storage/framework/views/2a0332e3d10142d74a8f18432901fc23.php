@@ -484,28 +484,12 @@
     <style>
         /* Print styles */
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            .print-section, .print-section * {
-                visibility: visible;
-            }
-            .print-section {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
-            .print\:hidden {
-                display: none !important;
-            }
             .print-overflow-visible {
                 max-height: none !important;
                 overflow: visible !important;
             }
             @page {
-                size: A4 landscape;
-                margin: 1cm;
+                size: A4 portrait;
             }
         }
     </style>

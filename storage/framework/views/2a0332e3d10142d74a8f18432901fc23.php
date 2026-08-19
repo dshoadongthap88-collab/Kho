@@ -89,12 +89,7 @@
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 </select>
             </div>
-            <div class="ml-auto">
-                <button @click="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow font-semibold flex items-center gap-2 transition-colors">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    In Cảnh Báo Chọn Lọc
-                </button>
-            </div>
+
         </div>
 
         <!-- Print Header (Only visible in print) -->
@@ -105,94 +100,90 @@
 
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <!-- Sắp hết hàng -->
-            <div class="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden transition-opacity"
+            <div class="bg-amber-50 rounded-xl shadow-sm border border-amber-200 overflow-hidden transition-opacity"
                  :class="{ 'print:hidden': selectedWarningHigh.length > 0 && selectedWarningLow.length === 0 }">
-                <div class="bg-red-50 px-5 py-4 border-b border-red-100 flex items-center justify-between">
-                    <h3 class="font-bold text-red-800 flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        Vật Tư Sắp Hết (Tồn kho < Min)
-                    </h3>
-                    <span class="bg-red-200 text-red-800 py-1 px-3 rounded-full text-xs font-bold"><?php echo e(count($lowStockProducts ?? [])); ?> mục</span>
-                </div>
-                <div class="overflow-x-auto print-overflow-visible" style="max-height: 500px;">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="sticky top-0 bg-slate-50 z-10 print:static">
-                            <tr class="text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
-                                <th class="p-3 w-10 text-center print:hidden">
-                                    <input type="checkbox" @change="selectedWarningLow = $event.target.checked ? Array.from(document.querySelectorAll('.row-cb-low')).map(cb => cb.value) : []" class="rounded border-slate-300 text-red-600 focus:ring-red-500">
-                                </th>
-                                <th class="p-3 font-medium">Mã VT</th>
-                                <th class="p-3 font-medium">Tên Vật Tư</th>
-                                <th class="p-3 font-medium text-right">Định mức Min</th>
-                                <th class="p-3 font-medium text-right text-red-600">Tồn kho HT</th>
-                                <th class="p-3 font-medium">Kho Dự án</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 text-sm">
-                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $lowStockProducts ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
-                                <tr :class="{ 'print:hidden': selectedWarningLow.length > 0 && !selectedWarningLow.includes('<?php echo e($index); ?>') }" class="hover:bg-slate-50 transition-colors">
-                                    <td class="p-3 text-center print:hidden">
-                                        <input type="checkbox" value="<?php echo e($index); ?>" x-model="selectedWarningLow" class="row-cb-low rounded border-slate-300 text-red-600 focus:ring-red-500">
-                                    </td>
-                                    <td class="p-3 font-semibold text-slate-700"><?php echo e($item->code); ?></td>
-                                    <td class="p-3 text-slate-600"><?php echo e($item->name); ?></td>
-                                    <td class="p-3 text-right text-slate-500"><?php echo e(number_format($item->min_stock)); ?> <?php echo e($item->unit); ?></td>
-                                    <td class="p-3 text-right font-bold text-red-600"><?php echo e(number_format($item->quantity)); ?> <?php echo e($item->unit); ?></td>
-                                    <td class="p-3 text-slate-600"><?php echo e($item->project_name); ?></td>
-                                </tr>
-                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
-                                <tr>
-                                    <td colspan="6" class="p-6 text-center text-slate-400">Không có vật tư nào dưới định mức.</td>
-                                </tr>
-                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                        </tbody>
-                    </table>
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-amber-800 uppercase flex items-center gap-2">
+                            <span>📦</span> Cảnh báo sắp hết hàng (< Tồn tối thiểu)
+                        </h3>
+                        <button @click="window.print()" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded shadow-sm transition flex items-center gap-1 print:hidden">
+                            <span>🖨️</span> In báo cáo
+                        </button>
+                    </div>
+                    
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($lowStockProducts ?? []) > 0): ?>
+                        <div class="mb-3 px-2 flex items-center gap-2 border-b border-amber-200 pb-3 print:hidden">
+                            <input type="checkbox" @change="selectedWarningLow = $event.target.checked ? Array.from(document.querySelectorAll('.row-cb-low')).map(cb => cb.value) : []" class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                            <span class="text-sm font-bold text-amber-800">Chọn tất cả</span>
+                        </div>
+                        <ul class="text-sm text-amber-900 space-y-2 max-h-[500px] overflow-y-auto px-2 print:max-h-none print:overflow-visible">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $lowStockProducts ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                <?php
+                                    $missingQty = $item->min_stock - $item->quantity;
+                                ?>
+                                <li :class="{ 'print:hidden': selectedWarningLow.length > 0 && !selectedWarningLow.includes('<?php echo e($index); ?>') }" class="flex items-start gap-3 hover:bg-amber-100 p-2 rounded transition-colors">
+                                    <input type="checkbox" value="<?php echo e($index); ?>" x-model="selectedWarningLow" class="row-cb-low mt-1 rounded border-gray-300 text-amber-600 focus:ring-amber-500 print:hidden">
+                                    <div>
+                                        <b class="text-base"><?php echo e($item->name); ?></b> <span class="text-gray-600">(<?php echo e($item->code); ?>)</span>
+                                        <span class="text-xs text-amber-700 ml-2">ĐVT: <?php echo e($item->unit ?? '-'); ?></span><br>
+                                        <span class="text-sm text-amber-800 mt-1 inline-block">
+                                            Tồn kho: <b class="text-amber-900"><?php echo e(number_format($item->quantity)); ?></b> | 
+                                            Tồn min: <?php echo e(number_format($item->min_stock)); ?> | 
+                                            Thiếu: <b class="text-red-600"><?php echo e(number_format($missingQty > 0 ? $missingQty : 0)); ?></b> | 
+                                            Dự án: <b><?php echo e($item->project_name); ?></b>
+                                        </span>
+                                    </div>
+                                </li>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                        </ul>
+                    <?php else: ?>
+                        <p class="text-sm text-amber-700 italic p-2">Không có vật tư nào dưới định mức tồn kho tối thiểu.</p>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
             </div>
 
             <!-- Dư thừa -->
-            <div class="bg-white rounded-xl shadow-sm border border-amber-200 overflow-hidden transition-opacity"
+            <div class="bg-rose-50 rounded-xl shadow-sm border border-rose-200 overflow-hidden transition-opacity"
                  :class="{ 'print:hidden': selectedWarningLow.length > 0 && selectedWarningHigh.length === 0 }">
-                <div class="bg-amber-50 px-5 py-4 border-b border-amber-100 flex items-center justify-between">
-                    <h3 class="font-bold text-amber-800 flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Vật Tư Dư Thừa (Tồn kho > Max)
-                    </h3>
-                    <span class="bg-amber-200 text-amber-800 py-1 px-3 rounded-full text-xs font-bold"><?php echo e(count($highStockProducts ?? [])); ?> mục</span>
-                </div>
-                <div class="overflow-x-auto print-overflow-visible" style="max-height: 500px;">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="sticky top-0 bg-slate-50 z-10 print:static">
-                            <tr class="text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
-                                <th class="p-3 w-10 text-center print:hidden">
-                                    <input type="checkbox" @change="selectedWarningHigh = $event.target.checked ? Array.from(document.querySelectorAll('.row-cb-high')).map(cb => cb.value) : []" class="rounded border-slate-300 text-amber-600 focus:ring-amber-500">
-                                </th>
-                                <th class="p-3 font-medium">Mã VT</th>
-                                <th class="p-3 font-medium">Tên Vật Tư</th>
-                                <th class="p-3 font-medium text-right">Định mức Max</th>
-                                <th class="p-3 font-medium text-right text-amber-600">Tồn kho HT</th>
-                                <th class="p-3 font-medium">Kho Dự án</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 text-sm">
-                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $highStockProducts ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
-                                <tr :class="{ 'print:hidden': selectedWarningHigh.length > 0 && !selectedWarningHigh.includes('<?php echo e($index); ?>') }" class="hover:bg-slate-50 transition-colors">
-                                    <td class="p-3 text-center print:hidden">
-                                        <input type="checkbox" value="<?php echo e($index); ?>" x-model="selectedWarningHigh" class="row-cb-high rounded border-slate-300 text-amber-600 focus:ring-amber-500">
-                                    </td>
-                                    <td class="p-3 font-semibold text-slate-700"><?php echo e($item->code); ?></td>
-                                    <td class="p-3 text-slate-600"><?php echo e($item->name); ?></td>
-                                    <td class="p-3 text-right text-slate-500"><?php echo e(number_format($item->max_stock)); ?> <?php echo e($item->unit); ?></td>
-                                    <td class="p-3 text-right font-bold text-amber-600"><?php echo e(number_format($item->quantity)); ?> <?php echo e($item->unit); ?></td>
-                                    <td class="p-3 text-slate-600"><?php echo e($item->project_name); ?></td>
-                                </tr>
-                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
-                                <tr>
-                                    <td colspan="6" class="p-6 text-center text-slate-400">Không có vật tư nào vượt định mức.</td>
-                                </tr>
-                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                        </tbody>
-                    </table>
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-rose-800 uppercase flex items-center gap-2">
+                            <span>📦</span> Cảnh báo hàng dư thừa (> Tồn tối đa)
+                        </h3>
+                        <button @click="window.print()" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded shadow-sm transition flex items-center gap-1 print:hidden">
+                            <span>🖨️</span> In báo cáo
+                        </button>
+                    </div>
+                    
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($highStockProducts ?? []) > 0): ?>
+                        <div class="mb-3 px-2 flex items-center gap-2 border-b border-rose-200 pb-3 print:hidden">
+                            <input type="checkbox" @change="selectedWarningHigh = $event.target.checked ? Array.from(document.querySelectorAll('.row-cb-high')).map(cb => cb.value) : []" class="rounded border-gray-300 text-rose-600 focus:ring-rose-500">
+                            <span class="text-sm font-bold text-rose-800">Chọn tất cả</span>
+                        </div>
+                        <ul class="text-sm text-rose-900 space-y-2 max-h-[500px] overflow-y-auto px-2 print:max-h-none print:overflow-visible">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $highStockProducts ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                <?php
+                                    $excessQty = $item->quantity - $item->max_stock;
+                                ?>
+                                <li :class="{ 'print:hidden': selectedWarningHigh.length > 0 && !selectedWarningHigh.includes('<?php echo e($index); ?>') }" class="flex items-start gap-3 hover:bg-rose-100 p-2 rounded transition-colors">
+                                    <input type="checkbox" value="<?php echo e($index); ?>" x-model="selectedWarningHigh" class="row-cb-high mt-1 rounded border-gray-300 text-rose-600 focus:ring-rose-500 print:hidden">
+                                    <div>
+                                        <b class="text-base"><?php echo e($item->name); ?></b> <span class="text-gray-600">(<?php echo e($item->code); ?>)</span>
+                                        <span class="text-xs text-rose-700 ml-2">ĐVT: <?php echo e($item->unit ?? '-'); ?></span><br>
+                                        <span class="text-sm text-rose-800 mt-1 inline-block">
+                                            Tồn kho: <b class="text-rose-900"><?php echo e(number_format($item->quantity)); ?></b> | 
+                                            Tồn max: <?php echo e(number_format($item->max_stock)); ?> | 
+                                            Dư: <b class="text-red-600"><?php echo e(number_format($excessQty > 0 ? $excessQty : 0)); ?></b> | 
+                                            Dự án: <b><?php echo e($item->project_name); ?></b>
+                                        </span>
+                                    </div>
+                                </li>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                        </ul>
+                    <?php else: ?>
+                        <p class="text-sm text-rose-700 italic p-2">Không có vật tư nào vượt định mức tồn kho tối đa.</p>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
             </div>
         </div>

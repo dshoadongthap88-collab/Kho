@@ -25,7 +25,7 @@ class GlobalReport extends Component
 
     public function render()
     {
-        $projects = \App\Models\Project::where('status', 'active')
+        $projects = \App\Models\House::where('status', 'active')
             ->where('id', '!=', 5) // Exclude HR
             ->get();
         $totalUsers = User::count();
@@ -97,9 +97,9 @@ class GlobalReport extends Component
             
             $inventoryQuery = DB::table('inventories')
                 ->where('inventories.house_id', '!=', 5)
-                ->join('projects', 'inventories.house_id', '=', 'projects.id')
-                ->select('inventories.product_id', 'inventories.house_id', 'projects.name as project_name', DB::raw('SUM(inventories.quantity) as total_qty'))
-                ->groupBy('inventories.product_id', 'inventories.house_id', 'projects.name');
+                ->join('houses', 'inventories.house_id', '=', 'houses.id')
+                ->select('inventories.product_id', 'inventories.house_id', 'houses.name as project_name', DB::raw('SUM(inventories.quantity) as total_qty'))
+                ->groupBy('inventories.product_id', 'inventories.house_id', 'houses.name');
                 
             if ($this->warningProject) {
                 $inventoryQuery->where('inventories.house_id', $this->warningProject);
@@ -142,10 +142,10 @@ class GlobalReport extends Component
                 ->where('stock_outs.house_id', '!=', 5)
                 ->join('stock_out_items', 'stock_outs.id', '=', 'stock_out_items.stock_out_id')
                 ->join('products', 'stock_out_items.product_id', '=', 'products.id')
-                ->leftJoin('projects', 'stock_outs.house_id', '=', 'projects.id')
+                ->leftJoin('houses', 'stock_outs.house_id', '=', 'houses.id')
                 ->select(
                     'stock_outs.created_at as date',
-                    'projects.name as project_name',
+                    'houses.name as project_name',
                     'stock_outs.asset_code',
                     'stock_outs.repair_staff',
                     'products.code as product_code',

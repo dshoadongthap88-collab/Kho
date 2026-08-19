@@ -16,11 +16,24 @@ class GlobalReport extends Component
     public $startDate = '';
     public $endDate = '';
     
+    public $overviewStartDate = '';
+    public $overviewEndDate = '';
+    
     public $warningProject = ''; // Thêm filter cho tab cảnh báo
 
     public function setTab($tab)
     {
         $this->activeTab = $tab;
+    }
+
+    public function updatedOverviewStartDate()
+    {
+        $this->dispatch('update-charts-data');
+    }
+
+    public function updatedOverviewEndDate()
+    {
+        $this->dispatch('update-charts-data');
     }
 
     public function render()
@@ -30,30 +43,38 @@ class GlobalReport extends Component
             ->get();
         $totalUsers = User::count();
         
-        $now = now();
-        $thirtyDaysAgo = now()->subDays(30)->startOfDay();
+        $endDate = $this->overviewEndDate ? \Carbon\Carbon::parse($this->overviewEndDate)->endOfDay() : now();
+        $startDate = $this->overviewStartDate ? \Carbon\Carbon::parse($this->overviewStartDate)->startOfDay() : now()->subDays(30)->startOfDay();
 
         // 1. Tổng số đơn xuất kho / dự án
-        $ordersPerProject = StockOut::withoutGlobalScope('house')
-            ->where('house_id', '!=', 5)
+        $ordersPerProjectQuery = StockOut::withoutGlobalScope('house')->where('house_id', '!=', 5);
+        if ($this->overviewStartDate) $ordersPerProjectQuery->whereDate('created_at', '>=', $this->overviewStartDate);
+        if ($this->overviewEndDate) $ordersPerProjectQuery->whereDate('created_at', '<=', $this->overviewEndDate);
+        
+        $ordersPerProject = $ordersPerProjectQuery
             ->select('house_id', DB::raw('count(*) as total_orders'))
             ->groupBy('house_id')
             ->pluck('total_orders', 'house_id')
             ->toArray();
 
         // 2. Tổng mã vật tư xuất / dự án (Tổng số lượng)
-        $itemsPerProject = DB::table('stock_out_items')
+        $itemsPerProjectQuery = DB::table('stock_out_items')
             ->join('stock_outs', 'stock_out_items.stock_out_id', '=', 'stock_outs.id')
-            ->where('stock_outs.house_id', '!=', 5)
+            ->where('stock_outs.house_id', '!=', 5);
+        if ($this->overviewStartDate) $itemsPerProjectQuery->whereDate('stock_outs.created_at', '>=', $this->overviewStartDate);
+        if ($this->overviewEndDate) $itemsPerProjectQuery->whereDate('stock_outs.created_at', '<=', $this->overviewEndDate);
+            
+        $itemsPerProject = $itemsPerProjectQuery
             ->select('stock_outs.house_id', DB::raw('SUM(stock_out_items.quantity) as total_items'))
             ->groupBy('stock_outs.house_id')
             ->pluck('total_items', 'house_id')
             ->toArray();
 
-        // 3. Tổng số đơn xuất kho tất cả dự án / ngày (30 ngày qua)
+        // 3. Tổng số đơn xuất kho tất cả dự án / ngày
         $ordersPerDay = StockOut::withoutGlobalScope('house')
             ->where('house_id', '!=', 5)
-            ->where('created_at', '>=', $thirtyDaysAgo)
+            ->where('created_at', '>=', $startDate)
+            ->where('created_at', '<=', $endDate)
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total_orders'))
             ->groupBy(DB::raw('DATE(created_at)'))
             ->orderBy('date', 'asc')
@@ -64,10 +85,10 @@ class GlobalReport extends Component
         $orderCounts = [];
         
         // Lấp đầy các ngày trống
-        $currentDate = clone $thirtyDaysAgo;
+        $currentDate = clone $startDate;
         $orderMap = $ordersPerDay->pluck('total_orders', 'date')->toArray();
         
-        while ($currentDate <= $now) {
+        while ($currentDate <= $endDate) {
             $dateStr = $currentDate->format('Y-m-d');
             $dates[] = $currentDate->format('d/m');
             $orderCounts[] = $orderMap[$dateStr] ?? 0;
@@ -88,6 +109,14 @@ class GlobalReport extends Component
             $projectOrders[] = $ordersPerProject[$project->id] ?? 0;
             $projectItems[] = (int)($itemsPerProject[$project->id] ?? 0);
         }
+        
+        $this->dispatch('charts-updated', [
+            'projectNames' => $projectNames,
+            'projectOrders' => $projectOrders,
+            'projectItems' => $projectItems,
+            'dates' => $dates,
+            'orderCounts' => $orderCounts,
+        ]);
 
         // --- Tab 2: Cảnh báo tồn kho ---
         $lowStockProducts = [];

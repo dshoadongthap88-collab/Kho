@@ -190,27 +190,32 @@
             </div>
 
             <!-- Table for Low Stock -->
-            <div :class="{ 'hidden': selectedWarningHigh.length > 0 && selectedWarningLow.length === 0 }" class="mb-8">
+            <div :class="{ 'hidden': selectedWarningHigh.length > 0 && selectedWarningLow.length === 0 }" class="mb-4">
                 <h3 class="font-bold uppercase mb-2 text-sm">I. Danh sách vật tư sắp hết hàng (< Tồn tối thiểu)</h3>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($lowStockProducts ?? []) > 0): ?>
                     <table class="w-full text-sm border-collapse border border-gray-400">
                         <thead>
                             <tr class="bg-gray-100">
-                                <th class="border border-gray-400 p-2 text-center w-12">STT</th>
-                                <th class="border border-gray-400 p-2 text-center w-32">Mã vật tư</th>
-                                <th class="border border-gray-400 p-2 text-left">Tên vật tư</th>
-                                <th class="border border-gray-400 p-2 text-center w-20">ĐVT</th>
-                                <th class="border border-gray-400 p-2 text-right w-32">Số lượng dư</th>
+                                <th class="border border-gray-400 p-1 text-center w-10">STT</th>
+                                <th class="border border-gray-400 p-1 text-center w-28">Mã vật tư</th>
+                                <th class="border border-gray-400 p-1 text-left">Tên vật tư</th>
+                                <th class="border border-gray-400 p-1 text-center w-16">ĐVT</th>
+                                <th class="border border-gray-400 p-1 text-right w-24">Số lượng tồn</th>
+                                <th class="border border-gray-400 p-1 text-right w-24">Số lượng thiếu</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $lowStockProducts ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                <?php
+                                    $missingQty = $item->min_stock - $item->quantity;
+                                ?>
                                 <tr :class="{ 'hidden': selectedWarningLow.length > 0 && !selectedWarningLow.includes('<?php echo e($index); ?>') }">
-                                    <td class="border border-gray-400 p-2 text-center"><?php echo e($index + 1); ?></td>
-                                    <td class="border border-gray-400 p-2 text-center"><?php echo e($item->code); ?></td>
-                                    <td class="border border-gray-400 p-2"><?php echo e($item->name); ?></td>
-                                    <td class="border border-gray-400 p-2 text-center"><?php echo e($item->unit ?? '-'); ?></td>
-                                    <td class="border border-gray-400 p-2 text-right font-bold"><?php echo e(number_format($item->quantity)); ?></td>
+                                    <td class="border border-gray-400 p-1 text-center"><?php echo e($index + 1); ?></td>
+                                    <td class="border border-gray-400 p-1 text-center"><?php echo e($item->code); ?></td>
+                                    <td class="border border-gray-400 p-1"><?php echo e($item->name); ?></td>
+                                    <td class="border border-gray-400 p-1 text-center"><?php echo e($item->unit ?? '-'); ?></td>
+                                    <td class="border border-gray-400 p-1 text-right font-bold"><?php echo e(number_format($item->quantity)); ?></td>
+                                    <td class="border border-gray-400 p-1 text-right font-bold text-red-600"><?php echo e(number_format($missingQty > 0 ? $missingQty : 0)); ?></td>
                                 </tr>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         </tbody>
@@ -221,27 +226,32 @@
             </div>
 
             <!-- Table for High Stock -->
-            <div :class="{ 'hidden': selectedWarningLow.length > 0 && selectedWarningHigh.length === 0 }" class="mb-8">
+            <div :class="{ 'hidden': selectedWarningLow.length > 0 && selectedWarningHigh.length === 0 }" class="mb-4">
                 <h3 class="font-bold uppercase mb-2 text-sm">II. Danh sách vật tư dư thừa (> Tồn tối đa)</h3>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($highStockProducts ?? []) > 0): ?>
                     <table class="w-full text-sm border-collapse border border-gray-400">
                         <thead>
                             <tr class="bg-gray-100">
-                                <th class="border border-gray-400 p-2 text-center w-12">STT</th>
-                                <th class="border border-gray-400 p-2 text-center w-32">Mã vật tư</th>
-                                <th class="border border-gray-400 p-2 text-left">Tên vật tư</th>
-                                <th class="border border-gray-400 p-2 text-center w-20">ĐVT</th>
-                                <th class="border border-gray-400 p-2 text-right w-32">Số lượng dư</th>
+                                <th class="border border-gray-400 p-1 text-center w-10">STT</th>
+                                <th class="border border-gray-400 p-1 text-center w-28">Mã vật tư</th>
+                                <th class="border border-gray-400 p-1 text-left">Tên vật tư</th>
+                                <th class="border border-gray-400 p-1 text-center w-16">ĐVT</th>
+                                <th class="border border-gray-400 p-1 text-right w-24">Số lượng tồn</th>
+                                <th class="border border-gray-400 p-1 text-right w-24">Số lượng dư</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $highStockProducts ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                                <?php
+                                    $excessQty = $item->quantity - $item->max_stock;
+                                ?>
                                 <tr :class="{ 'hidden': selectedWarningHigh.length > 0 && !selectedWarningHigh.includes('<?php echo e($index); ?>') }">
-                                    <td class="border border-gray-400 p-2 text-center"><?php echo e($index + 1); ?></td>
-                                    <td class="border border-gray-400 p-2 text-center"><?php echo e($item->code); ?></td>
-                                    <td class="border border-gray-400 p-2"><?php echo e($item->name); ?></td>
-                                    <td class="border border-gray-400 p-2 text-center"><?php echo e($item->unit ?? '-'); ?></td>
-                                    <td class="border border-gray-400 p-2 text-right font-bold"><?php echo e(number_format($item->quantity)); ?></td>
+                                    <td class="border border-gray-400 p-1 text-center"><?php echo e($index + 1); ?></td>
+                                    <td class="border border-gray-400 p-1 text-center"><?php echo e($item->code); ?></td>
+                                    <td class="border border-gray-400 p-1"><?php echo e($item->name); ?></td>
+                                    <td class="border border-gray-400 p-1 text-center"><?php echo e($item->unit ?? '-'); ?></td>
+                                    <td class="border border-gray-400 p-1 text-right font-bold"><?php echo e(number_format($item->quantity)); ?></td>
+                                    <td class="border border-gray-400 p-1 text-right font-bold text-red-600"><?php echo e(number_format($excessQty > 0 ? $excessQty : 0)); ?></td>
                                 </tr>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         </tbody>
@@ -252,7 +262,7 @@
             </div>
 
             <!-- Print Signatures -->
-            <div class="flex mt-12 w-full justify-between px-10 pb-20 text-center">
+            <div class="flex mt-6 w-full justify-between px-10 text-center">
                 <div class="w-1/3">
                     <p class="font-bold text-sm uppercase">Trưởng nhóm kho</p>
                     <p class="text-xs mt-1 text-gray-500 italic">(Ký và ghi rõ họ tên)</p>

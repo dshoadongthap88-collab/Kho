@@ -185,12 +185,12 @@
         <div class="hidden print:block w-full text-black">
             <div class="text-center mb-6">
                 <h2 class="text-2xl font-black uppercase">PHIẾU CẢNH BÁO TỒN KHO</h2>
-                <p class="mt-1 text-sm">Dự Án: {{ $warningProject ? $projects->where('id', $warningProject)->first()->name : 'Tất cả các kho' }}</p>
-                <p class="text-sm">Ngày in: {{ now()->format('d/m/Y H:i') }}</p>
+                <p class="mt-1 text-sm">Ngày in: {{ now()->format('d/m/Y H:i') }}</p>
             </div>
 
             <!-- Table for Low Stock -->
             <div :class="{ 'hidden': selectedWarningHigh.length > 0 && selectedWarningLow.length === 0 }" class="mb-4">
+                <p class="font-bold text-sm italic mb-1">Dự Án: {{ $warningProject ? $projects->where('id', $warningProject)->first()->name : 'Tất cả các kho' }}</p>
                 <h3 class="font-bold uppercase mb-2 text-sm">I. Danh sách vật tư sắp hết hàng (< Tồn tối thiểu)</h3>
                 @if(count($lowStockProducts ?? []) > 0)
                     <table class="w-full text-sm border-collapse border border-gray-400">
@@ -226,7 +226,8 @@
             </div>
 
             <!-- Table for High Stock -->
-            <div :class="{ 'hidden': selectedWarningLow.length > 0 && selectedWarningHigh.length === 0 }" class="mb-4">
+            <div :class="{ 'hidden': selectedWarningLow.length > 0 && selectedWarningHigh.length === 0 }" class="mb-4 mt-6">
+                <p class="font-bold text-sm italic mb-1">Dự Án: {{ $warningProject ? $projects->where('id', $warningProject)->first()->name : 'Tất cả các kho' }}</p>
                 <h3 class="font-bold uppercase mb-2 text-sm">II. Danh sách vật tư dư thừa (> Tồn tối đa)</h3>
                 @if(count($highStockProducts ?? []) > 0)
                     <table class="w-full text-sm border-collapse border border-gray-400">

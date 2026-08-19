@@ -93,7 +93,7 @@ class GlobalReport extends Component
         $lowStockProducts = [];
         $highStockProducts = [];
         if ($this->activeTab === 'inventory_warnings') {
-            $allProducts = \App\Models\Product::select('id', 'code', 'name', 'unit', 'min_stock', 'max_stock')->get()->keyBy('id');
+            $allProducts = \App\Models\Product::withoutGlobalScope('house')->select('id', 'code', 'name', 'unit', 'min_stock', 'max_stock')->get()->keyBy('id');
             
             $inventoryQuery = DB::table('inventories')
                 ->where('inventories.house_id', '!=', 5)

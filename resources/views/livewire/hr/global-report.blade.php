@@ -21,15 +21,14 @@
 
     <!-- TAB 1: TỔNG QUAN -->
     <div x-show="tab === 'overview'" class="print:hidden">
-        <!-- Overview Filters -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-end">
-            <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Từ ngày</label>
-                <input type="date" wire:model.live="overviewStartDate" class="border-slate-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Đến ngày</label>
-                <input type="date" wire:model.live="overviewEndDate" class="border-slate-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
+        <!-- Overview Filters (Compact) -->
+        <div class="flex flex-wrap items-center gap-4 mb-3">
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-200">
+                <label class="text-xs font-bold text-slate-500 uppercase">Từ ngày:</label>
+                <input type="date" wire:model.live="overviewStartDate" class="border-none bg-transparent p-0 text-sm focus:ring-0 font-medium text-slate-700 w-32">
+                <span class="text-slate-300">|</span>
+                <label class="text-xs font-bold text-slate-500 uppercase">Đến ngày:</label>
+                <input type="date" wire:model.live="overviewEndDate" class="border-none bg-transparent p-0 text-sm focus:ring-0 font-medium text-slate-700 w-32">
             </div>
         </div>
 

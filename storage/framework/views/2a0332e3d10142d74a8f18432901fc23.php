@@ -21,6 +21,18 @@
 
     <!-- TAB 1: TỔNG QUAN -->
     <div x-show="tab === 'overview'" class="print:hidden">
+        <!-- Overview Filters -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-end">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Từ ngày</label>
+                <input type="date" wire:model.live="overviewStartDate" class="border-slate-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Đến ngày</label>
+                <input type="date" wire:model.live="overviewEndDate" class="border-slate-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+        </div>
+
         <!-- Stat Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
             <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
@@ -57,7 +69,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4" wire:ignore>
             <!-- Biểu đồ Đường -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-3">
-                <h3 class="text-sm font-bold text-slate-800 mb-2">Biến Động Đơn Xuất (30 Ngày)</h3>
+                <h3 class="text-sm font-bold text-slate-800 mb-2">Biến Động Đơn Xuất</h3>
                 <div id="chart-orders-timeline" class="w-full h-[260px]"></div>
             </div>
             
@@ -386,7 +398,9 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
         document.addEventListener('livewire:initialized', () => {
-            const renderCharts = () => {
+            let timelineChart, donutChart, barChart;
+
+            const initCharts = () => {
                 const projectNames = <?php echo json_encode($projectNames, 15, 512) ?>;
                 const projectOrders = <?php echo json_encode($projectOrders, 15, 512) ?>;
                 const projectItems = <?php echo json_encode($projectItems, 15, 512) ?>;
@@ -396,32 +410,34 @@
                 if (document.querySelector("#chart-orders-timeline") && !document.querySelector("#chart-orders-timeline").hasChildNodes()) {
                     var timelineOptions = {
                         series: [{ name: "Số đơn xuất kho", data: orderCounts }],
-                        chart: { type: 'area', height: 350, toolbar: { show: false }, fontFamily: 'inherit' },
+                        chart: { type: 'area', height: 260, toolbar: { show: false }, fontFamily: 'inherit' },
                         colors: ['#4f46e5'],
                         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90, 100] } },
                         dataLabels: { enabled: false }, stroke: { curve: 'smooth', width: 3 },
                         xaxis: { categories: dates, tickAmount: 10, labels: { style: { colors: '#64748b' } } },
                         yaxis: { labels: { style: { colors: '#64748b' } } }
                     };
-                    new ApexCharts(document.querySelector("#chart-orders-timeline"), timelineOptions).render();
+                    timelineChart = new ApexCharts(document.querySelector("#chart-orders-timeline"), timelineOptions);
+                    timelineChart.render();
                 }
 
                 if (document.querySelector("#chart-items-donut") && !document.querySelector("#chart-items-donut").hasChildNodes()) {
                     var donutOptions = {
                         series: projectItems.map(item => Number(item)),
-                        chart: { type: 'donut', height: 350, fontFamily: 'inherit' },
+                        chart: { type: 'donut', height: 260, fontFamily: 'inherit' },
                         labels: projectNames,
                         colors: ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'],
                         plotOptions: { pie: { donut: { size: '65%', labels: { show: true, name: { show: true }, value: { show: true, formatter: function (val) { return new Intl.NumberFormat('vi-VN').format(val) + " SP" } } } } } },
                         dataLabels: { enabled: false }, legend: { position: 'bottom' }
                     };
-                    new ApexCharts(document.querySelector("#chart-items-donut"), donutOptions).render();
+                    donutChart = new ApexCharts(document.querySelector("#chart-items-donut"), donutOptions);
+                    donutChart.render();
                 }
 
                 if (document.querySelector("#chart-orders-bar") && !document.querySelector("#chart-orders-bar").hasChildNodes()) {
                     var barOptions = {
                         series: [{ name: 'Đơn xuất kho', data: projectOrders }],
-                        chart: { type: 'bar', height: 400, toolbar: { show: false }, fontFamily: 'inherit' },
+                        chart: { type: 'bar', height: 260, toolbar: { show: false }, fontFamily: 'inherit' },
                         plotOptions: { bar: { borderRadius: 4, horizontal: false, columnWidth: '45%', distributed: true } },
                         colors: ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'],
                         dataLabels: { enabled: true, style: { fontSize: '12px', colors: ['#fff'] } },
@@ -429,16 +445,39 @@
                         xaxis: { categories: projectNames, labels: { style: { colors: '#64748b', fontSize: '12px' } } },
                         yaxis: { labels: { style: { colors: '#64748b' } } }
                     };
-                    new ApexCharts(document.querySelector("#chart-orders-bar"), barOptions).render();
+                    barChart = new ApexCharts(document.querySelector("#chart-orders-bar"), barOptions);
+                    barChart.render();
                 }
             };
             
             // Initial render
-            renderCharts();
+            initCharts();
             
-            // Re-render when Livewire updates (for tab switching)
+            // Lắng nghe sự kiện cập nhật dữ liệu từ backend Livewire
+            Livewire.on('charts-updated', (data) => {
+                const chartData = data[0]; // data là mảng chứa các tham số được dispatch
+                
+                if (timelineChart) {
+                    timelineChart.updateSeries([{ name: "Số đơn xuất kho", data: chartData.orderCounts }]);
+                    timelineChart.updateOptions({ xaxis: { categories: chartData.dates } });
+                }
+                
+                if (donutChart) {
+                    donutChart.updateSeries(chartData.projectItems.map(item => Number(item)));
+                    donutChart.updateOptions({ labels: chartData.projectNames });
+                }
+                
+                if (barChart) {
+                    barChart.updateSeries([{ name: 'Đơn xuất kho', data: chartData.projectOrders }]);
+                    barChart.updateOptions({ xaxis: { categories: chartData.projectNames } });
+                }
+            });
+            
+            // Re-render khi chuyển tab nếu biểu đồ bị xóa khỏi DOM
             Livewire.hook('morph.updated', ({ el, component }) => {
-                renderCharts();
+                if (!document.querySelector("#chart-orders-timeline").hasChildNodes()) {
+                    initCharts();
+                }
             });
         });
     </script>

@@ -1,82 +1,82 @@
-﻿<div class="px-4 py-6" x-data="{ tab: <?php if ((object) ('activeTab') instanceof \Livewire\WireDirective) : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('activeTab'->value()); ?>')<?php echo e('activeTab'->hasModifier('live') ? '.live' : ''); ?><?php else : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('activeTab'); ?>')<?php endif; ?>, selectedWarningLow: [], selectedWarningHigh: [], selectedRows: [] }">
+<div class="px-4 py-6" x-data="{ tab: <?php if ((object) ('activeTab') instanceof \Livewire\WireDirective) : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('activeTab'->value()); ?>')<?php echo e('activeTab'->hasModifier('live') ? '.live' : ''); ?><?php else : ?>window.Livewire.find('<?php echo e($__livewire->getId()); ?>').entangle('<?php echo e('activeTab'); ?>')<?php endif; ?>, selectedWarningLow: [], selectedWarningHigh: [], selectedRows: [] }">
     <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4 print:hidden">
         <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight">BÃ¡o CÃ¡o Tá»•ng Há»£p (HR)</h1>
-            <p class="text-slate-500 mt-2 text-sm">Thá»‘ng kÃª sá»‘ liá»‡u, cáº£nh bÃ¡o tá»“n kho vÃ  chi tiáº¿t xuáº¥t kho toÃ n há»‡ thá»‘ng</p>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Báo Cáo Tổng Hợp (HR)</h1>
+            <p class="text-slate-500 mt-2 text-sm">Thống kê số liệu, cảnh báo tồn kho và chi tiết xuất kho toàn hệ thống</p>
         </div>
         
         <!-- Tabs Navigation -->
         <div class="bg-slate-100 p-1 rounded-lg flex space-x-1 overflow-x-auto">
             <button wire:click="setTab('overview')" :class="{ 'bg-white shadow text-indigo-600': tab === 'overview', 'text-slate-600 hover:text-slate-800': tab !== 'overview' }" class="px-4 py-2 text-sm font-semibold rounded-md transition-all whitespace-nowrap">
-                Tá»•ng Quan
+                Tổng Quan
             </button>
             <button wire:click="setTab('inventory_warnings')" :class="{ 'bg-white shadow text-indigo-600': tab === 'inventory_warnings', 'text-slate-600 hover:text-slate-800': tab !== 'inventory_warnings' }" class="px-4 py-2 text-sm font-semibold rounded-md transition-all whitespace-nowrap">
-                Cáº£nh BÃ¡o Tá»“n Kho
+                Cảnh Báo Tồn Kho
             </button>
             <button wire:click="setTab('stock_out_details')" :class="{ 'bg-white shadow text-indigo-600': tab === 'stock_out_details', 'text-slate-600 hover:text-slate-800': tab !== 'stock_out_details' }" class="px-4 py-2 text-sm font-semibold rounded-md transition-all whitespace-nowrap">
-                BÃ¡o CÃ¡o Xuáº¥t Kho
+                Báo Cáo Xuất Kho
             </button>
         </div>
     </div>
 
-    <!-- TAB 1: Tá»”NG QUAN -->
+    <!-- TAB 1: TỔNG QUAN -->
     <div x-show="tab === 'overview'" class="print:hidden">
         <!-- Stat Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">Tá»•ng Sá»‘ Dá»± Ãn</p>
+                    <p class="text-sm font-medium text-slate-500">Tổng Số Dự Án</p>
                     <h3 class="text-3xl font-black text-slate-800 mt-1"><?php echo e($projects->count()); ?></h3>
                 </div>
-                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-xl">ðŸ¢</div>
+                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-xl">🏢</div>
             </div>
             <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">Tá»•ng Sá»‘ NhÃ¢n Sá»±</p>
+                    <p class="text-sm font-medium text-slate-500">Tổng Số Nhân Sự</p>
                     <h3 class="text-3xl font-black text-slate-800 mt-1"><?php echo e($totalUsers); ?></h3>
                 </div>
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-xl">ðŸ‘¥</div>
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-xl">👥</div>
             </div>
             <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">Tá»•ng Sá»‘ ÄÆ¡n Xuáº¥t</p>
+                    <p class="text-sm font-medium text-slate-500">Tổng Số Đơn Xuất</p>
                     <h3 class="text-3xl font-black text-slate-800 mt-1"><?php echo e(number_format($totalOrdersAllProjects)); ?></h3>
                 </div>
-                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center text-xl">ðŸ“„</div>
+                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center text-xl">📄</div>
             </div>
             <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">Tá»•ng SL Váº­t TÆ° Xuáº¥t</p>
+                    <p class="text-sm font-medium text-slate-500">Tổng SL Vật Tư Xuất</p>
                     <h3 class="text-3xl font-black text-slate-800 mt-1"><?php echo e(number_format($totalItemsAllProjects)); ?></h3>
                 </div>
-                <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center text-xl">ðŸ”§</div>
+                <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center text-xl">🔧</div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8" wire:ignore>
-            <!-- Biá»ƒu Ä‘á»“ ÄÆ°á»ng -->
+            <!-- Biểu đồ Đường -->
             <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <h3 class="text-base font-bold text-slate-800 mb-4">Biáº¿n Äá»™ng ÄÆ¡n Xuáº¥t Kho (30 NgÃ y Qua)</h3>
+                <h3 class="text-base font-bold text-slate-800 mb-4">Biến Động Đơn Xuất Kho (30 Ngày Qua)</h3>
                 <div id="chart-orders-timeline" class="w-full h-[350px]"></div>
             </div>
             
-            <!-- Biá»ƒu Ä‘á»“ TrÃ²n -->
+            <!-- Biểu đồ Tròn -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <h3 class="text-base font-bold text-slate-800 mb-4">Tá»· Trá»ng SL Váº­t TÆ° / Dá»± Ãn</h3>
+                <h3 class="text-base font-bold text-slate-800 mb-4">Tỷ Trọng SL Vật Tư / Dự Án</h3>
                 <div id="chart-items-donut" class="w-full h-[350px] flex items-center justify-center"></div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 gap-6" wire:ignore>
-            <!-- Biá»ƒu Ä‘á»“ Cá»™t -->
+            <!-- Biểu đồ Cột -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <h3 class="text-base font-bold text-slate-800 mb-4">So SÃ¡nh Tá»•ng Sá»‘ ÄÆ¡n Xuáº¥t Kho Giá»¯a CÃ¡c Dá»± Ãn</h3>
+                <h3 class="text-base font-bold text-slate-800 mb-4">So Sánh Tổng Số Đơn Xuất Kho Giữa Các Dự Án</h3>
                 <div id="chart-orders-bar" class="w-full h-[400px]"></div>
             </div>
         </div>
     </div>
 
-        <!-- TAB 2 -->
+    <!-- TAB 2: CẢNH BÁO TỒN KHO -->
     <div x-show="tab === 'inventory_warnings'" style="display: none;" class="print-section">
         <!-- Filters (Hidden in print) -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-end print:hidden">
@@ -89,6 +89,7 @@
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 </select>
             </div>
+
         </div>
 
         <!-- UI Cards for Screen Only -->
@@ -268,41 +269,41 @@
         </div>
     </div>
 
-    <!-- TAB 3: CHI TIáº¾T XUáº¤T KHO -->
+    <!-- TAB 3: CHI TIẾT XUẤT KHO -->
     <div x-show="tab === 'stock_out_details'" style="display: none;" class="print-section">
         
         <!-- Filters (Hidden in print) -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-end print:hidden">
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Dá»± Ãn</label>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Dự Án</label>
                 <select wire:model.live="selectedProject" class="border-slate-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">-- Táº¥t cáº£ dá»± Ã¡n --</option>
+                    <option value="">-- Tất cả dự án --</option>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $projects; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $project): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                         <option value="<?php echo e($project->id); ?>"><?php echo e($project->name); ?></option>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tá»« NgÃ y</label>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Từ Ngày</label>
                 <input type="date" wire:model.live="startDate" class="border-slate-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Äáº¿n NgÃ y</label>
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Đến Ngày</label>
                 <input type="date" wire:model.live="endDate" class="border-slate-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
             </div>
             <div class="ml-auto">
                 <button @click="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow font-semibold flex items-center gap-2 transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    In BÃ¡o CÃ¡o Chá»n Lá»c
+                    In Báo Cáo Chọn Lọc
                 </button>
             </div>
         </div>
 
         <!-- Print Header (Only visible in print) -->
         <div class="hidden print:block text-center mb-8">
-            <h2 class="text-2xl font-black uppercase">BÃ¡o CÃ¡o Chi Tiáº¿t Váº­t TÆ° Xuáº¥t Kho</h2>
-            <p class="mt-2 text-gray-600">Dá»± Ã¡n: <?php echo e($selectedProject ? $projects->where('id', $selectedProject)->first()->name : 'Táº¥t cáº£'); ?></p>
-            <p class="text-gray-600">Thá»i gian: <?php echo e($startDate ? \Carbon\Carbon::parse($startDate)->format('d/m/Y') : 'Tá»« Ä‘áº§u'); ?> - <?php echo e($endDate ? \Carbon\Carbon::parse($endDate)->format('d/m/Y') : 'Nay'); ?></p>
+            <h2 class="text-2xl font-black uppercase">Báo Cáo Chi Tiết Vật Tư Xuất Kho</h2>
+            <p class="mt-2 text-gray-600">Dự án: <?php echo e($selectedProject ? $projects->where('id', $selectedProject)->first()->name : 'Tất cả'); ?></p>
+            <p class="text-gray-600">Thời gian: <?php echo e($startDate ? \Carbon\Carbon::parse($startDate)->format('d/m/Y') : 'Từ đầu'); ?> - <?php echo e($endDate ? \Carbon\Carbon::parse($endDate)->format('d/m/Y') : 'Nay'); ?></p>
         </div>
 
         <!-- Data Table -->
@@ -315,13 +316,13 @@
                                 <input type="checkbox" @change="selectedRows = $event.target.checked ? Array.from(document.querySelectorAll('.row-cb-details')).map(cb => cb.value) : []" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                             </th>
                             <th class="p-3 font-medium">STT</th>
-                            <th class="p-3 font-medium">NgÃ y xuáº¥t</th>
-                            <th class="p-3 font-medium">Dá»± Ã¡n</th>
-                            <th class="p-3 font-medium">MÃ£ tÃ i sáº£n</th>
-                            <th class="p-3 font-medium">NV Sá»­a chá»¯a</th>
-                            <th class="p-3 font-medium">MÃ£ váº­t tÆ°</th>
-                            <th class="p-3 font-medium">TÃªn váº­t tÆ°</th>
-                            <th class="p-3 font-medium text-right">SL Xuáº¥t</th>
+                            <th class="p-3 font-medium">Ngày xuất</th>
+                            <th class="p-3 font-medium">Dự án</th>
+                            <th class="p-3 font-medium">Mã tài sản</th>
+                            <th class="p-3 font-medium">NV Sửa chữa</th>
+                            <th class="p-3 font-medium">Mã vật tư</th>
+                            <th class="p-3 font-medium">Tên vật tư</th>
+                            <th class="p-3 font-medium text-right">SL Xuất</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-sm">
@@ -343,35 +344,35 @@
                             </tr>
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                             <tr>
-                                <td colspan="9" class="p-8 text-center text-slate-400">KhÃ´ng cÃ³ dá»¯ liá»‡u xuáº¥t kho nÃ o phÃ¹ há»£p.</td>
+                                <td colspan="9" class="p-8 text-center text-slate-400">Không có dữ liệu xuất kho nào phù hợp.</td>
                             </tr>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </tbody>
                 </table>
             </div>
             <div class="p-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500 text-right print:hidden">
-                Hiá»ƒn thá»‹ tá»‘i Ä‘a 500 báº£n ghi gáº§n nháº¥t. HÃ£y dÃ¹ng bá»™ lá»c ngÃ y Ä‘á»ƒ xem chi tiáº¿t hÆ¡n.
+                Hiển thị tối đa 500 bản ghi gần nhất. Hãy dùng bộ lọc ngày để xem chi tiết hơn.
             </div>
         </div>
         
         <!-- Print Footer (Only visible in print) -->
         <div class="hidden print:grid grid-cols-3 mt-16 px-10 pb-10 w-full gap-4">
             <div class="text-center">
-                <p class="font-bold text-sm">NhÃ¢n viÃªn kho</p>
-                <p class="text-xs mt-1 text-gray-500">(KÃ½ vÃ  ghi rÃµ há» tÃªn)</p>
+                <p class="font-bold text-sm">Nhân viên kho</p>
+                <p class="text-xs mt-1 text-gray-500">(Ký và ghi rõ họ tên)</p>
             </div>
             <div class="text-center">
-                <p class="font-bold text-sm">TrÆ°á»Ÿng nhÃ³m</p>
-                <p class="text-xs mt-1 text-gray-500">(KÃ½ vÃ  ghi rÃµ há» tÃªn)</p>
+                <p class="font-bold text-sm">Trưởng nhóm</p>
+                <p class="text-xs mt-1 text-gray-500">(Ký và ghi rõ họ tên)</p>
             </div>
             <div class="text-center">
-                <p class="font-bold text-sm">Quáº£n lÃ½</p>
-                <p class="text-xs mt-1 text-gray-500">(KÃ½ vÃ  Ä‘Ã³ng dáº¥u)</p>
+                <p class="font-bold text-sm">Quản lý</p>
+                <p class="text-xs mt-1 text-gray-500">(Ký và đóng dấu)</p>
             </div>
         </div>
     </div>
 
-    <!-- Táº£i thÆ° viá»‡n ApexCharts -->
+    <!-- Tải thư viện ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
         document.addEventListener('livewire:initialized', () => {
@@ -384,7 +385,7 @@
 
                 if (document.querySelector("#chart-orders-timeline") && !document.querySelector("#chart-orders-timeline").hasChildNodes()) {
                     var timelineOptions = {
-                        series: [{ name: "Sá»‘ Ä‘Æ¡n xuáº¥t kho", data: orderCounts }],
+                        series: [{ name: "Số đơn xuất kho", data: orderCounts }],
                         chart: { type: 'area', height: 350, toolbar: { show: false }, fontFamily: 'inherit' },
                         colors: ['#4f46e5'],
                         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90, 100] } },
@@ -409,7 +410,7 @@
 
                 if (document.querySelector("#chart-orders-bar") && !document.querySelector("#chart-orders-bar").hasChildNodes()) {
                     var barOptions = {
-                        series: [{ name: 'ÄÆ¡n xuáº¥t kho', data: projectOrders }],
+                        series: [{ name: 'Đơn xuất kho', data: projectOrders }],
                         chart: { type: 'bar', height: 400, toolbar: { show: false }, fontFamily: 'inherit' },
                         plotOptions: { bar: { borderRadius: 4, horizontal: false, columnWidth: '45%', distributed: true } },
                         colors: ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'],
@@ -460,6 +461,4 @@
             }
         }
     </style>
-</div>
-
-<?php /**PATH D:\Project\resources\views/livewire/hr/global-report.blade.php ENDPATH**/ ?>
+</div><?php /**PATH D:\Project\resources\views/livewire/hr/global-report.blade.php ENDPATH**/ ?>

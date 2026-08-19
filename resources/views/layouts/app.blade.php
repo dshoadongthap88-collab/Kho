@@ -7,7 +7,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     @livewireStyles
-<style>@media print { .no-print { display: none !important; } }</style></head>
+<style>
+    @media print { 
+        @page { margin: 0; }
+        body { padding: 1cm; }
+        .no-print { display: none !important; } 
+    }
+</style></head>
 <body class="bg-gray-100 min-h-screen">
     <nav class="bg-sky-100 text-sky-950 border-b border-sky-200 shadow-md sticky top-0 z-50 print:hidden">
         <div class="w-full px-4 py-3 flex items-center justify-between">

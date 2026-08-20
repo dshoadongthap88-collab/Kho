@@ -82,7 +82,7 @@
                             <td class="px-2 py-1.5 text-gray-600">{{ $user->username ?? $user->email ?? '-' }}</td>
                             <td class="px-2 py-1.5 text-gray-400 text-xl leading-none tracking-widest mt-1 inline-block">******</td>
                             <td class="px-2 py-1.5 text-center" @click.stop>
-                                <form action="{{ route('hr.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');" class="inline-block">
+                                <form action="{{ route('hr.users') }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');" class="inline-block">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors" title="Xóa" {{ $user->id === auth()->id() ? 'disabled' : '' }}>
@@ -308,7 +308,7 @@
                 openCreate() {
                     this.isEdit = false;
                     this.showPassword = false;
-                    this.formAction = '{{ route('hr.users.store') }}';
+                    this.formAction = '{{ route('hr.users') }}';
                     this.formData = {
                         id: '',
                         code: '',

@@ -24,7 +24,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        return redirect()->route('hr.users.index');
+        return redirect()->route('hr.users');
     }
 
     /**
@@ -33,7 +33,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         // UI uses modal, fallback to index
-        return redirect()->route('hr.users.index');
+        return redirect()->route('hr.users');
     }
 
     /**
@@ -42,7 +42,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         // UI uses modal, fallback to index
-        return redirect()->route('hr.users.index');
+        return redirect()->route('hr.users');
     }
 
     /**
@@ -71,7 +71,7 @@ class UserController extends Controller
 
         User::create($data);
 
-        return redirect()->route('hr.users.index')->with('success', 'Thêm nhân viên thành công!');
+        return redirect()->route('hr.users')->with('success', 'Thêm nhân viên thành công!');
     }
 
     /**
@@ -101,7 +101,7 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return redirect()->route('hr.users.index')->with('success', 'Cập nhật nhân viên thành công!');
+        return redirect()->route('hr.users')->with('success', 'Cập nhật nhân viên thành công!');
     }
 
     /**
@@ -110,10 +110,10 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         if ($user->id === auth()->id()) {
-            return redirect()->route('hr.users.index')->with('error', 'Không thể xóa chính tài khoản đang đăng nhập!');
+            return redirect()->route('hr.users')->with('error', 'Không thể xóa chính tài khoản đang đăng nhập!');
         }
 
         $user->delete();
-        return redirect()->route('hr.users.index')->with('success', 'Đã xóa nhân viên!');
+        return redirect()->route('hr.users')->with('success', 'Đã xóa nhân viên!');
     }
 }

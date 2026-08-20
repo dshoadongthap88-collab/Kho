@@ -10,7 +10,7 @@ class Supplier extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $connection = 'tenant';
+    protected $connection = 'mysql';
 
     protected $fillable = [
         'name',

@@ -285,6 +285,30 @@ class StockInForm extends Component
         }
     }
 
+    /**
+     * Suy ra [mã, tên] cho một vật tư mới từ dữ liệu dòng nhập.
+     * Ưu tiên new_code/new_name; nếu thiếu thì tách từ product_search theo định dạng "Mã - Tên".
+     */
+    protected function deriveNewProductIdentity(array $item): array
+    {
+        $code = !empty($item['new_code']) ? trim($item['new_code']) : '';
+        $name = !empty($item['new_name']) ? trim($item['new_name']) : '';
+
+        if ($code === '' || $name === '') {
+            $search = trim($item['product_search'] ?? '');
+            if (str_contains($search, ' - ')) {
+                $parts = explode(' - ', $search);
+                $code = trim($parts[0]);
+                $name = trim($parts[1]);
+            } elseif ($search !== '') {
+                $code = strtoupper($search);
+                $name = $search;
+            }
+        }
+
+        return [$code, $name];
+    }
+
     public function save()
     {
         // Validate base requirement before anything
@@ -306,6 +330,25 @@ class StockInForm extends Component
                 $this->addError("items.{$index}.product_search", $errorMsg);
                 $this->dispatch('show-error-effect', message: $errorMsg);
                 return;
+            }
+
+            // Nếu là vật tư mới (chưa có product_id), đảm bảo mã & tên suy ra được đều không rỗng
+            // (tránh lỗi CSDL do tạo sản phẩm với mã/tên rỗng hoặc đụng khoá duy nhất house_id+code)
+            if (empty($item['product_id'])) {
+                [$derivedCode, $derivedName] = $this->deriveNewProductIdentity($item);
+                // Mã & tên phải có nội dung thực (ít nhất 1 ký tự chữ hoặc số), tránh tạo vật tư rác "-"
+                if (!preg_match('/[\p{L}\p{N}]/u', $derivedCode) || !preg_match('/[\p{L}\p{N}]/u', $derivedName)) {
+                    $errorMsg = 'Thiếu mã hoặc tên vật tư ở dòng số ' . ($index + 1) . '. Vui lòng nhập theo định dạng: Mã - Tên.';
+                    $this->addError("items.{$index}.product_search", $errorMsg);
+                    $this->dispatch('show-error-effect', message: $errorMsg);
+                    return;
+                }
+                if (mb_strlen($derivedCode) > 255 || mb_strlen($derivedName) > 255) {
+                    $errorMsg = 'Mã hoặc tên vật tư ở dòng số ' . ($index + 1) . ' quá dài (tối đa 255 ký tự).';
+                    $this->addError("items.{$index}.product_search", $errorMsg);
+                    $this->dispatch('show-error-effect', message: $errorMsg);
+                    return;
+                }
             }
         }
 
@@ -330,17 +373,45 @@ class StockInForm extends Component
 
         try {
             $this->validate([
-                'items.*.quantity' => 'required|numeric|min:0.0001',
-                'supplier_name' => 'nullable|string',
-                'items.*.batch_number' => 'nullable|string',
-                'items.*.expiry_date' => 'nullable|date',
-                'items.*.warehouse_location' => 'nullable|string',
-                'items.*.unit_price' => 'nullable|numeric|min:0',
+                // Thông tin phiếu
+                'items'                        => 'required|array|min:1',
+                'type'                         => 'required|string|max:255',
+                'stock_in_date'                => 'nullable|date',
+                'supplier_name'                => 'nullable|string|max:255',
+                'manufacturer'                 => 'nullable|string|max:255',
+                'note'                         => 'nullable|string|max:65535',
+                // Số lượng: chặn vượt precision decimal(15,4) của stock_in_items
+                'items.*.quantity'             => 'required|numeric|min:0.0001|max:9999999999',
+                // Đơn giá: decimal(15,2)
+                'items.*.unit_price'           => 'nullable|numeric|min:0|max:999999999999',
+                // Thuế suất: decimal(5,2), theo phần trăm 0..100
+                'items.*.vat_rate'             => 'nullable|numeric|min:0|max:100',
+                // Các trường chuỗi: giới hạn varchar(255)
+                'items.*.batch_number'         => 'nullable|string|max:255',
+                'items.*.warehouse_location'   => 'nullable|string|max:255',
+                'items.*.unit'                 => 'nullable|string|max:255',
+                'items.*.new_code'             => 'nullable|string|max:255',
+                'items.*.new_name'             => 'nullable|string|max:255',
+                'items.*.product_search'       => 'nullable|string|max:511',
+                'items.*.expiry_date'          => 'nullable|date',
             ], [
-                'items.*.quantity.required' => 'Vui lòng nhập số lượng.',
-                'items.*.quantity.min' => 'Số lượng phải lớn hơn 0.',
-                'items.*.expiry_date.date' => 'Hạn dùng không đúng định dạng ngày.',
-                'items.*.unit_price.numeric' => 'Đơn giá phải là số.',
+                'items.required'               => 'Vui lòng thêm ít nhất một vật tư vào phiếu nhập.',
+                'items.min'                    => 'Vui lòng thêm ít nhất một vật tư vào phiếu nhập.',
+                'items.*.quantity.required'    => 'Vui lòng nhập số lượng.',
+                'items.*.quantity.numeric'     => 'Số lượng phải là số.',
+                'items.*.quantity.min'         => 'Số lượng phải lớn hơn 0.',
+                'items.*.quantity.max'         => 'Số lượng quá lớn (tối đa 9.999.999.999).',
+                'items.*.unit_price.numeric'   => 'Đơn giá phải là số.',
+                'items.*.unit_price.min'       => 'Đơn giá không được âm.',
+                'items.*.unit_price.max'       => 'Đơn giá quá lớn.',
+                'items.*.vat_rate.numeric'     => 'Thuế suất phải là số.',
+                'items.*.vat_rate.max'         => 'Thuế suất không hợp lệ (0 - 100).',
+                'items.*.expiry_date.date'     => 'Hạn dùng không đúng định dạng ngày.',
+                'items.*.batch_number.max'     => 'Số lô quá dài (tối đa 255 ký tự).',
+                'items.*.warehouse_location.max' => 'Vị trí kho quá dài (tối đa 255 ký tự).',
+                'items.*.unit.max'             => 'Đơn vị tính quá dài (tối đa 255 ký tự).',
+                'supplier_name.max'            => 'Tên nhà cung cấp quá dài (tối đa 255 ký tự).',
+                'manufacturer.max'             => 'Tên hãng sản xuất quá dài (tối đa 255 ký tự).',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $firstError = collect($e->errors())->flatten()->first();
@@ -350,7 +421,8 @@ class StockInForm extends Component
 
         $service = app(InventoryService::class);
 
-        return DB::transaction(function () use ($service) {
+        try {
+            return DB::transaction(function () use ($service) {
             $baseCode = 'SI-' . date('Ymd') . '-';
             $nextId = \App\Models\StockIn::max('id') + 1;
             $code = $baseCode . str_pad($nextId, 4, '0', STR_PAD_LEFT);
@@ -377,20 +449,7 @@ class StockInForm extends Component
                 // Tự động tạo sản phẩm mới nếu chưa tồn tại
                 if (empty($productId)) {
                     // Lấy mã và tên từ new_code / new_name hoặc phân tách từ product_search
-                    $code = !empty($item['new_code']) ? trim($item['new_code']) : '';
-                    $name = !empty($item['new_name']) ? trim($item['new_name']) : '';
-
-                    if (empty($code) || empty($name)) {
-                        $search = trim($item['product_search']);
-                        if (str_contains($search, ' - ')) {
-                            $parts = explode(' - ', $search);
-                            $code = trim($parts[0]);
-                            $name = trim($parts[1]);
-                        } else {
-                            $code = strtoupper($search);
-                            $name = $search;
-                        }
-                    }
+                    [$code, $name] = $this->deriveNewProductIdentity($item);
 
                     // Kiểm tra xem sản phẩm có mã này vừa được tạo trong giao dịch hoặc đã có sẵn chưa
                     $existing = Product::whereRaw('LOWER(code) = ?', [strtolower($code)])->first();
@@ -422,6 +481,14 @@ class StockInForm extends Component
                 $batchNo = empty($item['batch_number']) ? '-' : $item['batch_number'];
                 $expiry = !empty($item['expiry_date']) ? $item['expiry_date'] : null;
 
+                // Tính lại thành tiền phía server và chặn tràn precision decimal(15,2)
+                $lineQty   = (float) ($item['quantity'] ?? 0);
+                $linePrice = (float) ($item['unit_price'] ?? 0);
+                $lineVat   = (float) ($item['vat_rate'] ?? 0);
+                $lineSubtotal = $lineQty * $linePrice;
+                $lineTotal = $lineSubtotal + ($lineSubtotal * $lineVat / 100);
+                $lineTotal = min($lineTotal, 9999999999999.99); // trần decimal(15,2)
+
                 // Tạo StockInItem
                 \App\Models\StockInItem::create([
                     'stock_in_id' => $stockIn->id,
@@ -429,10 +496,10 @@ class StockInForm extends Component
                     'batch_number' => $batchNo,
                     'expiry_date' => $expiry,
                     'warehouse_location' => $item['warehouse_location'] ?? null,
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'] ?? 0,
-                    'vat_rate' => $item['vat_rate'] ?? 0,
-                    'total_amount' => $item['total_amount'] ?? 0,
+                    'quantity' => $lineQty,
+                    'unit_price' => $linePrice,
+                    'vat_rate' => $lineVat,
+                    'total_amount' => $lineTotal,
                 ]);
 
                 // Gọi Service để thực hiện nhập kho và tạo giao dịch
@@ -508,7 +575,16 @@ class StockInForm extends Component
             $this->dispatch('show-success-effect');
         $this->reset(['items', 'marked_received']);
             $this->addItem();
-        });
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Luu phieu nhap kho that bai: ' . $e->getMessage(), [
+                'exception' => $e,
+                'type' => $this->type,
+                'item_count' => count($this->items),
+            ]);
+            session()->flash('error', 'Lưu phiếu nhập kho thất bại: ' . $e->getMessage());
+            $this->dispatch('show-error-effect', message: 'Lưu phiếu thất bại: ' . $e->getMessage());
+        }
     }
 
     public function exportExcel()

@@ -1,12 +1,4 @@
-@extends('layouts.app')
-
-@section('header')
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Hệ Thống Quản Lý Bảo Dưỡng (ERP)
-    </h2>
-@endsection
-
-@section('content')
+<x-warehouse-layout title="Hệ Thống Quản Lý Bảo Dưỡng (ERP)">
     <div class="py-12">
         <div class="w-full  space-y-6">
             <!-- Dashboard cảnh báo & Danh sách thiết bị -->
@@ -18,7 +10,7 @@
             <div class="col-span-1 md:col-span-2 mb-8">
                 @livewire('maintenance.daily-odo-manager')
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <!-- Cập nhật ca làm việc -->
                 <div class="col-span-1">
@@ -38,4 +30,4 @@
 
         </div>
     </div>
-@endsection
+</x-warehouse-layout>

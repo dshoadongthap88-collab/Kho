@@ -82,6 +82,21 @@ class MaintenanceService
             }
         }
 
+        // Check by HOURS (giờ vận hành) — nếu chưa đến hạn theo ODO thì xét theo giờ chạy
+        if (!$needsMaintenance && $asset->maintenance_cycle_hours > 0) {
+            $hoursRun = $asset->current_hours - $asset->last_maintenance_hours;
+            $hoursRemaining = $asset->maintenance_cycle_hours - $hoursRun;
+
+            if ($hoursRemaining <= 0) {
+                $needsMaintenance = true;
+                $targetCycle = floor($asset->current_hours / $asset->maintenance_cycle_hours) * $asset->maintenance_cycle_hours;
+                if ($targetCycle > 0) {
+                    // Cấp bảo dưỡng theo giờ, ví dụ: 250h, 500h, 1000h
+                    $maintenanceRuleId = $targetCycle . 'h';
+                }
+            }
+        }
+
         if ($needsMaintenance) {
             return MaintenanceTicket::create([
                 'ticket_code'         => 'MT-' . strtoupper(Str::random(6)),

@@ -31,6 +31,8 @@ class Asset extends Model
         'lifetime_hours',
         'cycle_odo',
         'cycle_hours',
+        'current_hours',
+        'current_odo',
         'hours_per_shift',
         'maintenance_cycle_hours',
         'maintenance_cycle_odo',

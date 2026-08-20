@@ -252,6 +252,9 @@
                     </div>
                 </div>
             </div>
+        </div>
+    @endif
+
     <!-- PHẦN IN CHI TIẾT HÀNG LOẠT (GIAO HÀNG / CHỨNG TỪ GỐC) -->
     @if(count($printItems) > 0)
     <div class="hidden print:block fixed inset-0 bg-white z-[9999]">

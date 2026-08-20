@@ -190,7 +190,14 @@ class UserManager extends Component
         ->orderBy('id', 'desc')
         ->paginate(10);
 
-        $departments = Department::where('status', 'active')->orderBy('name')->get();
+        // Guard: nếu bảng departments chưa được migrate (deploy thiếu migration),
+        // trang vẫn load được thay vì sập 500 — chỉ thiếu dropdown phòng ban.
+        try {
+            $departments = Department::where('status', 'active')->orderBy('name')->get();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('UserManager: không tải được danh sách phòng ban — ' . $e->getMessage());
+            $departments = collect();
+        }
 
         return view('livewire.hr.user-manager', [
             'users' => $users,

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToHouse;
 
 class PurchasePlan extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToHouse;
 
     protected static function booted()
     {
@@ -68,6 +69,7 @@ class PurchasePlan extends Model
     }
 
     protected $fillable = [
+        'house_id',
         'product_id',
         'proposed_quantity',
         'delivered_quantity',

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MaintenanceItem extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToHouse;
 
     protected $fillable = [
         'house_id',

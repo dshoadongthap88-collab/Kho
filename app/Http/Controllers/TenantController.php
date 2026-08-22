@@ -12,9 +12,20 @@ class TenantController extends Controller
     {
         $user = Auth::user();
         $projects = \App\Models\Project::all();
-        $allowedHouses = $user->role === 'admin' 
-            ? $projects->pluck('id')->toArray() 
-            : (is_array($user->allowed_houses) ? $user->allowed_houses : []);
+        
+        // Xác định các dự án mà user có quyền truy cập
+        // Admin: tất cả dự án
+        // User thường: chỉ dự án của mình (project_id) hoặc allowed_houses (legacy)
+        if ($user->role === 'admin') {
+            $allowedHouses = $projects->pluck('id')->toArray();
+        } else {
+            // Ưu tiên project_id, fallback về allowed_houses nếu chưa có project_id
+            if ($user->project_id) {
+                $allowedHouses = [$user->project_id];
+            } else {
+                $allowedHouses = is_array($user->allowed_houses) ? $user->allowed_houses : [];
+            }
+        }
         
         return view('tenant.select', compact('allowedHouses', 'projects'));
     }
@@ -27,15 +38,26 @@ class TenantController extends Controller
         ]);
 
         $user = Auth::user();
-        $allowedHouses = $user->role === 'admin' 
-            ? \App\Models\Project::pluck('id')->toArray() 
-            : (is_array($user->allowed_houses) ? $user->allowed_houses : []);
+        
+        // Xác định các dự án mà user có quyền truy cập
+        if ($user->role === 'admin') {
+            $allowedHouses = \App\Models\Project::pluck('id')->toArray();
+        } else {
+            // User thường: chỉ có thể truy cập dự án của mình
+            if ($user->project_id) {
+                $allowedHouses = [$user->project_id];
+            } else {
+                // Fallback về allowed_houses cho users cũ chưa có project_id
+                $allowedHouses = is_array($user->allowed_houses) ? $user->allowed_houses : [];
+            }
+        }
 
-        // Check if user has permission for this house
+        // Kiểm tra quyền truy cập dự án
         if (!in_array((int)$request->house_id, $allowedHouses)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn không có quyền truy cập vào Nhà số ' . $request->house_id
+                'message' => 'Bạn không có quyền truy cập vào Dự án này. Chỉ được truy cập dự án: ' . 
+                            ($user->project ? $user->project->name : 'không xác định')
             ], 403);
         }
 

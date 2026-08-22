@@ -34,6 +34,7 @@ class UserManager extends Component
     public $newAvatar;
     public $permissions = [];
     public $allowed_houses = [];
+    public $project_id = null;
 
     public function updatingSearch()
     {
@@ -55,6 +56,7 @@ class UserManager extends Component
             'newAvatar' => 'nullable|image|max:2048', // max 2MB
             'permissions' => 'nullable|array',
             'allowed_houses' => 'nullable|array',
+            'project_id' => 'nullable|exists:projects,id',
         ];
 
         if (!$this->userId) {
@@ -95,6 +97,7 @@ class UserManager extends Component
         $this->newAvatar = null;
         $this->permissions = [];
         $this->allowed_houses = [];
+        $this->project_id = null;
     }
 
     public function updatedDepartment($value)
@@ -126,6 +129,7 @@ class UserManager extends Component
         $this->newAvatar = null;
         $this->permissions = is_array($user->permissions) ? $user->permissions : (is_string($user->permissions) ? json_decode($user->permissions, true) : []);
         $this->allowed_houses = is_array($user->allowed_houses) ? $user->allowed_houses : (is_string($user->allowed_houses) ? json_decode($user->allowed_houses, true) : []);
+        $this->project_id = $user->project_id;
         
         if (!is_array($this->permissions)) $this->permissions = [];
         if (!is_array($this->allowed_houses)) $this->allowed_houses = [];
@@ -149,6 +153,7 @@ class UserManager extends Component
             'hire_date' => $this->hire_date,
             'permissions' => $this->permissions,
             'allowed_houses' => $this->allowed_houses,
+            'project_id' => $this->project_id,
         ];
 
         if ($this->password) {
@@ -181,6 +186,7 @@ class UserManager extends Component
 
     public function render()
     {
+        // ProjectScope tự động lọc users theo dự án
         $users = User::where(function($q) {
             $q->where('name', 'like', '%' . $this->search . '%')
               ->orWhere('code', 'like', '%' . $this->search . '%')
@@ -199,9 +205,13 @@ class UserManager extends Component
             $departments = collect();
         }
 
+        // Lấy danh sách dự án cho dropdown
+        $projects = \App\Models\Project::where('status', 'active')->orderBy('name')->get();
+
         return view('livewire.hr.user-manager', [
             'users' => $users,
-            'departments' => $departments
+            'departments' => $departments,
+            'projects' => $projects,
         ])->layout('components.warehouse-layout', ['title' => 'Quản Lý Nhân Viên']);
     }
 }

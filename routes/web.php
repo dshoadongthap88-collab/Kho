@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/verify-house', [\App\Http\Controllers\TenantController::class, 'verifyHouse'])->name('tenant.verify-house');
 
     // Tenant Protected Routes
-    Route::middleware('tenant')->group(function () {
+    Route::middleware(['tenant', 'house.context'])->group(function () {
         Route::get('/', function () {
             return redirect()->route('warehouse.inventory');
         });

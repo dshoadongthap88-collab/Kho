@@ -9,9 +9,14 @@ use Illuminate\Support\Facades\DB;
 
 class HrmService
 {
+    /**
+     * Lấy danh sách nhân viên
+     * ProjectScope tự động lọc theo dự án của user hiện tại
+     * Admin thấy tất cả, user thường chỉ thấy users cùng dự án
+     */
     public function getEmployees(array $filters = [])
     {
-        $query = User::query();
+        $query = User::query(); // ProjectScope tự động áp dụng
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -37,8 +42,18 @@ class HrmService
         return $query->orderBy('name')->paginate(20);
     }
 
+    /**
+     * Cập nhật thông tin nhân viên
+     * Kiểm tra quyền truy cập trước khi cho phép cập nhật
+     */
     public function updateEmployee(User $user, array $data): User
     {
+        // Kiểm tra quyền: chỉ được cập nhật user cùng dự án hoặc admin
+        $currentUser = auth()->user();
+        if (!$currentUser->canViewUser($user)) {
+            throw new \Exception('Bạn không có quyền cập nhật nhân viên này');
+        }
+
         $user->update($data);
         return $user->fresh();
     }

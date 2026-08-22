@@ -33,6 +33,7 @@ class StockTransferForm extends Component
         if ($this->available_projects->isNotEmpty()) {
             $this->to_project_id = $this->available_projects->first()->id;
         }
+        // ProjectScope tự động lọc users theo dự án
         $this->users = User::all();
         $this->sender_phone = auth()->user()->phone ?? '';
 

@@ -36,7 +36,6 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\CheckHouseContext::class,
         ],
 
         'api' => [
@@ -68,5 +67,6 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\IsAdmin::class,
         'permission' => \App\Http\Middleware\CheckPermission::class,
         'tenant' => \App\Http\Middleware\TenantMiddleware::class,
+        'house.context' => \App\Http\Middleware\CheckHouseContext::class,
     ];
 }

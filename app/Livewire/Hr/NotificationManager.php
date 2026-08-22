@@ -71,7 +71,8 @@ class NotificationManager extends Component
         ]);
 
         if ($this->user_id === 'all') {
-            $users = User::all();
+            // Admin gửi cho tất cả users (bỏ qua ProjectScope)
+            $users = User::withoutProjectScope()->get();
             foreach ($users as $user) {
                 Notification::create([
                     'user_id' => $user->id,
@@ -116,6 +117,8 @@ class NotificationManager extends Component
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        // ProjectScope tự động lọc users theo dự án
+        // Admin có thể chọn gửi cho tất cả users (withoutProjectScope trong save())
         $users = User::orderBy('name')->get();
 
         return view('livewire.hr.notification-manager', [

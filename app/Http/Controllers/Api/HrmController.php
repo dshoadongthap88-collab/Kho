@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\Auth;
 
 class HrmController extends Controller
 {
+    /**
+     * Lấy danh sách nhân viên
+     * ProjectScope tự động lọc theo dự án
+     */
     public function employees(Request $request)
     {
         $service = app(HrmService::class);
@@ -31,9 +35,21 @@ class HrmController extends Controller
         ], 200);
     }
 
+    /**
+     * Hiển thị thông tin chi tiết nhân viên
+     * Kiểm tra quyền xem trước khi trả về
+     */
     public function showEmployee(User $user)
     {
-        $user->load('attendances', 'leaveRequests');
+        // Kiểm tra quyền xem
+        if (!auth()->user()->canViewUser($user)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Bạn không có quyền xem thông tin nhân viên này',
+            ], 403);
+        }
+
+        $user->load('attendances', 'leaveRequests', 'project');
 
         return response()->json([
             'status' => 'success',
@@ -41,6 +57,9 @@ class HrmController extends Controller
         ], 200);
     }
 
+    /**
+     * Cập nhật thông tin nhân viên
+     */
     public function updateEmployee(Request $request, User $user)
     {
         $request->validate([
@@ -52,16 +71,27 @@ class HrmController extends Controller
             'status' => 'nullable|in:active,inactive,on_leave',
             'hire_date' => 'nullable|date',
             'avatar' => 'nullable|url',
+            'project_id' => 'nullable|exists:projects,id',
         ]);
 
-        $service = app(HrmService::class);
-        $user = $service->updateEmployee($user, $request->only(['name', 'email', 'phone', 'department', 'role', 'status', 'hire_date', 'avatar']));
+        try {
+            $service = app(HrmService::class);
+            $user = $service->updateEmployee($user, $request->only([
+                'name', 'email', 'phone', 'department', 'role', 
+                'status', 'hire_date', 'avatar', 'project_id'
+            ]));
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Cập nhật nhân viên thành công',
-            'data' => $user,
-        ], 200);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Cập nhật nhân viên thành công',
+                'data' => $user,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 403);
+        }
     }
 
     public function attendances(Request $request)

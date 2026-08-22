@@ -62,6 +62,8 @@ class PermissionManager extends Component
 
     public function render()
     {
+        // ProjectScope tự động lọc users theo dự án
+        // Admin có quyền sửa tất cả users
         $users = User::where('name', 'like', '%' . $this->search . '%')
             ->orWhere('email', 'like', '%' . $this->search . '%')
             ->orWhere('phone', 'like', '%' . $this->search . '%')

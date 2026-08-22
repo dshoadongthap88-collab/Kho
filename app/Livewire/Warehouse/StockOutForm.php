@@ -889,6 +889,14 @@ class StockOutForm extends Component
         }
 
         return view('livewire.warehouse.stock-out-form', [
+            // Chỉ lấy các cột cần cho datalist autocomplete, cache 3 phút theo house
+            'products' => \Illuminate\Support\Facades\Cache::remember(
+                'stock_out_products_' . (session('current_house') ?? 0),
+                180,
+                fn() => Product::where('status', 'active')
+                    ->orderBy('code')
+                    ->get(['id', 'code', 'name', 'unit', 'price', 'location', 'brand', 'batch_number', 'expiry_date', 'box_spec', 'carton_spec'])
+            ),
             'productionProducts' => $productionProducts,
             'locations' => \Illuminate\Support\Facades\Cache::remember(
                 'product_locations_' . (session('current_house') ?? 0), 300,

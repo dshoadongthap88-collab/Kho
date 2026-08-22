@@ -1013,6 +1013,12 @@ class StockInForm extends Component
         // Không truyền toàn bộ products vào view — autocomplete dùng wire:model.debounce
         // Chỉ load brands cho dropdown filter (cached 5 phút)
         return view('livewire.warehouse.stock-in-form', [
+            // Chỉ lấy các cột cần cho datalist autocomplete, cache 3 phút theo house + type
+            'products' => \Illuminate\Support\Facades\Cache::remember(
+                'stock_in_products_' . (session('current_house') ?? 0) . '_' . ($this->type === 'import_material' ? 'material' : 'other'),
+                180,
+                fn() => $productQuery->orderBy('code')->get(['id', 'code', 'name', 'unit', 'price', 'location', 'box_spec', 'carton_spec'])
+            ),
             'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
             'brands' => \Illuminate\Support\Facades\Cache::remember(
                 'product_brands_' . (session('current_house') ?? 0), 300,

@@ -33,9 +33,16 @@ class ProjectScope implements Scope
             return;
         }
 
+        // Kiểm tra cột project_id có tồn tại không (phòng ngừa khi chưa migrate)
+        try {
+            $projectId = $currentUser->getAttribute('project_id');
+        } catch (\Exception $e) {
+            return; // Cột chưa tồn tại, bỏ qua scope
+        }
+
         // User thường chỉ thấy users cùng dự án
-        if ($currentUser->project_id) {
-            $builder->where($model->getTable() . '.project_id', $currentUser->project_id);
+        if ($projectId) {
+            $builder->where($model->getTable() . '.project_id', $projectId);
         }
     }
 

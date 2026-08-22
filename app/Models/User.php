@@ -48,11 +48,24 @@ class User extends Authenticatable
     /**
      * The "booted" method of the model.
      * 
-     * Áp dụng ProjectScope để tự động lọc users theo dự án
+     * Áp dụng ProjectScope để tự động lọc users theo dự án.
+     * Scope tự bảo vệ nếu cột project_id chưa tồn tại (chưa migrate).
      */
     protected static function booted(): void
     {
-        static::addGlobalScope(new ProjectScope());
+        // Cache kết quả check schema để tránh query DB lặp lại mỗi request
+        static $hasProjectId = null;
+        if ($hasProjectId === null) {
+            try {
+                $hasProjectId = \Illuminate\Support\Facades\Schema::hasColumn('users', 'project_id');
+            } catch (\Exception $e) {
+                $hasProjectId = false;
+            }
+        }
+
+        if ($hasProjectId) {
+            static::addGlobalScope(new ProjectScope());
+        }
     }
 
     public function purchaseOrders()

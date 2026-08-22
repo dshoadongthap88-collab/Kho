@@ -13,17 +13,26 @@ class TenantController extends Controller
         $user = Auth::user();
         $projects = \App\Models\Project::all();
         
-        // Xác định các dự án mà user có quyền truy cập
-        // Admin: tất cả dự án
-        // User thường: chỉ dự án của mình (project_id) hoặc allowed_houses (legacy)
         if ($user->role === 'admin') {
             $allowedHouses = $projects->pluck('id')->toArray();
         } else {
-            // Ưu tiên project_id, fallback về allowed_houses nếu chưa có project_id
-            if ($user->project_id) {
-                $allowedHouses = [$user->project_id];
+            // Dùng project_id nếu có (cột mới), fallback về allowed_houses (cột cũ)
+            $projectId = null;
+            try {
+                $projectId = $user->project_id ?? null;
+            } catch (\Exception $e) {
+                // Cột project_id chưa tồn tại (chưa migrate) — bỏ qua
+            }
+
+            if ($projectId) {
+                $allowedHouses = [$projectId];
             } else {
                 $allowedHouses = is_array($user->allowed_houses) ? $user->allowed_houses : [];
+            }
+
+            // Nếu vẫn rỗng thì gán tất cả để user không bị kẹt
+            if (empty($allowedHouses)) {
+                $allowedHouses = $projects->pluck('id')->toArray();
             }
         }
         
@@ -43,21 +52,37 @@ class TenantController extends Controller
         if ($user->role === 'admin') {
             $allowedHouses = \App\Models\Project::pluck('id')->toArray();
         } else {
-            // User thường: chỉ có thể truy cập dự án của mình
-            if ($user->project_id) {
-                $allowedHouses = [$user->project_id];
+            // Dùng project_id nếu có (cột mới), fallback về allowed_houses (cột cũ)
+            $projectId = null;
+            try {
+                $projectId = $user->project_id ?? null;
+            } catch (\Exception $e) {
+                // Cột project_id chưa tồn tại — bỏ qua
+            }
+
+            if ($projectId) {
+                $allowedHouses = [$projectId];
             } else {
-                // Fallback về allowed_houses cho users cũ chưa có project_id
                 $allowedHouses = is_array($user->allowed_houses) ? $user->allowed_houses : [];
+            }
+
+            // Nếu vẫn rỗng thì gán tất cả để user không bị kẹt
+            if (empty($allowedHouses)) {
+                $allowedHouses = \App\Models\Project::pluck('id')->toArray();
             }
         }
 
         // Kiểm tra quyền truy cập dự án
         if (!in_array((int)$request->house_id, $allowedHouses)) {
+            $projectName = 'không xác định';
+            try {
+                $projectName = $user->project->name ?? 'không xác định';
+            } catch (\Exception $e) {
+                // relation hoặc cột chưa tồn tại
+            }
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn không có quyền truy cập vào Dự án này. Chỉ được truy cập dự án: ' . 
-                            ($user->project ? $user->project->name : 'không xác định')
+                'message' => 'Bạn không có quyền truy cập vào Dự án này. Chỉ được truy cập dự án: ' . $projectName
             ], 403);
         }
 

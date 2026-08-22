@@ -20,7 +20,8 @@ class TransactionExport implements FromCollection, WithHeadings, WithMapping, Sh
 
     public function collection()
     {
-        return $this->collection;
+        // Đảm bảo eager load để tránh N+1 dù caller không load
+        return $this->collection->load(['product', 'creator']);
     }
 
     public function headings(): array

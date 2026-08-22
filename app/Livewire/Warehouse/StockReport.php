@@ -120,20 +120,26 @@ class StockReport extends Component
         $exports = [];
         $stocks = [];
 
-        foreach ($topProducts as $product) {
-            $labels[] = $product->code;
-            $stocks[] = (float)($product->inventory->quantity ?? 0);
-            
-            $stats = InventoryTransaction::selectRaw("
+        // Batch query: lấy stats cho tất cả products trong 1 query thay vì N queries trong foreach
+        $productIds = $topProducts->pluck('id');
+        $statsMap = InventoryTransaction::selectRaw("
+                product_id,
                 SUM(CASE WHEN type = 'import' THEN quantity ELSE 0 END) as total_import,
                 SUM(CASE WHEN type = 'export' THEN ABS(quantity) ELSE 0 END) as total_export
             ")
-            ->where('product_id', $product->id)
+            ->whereIn('product_id', $productIds)
             ->whereBetween('created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59'])
-            ->first();
+            ->groupBy('product_id')
+            ->get()
+            ->keyBy('product_id');
 
-            $imports[] = (float)($stats->total_import ?? 0);
-            $exports[] = (float)($stats->total_export ?? 0);
+        foreach ($topProducts as $product) {
+            $labels[] = $product->code;
+            $stocks[] = (float)($product->inventory->quantity ?? 0);
+
+            $stat = $statsMap->get($product->id);
+            $imports[] = (float)($stat->total_import ?? 0);
+            $exports[] = (float)($stat->total_export ?? 0);
         }
 
         return [
@@ -148,50 +154,46 @@ class StockReport extends Component
 
     public function getPieChartData()
     {
-        $categories = Category::with(['products.inventory'])->get();
-        
-        $labels = [];
-        $series = [];
-
-        foreach ($categories as $category) {
-            $totalStock = $category->products->sum(function($p) {
-                return $p->inventory->quantity ?? 0;
-            });
-
-            if ($totalStock > 0) {
-                $labels[] = $category->name;
-                $series[] = (float)$totalStock;
-            }
-        }
+        // Tính thẳng trên DB thay vì load products.inventory vào PHP rồi sum
+        $data = \Illuminate\Support\Facades\DB::table('categories')
+            ->leftJoin('products', 'categories.id', '=', 'products.category_id')
+            ->leftJoin('inventories', 'products.id', '=', 'inventories.product_id')
+            ->where('products.status', 'active')
+            ->selectRaw('categories.name, SUM(COALESCE(inventories.quantity, 0)) as total_stock')
+            ->groupBy('categories.id', 'categories.name')
+            ->having('total_stock', '>', 0)
+            ->orderByDesc('total_stock')
+            ->get();
 
         return [
-            'labels' => $labels,
-            'series' => $series
+            'labels' => $data->pluck('name')->toArray(),
+            'series' => $data->pluck('total_stock')->map(fn($v) => (float)$v)->toArray(),
         ];
     }
 
     public function getParetoData()
     {
-        $products = Product::with('inventory')
-            ->get()
-            ->sortByDesc(fn($p) => $p->inventory->quantity ?? 0)
-            ->take(20);
+        // Dùng JOIN + ORDER BY trực tiếp trên DB thay vì load tất cả vào PHP rồi sort
+        $products = Product::leftJoin('inventories', 'products.id', '=', 'inventories.product_id')
+            ->where('products.status', 'active')
+            ->selectRaw('products.code, COALESCE(inventories.quantity, 0) as qty')
+            ->orderByDesc('qty')
+            ->take(20)
+            ->get();
 
-        $totalInventory = Inventory::sum('quantity');
-        if ($totalInventory == 0) $totalInventory = 1;
+        $totalInventory = (float)(\App\Models\Inventory::sum('quantity') ?: 1);
 
         $labels = [];
         $quantities = [];
         $cumulativePercentages = [];
-        
         $currentSum = 0;
+
         foreach ($products as $product) {
-            $qty = (float)($product->inventory->quantity ?? 0);
+            $qty = (float)$product->qty;
             if ($qty <= 0) continue;
 
             $labels[] = $product->code;
             $quantities[] = $qty;
-            
             $currentSum += $qty;
             $cumulativePercentages[] = round(($currentSum / $totalInventory) * 100, 2);
         }
@@ -208,22 +210,36 @@ class StockReport extends Component
         $categories = Category::all();
         $series = [];
 
+        // Batch: lấy ngày giao dịch cuối cùng của từng product trong 1 query
+        $lastTxDates = \Illuminate\Support\Facades\DB::table('inventory_transactions')
+            ->selectRaw('product_id, MAX(created_at) as last_tx_at')
+            ->groupBy('product_id')
+            ->get()
+            ->keyBy('product_id');
+
+        // Load tất cả products + inventory trong 1 query thay vì N queries trong foreach
+        $allProducts = Product::leftJoin('inventories', 'products.id', '=', 'inventories.product_id')
+            ->where('products.status', 'active')
+            ->selectRaw('products.id, products.category_id, products.expiry_date, COALESCE(inventories.quantity, 0) as qty')
+            ->get()
+            ->groupBy('category_id');
+
+        $ninetyDaysAgo = now()->subDays(90);
+
         foreach ($categories as $cat) {
-            $products = Product::where('category_id', $cat->id)->with('inventory')->get();
-            
-            $normal = 0;
-            $expiring = 0; 
-            $expired = 0;
-            $dead = 0; 
+            $products = $allProducts->get($cat->id, collect());
+
+            $normal = 0; $expiring = 0; $expired = 0; $dead = 0;
 
             foreach ($products as $p) {
-                $qty = $p->inventory->quantity ?? 0;
+                $qty = (float)$p->qty;
                 if ($qty <= 0) continue;
 
                 if ($p->expiry_date) {
-                    if ($p->expiry_date->isPast()) {
+                    $expiryDate = \Carbon\Carbon::parse($p->expiry_date);
+                    if ($expiryDate->isPast()) {
                         $expired++;
-                    } elseif ($p->expiry_date->diffInDays(now()) <= 30) {
+                    } elseif ($expiryDate->diffInDays(now()) <= 30) {
                         $expiring++;
                     } else {
                         $normal++;
@@ -232,8 +248,9 @@ class StockReport extends Component
                     $normal++;
                 }
 
-                $lastTx = InventoryTransaction::where('product_id', $p->id)->latest()->first();
-                if ($lastTx && $lastTx->created_at->diffInDays(now()) > 90) {
+                // Dùng batch map thay vì query trong loop
+                $lastTx = $lastTxDates->get($p->id);
+                if ($lastTx && \Carbon\Carbon::parse($lastTx->last_tx_at)->lt($ninetyDaysAgo)) {
                     $dead++;
                 }
             }
@@ -241,10 +258,10 @@ class StockReport extends Component
             $series[] = [
                 'name' => $cat->name,
                 'data' => [
-                    ['x' => 'Bình thường', 'y' => $normal],
-                    ['x' => 'Cận date', 'y' => $expiring],
-                    ['x' => 'Đã hết hạn', 'y' => $expired],
-                    ['x' => 'Tồn lâu (>90d)', 'y' => $dead],
+                    ['x' => 'Bình thường',    'y' => $normal],
+                    ['x' => 'Cận date',        'y' => $expiring],
+                    ['x' => 'Đã hết hạn',      'y' => $expired],
+                    ['x' => 'Tồn lâu (>90d)',  'y' => $dead],
                 ]
             ];
         }

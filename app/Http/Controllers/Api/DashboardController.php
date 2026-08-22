@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
 use App\Models\StockIn;
 use App\Models\StockOut;
 use App\Models\PurchaseOrder;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -23,12 +23,13 @@ class DashboardController extends Controller
         $totalImportToday = StockIn::whereDate('created_at', $today)->count();
         $totalExportToday = StockOut::whereDate('created_at', $today)->count();
 
-        // Lấy danh sách sản phẩm cấu hình tồn kho tối thiểu
-        // Lọc qua Collection vì logic getIsLowStockAttribute nằm ở code PHP lấy từ relation inventory
-        $products = Product::with('inventory')->get();
-        $lowStockItemsCount = $products->filter(function ($product) {
-            return $product->is_low_stock == true;
-        })->count();
+        // Đếm sản phẩm tồn kho dưới mức tối thiểu trực tiếp trên DB — không load toàn bộ records vào PHP
+        $lowStockItemsCount = \Illuminate\Support\Facades\DB::table('products')
+            ->join('inventories', 'products.id', '=', 'inventories.product_id')
+            ->where('products.status', 'active')
+            ->where('products.min_stock', '>', 0)
+            ->whereRaw('inventories.quantity <= products.min_stock')
+            ->count();
 
         // Đếm số lượng đơn mua hàng (Purchase Order) đang chờ xử lý
         // Tuỳ theo trạng thái của hệ thống của bạn (ví dụ: 'pending', 'new')

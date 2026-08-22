@@ -14,7 +14,10 @@ class ContactsExport implements FromCollection, WithHeadings, WithMapping
     */
     public function collection()
     {
-        return Supplier::all();
+        // Lọc theo house + chỉ lấy các cột cần thiết để tránh load thừa
+        return Supplier::select('id','name','address','phone','contact_person','email','type','department','status','created_at')
+            ->orderBy('name')
+            ->get();
     }
 
     public function headings(): array

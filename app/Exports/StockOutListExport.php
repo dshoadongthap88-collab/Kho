@@ -20,7 +20,8 @@ class StockOutListExport implements FromCollection, WithHeadings, WithMapping, S
 
     public function collection()
     {
-        return $this->collection;
+        // Đảm bảo eager load để tránh N+1 dù caller không load
+        return $this->collection->load(['items', 'creator']);
     }
 
     public function headings(): array

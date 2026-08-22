@@ -215,21 +215,7 @@ class CustomerDebtList extends Component
             $query->whereRaw('paid_amount >= total_amount');
         }
 
-        $debts = $query->latest('delivered_at')->paginate(20);
-
-        // Tự động sửa lỗi dữ liệu (Data Repair) cho các bản ghi cũ bị thiếu số tiền (0)
-        foreach($debts as $debt) {
-            if ($debt->total_amount <= 0 && $debt->stockOut) {
-                $actualTotal = $debt->stockOut->items->sum('total_amount');
-                if ($actualTotal > 0) {
-                    $debt->update(['total_amount' => $actualTotal]);
-                    // Nếu đã thanh toán, cập nhật luôn paid_amount
-                    if (in_array($debt->payment_status, ['paid', 'bank_transfer'])) {
-                        $debt->update(['paid_amount' => $actualTotal]);
-                    }
-                }
-            }
-        }
+        $debts = $query->with(['stockOut.items'])->latest('delivered_at')->paginate(20);
 
         return view('livewire.warehouse.customer-debt-list', [
             'debts' => $debts

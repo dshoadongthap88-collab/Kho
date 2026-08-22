@@ -563,7 +563,7 @@ class StockInForm extends Component
                     Product::where('id', $productId)->update($productUpdates);
                 }
 
-                // Tự động cập nhật Kế hoạch mua hàng (PurchasePlan)
+                // Tự động cập nhật Kế hoạch mua hàng (PurchasePlan) — batch query, không query trong loop
                 $pendingPlans = \App\Models\PurchasePlan::where('product_id', $productId)
                     ->whereNotIn('status', ['completed'])
                     ->orderBy('created_at', 'asc')
@@ -586,7 +586,8 @@ class StockInForm extends Component
                             $plan->status = 'partial';
                             $plan->notes = 'Đã nhận một phần (phiếu nhập ' . $stockIn->code . ')';
                         }
-                        $plan->save();
+                        // Dùng update() thay vì save() để tránh trigger booted() model events không cần thiết
+                        $plan->saveQuietly();
                     }
                 }
             }
@@ -1009,10 +1010,14 @@ class StockInForm extends Component
 
         $idsOnPage = $allOnPage->pluck('id')->toArray();
 
+        // Không truyền toàn bộ products vào view — autocomplete dùng wire:model.debounce
+        // Chỉ load brands cho dropdown filter (cached 5 phút)
         return view('livewire.warehouse.stock-in-form', [
-            'products' => $productQuery->orderBy('name')->get(),
-            'suppliers' => Supplier::orderBy('name')->get(),
-            'brands' => Product::whereNotNull('brand')->distinct()->pluck('brand'),
+            'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
+            'brands' => \Illuminate\Support\Facades\Cache::remember(
+                'product_brands_' . (session('current_house') ?? 0), 300,
+                fn() => Product::whereNotNull('brand')->distinct()->pluck('brand')
+            ),
             'allOnPage' => $allOnPage,
             'idsOnPage' => $idsOnPage,
         ]);

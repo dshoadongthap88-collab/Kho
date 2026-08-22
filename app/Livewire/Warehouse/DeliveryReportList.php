@@ -190,7 +190,8 @@ class DeliveryReportList extends Component
 
     public function render()
     {
-        $query = DeliveryReport::with(['stockOut', 'stockOut.items']);
+        // Chỉ eager load stockOut cho list view — items chỉ cần khi in/xem chi tiết
+        $query = DeliveryReport::with(['stockOut']);
 
         if ($this->dateFrom) {
             $query->whereHas('stockOut', function($q) {

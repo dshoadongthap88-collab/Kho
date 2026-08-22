@@ -20,7 +20,8 @@ class DeliveryExport implements FromCollection, WithHeadings, WithMapping, Shoul
 
     public function collection()
     {
-        return $this->collection;
+        // Đảm bảo eager load để tránh N+1 dù caller không load
+        return $this->collection->load(['stockOut', 'stockOut.items']);
     }
 
     public function headings(): array

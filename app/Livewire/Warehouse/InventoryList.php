@@ -288,10 +288,19 @@ class InventoryList extends Component
 
         $inventories = $query->paginate(10);
 
+        $houseKey = session('current_house') ?? 0;
+
         return view('livewire.warehouse.inventory-list', [
             'inventories' => $inventories,
-            'brands' => Product::whereNotNull('brand')->distinct()->pluck('brand'),
-            'locations' => Inventory::whereNotNull('warehouse_location')->distinct()->pluck('warehouse_location'),
+            // Cache 5 phút — không cần query DB mỗi lần render
+            'brands' => \Illuminate\Support\Facades\Cache::remember(
+                "inventory_brands_{$houseKey}", 300,
+                fn() => Product::whereNotNull('brand')->distinct()->pluck('brand')
+            ),
+            'locations' => \Illuminate\Support\Facades\Cache::remember(
+                "inventory_locations_{$houseKey}", 300,
+                fn() => \App\Models\Inventory::whereNotNull('warehouse_location')->distinct()->pluck('warehouse_location')
+            ),
         ]);
     }
 }

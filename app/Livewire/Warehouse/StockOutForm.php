@@ -92,49 +92,6 @@ class StockOutForm extends Component
         $this->customer_name = 'BCH VINALPHA';
         $this->receiver_name = 'LÊ HOÀNG NAM';
 
-        // Đảm bảo tất cả các cột tùy chỉnh tồn tại động trong bảng stock_outs
-        $customColumns = [
-            'project_name',
-            'document_number',
-            'license_plate',
-            'km_number',
-            'operating_hours',
-            'device_name',
-            'department',
-            'warehouse_keeper',
-            'supervisor_qltb',
-            'supervisor_ca',
-            'repair_staff',
-            'operator_name',
-        ];
-
-        foreach ($customColumns as $columnName) {
-            if (!\Schema::hasColumn('stock_outs', $columnName)) {
-                \Schema::table('stock_outs', function (\Illuminate\Database\Schema\Blueprint $table) use ($columnName) {
-                    $table->string($columnName)->nullable();
-                });
-            }
-        }
-
-        // Đảm bảo các cột tùy chỉnh tồn tại động trong bảng stock_out_items
-        $itemCustomColumns = [
-            'requested_quantity' => 'decimal',
-            'recovered_quantity' => 'decimal',
-            'item_note' => 'string',
-        ];
-
-        foreach ($itemCustomColumns as $columnName => $columnType) {
-            if (!\Schema::hasColumn('stock_out_items', $columnName)) {
-                \Schema::table('stock_out_items', function (\Illuminate\Database\Schema\Blueprint $table) use ($columnName, $columnType) {
-                    if ($columnType === 'string') {
-                        $table->string($columnName)->nullable();
-                    } else {
-                        $table->decimal($columnName, 15, 4)->nullable();
-                    }
-                });
-            }
-        }
-
         // Tải thông tin người ký tự động từ lần gần nhất
         $lastStockOut = \App\Models\StockOut::latest()->first();
         $this->warehouse_keeper = session('last_warehouse_keeper', $lastStockOut->warehouse_keeper ?? 'ĐẶNG HỮU HÒA');
@@ -932,12 +889,14 @@ class StockOutForm extends Component
         }
 
         return view('livewire.warehouse.stock-out-form', [
-            'products' => Product::where('status', 'active')->orderBy('name')->get(),
             'productionProducts' => $productionProducts,
-            'locations' => Product::whereNotNull('location')->distinct()->pluck('location'),
-            'customers' => Supplier::orderBy('name')->get(),
+            'locations' => \Illuminate\Support\Facades\Cache::remember(
+                'product_locations_' . (session('current_house') ?? 0), 300,
+                fn() => Product::whereNotNull('location')->distinct()->pluck('location')
+            ),
+            'customers' => Supplier::orderBy('name')->get(['id', 'name', 'phone', 'address', 'contact_person', 'email', 'department']),
             'stockOuts' => $stockOuts,
-            'users' => $usersQuery->get()
+            'users' => $usersQuery->get(['id', 'name', 'phone'])
         ]);
     }
 

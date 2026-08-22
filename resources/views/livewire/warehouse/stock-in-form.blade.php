@@ -1133,7 +1133,7 @@
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-0.5">Ghi chú phiếu nhập</label>
                 <textarea wire:model="note" rows="1" class="w-full rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-1.5 px-3 text-[12px] font-bold text-slate-800 placeholder:font-normal" placeholder="Lý do nhập kho, số chứng từ kèm theo..."></textarea>
             </div>
-            <button wire:click="save" wire:loading.attr="disabled" class="px-8 py-3 rounded-xl text-[13px] font-black text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-md shadow-indigo-100 hover:shadow-indigo-200 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed">
+            <button wire:click="stageAndSave" wire:loading.attr="disabled" class="px-8 py-3 rounded-xl text-[13px] font-black text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-md shadow-indigo-100 hover:shadow-indigo-200 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed">
                 <span>💾</span> LƯU PHIẾU NHẬP
             </button>
         </div>

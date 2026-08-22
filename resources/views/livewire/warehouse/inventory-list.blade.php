@@ -7,8 +7,13 @@
             .bg-white { box-shadow: none !important; border: none !important; }
             table { width: 100% !important; border-collapse: collapse !important; }
             th, td { border: 1px solid #ddd !important; padding: 8px !important; }
-            .noprint-row { display: none !important; }
+            /* Ẩn hàng chưa được chọn khi in (chỉ khi có items được chọn) */
+            .row-not-selected { display: none !important; }
+            /* Khi không có item nào được chọn thì in tất cả */
+            .row-print-all { display: table-row !important; }
             .status-badge { border: 1px solid #ccc !important; }
+            /* Xóa màu nền indigo để in đẹp hơn */
+            .bg-indigo-50 { background-color: white !important; }
         }
         .print-only { display: none; }
     </style>
@@ -95,9 +100,9 @@
                 <button wire:click="$set('showImportModal', true)" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm font-bold mr-2">
                     📥 Nhập từ Excel
                 </button>
-                <button disabled title="Vui lòng chọn ít nhất 1 vật tư để in" class="bg-gray-300 text-gray-500 cursor-not-allowed px-6 py-2 rounded-lg flex items-center gap-2 shadow-sm">
+                <button onclick="window.print()" class="bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition flex items-center gap-2 shadow-sm font-bold">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    In danh sách
+                    In tất cả
                 </button>
             @endif
         </div>
@@ -114,8 +119,9 @@
                 <tr>
                     <th class="px-2 py-2 text-center no-print">
                         <input type="checkbox" wire:click="toggleSelectAll([{{ $inventories->pluck('id')->implode(',') }}])" 
-                               {{ count($selectedItems) > 0 && count($selectedItems) === count($inventories->pluck('id')) ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                               {{ count($selectedItems) > 0 && count($selectedItems) === $inventories->count() ? 'checked' : '' }}
+                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                               title="Chọn tất cả trong trang này">
                     </th>
                     <th wire:click="sortBy('products.code')" class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 italic">Mã Vật Tư</th>
                     <th wire:click="sortBy('products.name')" class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">TÊN VẬT TƯ</th>
@@ -133,6 +139,7 @@
                     @php
                         $available = $inv->quantity - $inv->reserved_quantity;
                         $isSelected = in_array($inv->id, $selectedItems);
+                        $hasSelection = count($selectedItems) > 0;
                         if ($available < $inv->min_stock) {
                             $statusColor = 'bg-red-100 text-red-800';
                             $statusText = 'Thiếu hàng';
@@ -146,8 +153,11 @@
                             $statusText = 'Đủ hàng';
                             $statusIcon = '🟢';
                         }
+                        // Nếu có selection thì ẩn row không được chọn khi print
+                        // Nếu không có selection thì in tất cả
+                        $printClass = $hasSelection ? ($isSelected ? '' : 'row-not-selected') : 'row-print-all';
                     @endphp
-                    <tr class="hover:bg-gray-50 transition {{ $isSelected ? 'bg-indigo-50' : 'noprint-row' }}">
+                    <tr class="hover:bg-gray-50 transition {{ $isSelected ? 'bg-indigo-50' : '' }} {{ $printClass }}">
                         <td class="px-2 py-1.5 text-center no-print">
                             <input type="checkbox" wire:model.live="selectedItems" value="{{ $inv->id }}"
                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">

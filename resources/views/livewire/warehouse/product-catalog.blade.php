@@ -410,14 +410,10 @@
                                 @error('brand') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Số lượng</label>
-                                <input type="text" inputmode="numeric" wire:model.lazy="quantity" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" placeholder="0">
-                                @error('quantity') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                            <div class="col-span-1">
-                                <label class="block text-sm font-medium text-gray-700">Vị trí</label>
+                                <label class="block text-sm font-medium text-gray-700">Vị trí lưu kho</label>
                                 <input type="text" wire:model="location" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                                 @error('location') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <p class="text-xs text-gray-400 mt-1">Tồn kho được quản lý riêng qua phiếu nhập/xuất</p>
                             </div>
                             <div class="col-span-1">
                                 <label class="block text-sm font-medium text-gray-700">Mã Code NCC (Không bắt buộc)</label>

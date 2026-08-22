@@ -309,8 +309,28 @@ class StockInForm extends Component
         return [$code, $name];
     }
 
+    /**
+     * Stage items vào server session trước khi save.
+     * Giải pháp bypass PHP max_input_vars (mặc định 1000) khi có nhiều dòng.
+     * Livewire vẫn giữ $this->items đầy đủ trên server — chỉ cần lưu lại vào session.
+     */
+    public function stageAndSave()
+    {
+        if (!empty($this->items)) {
+            session(['stock_in_staged_items_' . auth()->id() => $this->items]);
+        }
+        $this->save();
+    }
+
     public function save()
     {
+        // Nếu items đã được staging vào session thì đọc từ đó để bypass max_input_vars
+        $stagedItems = session('stock_in_staged_items_' . auth()->id());
+        if (!empty($stagedItems)) {
+            $this->items = $stagedItems;
+            session()->forget('stock_in_staged_items_' . auth()->id());
+        }
+
         // Validate base requirement before anything
         if (empty($this->items)) {
             $this->addError('general', 'Vui lòng thêm ít nhất một sản phẩm vào phiếu nhập.');

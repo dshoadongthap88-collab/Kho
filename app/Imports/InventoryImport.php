@@ -161,12 +161,21 @@ class InventoryImport implements ToCollection
             if ($location !== null) $inventoryData['warehouse_location'] = $location;
 
             if (!empty($inventoryData)) {
-                $inventory = Inventory::withoutGlobalScope('house')->where('product_id', $product->id)->first();
+                // Lấy house_id hiện tại để tìm đúng inventory của dự án
+                $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
+
+                $inventory = Inventory::withoutGlobalScope('house')
+                    ->where('product_id', $product->id)
+                    ->when($houseId, fn($q) => $q->where('house_id', $houseId))
+                    ->first();
+
                 if ($inventory) {
+                    // GHI ĐÈ tồn kho = giá trị mới (không cộng thêm vào tồn cũ)
                     $inventory->update($inventoryData);
                 } else {
                     $inventoryData['product_id'] = $product->id;
                     $inventoryData['quantity'] = $inventoryData['quantity'] ?? 0;
+                    if ($houseId) $inventoryData['house_id'] = $houseId;
                     Inventory::create($inventoryData);
                 }
             }

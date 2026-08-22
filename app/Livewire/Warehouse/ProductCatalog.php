@@ -10,6 +10,7 @@ use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ProductsImport;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Support\Facades\Storage;
@@ -352,19 +353,10 @@ class ProductCatalog extends Component
                         $product->update(['image' => $imagePath]);
                     }
                     
-                    // Đồng bộ với bảng Inventory
+                    // CHỈ cập nhật vị trí trong Inventory nếu đã tồn tại — KHÔNG thay đổi số lượng tồn
                     $inventory = Inventory::where('product_id', $product->id)->first();
-                    if ($inventory) {
-                        $inventory->update([
-                            'quantity' => $qty,
-                            'warehouse_location' => $this->location
-                        ]);
-                    } else {
-                        Inventory::create([
-                            'product_id' => $product->id,
-                            'quantity' => $qty,
-                            'warehouse_location' => $this->location
-                        ]);
+                    if ($inventory && $this->location !== null) {
+                        $inventory->update(['warehouse_location' => $this->location]);
                     }
 
                     // Cập nhật lại mảng minStocks hiển thị trên bảng
@@ -387,12 +379,12 @@ class ProductCatalog extends Component
                         'image' => $imagePath,
                     ]);
 
-                    // Tạo luôn record bên Inventory
-                    Inventory::create([
-                        'product_id' => $product->id,
-                        'quantity' => $qty,
-                        'warehouse_location' => $this->location
-                    ]);
+                    // KHÔNG tạo Inventory record ở đây — tồn kho sẽ tự tạo khi nhập kho thực tế
+                    // Chỉ tạo Inventory record trống để vật tư xuất hiện trong màn hình Tồn Kho
+                    Inventory::firstOrCreate(
+                        ['product_id' => $product->id],
+                        ['quantity' => 0, 'warehouse_location' => $this->location]
+                    );
 
                     session()->flash('message', 'Thêm vật tư mới thành công.');
                 }

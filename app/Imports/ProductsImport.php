@@ -2,11 +2,9 @@
 
 namespace App\Imports;
 
-use App\Models\Inventory;
 use App\Models\Product;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
-use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 class ProductsImport implements ToCollection
@@ -94,59 +92,42 @@ class ProductsImport implements ToCollection
         // 2. Tìm hoặc tạo Sản phẩm
         $product = Product::withoutGlobalScope('house')->where('code', $productCode)->first();
         
+        // Chỉ đọc: mã, tên, ĐVT, vị trí (không đụng tồn kho)
         $productName = $this->findValue($row, ['tensp', 'tensanpham', 'name', 'tenhang', 'tenvattu', 'ten']);
-        $unit = $this->findValue($row, ['dvt', 'donvitinh', 'unit']);
-        $brand = $this->findValue($row, ['hangsx', 'thuonghieu', 'brand']);
-        $batch = $this->findValue($row, ['solo', 'batch', 'lo', 'codencc']);
-        $expiry = $this->findValue($row, ['handung', 'hsd', 'expiry', 'hansudung']);
-        $minStock = $this->findValue($row, ['tontoithieu', 'minstock']);
-        $location = $this->findValue($row, ['vitri', 'kho', 'location']);
-        $quantity = $this->findValue($row, ['soluong', 'sl', 'qty', 'quantity', 'tonkho']);
-        $desc = $this->findValue($row, ['ghichu', 'mota', 'description', 'desc']);
-        $boxSpec = $this->findValue($row, ['qchop', 'quycachhop']);
-        $cartonSpec = $this->findValue($row, ['qcthung', 'quycachthung']);
+        $unit        = $this->findValue($row, ['dvt', 'donvitinh', 'unit']);
+        $location    = $this->findValue($row, ['vitri', 'noichua', 'kho', 'location']);
 
         if (!$product) {
-            // Tạo mới nếu chưa có
-            $type = 'material'; // Luôn cho vào danh mục vật tư
+            // Tạo mới nếu chưa có — tồn kho = 0 (sẽ cập nhật qua phiếu nhập)
             $product = Product::create([
-                'code' => strtoupper((string)$productCode),
-                'name' => $productName ?: 'Vật tư ' . $productCode,
-                'unit' => $unit ?: 'Cái',
-                'status' => 'active',
-                'type' => $type,
+                'code'     => $productCode,
+                'name'     => $productName ?: 'Vật tư ' . $productCode,
+                'unit'     => $unit ?: 'Cái',
+                'status'   => 'active',
+                'type'     => 'material',
+                'location' => $location ?: null,
             ]);
-        }
 
-        // Cập nhật thông tin sản phẩm
-        $productData = [];
-        $productData['type'] = 'material'; // Đảm bảo tự động cập nhật vào module Danh mục vật tư
-        if ($productName) $productData['name'] = $productName;
-        if ($unit) $productData['unit'] = $unit;
-        if ($brand) $productData['brand'] = $brand;
-        if ($batch) $productData['batch_number'] = $batch;
-        if ($minStock !== null) $productData['min_stock'] = floatval($minStock);
-        if ($location) $productData['location'] = $location;
-        if ($desc) $productData['description'] = $desc;
-        if ($boxSpec) $productData['box_spec'] = $boxSpec;
-        if ($cartonSpec) $productData['carton_spec'] = $cartonSpec;
+            // Tạo record Inventory trống để vật tư hiển thị trong màn hình Tồn Kho
+            \App\Models\Inventory::firstOrCreate(
+                ['product_id' => $product->id],
+                ['quantity' => 0, 'warehouse_location' => $location]
+            );
+        } else {
+            // Cập nhật thông tin danh mục — KHÔNG thay đổi số lượng tồn kho
+            $productData = ['type' => 'material'];
+            if ($productName) $productData['name']     = $productName;
+            if ($unit)        $productData['unit']     = $unit;
+            if ($location)    $productData['location'] = $location;
 
-        if ($expiry) {
-            if (is_numeric($expiry)) {
-                try {
-                    $productData['expiry_date'] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($expiry)->format('Y-m-d');
-                } catch (\Exception $e) {}
-            } else {
-                try {
-                    $productData['expiry_date'] = Carbon::parse(str_replace('/', '-', $expiry))->format('Y-m-d');
-                } catch (\Exception $e) {}
+            $product->update($productData);
+
+            // Chỉ cập nhật warehouse_location trong Inventory nếu record đã tồn tại
+            if ($location) {
+                \App\Models\Inventory::withoutGlobalScope('house')
+                    ->where('product_id', $product->id)
+                    ->update(['warehouse_location' => $location]);
             }
         }
-
-        if (!empty($productData)) {
-            $product->update($productData);
-        }
-
-
     }
 }

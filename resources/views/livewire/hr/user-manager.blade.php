@@ -193,17 +193,6 @@
                                         </select>
                                         @error('department') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Dự án <span class="text-red-500">*</span></label>
-                                        <select wire:model.defer="project_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                            <option value="">-- Chọn dự án --</option>
-                                            @foreach($projects as $project)
-                                                <option value="{{ $project->id }}">{{ $project->name }} ({{ $project->code }})</option>
-                                            @endforeach
-                                        </select>
-                                        @error('project_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                                        <p class="text-xs text-gray-500 mt-1">Nhân viên chỉ được truy cập và xem dữ liệu của dự án này</p>
-                                    </div>
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
                                             <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">Vai trò</label>

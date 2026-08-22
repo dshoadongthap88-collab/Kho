@@ -44,16 +44,9 @@ class HrmService
 
     /**
      * Cập nhật thông tin nhân viên
-     * Kiểm tra quyền truy cập trước khi cho phép cập nhật
      */
     public function updateEmployee(User $user, array $data): User
     {
-        // Kiểm tra quyền: chỉ được cập nhật user cùng dự án hoặc admin
-        $currentUser = auth()->user();
-        if (!$currentUser->canViewUser($user)) {
-            throw new \Exception('Bạn không có quyền cập nhật nhân viên này');
-        }
-
         $user->update($data);
         return $user->fresh();
     }

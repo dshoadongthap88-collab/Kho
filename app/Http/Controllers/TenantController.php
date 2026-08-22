@@ -12,30 +12,14 @@ class TenantController extends Controller
     {
         $user = Auth::user();
         $projects = \App\Models\Project::all();
-        
-        if ($user->role === 'admin') {
-            $allowedHouses = $projects->pluck('id')->toArray();
-        } else {
-            // Dùng project_id nếu có (cột mới), fallback về allowed_houses (cột cũ)
-            $projectId = null;
-            try {
-                $projectId = $user->project_id ?? null;
-            } catch (\Exception $e) {
-                // Cột project_id chưa tồn tại (chưa migrate) — bỏ qua
-            }
 
-            if ($projectId) {
-                $allowedHouses = [$projectId];
-            } else {
-                $allowedHouses = is_array($user->allowed_houses) ? $user->allowed_houses : [];
-            }
+        // Phân quyền theo allowed_houses — đây là cơ chế chính
+        // Admin: thấy và vào được tất cả houses
+        // User thường: chỉ thấy các house trong allowed_houses của mình
+        $allowedHouses = $user->role === 'admin'
+            ? $projects->pluck('id')->toArray()
+            : (is_array($user->allowed_houses) ? $user->allowed_houses : []);
 
-            // Nếu vẫn rỗng thì gán tất cả để user không bị kẹt
-            if (empty($allowedHouses)) {
-                $allowedHouses = $projects->pluck('id')->toArray();
-            }
-        }
-        
         return view('tenant.select', compact('allowedHouses', 'projects'));
     }
 
@@ -47,42 +31,17 @@ class TenantController extends Controller
         ]);
 
         $user = Auth::user();
-        
-        // Xác định các dự án mà user có quyền truy cập
-        if ($user->role === 'admin') {
-            $allowedHouses = \App\Models\Project::pluck('id')->toArray();
-        } else {
-            // Dùng project_id nếu có (cột mới), fallback về allowed_houses (cột cũ)
-            $projectId = null;
-            try {
-                $projectId = $user->project_id ?? null;
-            } catch (\Exception $e) {
-                // Cột project_id chưa tồn tại — bỏ qua
-            }
 
-            if ($projectId) {
-                $allowedHouses = [$projectId];
-            } else {
-                $allowedHouses = is_array($user->allowed_houses) ? $user->allowed_houses : [];
-            }
+        // Phân quyền theo allowed_houses
+        $allowedHouses = $user->role === 'admin'
+            ? \App\Models\Project::pluck('id')->toArray()
+            : (is_array($user->allowed_houses) ? $user->allowed_houses : []);
 
-            // Nếu vẫn rỗng thì gán tất cả để user không bị kẹt
-            if (empty($allowedHouses)) {
-                $allowedHouses = \App\Models\Project::pluck('id')->toArray();
-            }
-        }
-
-        // Kiểm tra quyền truy cập dự án
+        // Kiểm tra quyền truy cập house
         if (!in_array((int)$request->house_id, $allowedHouses)) {
-            $projectName = 'không xác định';
-            try {
-                $projectName = $user->project->name ?? 'không xác định';
-            } catch (\Exception $e) {
-                // relation hoặc cột chưa tồn tại
-            }
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn không có quyền truy cập vào Dự án này. Chỉ được truy cập dự án: ' . $projectName
+                'message' => 'Bạn không có quyền truy cập vào chi nhánh này.'
             ], 403);
         }
 
@@ -94,14 +53,16 @@ class TenantController extends Controller
             ], 401);
         }
 
-        // Store selected house in session
+        // Lưu house đã chọn vào session
         session(['current_house' => $request->house_id]);
 
-        // Sync current_house_id to user model
+        // Sync current_house_id vào user model
+        \Illuminate\Support\Facades\DB::table('users')
+            ->where('id', $user->id)
+            ->update(['current_house_id' => $request->house_id]);
         $user->current_house_id = $request->house_id;
-        $user->save();
 
-        // Redirect to HR Module if House ID 5 is selected
+        // Redirect sang HR Module nếu chọn House ID 5
         if ((int)$request->house_id === 5) {
             return response()->json([
                 'success' => true,
@@ -109,20 +70,20 @@ class TenantController extends Controller
             ]);
         }
 
-        // Determine the best redirect route for warehouse
-        $redirectRoute = 'warehouse.inventory'; // Fallback
+        // Xác định route phù hợp nhất dựa trên permissions của user
+        $redirectRoute = 'warehouse.inventory';
         if ($user->role !== 'admin') {
             $permissions = is_array($user->permissions) ? $user->permissions : [];
-            
+
             $routeMap = [
-                'warehouse.inventory' => 'warehouse.inventory',
-                'warehouse.stock-out' => 'warehouse.stock-out',
-                'warehouse.stock-in' => 'warehouse.stock-in',
-                'warehouse.stock-transfer.index' => 'warehouse.stock-transfer.index',
-                'warehouse.stock-count' => 'warehouse.stock-count',
-                'warehouse.product-catalog' => 'warehouse.product-catalog',
-                'warehouse.contacts' => 'warehouse.contacts',
-                'warehouse.asset-manager' => 'warehouse.asset-manager',
+                'warehouse.inventory'           => 'warehouse.inventory',
+                'warehouse.stock-out'           => 'warehouse.stock-out',
+                'warehouse.stock-in'            => 'warehouse.stock-in',
+                'warehouse.stock-transfer.index'=> 'warehouse.stock-transfer.index',
+                'warehouse.stock-count'         => 'warehouse.stock-count',
+                'warehouse.product-catalog'     => 'warehouse.product-catalog',
+                'warehouse.contacts'            => 'warehouse.contacts',
+                'warehouse.asset-manager'       => 'warehouse.asset-manager',
                 'warehouse.maintenance-dashboard' => 'warehouse.maintenance-dashboard',
             ];
 

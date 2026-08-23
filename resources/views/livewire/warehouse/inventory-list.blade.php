@@ -64,26 +64,53 @@
 
             {{-- Hàng nút hành động, dồn phải; thao tác theo lựa chọn nằm bên trái --}}
             <div class="filter-actions">
-                @if(count($selectedItems) > 0)
-                    <div class="filter-actions-note flex items-center gap-2">
+                {{-- Sửa / Xóa luôn hiển thị. Trước đây chúng chỉ hiện sau khi tích
+                     chọn dòng nên nhìn như bị mất chức năng. Chưa chọn thì nút mờ
+                     và có title nói rõ cần làm gì. --}}
+                <div class="filter-actions-note flex items-center gap-2">
+                    @if(count($selectedItems) > 0)
                         <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
                             {{ count($selectedItems) }} đã chọn
                         </span>
-                        @if(count($selectedItems) === 1)
-                            <button wire:click="openEditModal"
-                                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-600 hover:text-white rounded-lg transition">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                                Sửa
-                            </button>
-                        @endif
-                        <button wire:click="deleteSelected"
-                                wire:confirm="Xác nhận xóa dữ liệu tồn kho các vật tư đã chọn?"
-                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white rounded-lg transition">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            Xóa ({{ count($selectedItems) }})
-                        </button>
-                    </div>
-                @endif
+                    @endif
+
+                    <button wire:click="openEditModal"
+                            @disabled(count($selectedItems) !== 1)
+                            title="{{ count($selectedItems) === 1 ? 'Sửa vật tư đã chọn' : 'Tích chọn đúng 1 dòng để sửa' }}"
+                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition
+                                   {{ count($selectedItems) === 1
+                                      ? 'text-amber-600 bg-amber-50 hover:bg-amber-600 hover:text-white'
+                                      : 'text-slate-400 bg-slate-100 cursor-not-allowed' }}">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        Sửa
+                    </button>
+
+                    <button wire:click="deleteSelected"
+                            wire:confirm="Xác nhận xóa dữ liệu tồn kho các vật tư đã chọn?"
+                            @disabled(count($selectedItems) === 0)
+                            title="{{ count($selectedItems) > 0 ? 'Xóa tồn kho các dòng đã chọn' : 'Tích chọn dòng để xóa' }}"
+                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition
+                                   {{ count($selectedItems) > 0
+                                      ? 'text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white'
+                                      : 'text-slate-400 bg-slate-100 cursor-not-allowed' }}">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        Xóa{{ count($selectedItems) > 0 ? ' ('.count($selectedItems).')' : '' }}
+                    </button>
+                </div>
+
+                {{-- Lưu cột Vị trí đã sửa trực tiếp trên bảng --}}
+                <button wire:click="saveLocations" wire:loading.attr="disabled" wire:target="saveLocations"
+                        x-data="{ saved: false }"
+                        @locations-saved.window="saved = true; setTimeout(() => saved = false, 2500)"
+                        class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 border border-amber-500 rounded-xl transition">
+                    <span wire:loading wire:target="saveLocations"
+                          class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span x-show="!saved" wire:loading.remove wire:target="saveLocations">💾 LƯU LẠI</span>
+                    <span x-cloak x-show="saved" class="flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        ĐÃ LƯU
+                    </span>
+                </button>
 
                 <button wire:click="exportExcel"
                         class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 rounded-xl transition">
@@ -193,7 +220,18 @@
                             </td>
                             <td class="px-3 py-2 text-center text-xs text-slate-500">{{ $inv->unit }}</td>
                             <td class="px-3 py-2 text-center text-sm {{ $qtyClass }}">{{ number_format($inv->quantity) }}</td>
-                            <td class="px-3 py-2 text-center text-xs text-slate-500">{{ $inv->warehouse_location ?? '—' }}</td>
+                            {{-- Sửa vị trí ngay trên bảng, bấm LƯU LẠI để ghi một lượt.
+                                 wire:model (không .live) nên gõ không gọi server mỗi phím. --}}
+                            <td class="px-3 py-2 text-center">
+                                <input type="text"
+                                       wire:model="locations.{{ $inv->inventory_id }}"
+                                       wire:keydown.enter="saveLocations"
+                                       list="locations_list"
+                                       @disabled(!$inv->inventory_id)
+                                       class="input-sm text-center no-print"
+                                       placeholder="—">
+                                <span class="print-only">{{ $inv->warehouse_location ?? '—' }}</span>
+                            </td>
                             <td class="px-3 py-2 text-center">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold {{ $badgeClass }}">
                                     {{ $badgeText }}

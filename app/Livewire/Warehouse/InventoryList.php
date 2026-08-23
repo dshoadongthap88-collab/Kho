@@ -8,6 +8,8 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class InventoryList extends Component
 {
@@ -19,6 +21,8 @@ class InventoryList extends Component
     public $filterLocation = '';
     public $selectedItems = []; // Array of inventory IDs
     public $perPage = 25;   // so dong moi trang, nguoi dung tu chon
+    // Vị trí gõ trực tiếp trên bảng: [inventory_id => vị trí]
+    public $locations = [];
     public $sortField = 'products.name';
     public $sortDirection = 'asc';
 
@@ -51,7 +55,7 @@ class InventoryList extends Component
 
     public function updatedPerPage()
     {
-        // Chi cho vai muc co san, tranh ai do sua URL thanh perPage=100000
+        // Chỉ cho vài mức có sẵn, tránh ai đó sửa URL thành perPage=100000
         $this->perPage = in_array((int) $this->perPage, [10, 25, 50, 100, 200], true)
             ? (int) $this->perPage
             : 25;
@@ -130,6 +134,60 @@ class InventoryList extends Component
         $this->editingQuantity = $inventory->quantity;
         $this->editingLocation = $inventory->warehouse_location;
         $this->showEditModal = true;
+    }
+
+    /**
+     * Lưu cột Vị trí sửa trực tiếp trên bảng.
+     *
+     * Tồn kho là nơi nhập liệu chính, Danh mục vật tư chỉ phản chiếu lại — nên
+     * ghi cả inventories.warehouse_location lẫn products.location. Nếu chỉ ghi
+     * một bên thì mở Sửa hoặc In bên Danh mục sẽ thấy ô vị trí trống.
+     */
+    public function saveLocations()
+    {
+        if (empty($this->locations)) {
+            session()->flash('success', 'Không có vị trí nào thay đổi.');
+            $this->dispatch('locations-saved');
+            return;
+        }
+
+        foreach ($this->locations as $value) {
+            if (mb_strlen(trim((string) $value)) > 255) {
+                session()->flash('error', 'Vị trí không được dài quá 255 ký tự.');
+                return;
+            }
+        }
+
+        $updated = 0;
+
+        DB::transaction(function () use (&$updated) {
+            $inventories = Inventory::whereIn('id', array_keys($this->locations))->get();
+
+            foreach ($inventories as $inventory) {
+                $value = trim((string) ($this->locations[$inventory->id] ?? ''));
+                $value = $value === '' ? null : $value;
+
+                if ($inventory->warehouse_location === $value) {
+                    continue;   // không đổi thì không chạm CSDL
+                }
+
+                $inventory->update(['warehouse_location' => $value]);
+
+                // Đồng bộ sang danh mục vật tư
+                Product::where('id', $inventory->product_id)->update(['location' => $value]);
+
+                $updated++;
+            }
+        });
+
+        // Bỏ cache gợi ý vị trí để danh sách ở ô lọc có ngay giá trị mới
+        Cache::forget('inventory_locations_' . (session('current_house') ?? 0));
+
+        session()->flash('success', $updated > 0
+            ? "Đã lưu vị trí cho {$updated} vật tư và đồng bộ sang Danh mục vật tư."
+            : 'Không có vị trí nào thay đổi.');
+
+        $this->dispatch('locations-saved');
     }
 
     public function saveEdit()
@@ -348,6 +406,14 @@ class InventoryList extends Component
             : 25;
 
         $inventories = $query->paginate($perPage);
+
+        // Nạp vị trí hiện có cho các dòng đang hiển thị. Chỉ nạp khi chưa có
+        // trong mảng, để không ghi đè lên giá trị người dùng đang gõ dở.
+        foreach ($inventories as $row) {
+            if (!array_key_exists($row->inventory_id, $this->locations) && $row->inventory_id) {
+                $this->locations[$row->inventory_id] = $row->warehouse_location;
+            }
+        }
 
         $houseKey = session('current_house') ?? 0;
 

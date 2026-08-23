@@ -282,6 +282,13 @@
             .filter-actions > * { flex: 1 1 auto; justify-content: center; }
             .filter-actions > .filter-actions-note { flex-basis: 100%; margin-right: 0; }
         }
+
+        /* Hien thi khi in / khi xem man hinh. Cot Vi tri o Ton kho la o nhap
+           lieu tren man hinh nhung khi in phai ra chu thuong. */
+        .print-only { display: none; }
+        @media print {
+            .print-only { display: inline !important; }
+        }
     </style>
     <script>
         let originalTitle = document.title;

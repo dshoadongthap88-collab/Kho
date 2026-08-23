@@ -49,7 +49,9 @@ class AssetBomManager extends Component
         '4000' => []
     ];
     public $activeCycleTab = '250';
-    public $availableProducts = [];
+    // KHONG de danh sach vat tu trong property public: Livewire se nhet ca
+    // 1050 ban ghi vao wire:snapshot (807KB) va gui di/ve moi lan bam.
+    // Day la du lieu chi de hien thi -> dua xuong render() lam bien view.
 
     protected $queryString = ['search'];
 
@@ -62,7 +64,6 @@ class AssetBomManager extends Component
 
     public function mount()
     {
-        $this->availableProducts = Product::orderBy('name')->get()->toArray();
         $this->initFields();
     }
 
@@ -526,6 +527,9 @@ class AssetBomManager extends Component
                               ->orderBy('asset_code', 'asc')
                               ->paginate(15);
 
-        return view('livewire.warehouse.asset.asset-bom-manager', compact('assets'));
+        // Chi lay dung 3 cot ma the <select> can
+        $availableProducts = Product::orderBy('name')->get(['id', 'code', 'name'])->toArray();
+
+        return view('livewire.warehouse.asset.asset-bom-manager', compact('assets', 'availableProducts'));
     }
 }

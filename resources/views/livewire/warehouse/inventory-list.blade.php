@@ -19,45 +19,53 @@
     @endif
 
     {{-- ===== TOOLBAR ===== --}}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-4 no-print">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="filter-bar no-print">
+        <div class="filter-grid">
 
-            {{-- Left: Filters --}}
-            <div class="flex flex-wrap items-center gap-2">
-                <div class="relative w-64">
-                    <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 pointer-events-none">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <div class="filter-field">
+                <label class="form-label" for="inv-search">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </span>
-                    <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tên / Mã vật tư..."
-                           class="w-full pl-8 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition">
+                    <input id="inv-search" wire:model.live.debounce.300ms="search" type="text"
+                           class="input-sm" placeholder="Tên / Mã vật tư...">
                 </div>
+            </div>
 
-                <select wire:model.live="filterBrand"
-                        class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition">
+            <div class="filter-field">
+                <label class="form-label" for="inv-brand">Hãng sản xuất</label>
+                <select id="inv-brand" wire:model.live="filterBrand" class="input-sm">
                     <option value="">Tất cả hãng</option>
                     @foreach($brands as $brand)
                         <option value="{{ $brand }}">{{ $brand }}</option>
                     @endforeach
                 </select>
+            </div>
 
-                <input wire:model.live.debounce.300ms="filterLocation" type="text" placeholder="Vị trí..."
-                       list="locations_list"
-                       class="w-28 text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition">
+            <div class="filter-field">
+                <label class="form-label" for="inv-location">Vị trí</label>
+                <input id="inv-location" wire:model.live.debounce.300ms="filterLocation" type="text"
+                       list="locations_list" class="input-sm" placeholder="Tất cả vị trí">
                 <datalist id="locations_list">
                     @foreach($locations as $loc)<option value="{{ $loc }}">@endforeach
                 </datalist>
+            </div>
 
-                <select wire:model.live="filterStatus"
-                        class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition">
+            <div class="filter-field">
+                <label class="form-label" for="inv-status">Trạng thái</label>
+                <select id="inv-status" wire:model.live="filterStatus" class="input-sm">
                     <option value="">Tất cả trạng thái</option>
                     <option value="sufficient">🟢 Đủ hàng</option>
                     <option value="warning">🟡 Cảnh báo</option>
                     <option value="critical">🔴 Thiếu hàng</option>
                 </select>
+            </div>
 
-                {{-- Bulk actions khi có selection --}}
+            {{-- Hàng nút hành động, dồn phải; thao tác theo lựa chọn nằm bên trái --}}
+            <div class="filter-actions">
                 @if(count($selectedItems) > 0)
-                    <div class="flex items-center gap-2 pl-2 border-l border-slate-200 animate-in slide-in-from-left-2 duration-200">
+                    <div class="filter-actions-note flex items-center gap-2">
                         <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
                             {{ count($selectedItems) }} đã chọn
                         </span>
@@ -76,10 +84,7 @@
                         </button>
                     </div>
                 @endif
-            </div>
 
-            {{-- Right: Actions --}}
-            <div class="flex items-center gap-2">
                 <button wire:click="exportExcel"
                         class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 rounded-xl transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -210,7 +215,21 @@
             </table>
         </div>
         <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 no-print">
-            {{ $inventories->links() }}
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                {{-- 1050 vật tư mà mỗi trang 10 dòng là 105 trang — cho chọn số dòng --}}
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-600 shrink-0">
+                    <span>Hiển thị</span>
+                    <select wire:model.live="perPage" class="input-sm" style="width:auto">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                    </select>
+                    <span>/ {{ number_format($inventories->total()) }} vật tư</span>
+                </div>
+                <div class="flex-1 min-w-0">{{ $inventories->links() }}</div>
+            </div>
         </div>
     </div>
 

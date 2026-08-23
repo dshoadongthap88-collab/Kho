@@ -19,9 +19,9 @@
     </div>
 
     <div class="flex flex-wrap items-center justify-between gap-2 mb-4 no-print relative z-10 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex flex-wrap items-center gap-3">
+        <div class="filter-grid flex-1 min-w-0">
             <!-- Search -->
-            <div class="relative w-64">
+            <div class="relative w-full">
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tìm mã/tên tài sản..." class="w-full pl-9 pr-3 py-2 text-[12px] font-bold rounded-lg border-slate-200 focus:ring-indigo-500 shadow-sm transition-all bg-slate-50 focus:bg-white">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>

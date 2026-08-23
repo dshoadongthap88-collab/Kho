@@ -18,6 +18,7 @@ class InventoryList extends Component
     public $filterBrand = '';
     public $filterLocation = '';
     public $selectedItems = []; // Array of inventory IDs
+    public $perPage = 25;   // so dong moi trang, nguoi dung tu chon
     public $sortField = 'products.name';
     public $sortDirection = 'asc';
 
@@ -37,7 +38,7 @@ class InventoryList extends Component
     public $editingQuantity = 0;
     public $editingLocation = '';
 
-    protected $queryString = ['search', 'filterStatus', 'filterBrand', 'filterLocation'];
+    protected $queryString = ['search', 'filterStatus', 'filterBrand', 'filterLocation', 'perPage'];
 
     public function updatingSearch()
     {
@@ -47,6 +48,15 @@ class InventoryList extends Component
     public function updatedFilterStatus() { $this->resetPage(); }
     public function updatedFilterBrand() { $this->resetPage(); }
     public function updatedFilterLocation() { $this->resetPage(); }
+
+    public function updatedPerPage()
+    {
+        // Chi cho vai muc co san, tranh ai do sua URL thanh perPage=100000
+        $this->perPage = in_array((int) $this->perPage, [10, 25, 50, 100, 200], true)
+            ? (int) $this->perPage
+            : 25;
+        $this->resetPage();
+    }
 
     public function toggleSelectAll($inventoryIds)
     {
@@ -328,7 +338,11 @@ class InventoryList extends Component
 
         $query->orderBy($this->sortField, $this->sortDirection);
 
-        $inventories = $query->paginate(10);
+        $perPage = in_array((int) $this->perPage, [10, 25, 50, 100, 200], true)
+            ? (int) $this->perPage
+            : 25;
+
+        $inventories = $query->paginate($perPage);
 
         $houseKey = session('current_house') ?? 0;
 

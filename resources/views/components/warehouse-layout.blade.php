@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Kho' }} - ERP Warehouse</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script src="https://cdn.tailwindcss.com"></script>
+    {{-- Tailwind build sẵn. Trước đây dùng Play CDN (407KB JS, biên dịch CSS
+         ngay trong trình duyệt mỗi lần tải trang) — chậm và phụ thuộc máy chủ
+         ngoài. Nay là CSS tĩnh ~15KB gzip. Sau khi sửa view phải chạy lại
+         `npm run build`. --}}
+    @vite('resources/css/app.css')
     @livewireStyles
     <style>
         @page { margin: 0; }
@@ -215,6 +219,62 @@
             background-position: 0.65rem center;
             background-size: 0.9rem;
             padding-left: 2rem;
+        }
+
+        /* ============================================================
+           Thanh bộ lọc — dàn các ô lọc thành lưới đều nhau
+           Dùng:  .filter-bar > .filter-grid > .filter-field
+           Các ô luôn thẳng hàng và tự xuống dòng gọn, không còn cảnh
+           mỗi ô một chiều rộng rồi so le nhau như khi dùng flex-wrap.
+        ============================================================ */
+        .filter-bar {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;      /* slate-200 */
+            border-radius: 1rem;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            padding: 0.875rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            /* Mỗi ô lọc tối đa 250px — xếp được bao nhiêu cột thì xếp, phần thừa
+               để trống bên phải chứ không kéo giãn ô ra cho đầy hàng. */
+            grid-template-columns: repeat(auto-fill, minmax(10rem, 250px));
+            gap: 0.625rem 0.75rem;
+            align-items: end;
+        }
+
+        /* min-width:0 để ô co theo cột, không phình làm vỡ lưới */
+        .filter-field {
+            min-width: 0;
+            max-width: 250px;
+        }
+
+        /* Ô cần rộng hơn — chiếm 2 cột, dùng khi thật sự cần (vd: khoảng ngày) */
+        .filter-grid > .filter-wide {
+            grid-column: span 2;
+            max-width: none;
+        }
+
+        /* Cụm nút hành động: chiếm trọn hàng cuối, dồn về phải */
+        .filter-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        /* Dải trạng thái chọn (vd: "10 đã chọn") nằm bên trái cụm nút */
+        .filter-actions > .filter-actions-note { margin-right: auto; }
+
+        @media (max-width: 640px) {
+            .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .filter-grid > .filter-wide { grid-column: 1 / -1; }
+            .filter-actions > * { flex: 1 1 auto; justify-content: center; }
+            .filter-actions > .filter-actions-note { flex-basis: 100%; margin-right: 0; }
         }
     </style>
     <script>

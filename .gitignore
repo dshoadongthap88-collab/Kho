@@ -1,6 +1,8 @@
 /.phpunit.cache
 /node_modules
-/public/build
+# /public/build KHONG duoc ignore: server deploy bang git pull, khong chay
+# npm build. Thieu thu muc nay thi @vite khong tim thay manifest -> loi 500
+# toan site. Sau moi lan sua view phai chay `npm run build` roi commit.
 /public/hot
 /public/storage
 /storage/*.key

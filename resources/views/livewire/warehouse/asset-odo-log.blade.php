@@ -24,15 +24,21 @@
     @endif
 
     <!-- Toolbar -->
-    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-2 items-center justify-between">
-        <div class="flex items-center gap-2 w-full md:w-2/3">
-            <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-700">Ngày cập nhật:</span>
-                <input type="date" wire:model.live="filterDate" class="border-gray-300 rounded-lg shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
+    <div class="filter-bar">
+        <div class="filter-grid">
+            <div class="filter-field">
+                <label class="form-label" for="odo-date">Ngày cập nhật</label>
+                <input id="odo-date" type="date" wire:model.live="filterDate" class="input-sm">
             </div>
-            <div class="relative flex-1">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm kiếm mã tài sản, thiết bị..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            <div class="filter-field">
+                <label class="form-label" for="odo-search">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </span>
+                    <input id="odo-search" type="text" wire:model.live.debounce.300ms="search"
+                           class="input-sm" placeholder="Mã tài sản, thiết bị...">
+                </div>
             </div>
         </div>
     </div>

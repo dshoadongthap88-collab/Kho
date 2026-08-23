@@ -22,8 +22,8 @@
     <!-- TAB 1: TỔNG QUAN -->
     <div x-show="tab === 'overview'" class="print:hidden">
         <!-- Overview Filters (Compact) -->
-        <div class="flex flex-wrap items-center gap-4 mb-3">
-            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-200">
+        <div class="filter-grid mb-3">
+            <div class="filter-field filter-wide flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-200">
                 <label class="text-xs font-bold text-slate-500 uppercase">Từ ngày:</label>
                 <input type="date" wire:model.live="overviewStartDate" class="border-none bg-transparent p-0 text-sm focus:ring-0 font-medium text-slate-700 w-32">
                 <span class="text-slate-300">|</span>
@@ -294,25 +294,25 @@
     <div x-show="tab === 'stock_out_details'" style="display: none;" class="print-section">
         
         <!-- Filters (Hidden in print) -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-end print:hidden">
-            <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Dự Án</label>
-                <select wire:model.live="selectedProject" class="border-slate-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 filter-grid print:hidden">
+            <div class="filter-field">
+                <label class="form-label">Dự Án</label>
+                <select wire:model.live="selectedProject" class="input-sm">
                     <option value="">-- Tất cả dự án --</option>
                     @foreach($projects as $project)
                         <option value="{{ $project->id }}">{{ $project->name }}</option>
                     @endforeach
                 </select>
             </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Từ Ngày</label>
-                <input type="date" wire:model.live="startDate" class="border-slate-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <div class="filter-field">
+                <label class="form-label">Từ Ngày</label>
+                <input type="date" wire:model.live="startDate" class="input-sm">
             </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Đến Ngày</label>
-                <input type="date" wire:model.live="endDate" class="border-slate-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <div class="filter-field">
+                <label class="form-label">Đến Ngày</label>
+                <input type="date" wire:model.live="endDate" class="input-sm">
             </div>
-            <div class="ml-auto">
+            <div class="filter-actions">
                 <button @click="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow font-semibold flex items-center gap-2 transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                     In Báo Cáo Chọn Lọc

@@ -6,11 +6,11 @@
         </a>
     </div>
 
-    <div class="mb-4 flex flex-wrap gap-2">
-        <div class="flex-1 min-w-[200px]">
+    <div class="filter-grid mb-4">
+        <div class="filter-field min-w-[200px]">
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm kiếm theo Mã BOM, Tên xe, Cấp BD, Mã vật tư..." class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200 focus:outline-none">
         </div>
-        <div class="w-48">
+        <div class="filter-field w-full">
             <select wire:model.live="cycleFilter" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200 focus:outline-none">
                 <option value="">-- Lọc theo chu kỳ --</option>
                 <option value="250">250h</option>

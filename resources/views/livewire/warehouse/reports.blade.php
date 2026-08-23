@@ -28,17 +28,17 @@
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border p-2 mb-6">
-        <div class="flex flex-wrap gap-2 items-end">
-            <div>
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Từ ngày</label>
+        <div class="filter-grid">
+            <div class="filter-field">
+                <label class="form-label">Từ ngày</label>
                 <input type="date" wire:model.live="dateFrom" class="rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
             </div>
-            <div>
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Đến ngày</label>
+            <div class="filter-field">
+                <label class="form-label">Đến ngày</label>
                 <input type="date" wire:model.live="dateTo" class="rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
             </div>
-            <div>
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Loại giao dịch</label>
+            <div class="filter-field">
+                <label class="form-label">Loại giao dịch</label>
                 <select wire:model.live="filterType" class="rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
                     <option value="">Tất cả</option>
                     <option value="import">Nhập kho</option>
@@ -46,14 +46,14 @@
                     <option value="adjust">Điều chỉnh</option>
                 </select>
             </div>
-            <div class="flex-1">
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tìm sản phẩm</label>
+            <div class="filter-field">
+                <label class="form-label">Tìm sản phẩm</label>
                 <input type="text" wire:model.live.debounce.300ms="filterProduct" placeholder="Nhập mã hoặc tên sản phẩm..."
                        class="w-full rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
             </div>
             
             <!-- Export Buttons -->
-            <div class="flex gap-2 mb-0.5">
+            <div class="filter-actions mb-0.5">
                 <button type="button" wire:click="exportExcel" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer">
                     <span wire:loading.remove wire:target="exportExcel" class="text-sm">📊</span>
                     <span wire:loading wire:target="exportExcel" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

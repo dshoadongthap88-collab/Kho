@@ -636,9 +636,9 @@
                             LỊCH SỬ PHIẾU XUẤT KHO
                         </h2>
                         
-                        <div class="flex flex-wrap items-center gap-3 no-print">
+                        <div class="filter-grid no-print">
                             <!-- Date Range -->
-                            <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-inner focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
+                            <div class="filter-field filter-wide flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-inner focus-within:ring-4 focus-within:ring-indigo-100 transition-all">
                                 <div class="flex items-center gap-2">
                                     <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Từ ngày</label>
                                     <input type="date" wire:model.live="listDateFrom" class="text-[12px] border-none focus:ring-0 p-0 font-black text-slate-700 bg-transparent">
@@ -651,7 +651,7 @@
                             </div>
 
                             <!-- Search -->
-                            <div class="relative">
+                            <div class="filter-field relative">
                                 <input type="text" wire:model.live.debounce.300ms="listSearch" placeholder="TÌM MÃ, KHÁCH HÀNG..." class="pl-11 pr-4 py-2.5 w-64 text-[12px] font-black rounded-2xl border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all bg-white placeholder:text-slate-300">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -659,7 +659,7 @@
                             </div>
 
                             <!-- Actions -->
-                            <div class="flex items-center gap-2 ml-2">
+                            <div class="filter-actions ml-2">
                                 @if(count($selectedIds) > 0)
                                     <div class="flex items-center gap-2 pr-3 border-r border-slate-300 mr-2 animate-in slide-in-from-right-4 duration-300">
                                         <span class="text-[11px] font-black text-indigo-700 bg-indigo-50 px-2.5 py-1.5 rounded-lg border border-indigo-100">CHỌN: {{ count($selectedIds) }}</span>

@@ -1145,19 +1145,27 @@
         <!-- TAB DANH SÁCH PHIẾU -->
         @if($activeTab === 'list')
             <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-                <div class="bg-slate-50 px-6 py-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 no-print">
-                    <div class="flex items-center gap-3">
-                        <input type="date" wire:model.live="listDateFrom" class="rounded-xl border-slate-200 text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 py-2 px-3 bg-white">
-                        <span class="text-slate-400 font-black">➔</span>
-                        <input type="date" wire:model.live="listDateTo" class="rounded-xl border-slate-200 text-[13px] font-bold focus:ring-4 focus:ring-indigo-100 py-2 px-3 bg-white">
+                <div class="bg-slate-50 px-6 py-5 border-b border-slate-200 filter-grid no-print">
+                    <div class="filter-field filter-wide">
+                        <label class="form-label">Khoảng ngày</label>
+                        <div class="flex items-center gap-3">
+                            <input type="date" wire:model.live="listDateFrom" class="input-sm bg-white">
+                            <span class="text-slate-400 font-black">➔</span>
+                            <input type="date" wire:model.live="listDateTo" class="input-sm bg-white">
+                        </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
-                            <input type="text" wire:model.live.debounce.300ms="listSearch" class="pl-9 pr-4 py-2 w-64 text-[13px] font-bold rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 bg-white" placeholder="Tìm số phiếu, supplier...">
+                    <div class="filter-field">
+                        <label class="form-label">Tìm phiếu</label>
+                        <div class="input-group">
+                            <span class="input-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            </span>
+                            <input type="text" wire:model.live.debounce.300ms="listSearch" class="input-sm bg-white" placeholder="Số phiếu, nhà cung cấp...">
                         </div>
-                        
+                    </div>
+
+                    <div class="filter-actions">
                         <button wire:click="exportExcel" class="px-4 py-2 text-xs font-black text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl flex items-center gap-1.5">
                             📤 Xuất Excel
                         </button>

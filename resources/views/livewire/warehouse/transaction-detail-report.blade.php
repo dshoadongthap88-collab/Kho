@@ -1,21 +1,21 @@
 <div>
     <div class="bg-white rounded-xl shadow-sm border p-2 mb-6">
-        <div class="flex flex-wrap gap-2 items-end">
-            <div>
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Từ ngày</label>
+        <div class="filter-grid">
+            <div class="filter-field">
+                <label class="form-label">Từ ngày</label>
                 <input type="date" wire:model.live="dateFrom" class="rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
             </div>
-            <div>
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Đến ngày</label>
+            <div class="filter-field">
+                <label class="form-label">Đến ngày</label>
                 <input type="date" wire:model.live="dateTo" class="rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
             </div>
-            <div class="flex-1">
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tìm sản phẩm</label>
+            <div class="filter-field">
+                <label class="form-label">Tìm sản phẩm</label>
                 <input type="text" wire:model.live.debounce.300ms="filterProduct" placeholder="Mã hoặc tên SP..."
                        class="w-full rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
             </div>
             
-            <div class="flex items-end gap-2 mb-0.5">
+            <div class="filter-actions mb-0.5">
                 <div class="no-print">
                     <select wire:model.live="filterType" class="rounded-lg border-gray-200 shadow-sm text-xs font-bold focus:ring-indigo-500 py-2">
                         <option value="">-- Loại --</option>

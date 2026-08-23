@@ -12,6 +12,7 @@ class PermissionManager extends Component
     use WithPagination;
 
     public $search = '';
+    public $filterHouse = ''; // Lọc nhân viên theo dự án/house
     public $showModal = false;
     
     public $userId;
@@ -23,6 +24,11 @@ class PermissionManager extends Component
     public $availablePermissions = [];
 
     public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterHouse()
     {
         $this->resetPage();
     }
@@ -62,14 +68,24 @@ class PermissionManager extends Component
 
     public function render()
     {
-        // ProjectScope tự động lọc users theo dự án
-        // Admin có quyền sửa tất cả users
-        $users = User::where('name', 'like', '%' . $this->search . '%')
-            ->orWhere('email', 'like', '%' . $this->search . '%')
-            ->orWhere('phone', 'like', '%' . $this->search . '%')
-            ->paginate(10);
-            
-        $projects = Project::where('status', 'active')->get();
+        $query = User::where(function($q) {
+            $q->where('name', 'like', '%' . $this->search . '%')
+              ->orWhere('email', 'like', '%' . $this->search . '%')
+              ->orWhere('phone', 'like', '%' . $this->search . '%')
+              ->orWhere('code', 'like', '%' . $this->search . '%');
+        });
+
+        // Lọc nhân viên theo dự án được phép (allowed_houses chứa house_id)
+        if ($this->filterHouse !== '') {
+            $houseId = (string)$this->filterHouse;
+            $query->where(function($q) use ($houseId) {
+                $q->whereJsonContains('allowed_houses', (int)$houseId)
+                  ->orWhereJsonContains('allowed_houses', $houseId);
+            });
+        }
+
+        $users = $query->orderBy('name')->paginate(15);
+        $projects = Project::where('status', 'active')->orderBy('name')->get();
 
         return view('livewire.hr.permission-manager', compact('users', 'projects'))
             ->layout('layouts.app');

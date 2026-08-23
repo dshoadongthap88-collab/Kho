@@ -1,337 +1,347 @@
 <div>
-    <style>
-        @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body { background: white !important; margin: 0; padding: 0; }
-            .bg-white { box-shadow: none !important; border: none !important; }
-            table { width: 100% !important; border-collapse: collapse !important; }
-            th, td { border: 1px solid #ddd !important; padding: 8px !important; }
-            .status-badge { border: 1px solid #ccc !important; }
-            /* Xóa màu nền indigo để in đẹp hơn */
-            .bg-indigo-50 { background-color: white !important; }
-        }
-        .print-only { display: none; }
-    </style>
 
-    <div class="mb-4 space-y-4 no-print">
-        @if(session('success') || session('error'))
-            <div class="w-full">
-                @if(session('success'))
-                    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
-                         x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                         class="bg-emerald-100 border border-emerald-400 text-emerald-700 px-4 py-3 rounded-lg flex items-center gap-2">
-                        <span>✅</span> {{ session('success') }}
-                    </div>
-                @endif
-                @if(session('error'))
-                    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
-                         x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                         class="bg-rose-100 border border-rose-400 text-rose-700 px-4 py-3 rounded-lg flex items-center gap-2">
-                        <span>❌</span> {{ session('error') }}
-                    </div>
-                @endif
-            </div>
-        @endif
-        
-        <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex flex-wrap gap-3 items-center">
-                <!-- Tìm kiếm -->
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tên/Mã vật tư..."
-                       class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-64">
-                
-                <!-- Bộ lọc Hãng SX -->
-                <select wire:model.live="filterBrand" class="rounded-lg border-gray-300 shadow-sm">
+    {{-- Flash --}}
+    @if(session('success'))
+        <div x-data="{show:true}" x-show="show" x-init="setTimeout(()=>show=false,3000)"
+             x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2.5 rounded-xl mb-3 text-sm font-medium no-print">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div x-data="{show:true}" x-show="show" x-init="setTimeout(()=>show=false,5000)"
+             x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-2.5 rounded-xl mb-3 text-sm font-medium no-print">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            {{ session('error') }}
+        </div>
+    @endif
+
+    {{-- ===== TOOLBAR ===== --}}
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-4 no-print">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+
+            {{-- Left: Filters --}}
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="relative w-64">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 pointer-events-none">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </span>
+                    <input wire:model.live.debounce.300ms="search" type="text" placeholder="Tên / Mã vật tư..."
+                           class="w-full pl-8 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition">
+                </div>
+
+                <select wire:model.live="filterBrand"
+                        class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition">
                     <option value="">Tất cả hãng</option>
                     @foreach($brands as $brand)
                         <option value="{{ $brand }}">{{ $brand }}</option>
                     @endforeach
                 </select>
 
-                <!-- Bộ lọc Vị trí -->
-                <input type="text" wire:model.live.debounce.300ms="filterLocation" placeholder="Vị trí..."
-                       class="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-32" list="locations_list">
+                <input wire:model.live.debounce.300ms="filterLocation" type="text" placeholder="Vị trí..."
+                       list="locations_list"
+                       class="w-28 text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition">
                 <datalist id="locations_list">
-                    @foreach($locations as $loc)
-                        <option value="{{ $loc }}">
-                    @endforeach
+                    @foreach($locations as $loc)<option value="{{ $loc }}">@endforeach
                 </datalist>
 
-                <!-- Bộ lọc Trạng thái -->
-                <select wire:model.live="filterStatus" class="rounded-lg border-gray-300 shadow-sm">
+                <select wire:model.live="filterStatus"
+                        class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition">
                     <option value="">Tất cả trạng thái</option>
                     <option value="sufficient">🟢 Đủ hàng</option>
                     <option value="warning">🟡 Cảnh báo</option>
                     <option value="critical">🔴 Thiếu hàng</option>
                 </select>
-            </div>
 
-            <div class="flex items-center gap-2">
-            @if(count($selectedItems) > 0)
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-200 transition flex items-center gap-2 font-bold shadow-sm">
-                        <span>⚙️ THAO TÁC</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden" x-transition style="display: none;">
+                {{-- Bulk actions khi có selection --}}
+                @if(count($selectedItems) > 0)
+                    <div class="flex items-center gap-2 pl-2 border-l border-slate-200 animate-in slide-in-from-left-2 duration-200">
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                            {{ count($selectedItems) }} đã chọn
+                        </span>
                         @if(count($selectedItems) === 1)
-                            <button wire:click="openEditModal" @click="open = false" class="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center gap-2 text-indigo-600 font-medium">
-                                ✏️ Sửa số lượng / Vị trí
+                            <button wire:click="openEditModal"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-600 hover:text-white rounded-lg transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                Sửa
                             </button>
                         @endif
-                        <button wire:click="deleteSelected" wire:confirm="Xác nhận xóa dữ liệu tồn kho các vật tư đã chọn?" @click="open = false" class="w-full text-left px-4 py-3 text-sm hover:bg-rose-50 flex items-center gap-2 text-rose-600 font-medium border-t border-gray-100">
-                            🗑️ Xóa đã chọn ({{ count($selectedItems) }})
+                        <button wire:click="deleteSelected"
+                                wire:confirm="Xác nhận xóa dữ liệu tồn kho các vật tư đã chọn?"
+                                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white rounded-lg transition">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Xóa ({{ count($selectedItems) }})
                         </button>
                     </div>
-                </div>
+                @endif
+            </div>
 
-                <a href="{{ route('warehouse.inventory.print', array_filter([
-                        'search'   => $search,
-                        'brand'    => $filterBrand,
-                        'location' => $filterLocation,
-                        'status'   => $filterStatus,
-                        'ids'      => implode(',', $selectedItems),
-                    ])) }}" target="_blank"
-                   class="bg-slate-800 text-white px-6 py-2 rounded-lg hover:bg-black transition flex items-center gap-2 shadow-md">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    In danh sách ({{ count($selectedItems) }})
-                </a>
-            @else
-                <button wire:click="exportExcel" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm font-bold">
-                    📤 Xuất Excel
+            {{-- Right: Actions --}}
+            <div class="flex items-center gap-2">
+                <button wire:click="exportExcel"
+                        class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 rounded-xl transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Excel
                 </button>
-                <button wire:click="$set('showImportModal', true)" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm font-bold mr-2">
-                    📥 Nhập từ Excel
+                <button wire:click="$set('showImportModal', true)"
+                        class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white border border-blue-200 rounded-xl transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Import
                 </button>
                 <a href="{{ route('warehouse.inventory.print', array_filter([
                         'search'   => $search,
                         'brand'    => $filterBrand,
                         'location' => $filterLocation,
                         'status'   => $filterStatus,
+                        'ids'      => count($selectedItems) ? implode(',', $selectedItems) : null,
                     ])) }}" target="_blank"
-                   class="bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition flex items-center gap-2 shadow-sm font-bold">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    In tất cả
+                   class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-700 hover:text-white border border-slate-200 rounded-xl transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    {{ count($selectedItems) ? 'In ('.count($selectedItems).')' : 'In tất cả' }}
                 </a>
-            @endif
+            </div>
         </div>
     </div>
 
-    <div class="print-only report-layout text-center mb-6">
-        <h1 class="text-2xl font-bold uppercase">Báo cáo tồn kho chi tiết</h1>
-        <p class="text-sm text-gray-600">Ngày in: {{ now()->format('d/m/Y H:i') }}</p>
-    </div>
-
-    <div class="bg-white rounded-xl shadow overflow-hidden report-layout">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                @php
-                    $pageIds = $inventories->pluck('id')->map(fn($id) => (int) $id)->all();
-                    $pageAllSelected = count($pageIds) > 0
-                        && count(array_intersect($pageIds, array_map('intval', $selectedItems))) === count($pageIds);
-                @endphp
-                <tr>
-                    <th class="px-2 py-2 text-center no-print">
-                        <input type="checkbox" wire:click="toggleSelectAll([{{ implode(',', $pageIds) }}])"
-                               {{ $pageAllSelected ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                               title="Chọn tất cả trong trang này">
-                    </th>
-                    <th wire:click="sortBy('products.code')" class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 italic">Mã Vật Tư</th>
-                    <th wire:click="sortBy('products.name')" class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">TÊN VẬT TƯ</th>
-                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Hãng SX</th>
-                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Mã Code NCC</th>
-                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Hạn dùng</th>
-                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">ĐVT</th>
-                    <th wire:click="sortBy('inventories.quantity')" class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100">Tồn kho</th>
-                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Vị trí</th>
-                    <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($inventories as $inv)
+    {{-- ===== TABLE ===== --}}
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
                     @php
-                        $available = $inv->quantity - $inv->reserved_quantity;
-                        $isSelected = in_array($inv->id, $selectedItems);
-                        if ($available < $inv->min_stock) {
-                            $statusColor = 'bg-red-100 text-red-800';
-                            $statusText = 'Thiếu hàng';
-                            $statusIcon = '🔴';
-                        } elseif ($available < $inv->min_stock * 1.5) {
-                            $statusColor = 'bg-yellow-100 text-yellow-800';
-                            $statusText = 'Cảnh báo';
-                            $statusIcon = '🟡';
-                        } else {
-                            $statusColor = 'bg-green-100 text-green-800';
-                            $statusText = 'Đủ hàng';
-                            $statusIcon = '🟢';
-                        }
+                        $pageIds = $inventories->pluck('id')->map(fn($id) => (int)$id)->all();
+                        $pageAllSelected = count($pageIds) > 0
+                            && count(array_intersect($pageIds, array_map('intval', $selectedItems))) === count($pageIds);
                     @endphp
-                    <tr class="hover:bg-gray-50 transition {{ $isSelected ? 'bg-indigo-50' : '' }}">
-                        <td class="px-2 py-1.5 text-center no-print">
-                            <input type="checkbox" wire:model.live="selectedItems" value="{{ $inv->id }}"
-                                   class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                        </td>
-                        <td class="px-2 py-1.5 text-sm font-mono text-indigo-600">{{ $inv->product_code }}</td>
-                        <td class="px-2 py-1.5 text-sm font-medium text-gray-900">{{ $inv->product_name }}</td>
-                        <td class="px-2 py-1.5 text-sm text-center text-gray-500">{{ $inv->brand ?? '-' }}</td>
-                        <td class="px-2 py-1.5 text-sm text-center font-mono text-gray-600">{{ $inv->batch_number ?? '-' }}</td>
-                        <td class="px-2 py-1.5 text-sm text-center text-gray-500 italic">{{ $inv->expiry_date ? \Carbon\Carbon::parse($inv->expiry_date)->format('d/m/y') : '-' }}</td>
-                        <td class="px-2 py-1.5 text-sm text-center text-gray-500">{{ $inv->unit }}</td>
-                        <td class="px-2 py-1.5 text-sm text-center font-bold text-indigo-700">{{ number_format($inv->quantity) }}</td>
-                        <td class="px-2 py-1.5 text-sm text-center text-gray-500">{{ $inv->warehouse_location ?? '-' }}</td>
-                        <td class="px-2 py-1.5 text-center">
-                            <span class="inline-flex items-center px-1.5 py-1 text-[11px] rounded-full text-[10px] font-medium status-badge {{ $statusColor }}">
-                                {{ $statusIcon }} {{ $statusText }}
-                            </span>
-                        </td>
+                    <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
+                        <th class="px-3 py-3 w-10 text-center no-print">
+                            <input type="checkbox"
+                                   wire:click="toggleSelectAll([{{ implode(',', $pageIds) }}])"
+                                   {{ $pageAllSelected ? 'checked' : '' }}
+                                   class="rounded border-slate-600 bg-slate-700 text-indigo-400 focus:ring-indigo-500 cursor-pointer"
+                                   title="Chọn tất cả trang này">
+                        </th>
+                        <th wire:click="sortBy('products.code')"
+                            class="px-3 py-3 cursor-pointer hover:bg-slate-700 transition select-none">
+                            Mã VT
+                            @if($sortField === 'products.code')
+                                <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                            @endif
+                        </th>
+                        <th wire:click="sortBy('products.name')"
+                            class="px-3 py-3 cursor-pointer hover:bg-slate-700 transition select-none">
+                            Tên Vật Tư
+                            @if($sortField === 'products.name')
+                                <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                            @endif
+                        </th>
+                        <th class="px-3 py-3 text-center">Hãng SX</th>
+                        <th class="px-3 py-3 text-center">Mã Code NCC</th>
+                        <th class="px-3 py-3 text-center">Hạn dùng</th>
+                        <th class="px-3 py-3 text-center">ĐVT</th>
+                        <th wire:click="sortBy('inventories.quantity')"
+                            class="px-3 py-3 text-center cursor-pointer hover:bg-slate-700 transition select-none">
+                            Tồn kho
+                            @if($sortField === 'inventories.quantity')
+                                <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                            @endif
+                        </th>
+                        <th class="px-3 py-3 text-center">Vị trí</th>
+                        <th class="px-3 py-3 text-center">Trạng thái</th>
                     </tr>
-                @empty
-                    <tr><td colspan="11" class="px-4 py-8 text-center text-gray-400">Chưa có dữ liệu tồn kho</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($inventories as $inv)
+                        @php
+                            $available  = $inv->quantity - $inv->reserved_quantity;
+                            $isSelected = in_array($inv->id, $selectedItems);
+                            if ($available < $inv->min_stock) {
+                                $badgeClass = 'bg-rose-50 text-rose-700 ring-1 ring-rose-200';
+                                $badgeText  = 'Thiếu hàng';
+                                $rowExtra   = 'bg-rose-50/20';
+                                $qtyClass   = 'text-rose-600 font-bold';
+                            } elseif ($available < $inv->min_stock * 1.5) {
+                                $badgeClass = 'bg-amber-50 text-amber-700 ring-1 ring-amber-200';
+                                $badgeText  = 'Cảnh báo';
+                                $rowExtra   = 'bg-amber-50/10';
+                                $qtyClass   = 'text-amber-600 font-bold';
+                            } else {
+                                $badgeClass = 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200';
+                                $badgeText  = 'Đủ hàng';
+                                $rowExtra   = '';
+                                $qtyClass   = 'text-indigo-700 font-bold';
+                            }
+                        @endphp
+                        <tr class="hover:bg-slate-50/70 transition-colors {{ $isSelected ? 'bg-indigo-50/40' : $rowExtra }}">
+                            <td class="px-3 py-2 text-center no-print">
+                                <input type="checkbox" wire:model.live="selectedItems" value="{{ $inv->id }}"
+                                       class="rounded border-slate-300 text-indigo-600 shadow-sm focus:ring-indigo-500 cursor-pointer">
+                            </td>
+                            <td class="px-3 py-2 font-mono text-xs text-indigo-600 font-bold">{{ $inv->product_code }}</td>
+                            <td class="px-3 py-2 font-semibold text-slate-800 text-sm">{{ $inv->product_name }}</td>
+                            <td class="px-3 py-2 text-center text-xs text-slate-500">{{ $inv->brand ?? '—' }}</td>
+                            <td class="px-3 py-2 text-center font-mono text-xs text-slate-500">{{ $inv->batch_number ?? '—' }}</td>
+                            <td class="px-3 py-2 text-center text-xs text-slate-400 italic">
+                                {{ $inv->expiry_date ? \Carbon\Carbon::parse($inv->expiry_date)->format('d/m/y') : '—' }}
+                            </td>
+                            <td class="px-3 py-2 text-center text-xs text-slate-500">{{ $inv->unit }}</td>
+                            <td class="px-3 py-2 text-center text-sm {{ $qtyClass }}">{{ number_format($inv->quantity) }}</td>
+                            <td class="px-3 py-2 text-center text-xs text-slate-500">{{ $inv->warehouse_location ?? '—' }}</td>
+                            <td class="px-3 py-2 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold {{ $badgeClass }}">
+                                    {{ $badgeText }}
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="10" class="px-4 py-16 text-center">
+                                <div class="flex flex-col items-center gap-3 text-slate-400">
+                                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                    <p class="font-semibold text-slate-600">Chưa có dữ liệu tồn kho</p>
+                                    <p class="text-sm">Thử thay đổi bộ lọc hoặc nhập hàng trước</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 no-print">
+            {{ $inventories->links() }}
+        </div>
     </div>
 
-    <div class="mt-4 no-print">{{ $inventories->links() }}</div>
-
-    <!-- Edit Modal -->
+    {{-- ===== MODAL SỬA ===== --}}
     @if($showEditModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="$set('showEditModal', false)"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                <div class="inline-block align-middle bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4 border-b pb-2">✏️ Chỉnh sửa thông tin chi tiết</h3>
-                        <div class="space-y-4 mt-4 max-h-[60vh] overflow-y-auto px-1 custom-scrollbar">
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Mã Vật Tư <span class="text-rose-500">*</span></label>
-                                    <input type="text" wire:model="editingProductCode" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm">
-                                    @error('editingProductCode') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Hãng SX</label>
-                                    <input type="text" wire:model="editingBrand" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                    @error('editingBrand') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1">TÊN VẬT TƯ <span class="text-rose-500">*</span></label>
-                                <input type="text" wire:model="editingProductName" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                @error('editingProductName') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Mã Code NCC</label>
-                                    <input type="text" wire:model="editingBatchNumber" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono">
-                                    @error('editingBatchNumber') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Hạn dùng</label>
-                                    <input type="date" wire:model="editingExpiryDate" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                    @error('editingExpiryDate') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Đơn vị tính <span class="text-rose-500">*</span></label>
-                                    <input type="text" wire:model="editingUnit" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                    @error('editingUnit') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-700 mb-1">Tồn tối thiểu <span class="text-rose-500">*</span></label>
-                                    <input type="number" step="0.01" wire:model="editingMinStock" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                    @error('editingMinStock') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-
-                            <div class="pt-2 border-t border-gray-100"></div>
-
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-sm font-bold text-indigo-700 mb-1">Số lượng tồn kho <span class="text-rose-500">*</span></label>
-                                    <input type="number" step="0.01" wire:model="editingQuantity" class="w-full border-indigo-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm font-bold text-indigo-700 bg-indigo-50">
-                                    @error('editingQuantity') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-indigo-700 mb-1">Vị trí lưu kho</label>
-                                    <input type="text" wire:model="editingLocation" class="w-full border-indigo-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-indigo-50">
-                                    @error('editingLocation') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" wire:click="$set('showEditModal', false)"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md z-10 overflow-hidden">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-800">Chỉnh sửa thông tin vật tư</h3>
+                    <button wire:click="$set('showEditModal', false)" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="px-6 py-5 space-y-3 max-h-[65vh] overflow-y-auto">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="form-label">Mã Vật Tư <span class="text-rose-500">*</span></label>
+                            <input type="text" wire:model="editingProductCode" class="font-mono">
+                            @error('editingProductCode') <p class="text-rose-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label class="form-label">Hãng SX</label>
+                            <input type="text" wire:model="editingBrand">
+                            @error('editingBrand') <p class="text-rose-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="button" wire:click="saveEdit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-bold text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm transition-all">
-                            Lưu thay đổi
-                        </button>
-                        <button type="button" wire:click="$set('showEditModal', false)" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-bold text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-all">
-                            Hủy bỏ
-                        </button>
+                    <div>
+                        <label class="form-label">Tên Vật Tư <span class="text-rose-500">*</span></label>
+                        <input type="text" wire:model="editingProductName">
+                        @error('editingProductName') <p class="text-rose-500 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="form-label">Mã Code NCC</label>
+                            <input type="text" wire:model="editingBatchNumber" class="font-mono">
+                        </div>
+                        <div>
+                            <label class="form-label">Hạn dùng</label>
+                            <input type="date" wire:model="editingExpiryDate">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="form-label">Đơn vị tính <span class="text-rose-500">*</span></label>
+                            <input type="text" wire:model="editingUnit">
+                            @error('editingUnit') <p class="text-rose-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label class="form-label">Tồn tối thiểu</label>
+                            <input type="number" step="0.01" wire:model="editingMinStock">
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-100 pt-3 grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="form-label" style="color:#4338ca;">Số lượng tồn kho <span class="text-rose-500">*</span></label>
+                            <input type="number" step="0.01" wire:model="editingQuantity" style="border-color:#a5b4fc; background:#eef2ff; color:#4338ca; font-weight:700;">
+                            @error('editingQuantity') <p class="text-rose-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label class="form-label" style="color:#4338ca;">Vị trí lưu kho</label>
+                            <input type="text" wire:model="editingLocation" style="border-color:#a5b4fc; background:#eef2ff;">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-2 px-6 py-4 bg-slate-50 border-t border-slate-100">
+                    <button wire:click="$set('showEditModal', false)"
+                            class="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition">
+                        Hủy
+                    </button>
+                    <button wire:click="saveEdit" wire:loading.attr="disabled"
+                            class="px-5 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition flex items-center gap-2 disabled:opacity-60">
+                        <span wire:loading.remove wire:target="saveEdit">Lưu thay đổi</span>
+                        <span wire:loading wire:target="saveEdit" class="flex items-center gap-2">
+                            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
     @endif
 
-    <!-- Import Modal -->
+    {{-- ===== MODAL IMPORT ===== --}}
     @if($showImportModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto">
-            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
-                <div class="inline-block align-middle bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">📥 Nhập tồn kho từ Excel</h3>
-                        
-                        <div class="mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
-                            <p class="text-[13px] text-blue-800 font-medium mb-1">Hệ thống sẽ cập nhật tự động dựa trên các cột có trong file (bắt buộc phải có cột Mã vật tư):</p>
-                            <div class="grid grid-cols-2 gap-x-2 gap-y-1 mt-2">
-                                <ul class="list-disc list-inside text-xs text-blue-700 font-mono ml-1">
-                                    <li>ma_sp <span class="text-gray-500 font-sans italic">(Mã Vật Tư - Bắt buộc)</span></li>
-                                    <li>ten_sp <span class="text-gray-500 font-sans italic">(Tên vật tư)</span></li>
-                                    <li>hang_sx <span class="text-gray-500 font-sans italic">(Hãng SX)</span></li>
-                                    <li>so_lo <span class="text-gray-500 font-sans italic">(Mã Code NCC)</span></li>
-                                    <li>han_dung <span class="text-gray-500 font-sans italic">(Hạn dùng)</span></li>
-                                </ul>
-                                <ul class="list-disc list-inside text-xs text-blue-700 font-mono ml-1">
-                                    <li>dvt <span class="text-gray-500 font-sans italic">(Đơn vị tính)</span></li>
-                                    <li>ton_toi_thieu <span class="text-gray-500 font-sans italic">(Tồn tối thiểu)</span></li>
-                                    <li>so_luong <span class="text-gray-500 font-sans italic">(Số lượng tồn)</span></li>
-                                    <li>vi_tri <span class="text-gray-500 font-sans italic">(Vị trí kho)</span></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="mt-4">
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Tải file lên</label>
-                            <input type="file" wire:model="excelFile" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-200 rounded-xl p-1">
-                            @error('excelFile') <span class="text-rose-500 text-xs font-medium">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div wire:loading wire:target="excelFile" class="mt-2 text-sm text-indigo-600 font-medium flex items-center gap-2">
-                            <span class="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
-                            Đang tải file...
-                        </div>
-                        <div wire:loading wire:target="importExcel" class="mt-2 text-sm text-emerald-600 font-medium flex items-center gap-2">
-                            <span class="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></span>
-                            Đang xử lý dữ liệu...
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" wire:click="$set('showImportModal', false)"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md z-10 overflow-hidden">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800">Nhập tồn kho từ Excel</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">File sẽ ghi đè tồn kho hiện tại theo mã vật tư</p>
+                    </div>
+                    <button wire:click="$set('showImportModal', false)" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="px-6 py-5 space-y-4">
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-3">
+                        <p class="text-xs font-bold text-blue-700 mb-2">Các cột được nhận (bắt buộc có Mã VT):</p>
+                        <div class="grid grid-cols-2 gap-x-4 text-xs font-mono text-blue-600">
+                            <div>ma_sp · ten_sp · hang_sx</div>
+                            <div>dvt · so_luong · vi_tri</div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
-                        <button type="button" wire:click="importExcel" wire:loading.attr="disabled" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-bold text-white hover:bg-emerald-700 sm:ml-3 sm:w-auto sm:text-sm transition-all disabled:opacity-50">
-                            Xác nhận Nhập
-                        </button>
-                        <button type="button" wire:click="$set('showImportModal', false)" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-bold text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-all">
-                            Đóng
-                        </button>
+                    <div>
+                        <label class="form-label">Chọn file</label>
+                        <input type="file" wire:model="excelFile" accept=".xlsx,.xls,.csv"
+                               class="block w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        @error('excelFile') <p class="text-rose-500 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
+                    <div wire:loading wire:target="excelFile" class="text-xs text-indigo-500 flex items-center gap-1">
+                        <svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        Đang tải file...
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-2 px-6 py-4 bg-slate-50 border-t border-slate-100">
+                    <button wire:click="$set('showImportModal', false)"
+                            class="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition">
+                        Đóng
+                    </button>
+                    <button wire:click="importExcel" wire:loading.attr="disabled"
+                            class="px-5 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition flex items-center gap-2 disabled:opacity-60">
+                        <span wire:loading.remove wire:target="importExcel">Xác nhận nhập</span>
+                        <span wire:loading wire:target="importExcel" class="flex items-center gap-2">
+                            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            Đang xử lý...
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
     @endif
+
 </div>

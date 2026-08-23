@@ -12,8 +12,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // ODO hàng ngày
         $schedule->command('maintenance:generate-daily-odos')->dailyAt('00:01');
+
+        // Dọn dẹp data cũ hơn 6 tháng — chạy vào 2:00 sáng ngày đầu tháng
+        $schedule->command('system:purge-old-data --months=6 --force')
+                 ->monthlyOn(1, '02:00')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/purge-old-data.log'));
     }
 
     /**

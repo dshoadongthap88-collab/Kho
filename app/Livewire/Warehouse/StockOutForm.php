@@ -863,12 +863,18 @@ class StockOutForm extends Component
 
     public function render()
     {
-        $productionProducts = Product::where('status', 'active')
-            ->where(function($q) {
-                $q->where('type', 'product')
-                  ->orWhere('type', 'product_produced')
-                  ->orWhere('type', 'Thành phẩm');
-            })->orderBy('name')->get();
+        $houseKey = session('current_house') ?? 0;
+
+        // productionProducts: cache 5 phút theo house, hiếm thay đổi
+        $productionProducts = \Illuminate\Support\Facades\Cache::remember(
+            "production_products_{$houseKey}", 300,
+            fn() => Product::where('status', 'active')
+                ->where(function($q) {
+                    $q->where('type', 'product')
+                      ->orWhere('type', 'product_produced')
+                      ->orWhere('type', 'Thành phẩm');
+                })->orderBy('name')->get(['id','code','name','unit','price','location'])
+        );
 
         $stockOuts = StockOut::with(['items', 'creator'])
             ->whereBetween('created_at', [$this->listDateFrom . ' 00:00:00', $this->listDateTo . ' 23:59:59'])

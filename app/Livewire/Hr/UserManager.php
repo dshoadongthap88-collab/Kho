@@ -16,6 +16,7 @@ class UserManager extends Component
     use WithFileUploads;
 
     public $search = '';
+    public $filterHouse = ''; // Lọc nhân viên theo dự án
     public $isModalOpen = false;
 
     // Form fields
@@ -36,6 +37,11 @@ class UserManager extends Component
     public $allowed_houses = [];
 
     public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterHouse()
     {
         $this->resetPage();
     }
@@ -181,17 +187,25 @@ class UserManager extends Component
 
     public function render()
     {
-        $users = User::where(function($q) {
+        $query = User::where(function($q) {
             $q->where('name', 'like', '%' . $this->search . '%')
               ->orWhere('code', 'like', '%' . $this->search . '%')
               ->orWhere('email', 'like', '%' . $this->search . '%')
               ->orWhere('phone', 'like', '%' . $this->search . '%');
-        })
-        ->orderBy('id', 'desc')
-        ->paginate(10);
+        });
 
-        // Guard: nếu bảng departments chưa được migrate (deploy thiếu migration),
-        // trang vẫn load được thay vì sập 500 — chỉ thiếu dropdown phòng ban.
+        // Lọc nhân viên theo dự án được phân quyền
+        if ($this->filterHouse !== '') {
+            $houseId = (string)$this->filterHouse;
+            $query->where(function($q) use ($houseId) {
+                $q->whereJsonContains('allowed_houses', (int)$houseId)
+                  ->orWhereJsonContains('allowed_houses', $houseId)
+                  ->orWhere('current_house_id', (int)$houseId);
+            });
+        }
+
+        $users = $query->orderBy('id', 'desc')->paginate(15);
+
         try {
             $departments = Department::where('status', 'active')->orderBy('name')->get();
         } catch (\Throwable $e) {
@@ -199,9 +213,12 @@ class UserManager extends Component
             $departments = collect();
         }
 
+        $projects = \App\Models\Project::where('status', 'active')->orderBy('name')->get();
+
         return view('livewire.hr.user-manager', [
-            'users' => $users,
+            'users'       => $users,
             'departments' => $departments,
+            'projects'    => $projects,
         ])->layout('components.warehouse-layout', ['title' => 'Quản Lý Nhân Viên']);
     }
 }

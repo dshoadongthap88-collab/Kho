@@ -41,7 +41,20 @@ class AssetManager extends Component
     protected $rules = [
         'asset_code' => 'required|unique:assets,asset_code',
         'name' => 'required|string|max:255',
-        'status' => 'required|in:active,maintenance,inactive'
+        'status' => 'required|in:active,maintenance,inactive',
+        // Cac o so: de trong thi bo qua, nhap chu thi bao loi ngay tren form
+        // thay vi de MySQL nem SQLSTATE[22007] ra trang loi.
+        'lifetime_odo' => 'nullable|numeric|min:0',
+        'lifetime_hours' => 'nullable|numeric|min:0',
+        'maintenance_cycle_hours' => 'nullable|integer|min:0',
+        'maintenance_cycle_odo' => 'nullable|integer|min:0',
+    ];
+
+    protected $messages = [
+        'lifetime_odo.numeric' => 'ODO tich luy phai la so.',
+        'lifetime_hours.numeric' => 'Gio tich luy phai la so.',
+        'maintenance_cycle_hours.integer' => 'Chu ky bao duong theo gio phai la so nguyen.',
+        'maintenance_cycle_odo.integer' => 'Chu ky bao duong theo ODO phai la so nguyen.',
     ];
 
     public function updatedSelectAll($value)
@@ -104,6 +117,19 @@ class AssetManager extends Component
         $this->bomItems = array_values($this->bomItems);
     }
 
+    /**
+     * Doi gia tri o nhap thanh so. O de trong (chuoi rong / null) tra ve gia tri
+     * mac dinh: 0 cho cot NOT NULL, null cho cot cho phep NULL.
+     */
+    private function numberOrDefault($value, $default)
+    {
+        if ($value === null || trim((string) $value) === '') {
+            return $default;
+        }
+
+        return is_numeric($value) ? $value + 0 : $default;
+    }
+
     public function save()
     {
         $rules = $this->rules;
@@ -122,11 +148,14 @@ class AssetManager extends Component
             'serial_number' => $this->serial_number,
             'manufacturer' => $this->manufacturer,
             'license_plate' => $this->license_plate,
-            'lifetime_odo' => $this->lifetime_odo,
-            'lifetime_hours' => $this->lifetime_hours,
-            'maintenance_cycle_hours' => $this->maintenance_cycle_hours,
-            'maintenance_cycle_odo' => $this->maintenance_cycle_odo,
-            'house_id' => $this->house_id,
+            // Cot decimal NOT NULL: o trong tren form gui len chuoi rong, MySQL
+            // che do strict tu choi -> quy ve 0.
+            'lifetime_odo' => $this->numberOrDefault($this->lifetime_odo, 0),
+            'lifetime_hours' => $this->numberOrDefault($this->lifetime_hours, 0),
+            // Cot int cho phep NULL: chuoi rong cung bi tu choi -> quy ve null.
+            'maintenance_cycle_hours' => $this->numberOrDefault($this->maintenance_cycle_hours, null),
+            'maintenance_cycle_odo' => $this->numberOrDefault($this->maintenance_cycle_odo, null),
+            'house_id' => $this->house_id ?: null,
             'management_unit' => $this->management_unit,
             'installation_date' => $this->installation_date ?: null,
             'status' => $this->status,

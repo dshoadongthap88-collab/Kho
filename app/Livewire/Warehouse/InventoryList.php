@@ -157,6 +157,11 @@ class InventoryList extends Component
                     'expiry_date' => $this->editingExpiryDate ?: null,
                     'unit' => $this->editingUnit,
                     'min_stock' => $this->editingMinStock,
+                    // Ghi luon vi tri sang danh muc vat tu. Man Danh muc doc
+                    // products.location o modal Sua va o ban in, nen neu chi ghi
+                    // inventories.warehouse_location thi sua vi tri ben Ton kho
+                    // xong qua Danh muc se thay o vi tri trong.
+                    'location' => $this->editingLocation ?: null,
                 ]);
             }
         }

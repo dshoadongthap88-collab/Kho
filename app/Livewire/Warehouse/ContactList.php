@@ -163,6 +163,14 @@ class ContactList extends Component
         }
     }
 
+    public function exportExcel()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ContactsExport,
+            'danh_sach_doi_tac_' . now()->format('Ymd_His') . '.xlsx'
+        );
+    }
+
     public function render()
     {
         $contacts = $this->getContactsQuery()->latest()->paginate(15);

@@ -557,8 +557,10 @@ class ProductCatalog extends Component
             'excelFile' => 'required|mimes:xlsx,xls,csv|max:10240',
         ]);
 
-        // File nhiều nghìn dòng dễ chạm giới hạn thời gian mặc định của PHP
+        // File nhiều nghìn dòng dễ chạm giới hạn thời gian và bộ nhớ mặc định.
+        // Nếu hosting khoá ini_set thì hai lệnh này im lặng bỏ qua, không lỗi.
         @set_time_limit(600);
+        @ini_set('memory_limit', '512M');
 
         try {
             if ($this->activeTab === 'materials') {
@@ -580,6 +582,15 @@ class ProductCatalog extends Component
 
                 if ($import->skippedNoCode > 0) {
                     $message .= sprintf(' Bỏ qua %d dòng thiếu mã vật tư.', $import->skippedNoCode);
+                }
+
+                // Cho người dùng thấy hệ thống đã hiểu cột nào là cột nào
+                if (!empty($import->detectedColumns)) {
+                    $pairs = [];
+                    foreach ($import->detectedColumns as $field => $columnName) {
+                        $pairs[] = $field . ' ← "' . $columnName . '"';
+                    }
+                    $message .= ' | Cột đã nhận diện: ' . implode(', ', $pairs);
                 }
             } else {
                 Excel::import(new \App\Imports\AssetsImport, $this->excelFile);

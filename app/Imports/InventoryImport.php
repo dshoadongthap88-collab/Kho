@@ -8,11 +8,11 @@ use App\Traits\ExcelColumnMapper;
 use App\Traits\ResolvesHouseScopedRecords;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToCollection;
-use Carbon\Carbon;
-use Illuminate\Support\Str;
+use Maatwebsite\Excel\Concerns\WithColumnLimit;
 
-class InventoryImport implements ToCollection
+class InventoryImport implements ToCollection, WithColumnLimit, SkipsEmptyRows
 {
     use ExcelColumnMapper, ResolvesHouseScopedRecords;
 
@@ -23,38 +23,60 @@ class InventoryImport implements ToCollection
     public int $created       = 0; // vật tư tạo mới
     public int $updated       = 0; // vật tư đã có, được cập nhật
 
+    /** Tên các cột đã nhận diện được, để hiển thị lại cho người dùng đối chiếu */
+    public array $detectedColumns = [];
+
+    /**
+     * Chỉ đọc tới cột AZ. File báo cáo xuất từ phần mềm kế toán có tới hơn 1000
+     * cột rỗng phía sau — đọc hết ngốn ~870MB RAM và làm chết tiến trình PHP.
+     * Giới hạn 52 cột đưa mức tiêu thụ về khoảng 78MB.
+     */
+    public function endColumn(): string
+    {
+        return 'AZ';
+    }
+
     public function collection(Collection $rows)
     {
-        $headerRowIndex = $this->locateHeaderRow($rows);
+        $header = $this->resolveHeader($rows);
 
-        if ($headerRowIndex === -1) {
-            throw new \Exception("Không tìm thấy dòng tiêu đề chứa cột Mã Sản Phẩm trong file Excel. Vui lòng đảm bảo có 1 cột tên là 'Mã SP', 'Mã hàng' hoặc 'Mã vật tư'.");
+        if ($header === null) {
+            throw new \Exception("Không nhận ra dòng tiêu đề trong file Excel. Vui lòng đảm bảo file có một dòng tiêu đề gồm cột Mã vật tư và ít nhất một cột nữa (Tên vật tư, ĐVT, Tồn kho...).");
         }
 
-        $headers = $rows[$headerRowIndex];
+        $columns               = $header['columns'];
+        $this->detectedColumns = $this->describeColumns($header);
 
         // Bước 1 — đọc và chuẩn hoá toàn bộ file, chưa đụng tới CSDL.
         // Mã trùng nhau thì dòng phía dưới ghi đè dòng phía trên (tồn kho là ghi đè,
         // không cộng dồn) và được đếm lại để báo cho người dùng biết.
         $parsed = [];
-        for ($i = $headerRowIndex + 1; $i < count($rows); $i++) {
-            $mappedRow = [];
-            foreach ($headers as $colIndex => $headerName) {
-                if ($headerName) {
-                    $mappedRow[(string) $headerName] = $rows[$i][$colIndex] ?? null;
-                }
-            }
+        for ($i = $header['dataStartRow']; $i < count($rows); $i++) {
+            $row = $rows[$i];
 
-            $data = $this->parseRow($mappedRow);
-            if ($data === null) {
+            $code = $this->cell($row, $columns, 'code');
+            $code = $code === null ? '' : strtoupper(trim((string) $code));
+
+            if ($code === '') {
+                $this->skippedNoCode++;
                 continue;
             }
 
             $this->rowsRead++;
-            if (isset($parsed[$data['code']])) {
+            if (isset($parsed[$code])) {
                 $this->duplicateRows++;
             }
-            $parsed[$data['code']] = $data;
+
+            $parsed[$code] = [
+                'name'      => $this->cell($row, $columns, 'name'),
+                'unit'      => $this->cell($row, $columns, 'unit'),
+                'brand'     => $this->cell($row, $columns, 'brand'),
+                'batch'     => $this->cell($row, $columns, 'batch'),
+                'expiry'    => $this->normalizeExpiry($this->cell($row, $columns, 'expiry')),
+                'min_stock' => $this->cell($row, $columns, 'min_stock'),
+                'location'  => $this->cell($row, $columns, 'location'),
+                'quantity'  => $this->normalizeQuantity($this->cell($row, $columns, 'quantity')),
+            ];
         }
 
         if (empty($parsed)) {
@@ -74,34 +96,50 @@ class InventoryImport implements ToCollection
         // Bước 3 — ghi dữ liệu. Bọc transaction để nếu đứt giữa chừng thì không
         // còn cảnh "file 1500 dòng nhưng chỉ vào được một nửa".
         DB::transaction(function () use ($parsed, &$products, &$inventories) {
+            $houseId = $this->currentHouseId();
+            $now     = now();
+
+            // 3a. Vật tư đã có: chỉ chạm CSDL khi thực sự có thay đổi.
+            //     Vật tư mới: gom lại để chèn hàng loạt (1500 INSERT lẻ mất ~12s,
+            //     chèn theo lô 500 dòng chỉ còn vài query).
+            $newProductRows = [];
             foreach ($parsed as $code => $data) {
                 $product = $products[$code] ?? null;
 
                 if (!$product) {
-                    $product = Product::create($this->productAttributes($data) + [
-                        'code'   => $code,
-                        'name'   => $data['name'] ?: 'Sản phẩm ' . $code,
-                        'unit'   => $data['unit'] ?: 'Cái',
-                        'status' => 'active',
-                        'type'   => 'material', // Luôn cho vào danh mục vật tư
-                    ]);
-
-                    $products[$code] = $product;
-                    $this->created++;
-                } else {
-                    // Đảm bảo tự động cập nhật vào module Danh mục vật tư
-                    $product->fill($this->productAttributes($data) + ['type' => 'material']);
-                    if ($product->isDirty()) {
-                        $product->save();
-                    }
-                    $this->updated++;
+                    $newProductRows[$code] = $this->newProductRow($code, $data, $houseId, $now);
+                    continue;
                 }
 
-                $inventoryData = [];
-                if ($data['quantity'] !== null) $inventoryData['quantity'] = $data['quantity'];
-                if ($data['location'] !== null) $inventoryData['warehouse_location'] = $data['location'];
+                // Đảm bảo tự động cập nhật vào module Danh mục vật tư
+                $product->fill($this->productAttributes($data) + ['type' => 'material']);
+                if ($product->isDirty()) {
+                    $product->save();
+                }
+                $this->updated++;
+            }
 
-                if (empty($inventoryData)) {
+            if ($newProductRows) {
+                foreach (array_chunk($newProductRows, 500) as $chunk) {
+                    Product::insert($chunk);
+                }
+                $this->created += count($newProductRows);
+
+                // Lấy lại id của các vật tư vừa chèn
+                $products += $this->preloadProductsByCode(array_keys($newProductRows));
+            }
+
+            // 3b. Tồn kho: cập nhật cái đã có, chèn hàng loạt cái mới
+            $newInventoryRows = [];
+            foreach ($parsed as $code => $data) {
+                $product = $products[$code] ?? null;
+                if (!$product) {
+                    continue;
+                }
+
+                $quantity = $data['quantity'];
+                $location = $data['location'];
+                if ($quantity === null && $location === null) {
                     continue;
                 }
 
@@ -109,68 +147,52 @@ class InventoryImport implements ToCollection
 
                 if ($inventory) {
                     // GHI ĐÈ tồn kho = giá trị mới (không cộng thêm vào tồn cũ)
-                    $inventory->fill($inventoryData);
+                    if ($quantity !== null) $inventory->quantity = $quantity;
+                    if ($location !== null) $inventory->warehouse_location = $location;
                     if ($inventory->isDirty()) {
                         $inventory->save();
                     }
-                } else {
-                    $inventories[$product->id] = Inventory::create($inventoryData + [
-                        'product_id' => $product->id,
-                        'quantity'   => $inventoryData['quantity'] ?? 0,
-                    ]);
+                    continue;
                 }
+
+                $newInventoryRows[] = [
+                    'product_id'         => $product->id,
+                    'quantity'           => $quantity ?? 0,
+                    'warehouse_location' => $location,
+                    'house_id'           => $houseId,
+                    'created_at'         => $now,
+                    'updated_at'         => $now,
+                ];
+            }
+
+            foreach (array_chunk($newInventoryRows, 500) as $chunk) {
+                Inventory::insert($chunk);
             }
         });
     }
 
-    /** Tìm dòng tiêu đề (dòng có chứa cột Mã SP) */
-    private function locateHeaderRow(Collection $rows): int
+    /**
+     * Một dòng products đầy đủ cột để chèn hàng loạt.
+     * Mọi dòng phải có CÙNG bộ khoá thì MySQL mới nhận insert nhiều dòng một lần.
+     */
+    private function newProductRow(string $code, array $data, $houseId, $now): array
     {
-        foreach ($rows as $index => $row) {
-            foreach ($row as $cellValue) {
-                if ($cellValue === null) continue;
-                $valStr = Str::slug((string) $cellValue, '');
-                if (
-                    str_contains($valStr, 'masp') ||
-                    str_contains($valStr, 'masanpham') ||
-                    str_contains($valStr, 'mahang') ||
-                    str_contains($valStr, 'mavt') ||
-                    str_contains($valStr, 'mavattu') ||
-                    $valStr === 'ma' ||
-                    $valStr === 'code' ||
-                    $valStr === 'id'
-                ) {
-                    return $index;
-                }
-            }
-        }
-
-        return -1;
-    }
-
-    /** Đọc một dòng thành mảng đã chuẩn hoá, trả về null nếu dòng không dùng được */
-    private function parseRow(array $row): ?array
-    {
-        // Mã vật tư là bắt buộc. Dòng thiếu mã thì bỏ hẳn, không đoán sang cột khác
-        // — đó là nguyên nhân sinh ra các vật tư rác có mã là con số.
-        $productCode = $this->findCode($row);
-        $productCode = $productCode === null ? '' : strtoupper(trim((string) $productCode));
-
-        if ($productCode === '') {
-            $this->skippedNoCode++;
-            return null;
-        }
+        $attributes = $this->productAttributes($data);
 
         return [
-            'code'      => $productCode,
-            'name'      => $this->findName($row),
-            'unit'      => $this->findUnit($row),
-            'brand'     => $this->findBrand($row),
-            'batch'     => $this->findBatch($row),
-            'expiry'    => $this->normalizeExpiry($this->findExpiry($row)),
-            'min_stock' => $this->findMinStock($row),
-            'location'  => $this->findLocation($row),
-            'quantity'  => $this->normalizeQuantity($this->findQuantity($row)),
+            'code'         => $code,
+            'name'         => $data['name'] ?: 'Sản phẩm ' . $code,
+            'unit'         => $data['unit'] ?: 'Cái',
+            'brand'        => $attributes['brand']        ?? null,
+            'batch_number' => $attributes['batch_number'] ?? null,
+            'expiry_date'  => $attributes['expiry_date']  ?? null,
+            'location'     => $attributes['location']     ?? null,
+            'min_stock'    => (int) ($attributes['min_stock'] ?? 0), // cột int NOT NULL
+            'status'       => 'active',
+            'type'         => 'material', // Luôn cho vào danh mục vật tư
+            'house_id'     => $houseId,
+            'created_at'   => $now,
+            'updated_at'   => $now,
         ];
     }
 
@@ -189,55 +211,21 @@ class InventoryImport implements ToCollection
         return $attributes;
     }
 
-    private function normalizeExpiry($expiry): ?string
+    /** Ghép lại "trường => tên cột trong file" để hiện cho người dùng đối chiếu */
+    private function describeColumns(array $header): array
     {
-        if (!$expiry) {
-            return null;
+        $labels = [
+            'code' => 'Mã vật tư', 'name' => 'Tên vật tư', 'unit' => 'ĐVT',
+            'quantity' => 'Tồn kho', 'location' => 'Vị trí', 'brand' => 'Hãng SX',
+            'batch' => 'Số lô', 'expiry' => 'Hạn dùng', 'min_stock' => 'Tồn tối thiểu',
+        ];
+
+        $described = [];
+        foreach ($header['columns'] as $field => $colIndex) {
+            if (!isset($labels[$field])) continue;
+            $described[$labels[$field]] = $header['names'][$colIndex] ?? ('cột ' . $colIndex);
         }
 
-        if (is_numeric($expiry)) {
-            try {
-                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($expiry)->format('Y-m-d');
-            } catch (\Exception $e) {
-                return null;
-            }
-        }
-
-        try {
-            return Carbon::parse(str_replace('/', '-', $expiry))->format('Y-m-d');
-        } catch (\Exception $e) {
-            return null;
-        }
-    }
-
-    private function normalizeQuantity($quantity): ?float
-    {
-        if ($quantity === null) {
-            return null;
-        }
-
-        $val = trim((string) $quantity);
-        if ($val === '' || $val === '-') {
-            return null;
-        }
-
-        $val = preg_replace('/[^\d.,]/', '', $val);
-
-        if (str_contains($val, ',') && str_contains($val, '.')) {
-            if (strrpos($val, ',') > strrpos($val, '.')) {
-                $val = str_replace(',', '.', str_replace('.', '', $val));
-            } else {
-                $val = str_replace(',', '', $val);
-            }
-        } elseif (str_contains($val, ',')) {
-            $parts = explode(',', $val);
-            if (count($parts) == 2 && (strlen($parts[1]) == 1 || strlen($parts[1]) == 2)) {
-                $val = str_replace(',', '.', $val);
-            } else {
-                $val = str_replace(',', '', $val);
-            }
-        }
-
-        return floatval($val);
+        return $described;
     }
 }

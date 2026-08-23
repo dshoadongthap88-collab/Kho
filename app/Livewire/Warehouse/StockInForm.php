@@ -18,6 +18,26 @@ class StockInForm extends Component
 {
     use WithPagination;
     use WithFileUploads;
+    use \App\Traits\ExcelColumnMapper {
+        columnKeywords as baseColumnKeywords;
+    }
+
+    /**
+     * Phiếu nhập kho quan tâm số THỰC NHẬP, không phải tồn kho cuối kỳ — nên đảo
+     * thứ tự ưu tiên so với màn Tồn kho. File "Báo cáo tổng hợp Xuất Nhập Tồn"
+     * có cả ba cột Thực nhập / Xuất kho / Tồn kho.
+     */
+    protected function columnKeywords(): array
+    {
+        $keywords = $this->baseColumnKeywords();
+
+        $keywords['quantity'] = [
+            'soluongnhap', 'thucnhap', 'thucnhan', 'soluong', 'quantity',
+            'khoiluong', 'soluongton', 'tonkho', '=sl', '=qty', '=kl', '=ton',
+        ];
+
+        return $keywords;
+    }
 
     public $items = [];
     public $activeTab = 'form'; // 'form' hoặc 'list'
@@ -735,6 +755,11 @@ class StockInForm extends Component
 
     public function importExcelData()
     {
+        // File nhiều nghìn dòng dễ chạm giới hạn thời gian và bộ nhớ mặc định.
+        // Nếu hosting khoá ini_set thì hai lệnh này im lặng bỏ qua, không lỗi.
+        @set_time_limit(600);
+        @ini_set('memory_limit', '512M');
+
         $this->validate([
             'excelFile' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
         ], [
@@ -743,7 +768,8 @@ class StockInForm extends Component
         ]);
 
         try {
-            $data = \Maatwebsite\Excel\Facades\Excel::toArray(new \stdClass(), $this->excelFile);
+            // SheetReader giới hạn số cột đọc vào — xem chú thích trong lớp đó
+            $data = \Maatwebsite\Excel\Facades\Excel::toArray(new \App\Imports\SheetReader, $this->excelFile);
             if (!empty($data) && isset($data[0])) {
                 $rows = $data[0];
                 
@@ -796,73 +822,23 @@ class StockInForm extends Component
                     return floatval($val);
                 };
 
-                // Tìm dòng tiêu đề động (quét 15 dòng đầu tiên)
-                $headerRowIndex = 0;
-                $bestMatchCount = 0;
-                $bestIndices = [];
-
-                // Quét 15 dòng đầu tiên để tìm dòng chứa tiêu đề
-                foreach (array_slice($rows, 0, 15) as $rowIndex => $potentialHeader) {
-                    $currentIndices = [
-                        'code' => null, 'name' => null, 'quantity' => null,
-                        'batch_number' => null, 'expiry_date' => null,
-                        'warehouse_location' => null, 'unit_price' => null
-                    ];
-                    $matchCount = 0;
-
-                    // Bảng ánh xạ cột: từ khoá cụ thể đứng trước, tiền tố '=' nghĩa là
-                    // khớp tuyệt đối cả tên cột. Trước đây các từ khoá quá ngắn nuốt nhầm
-                    // cột khác: 'kho' nuốt "Tồn kho" thành Vị trí, 'lo' nuốt "Location"
-                    // thành Số lô, 'gia' nuốt "Ngày giao" thành Đơn giá.
-                    $columnKeywords = [
-                        'code'               => ['masanpham', 'masp', 'mavattu', 'mavt', 'mathang', 'mahang', 'mahh', 'productcode', 'itemcode', '=ma', '=code', '=id'],
-                        'name'               => ['tensanpham', 'tensp', 'tenvattu', 'tenvt', 'tenmathang', 'tenhang', 'tenhh', 'productname', 'itemname', '=ten', '=name', '=hanghoa', '=mota', '=description'],
-                        'quantity'           => ['soluongton', 'soluong', 'thucnhan', 'tonkho', 'quantity', 'khoiluong', '=sl', '=qty', '=ton', '=kl'],
-                        'batch_number'       => ['solo', 'lotno', 'batchno', 'batch', 'macodencc', '=lo'],
-                        'expiry_date'        => ['hansudung', 'handung', 'ngayhethan', 'expiry', '=hsd'],
-                        'warehouse_location' => ['vitrikho', 'vitri', 'noichua', 'khuvuc', 'khochua', 'location', '=kho', '=ke'],
-                        'unit_price'         => ['dongia', 'unitprice', 'price', '=gia', '=giavon'],
-                        'unit'               => ['donvitinh', '=dvt', '=donvi', '=unit', '=uom'],
-                    ];
-
-                    foreach ($columnKeywords as $field => $keywords) {
-                        if (isset($currentIndices[$field]) && $currentIndices[$field] !== null) continue;
-
-                        foreach ($keywords as $keyword) {
-                            $exact  = str_starts_with($keyword, '=');
-                            $needle = $exact ? substr($keyword, 1) : $keyword;
-
-                            foreach ($potentialHeader as $colIndex => $colName) {
-                                if (empty($colName)) continue;
-                                // Một cột chỉ được gán cho đúng một trường
-                                if (in_array($colIndex, $currentIndices, true)) continue;
-
-                                $norm = $normalize($colName);
-                                if ($norm === '') continue;
-
-                                if ($exact ? $norm === $needle : str_contains($norm, $needle)) {
-                                    $currentIndices[$field] = $colIndex;
-                                    $matchCount++;
-                                    continue 3;
-                                }
-                            }
-                        }
-                    }
-
-                    if ($matchCount > $bestMatchCount) {
-                        $bestMatchCount = $matchCount;
-                        $bestIndices = $currentIndices;
-                        $headerRowIndex = $rowIndex;
-                    }
-                }
-
-                $indices = $bestIndices;
+                // Tìm dòng tiêu đề bằng cách chấm điểm, dùng chung logic với các
+                // luồng nhập Excel khác (App\Traits\ExcelColumnMapper). Nhờ vậy
+                // đọc được cả file báo cáo có tiêu đề 2 tầng (ô gộp).
+                $header = $this->resolveHeader($rows);
 
                 // Không nhận ra cột nào => báo rõ thay vì im lặng nhập 0 dòng
-                if (!isset($indices['code']) && !isset($indices['name'])) {
-                    session()->flash('error', 'Không nhận ra cột Mã vật tư / Tên vật tư trong file. Vui lòng đặt tên cột là "Mã vật tư" và "Tên vật tư".');
+                if ($header === null) {
+                    session()->flash('error', 'Không nhận ra dòng tiêu đề trong file. Vui lòng đảm bảo file có cột "Mã vật tư" và ít nhất một cột nữa (Tên vật tư, ĐVT, Số lượng...).');
                     return;
                 }
+
+                $headerRowIndex = $header['dataStartRow'] - 1;
+                $indices = $header['columns'] + [
+                    'batch_number'       => $header['columns']['batch']      ?? null,
+                    'expiry_date'        => $header['columns']['expiry']     ?? null,
+                    'warehouse_location' => $header['columns']['location']   ?? null,
+                ];
 
                 // Loại bỏ dòng tiêu đề và các dòng trước đó
                 $rows = array_slice($rows, $headerRowIndex + 1);

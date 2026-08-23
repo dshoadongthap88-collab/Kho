@@ -99,6 +99,29 @@ class InventoryList extends Component
         }
     }
 
+    /** Sửa một dòng cụ thể từ cột Thao tác, không cần tích chọn trước */
+    public function editRow($productId)
+    {
+        $this->loadForEdit($productId);
+    }
+
+    /** Xóa tồn kho của đúng một dòng từ cột Thao tác */
+    public function deleteRow($productId)
+    {
+        try {
+            Inventory::where('product_id', $productId)->delete();
+
+            // Bỏ dòng vừa xóa khỏi danh sách đang tích chọn, nếu có
+            $this->selectedItems = array_values(
+                array_diff(array_map('intval', $this->selectedItems), [(int) $productId])
+            );
+
+            session()->flash('success', 'Đã xóa dữ liệu tồn kho của vật tư.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Có lỗi xảy ra khi xóa tồn kho.');
+        }
+    }
+
     public function openEditModal()
     {
         if (count($this->selectedItems) !== 1) {
@@ -106,19 +129,18 @@ class InventoryList extends Component
             return;
         }
 
-        $productId = $this->selectedItems[0];
+        $this->loadForEdit($this->selectedItems[0]);
+    }
+
+    /** Nạp dữ liệu một vật tư vào modal sửa */
+    private function loadForEdit($productId)
+    {
         $product = Product::find($productId);
         if (!$product) return;
 
-        $inventory = Inventory::where('product_id', $productId)->first();
-        
+        $inventory = $this->inventoryForProduct($productId);
         if (!$inventory) {
-            // Nếu chưa có tồn kho thì tạo mới với số lượng 0
-            $inventory = Inventory::create([
-                'product_id' => $productId,
-                'quantity' => 0,
-                'warehouse_location' => ''
-            ]);
+            return;   // helper đã báo lỗi rõ cho người dùng
         }
 
         $this->editingProductId = $product->id;
@@ -161,11 +183,16 @@ class InventoryList extends Component
         $updated = 0;
 
         DB::transaction(function () use (&$updated) {
-            $inventories = Inventory::whereIn('id', array_keys($this->locations))->get();
-
-            foreach ($inventories as $inventory) {
-                $value = trim((string) ($this->locations[$inventory->id] ?? ''));
+            foreach ($this->locations as $productId => $value) {
+                $value = trim((string) $value);
                 $value = $value === '' ? null : $value;
+
+                // Vật tư chưa có dòng tồn kho vẫn gõ được vị trí — dòng tồn kho
+                // sẽ được tạo khi lưu. Nếu ô cũng để trống thì không tạo gì.
+                $inventory = $this->inventoryForProduct($productId, $value !== null);
+                if (!$inventory) {
+                    continue;
+                }
 
                 if ($inventory->warehouse_location === $value) {
                     continue;   // không đổi thì không chạm CSDL
@@ -174,7 +201,7 @@ class InventoryList extends Component
                 $inventory->update(['warehouse_location' => $value]);
 
                 // Đồng bộ sang danh mục vật tư
-                Product::where('id', $inventory->product_id)->update(['location' => $value]);
+                Product::where('id', $productId)->update(['location' => $value]);
 
                 $updated++;
             }
@@ -188,6 +215,54 @@ class InventoryList extends Component
             : 'Không có vị trí nào thay đổi.');
 
         $this->dispatch('locations-saved');
+    }
+
+    /**
+     * Lấy dòng tồn kho của vật tư trong dự án đang đứng, tạo mới nếu chưa có.
+     *
+     * Ràng buộc đúng của bảng inventories là (house_id, product_id). Nhưng CSDL
+     * production còn sót index unique chỉ trên product_id từ thời một kho, nên
+     * dự án thứ hai tạo dòng cho cùng vật tư sẽ dính lỗi 1062 Duplicate entry.
+     * Migration 2026_08_23_230000 gỡ index đó; ở đây bắt thêm ngoại lệ để nếu
+     * server chưa kịp chạy migration thì báo rõ thay vì nổ ra trang lỗi 500.
+     */
+    private function inventoryForProduct($productId, bool $createIfMissing = true): ?Inventory
+    {
+        if ($inventory = Inventory::where('product_id', $productId)->first()) {
+            return $inventory;
+        }
+
+        // Bản ghi cũ chưa gắn house_id thì nhận về dự án hiện tại
+        $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
+        if ($houseId) {
+            $legacy = Inventory::withoutGlobalScope('house')
+                ->where('product_id', $productId)
+                ->whereNull('house_id')
+                ->first();
+
+            if ($legacy) {
+                $legacy->house_id = $houseId;
+                $legacy->save();
+                return $legacy;
+            }
+        }
+
+        if (!$createIfMissing) {
+            return null;
+        }
+
+        try {
+            return Inventory::create([
+                'product_id'         => $productId,
+                'quantity'           => 0,
+                'warehouse_location' => null,
+            ]);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            session()->flash('error',
+                'Cơ sở dữ liệu còn ràng buộc cũ (inventories_product_id_unique) nên vật tư này '
+                . 'chưa thể có tồn kho riêng ở dự án hiện tại. Vui lòng chạy: php artisan migrate');
+            return null;
+        }
     }
 
     public function saveEdit()
@@ -410,8 +485,8 @@ class InventoryList extends Component
         // Nạp vị trí hiện có cho các dòng đang hiển thị. Chỉ nạp khi chưa có
         // trong mảng, để không ghi đè lên giá trị người dùng đang gõ dở.
         foreach ($inventories as $row) {
-            if (!array_key_exists($row->inventory_id, $this->locations) && $row->inventory_id) {
-                $this->locations[$row->inventory_id] = $row->warehouse_location;
+            if (!array_key_exists($row->id, $this->locations)) {
+                $this->locations[$row->id] = $row->warehouse_location;
             }
         }
 

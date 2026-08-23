@@ -180,8 +180,9 @@
                                 <span class="ml-1">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                             @endif
                         </th>
-                        <th class="px-3 py-3 text-center">Vị trí</th>
+                        <th class="px-2 py-3 text-center w-28">Vị trí</th>
                         <th class="px-3 py-3 text-center">Trạng thái</th>
+                        <th class="px-3 py-3 text-center w-24 no-print">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -222,13 +223,12 @@
                             <td class="px-3 py-2 text-center text-sm {{ $qtyClass }}">{{ number_format($inv->quantity) }}</td>
                             {{-- Sửa vị trí ngay trên bảng, bấm LƯU LẠI để ghi một lượt.
                                  wire:model (không .live) nên gõ không gọi server mỗi phím. --}}
-                            <td class="px-3 py-2 text-center">
+                            <td class="px-2 py-2 text-center">
                                 <input type="text"
-                                       wire:model="locations.{{ $inv->inventory_id }}"
+                                       wire:model="locations.{{ $inv->id }}"
                                        wire:keydown.enter="saveLocations"
                                        list="locations_list"
-                                       @disabled(!$inv->inventory_id)
-                                       class="input-sm text-center no-print"
+                                       class="input-sm text-center no-print px-1"
                                        placeholder="—">
                                 <span class="print-only">{{ $inv->warehouse_location ?? '—' }}</span>
                             </td>
@@ -237,10 +237,26 @@
                                     {{ $badgeText }}
                                 </span>
                             </td>
+                            {{-- Thao tác trên đúng dòng này, không cần tích chọn trước --}}
+                            <td class="px-3 py-2 text-center no-print">
+                                <div class="flex items-center justify-center gap-1">
+                                    <button wire:click="editRow({{ $inv->id }})"
+                                            title="Sửa vật tư này"
+                                            class="p-1.5 rounded-lg text-amber-600 bg-amber-50 hover:bg-amber-600 hover:text-white transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                    </button>
+                                    <button wire:click="deleteRow({{ $inv->id }})"
+                                            wire:confirm="Xóa dữ liệu tồn kho của {{ $inv->product_code }}?"
+                                            title="Xóa tồn kho vật tư này"
+                                            class="p-1.5 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-4 py-16 text-center">
+                            <td colspan="11" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center gap-3 text-slate-400">
                                     <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                                     <p class="font-semibold text-slate-600">Chưa có dữ liệu tồn kho</p>

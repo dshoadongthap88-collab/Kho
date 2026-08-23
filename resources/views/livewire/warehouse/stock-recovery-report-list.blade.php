@@ -11,40 +11,45 @@
     </style>
 
     <!-- Filters and Actions -->
-    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-2 mb-6 no-print">
-        <div class="filter-grid">
-            <!-- Date Filters -->
-            <div class="filter-field filter-wide flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-                <div class="flex items-center gap-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Từ ngày</label>
-                    <input type="date" wire:model.live="dateFrom" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
-                </div>
-                <div class="w-px h-4 bg-slate-200 mx-1"></div>
-                <div class="flex items-center gap-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Đến ngày</label>
-                    <input type="date" wire:model.live="dateTo" class="text-xs border-none focus:ring-0 p-0 font-bold text-slate-700">
-                </div>
-            </div>
+    {{-- Ca the la MOT luoi. Truoc day the nay la flex boc mot .filter-grid ben
+         trong; grid khong co flex-1 nen co lai vua noi dung, tinh ra 2 cot roi
+         xuong 3 hang, con nut thi don phai -> ho mot khoang trong lon o giua. --}}
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6 no-print filter-grid">
+        <div class="filter-field">
+            <label class="form-label" for="rec-from">Từ ngày</label>
+            <input id="rec-from" type="date" wire:model.live="dateFrom" class="input-sm">
+        </div>
 
-            <!-- Search -->
-            <div class="filter-field relative w-full">
-                <input wire:model.live.debounce.300ms="searchQuery" type="text" placeholder="Tìm số thu hồi, vật tư..." class="w-full pl-9 pr-4 py-2 text-xs font-bold rounded-xl border-slate-200 focus:ring-indigo-500 shadow-sm transition-all">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                </div>
-            </div>
+        <div class="filter-field">
+            <label class="form-label" for="rec-to">Đến ngày</label>
+            <input id="rec-to" type="date" wire:model.live="dateTo" class="input-sm">
+        </div>
 
-            <!-- Status Filter -->
-            <select wire:model.live="status" class="border-slate-200 rounded-xl px-4 py-2 text-xs font-bold focus:ring-indigo-500 shadow-sm">
+        <div class="filter-field">
+            <label class="form-label" for="rec-search">Tìm kiếm</label>
+            <div class="input-group">
+                <span class="input-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </span>
+                <input id="rec-search" wire:model.live.debounce.300ms="searchQuery" type="text"
+                       class="input-sm" placeholder="Số thu hồi, vật tư...">
+            </div>
+        </div>
+
+        <div class="filter-field">
+            <label class="form-label" for="rec-status">Trạng thái</label>
+            <select id="rec-status" wire:model.live="status" class="input-sm">
                 <option value="">Tất cả trạng thái</option>
                 <option value="pending">Đang chờ</option>
                 <option value="approved">Đã duyệt</option>
                 <option value="completed">Đã thu hồi</option>
                 <option value="cancelled">Đã hủy</option>
             </select>
+        </div>
 
-            <!-- Stock Out Filter -->
-            <select wire:model.live="stockOutId" class="border-slate-200 rounded-xl px-4 py-2 text-xs font-bold focus:ring-indigo-500 shadow-sm">
+        <div class="filter-field">
+            <label class="form-label" for="rec-stockout">Phiếu xuất</label>
+            <select id="rec-stockout" wire:model.live="stockOutId" class="input-sm">
                 <option value="">Tất cả Phiếu Xuất</option>
                 @foreach($stockOuts as $so)
                     <option value="{{ $so->id }}">{{ $so->code }}</option>
@@ -52,7 +57,7 @@
             </select>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="filter-actions">
             <button wire:click="exportExcel" class="bg-emerald-600 font-black hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs flex items-center gap-2 transition shadow-md shadow-emerald-100">
                 <span>📊</span> EXCEL
             </button>

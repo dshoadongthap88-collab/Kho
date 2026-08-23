@@ -15,21 +15,29 @@
                        class="w-full rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
             </div>
             
-            <div class="filter-actions mb-0.5">
-                <div class="no-print">
-                    <select wire:model.live="filterType" class="rounded-lg border-gray-200 shadow-sm text-xs font-bold focus:ring-indigo-500 py-2">
-                        <option value="">-- Loại --</option>
-                        <option value="import">Nhập kho</option>
-                        <option value="export">Xuất kho</option>
-                        <option value="adjust">Điều chỉnh</option>
-                        <option value="transfer">Chuyển kho</option>
-                    </select>
-                    <select wire:model.live="filterExportedApp" class="rounded-lg border-gray-200 shadow-sm text-xs font-bold focus:ring-indigo-500 py-2 ml-1">
-                        <option value="">-- Xuất app --</option>
-                        <option value="1">Đã xuất app</option>
-                        <option value="0">Chưa xuất app</option>
-                    </select>
-                </div>
+            {{-- Hai o loc nay truoc day bi nhet chung vao cum nut nen khong thang
+                 hang voi cac o loc khac. Tach ra thanh o loc rieng. --}}
+            <div class="filter-field no-print">
+                <label class="form-label" for="txn-type">Loại giao dịch</label>
+                <select id="txn-type" wire:model.live="filterType" class="input-sm">
+                    <option value="">Tất cả loại</option>
+                    <option value="import">Nhập kho</option>
+                    <option value="export">Xuất kho</option>
+                    <option value="adjust">Điều chỉnh</option>
+                    <option value="transfer">Chuyển kho</option>
+                </select>
+            </div>
+
+            <div class="filter-field no-print">
+                <label class="form-label" for="txn-app">Xuất app</label>
+                <select id="txn-app" wire:model.live="filterExportedApp" class="input-sm">
+                    <option value="">Tất cả</option>
+                    <option value="1">Đã xuất app</option>
+                    <option value="0">Chưa xuất app</option>
+                </select>
+            </div>
+
+            <div class="filter-actions">
                 <button type="button" wire:click="exportExcel" wire:loading.attr="disabled" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black transition shadow-sm cursor-pointer">
                     <span wire:loading.remove wire:target="exportExcel" class="text-sm">📊</span>
                     <span wire:loading wire:target="exportExcel" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

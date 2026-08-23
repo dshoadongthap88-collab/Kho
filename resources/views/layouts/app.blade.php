@@ -207,6 +207,12 @@
         grid-template-columns: repeat(auto-fill, minmax(10rem, 250px));
         gap: 0.625rem 0.75rem;
         align-items: end;
+        /* Neu luoi nam trong mot flex container thi phai gian ra chiem het cho
+           trong. Thieu dong nay, grid co lai vua noi dung -> tinh ra it cot,
+           xuong nhieu hang, va de ho mot khoang trong lon ben canh cum nut.
+           Khi khong phai flex item thi 2 thuoc tinh nay bi bo qua, vo hai. */
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     /* min-width:0 để ô co theo cột, không phình làm vỡ lưới */

@@ -13,6 +13,173 @@
         body { padding: 1.5cm; }
         .no-print { display: none !important; } 
     }
+
+    /* ============================================================
+       DESIGN SYSTEM — Form Elements
+       Áp dụng toàn app: input, select, textarea, checkbox, radio
+    ============================================================ */
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    select,
+    textarea {
+        display: block;
+        width: 100%;
+        padding: 0.45rem 0.75rem;
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        font-weight: 500;
+        color: #1e293b;
+        background-color: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 0.625rem;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: #94a3b8;
+        font-weight: 400;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="number"]:focus,
+    input[type="search"]:focus,
+    input[type="tel"]:focus,
+    input[type="url"]:focus,
+    input[type="date"]:focus,
+    input[type="time"]:focus,
+    input[type="datetime-local"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #6366f1;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    input:disabled,
+    select:disabled,
+    textarea:disabled {
+        background-color: #f1f5f9;
+        color: #94a3b8;
+        cursor: not-allowed;
+        border-color: #e2e8f0;
+    }
+
+    input[readonly],
+    textarea[readonly] {
+        background-color: #f8fafc;
+        color: #64748b;
+        cursor: default;
+    }
+
+    select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.6rem center;
+        background-size: 1rem;
+        padding-right: 2rem;
+        cursor: pointer;
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 60px;
+    }
+
+    input[type="checkbox"],
+    input[type="radio"] {
+        width: 1rem;
+        height: 1rem;
+        display: inline-block;
+        accent-color: #6366f1;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    input.is-invalid,
+    select.is-invalid,
+    textarea.is-invalid {
+        border-color: #f43f5e;
+        background-color: #fff1f2;
+    }
+    input.is-invalid:focus,
+    select.is-invalid:focus,
+    textarea.is-invalid:focus {
+        box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.12);
+    }
+
+    .input-sm {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+        border-radius: 0.5rem;
+    }
+
+    .input-lg {
+        padding: 0.625rem 1rem;
+        font-size: 0.9375rem;
+        border-radius: 0.75rem;
+    }
+
+    label.form-label {
+        display: block;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #475569;
+        margin-bottom: 0.375rem;
+    }
+
+    .date-range-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        background: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 0.75rem;
+        padding: 0.35rem 0.75rem;
+    }
+    .date-range-pill input[type="date"] {
+        width: auto;
+        border: none;
+        background: transparent;
+        padding: 0;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #334155;
+        box-shadow: none;
+    }
+    .date-range-pill input[type="date"]:focus {
+        box-shadow: none;
+        border-color: transparent;
+        background: transparent;
+    }
+    .date-range-pill:focus-within {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    .search-input {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: 0.65rem center;
+        background-size: 0.9rem;
+        padding-left: 2rem;
+    }
 </style>
 <script>
     let originalTitle = document.title;

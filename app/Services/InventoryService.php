@@ -9,19 +9,43 @@ use Illuminate\Support\Facades\DB;
 class InventoryService
 {
     /**
+     * Khoá và lấy bản ghi tồn kho của vật tư TRONG dự án đang đứng.
+     * Bản ghi cũ chưa gắn house_id vẫn được nhận, nhưng xếp sau bản ghi đúng dự án.
+     */
+    private function lockInventoryForCurrentHouse(int $productId): ?Inventory
+    {
+        $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
+
+        return Inventory::withoutGlobalScopes()
+            ->where('product_id', $productId)
+            ->when($houseId, function ($query) use ($houseId) {
+                $query->where(function ($sub) use ($houseId) {
+                    $sub->where('house_id', $houseId)->orWhereNull('house_id');
+                });
+            })
+            ->orderByRaw('house_id IS NULL')
+            ->lockForUpdate()
+            ->first();
+    }
+
+    /**
      * Nhập kho sản phẩm
      */
     public function import(int $productId, float $quantity, string $referenceType = null, int $referenceId = null, string $note = null, string $batchNumber = null, $expiryDate = null, string $location = null)
     {
         return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId, $note, $batchNumber, $expiryDate, $location) {
-            // Sử dụng lockForUpdate và withoutGlobalScopes để tránh lỗi 404 Not Found nếu bản ghi cũ có house_id = null
-            $inventory = Inventory::withoutGlobalScopes()->where('product_id', $productId)->lockForUpdate()->first();
-            
+            // Chỉ lấy tồn kho của dự án đang đứng. Bản ghi cũ có house_id = null vẫn
+            // được chấp nhận (tránh lỗi 404), nhưng luôn ưu tiên bản ghi đúng dự án.
+            $inventory = $this->lockInventoryForCurrentHouse($productId);
+
             if (!$inventory) {
                 try {
                     $inventory = Inventory::create(['product_id' => $productId]);
                 } catch (\Exception $e) {
-                    $inventory = Inventory::withoutGlobalScopes()->where('product_id', $productId)->lockForUpdate()->firstOrFail();
+                    $inventory = $this->lockInventoryForCurrentHouse($productId);
+                    if (!$inventory) {
+                        throw $e;
+                    }
                 }
             }
 
@@ -63,7 +87,11 @@ class InventoryService
     public function export(int $productId, float $quantity, string $referenceType = null, int $referenceId = null, string $note = null, string $batchNumber = null, $expiryDate = null, string $location = null)
     {
         return DB::transaction(function () use ($productId, $quantity, $referenceType, $referenceId, $note, $batchNumber, $expiryDate, $location) {
-            $inventory = Inventory::withoutGlobalScopes()->where('product_id', $productId)->firstOrFail();
+            $inventory = $this->lockInventoryForCurrentHouse($productId);
+
+            if (!$inventory) {
+                throw new \Exception("Không tìm thấy tồn kho của vật tư này trong chi nhánh hiện tại.");
+            }
 
             if ($inventory->quantity < $quantity) {
                 throw new \Exception("Không đủ hàng trong kho để xuất.");

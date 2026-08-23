@@ -134,15 +134,15 @@ class StockInForm extends Component
             
             if (str_contains($searchValue, ' - ')) {
                 $code = trim(explode(' - ', $searchValue)[0]);
-                $product = Product::whereRaw('LOWER(code) = ?', [strtolower($code)])->first();
+                $product = Product::where('code', $code)->first();
             }
             
             if (!$product) {
-                $product = Product::whereRaw('LOWER(code) = ?', [strtolower($searchValue)])->first();
+                $product = Product::where('code', $searchValue)->first();
             }
             
             if (!$product) {
-                $product = Product::whereRaw('LOWER(name) = ?', [strtolower($searchValue)])->first();
+                $product = Product::where('name', $searchValue)->first();
             }
             
             if (!$product) {
@@ -469,10 +469,10 @@ class StockInForm extends Component
                 // Tự động tạo sản phẩm mới nếu chưa tồn tại
                 if (empty($productId)) {
                     // Lấy mã và tên từ new_code / new_name hoặc phân tách từ product_search
-                    [$code, $name] = $this->deriveNewProductIdentity($item);
+                    [$itemCode, $itemName] = $this->deriveNewProductIdentity($item);
 
                     // Kiểm tra xem sản phẩm có mã này vừa được tạo trong giao dịch hoặc đã có sẵn chưa
-                    $existing = Product::whereRaw('LOWER(code) = ?', [strtolower($code)])->first();
+                    $existing = Product::where('code', $itemCode)->first();
                     if ($existing) {
                         $productId = $existing->id;
                     } else {
@@ -485,8 +485,8 @@ class StockInForm extends Component
                         }
 
                         $newProduct = Product::create([
-                            'code' => strtoupper($code),
-                            'name' => $name,
+                            'code' => strtoupper($itemCode),
+                            'name' => $itemName,
                             'unit' => !empty($item['unit']) ? $item['unit'] : 'Cái',
                             'brand' => $this->manufacturer ?: null,
                             'status' => 'active',
@@ -759,7 +759,7 @@ class StockInForm extends Component
                 ];
 
                 $normalize = function($str) {
-                    $str = mb_strtolower($str, 'UTF-8');
+                    $str = mb_strtolower((string) $str, 'UTF-8');
                     $str = preg_replace('/[áàảãạăắằẳẵặâấầẩẫậ]/u', 'a', $str);
                     $str = preg_replace('/[éèẻẽẹêếềểễệ]/u', 'e', $str);
                     $str = preg_replace('/[íìỉĩị]/u', 'i', $str);
@@ -810,26 +810,42 @@ class StockInForm extends Component
                     ];
                     $matchCount = 0;
 
-                    foreach ($potentialHeader as $colIndex => $colName) {
-                        if (empty($colName)) continue;
-                        $norm = $normalize($colName);
-                        
-                        if ($currentIndices['code'] === null && (str_contains($norm, 'masanpham') || str_contains($norm, 'mavattu') || str_contains($norm, 'code') || $norm === 'ma' || str_contains($norm, 'mahh') || str_contains($norm, 'mavt') || str_contains($norm, 'item'))) {
-                            $currentIndices['code'] = $colIndex; $matchCount++;
-                        } elseif ($currentIndices['name'] === null && (str_contains($norm, 'tensanpham') || str_contains($norm, 'tenvattu') || str_contains($norm, 'name') || $norm === 'ten' || $norm === 'hanghoa' || str_contains($norm, 'tenhh') || str_contains($norm, 'tenvt') || str_contains($norm, 'mota') || str_contains($norm, 'description'))) {
-                            $currentIndices['name'] = $colIndex; $matchCount++;
-                        } elseif ($currentIndices['quantity'] === null && (str_contains($norm, 'soluong') || str_contains($norm, 'quantity') || str_contains($norm, 'sl') || $norm === 'qty' || str_contains($norm, 'thucnhan') || str_contains($norm, 'khoiluong') || str_contains($norm, 'kl'))) {
-                            $currentIndices['quantity'] = $colIndex; $matchCount++;
-                        } elseif ($currentIndices['batch_number'] === null && (str_contains($norm, 'solo') || str_contains($norm, 'batch') || str_contains($norm, 'macodencc') || str_contains($norm, 'lo'))) {
-                            $currentIndices['batch_number'] = $colIndex; $matchCount++;
-                        } elseif ($currentIndices['expiry_date'] === null && (str_contains($norm, 'handung') || str_contains($norm, 'hansudung') || str_contains($norm, 'expiry') || str_contains($norm, 'hsd'))) {
-                            $currentIndices['expiry_date'] = $colIndex; $matchCount++;
-                        } elseif ($currentIndices['warehouse_location'] === null && (str_contains($norm, 'vitri') || str_contains($norm, 'location') || str_contains($norm, 'kho'))) {
-                            $currentIndices['warehouse_location'] = $colIndex; $matchCount++;
-                        } elseif ($currentIndices['unit_price'] === null && (str_contains($norm, 'dongia') || str_contains($norm, 'price') || str_contains($norm, 'unitprice') || str_contains($norm, 'gia'))) {
-                            $currentIndices['unit_price'] = $colIndex; $matchCount++;
-                        } elseif (!isset($currentIndices['unit']) && (str_contains($norm, 'dvt') || str_contains($norm, 'donvitinh') || str_contains($norm, 'unit'))) {
-                            $currentIndices['unit'] = $colIndex; $matchCount++;
+                    // Bảng ánh xạ cột: từ khoá cụ thể đứng trước, tiền tố '=' nghĩa là
+                    // khớp tuyệt đối cả tên cột. Trước đây các từ khoá quá ngắn nuốt nhầm
+                    // cột khác: 'kho' nuốt "Tồn kho" thành Vị trí, 'lo' nuốt "Location"
+                    // thành Số lô, 'gia' nuốt "Ngày giao" thành Đơn giá.
+                    $columnKeywords = [
+                        'code'               => ['masanpham', 'masp', 'mavattu', 'mavt', 'mathang', 'mahang', 'mahh', 'productcode', 'itemcode', '=ma', '=code', '=id'],
+                        'name'               => ['tensanpham', 'tensp', 'tenvattu', 'tenvt', 'tenmathang', 'tenhang', 'tenhh', 'productname', 'itemname', '=ten', '=name', '=hanghoa', '=mota', '=description'],
+                        'quantity'           => ['soluongton', 'soluong', 'thucnhan', 'tonkho', 'quantity', 'khoiluong', '=sl', '=qty', '=ton', '=kl'],
+                        'batch_number'       => ['solo', 'lotno', 'batchno', 'batch', 'macodencc', '=lo'],
+                        'expiry_date'        => ['hansudung', 'handung', 'ngayhethan', 'expiry', '=hsd'],
+                        'warehouse_location' => ['vitrikho', 'vitri', 'noichua', 'khuvuc', 'khochua', 'location', '=kho', '=ke'],
+                        'unit_price'         => ['dongia', 'unitprice', 'price', '=gia', '=giavon'],
+                        'unit'               => ['donvitinh', '=dvt', '=donvi', '=unit', '=uom'],
+                    ];
+
+                    foreach ($columnKeywords as $field => $keywords) {
+                        if (isset($currentIndices[$field]) && $currentIndices[$field] !== null) continue;
+
+                        foreach ($keywords as $keyword) {
+                            $exact  = str_starts_with($keyword, '=');
+                            $needle = $exact ? substr($keyword, 1) : $keyword;
+
+                            foreach ($potentialHeader as $colIndex => $colName) {
+                                if (empty($colName)) continue;
+                                // Một cột chỉ được gán cho đúng một trường
+                                if (in_array($colIndex, $currentIndices, true)) continue;
+
+                                $norm = $normalize($colName);
+                                if ($norm === '') continue;
+
+                                if ($exact ? $norm === $needle : str_contains($norm, $needle)) {
+                                    $currentIndices[$field] = $colIndex;
+                                    $matchCount++;
+                                    continue 3;
+                                }
+                            }
                         }
                     }
 
@@ -841,6 +857,12 @@ class StockInForm extends Component
                 }
 
                 $indices = $bestIndices;
+
+                // Không nhận ra cột nào => báo rõ thay vì im lặng nhập 0 dòng
+                if (!isset($indices['code']) && !isset($indices['name'])) {
+                    session()->flash('error', 'Không nhận ra cột Mã vật tư / Tên vật tư trong file. Vui lòng đặt tên cột là "Mã vật tư" và "Tên vật tư".');
+                    return;
+                }
 
                 // Loại bỏ dòng tiêu đề và các dòng trước đó
                 $rows = array_slice($rows, $headerRowIndex + 1);

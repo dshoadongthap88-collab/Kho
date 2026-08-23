@@ -4,6 +4,8 @@ namespace App\Imports;
 
 use App\Models\Inventory;
 use App\Models\Product;
+use App\Traits\ExcelColumnMapper;
+use App\Traits\ResolvesHouseScopedRecords;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Carbon\Carbon;
@@ -11,20 +13,7 @@ use Illuminate\Support\Str;
 
 class InventoryImport implements ToCollection
 {
-    private function findValue($row, $keywords)
-    {
-        foreach ($row as $key => $value) {
-            if ($value === null || $value === '') continue;
-            // Dùng Str::slug để tự động bỏ dấu tiếng Việt, viết thường, và bỏ khoảng trắng (vd: "Mã SP" -> "masp")
-            $normalizedKey = Str::slug((string)$key, '');
-            foreach ($keywords as $kw) {
-                if (str_contains($normalizedKey, $kw)) {
-                    return $value;
-                }
-            }
-        }
-        return null;
-    }
+    use ExcelColumnMapper, ResolvesHouseScopedRecords;
 
     public function collection(Collection $rows)
     {
@@ -75,33 +64,33 @@ class InventoryImport implements ToCollection
 
     private function processRow(array $row)
     {
-        // 1. Tìm Mã sản phẩm (Bắt buộc)
-        $productCode = $this->findValue($row, ['masp', 'masanpham', 'code', 'mahang', 'mavt', 'mavattu', 'ma', 'id']);
+        // 1. Tìm Mã sản phẩm (Bắt buộc). Dòng thiếu mã thì bỏ qua hẳn.
+        $productCode = $this->findCode($row);
         if (!$productCode) return;
 
         $productCode = strtoupper(trim((string)$productCode));
+        if ($productCode === '') return;
 
-        // 2. Tìm hoặc tạo Sản phẩm
-        $product = Product::withoutGlobalScope('house')->where('code', $productCode)->first();
-        
-        $productName = $this->findValue($row, ['tensp', 'tensanpham', 'name', 'tenhang', 'tenvattu', 'ten']);
-        $unit = $this->findValue($row, ['dvt', 'donvitinh', 'unit']);
-        $brand = $this->findValue($row, ['hangsx', 'thuonghieu', 'brand']);
-        $batch = $this->findValue($row, ['solo', 'batch', 'lo']);
-        $expiry = $this->findValue($row, ['handung', 'hsd', 'expiry', 'hansudung']);
-        $minStock = $this->findValue($row, ['tontoithieu', 'minstock']);
-        $location = $this->findValue($row, ['vitri', 'kho', 'location']);
-        $quantity = $this->findValue($row, ['soluong', 'sl', 'qty', 'quantity', 'tonkho']);
+        $productName = $this->findName($row);
+        $unit        = $this->findUnit($row);
+        $brand       = $this->findBrand($row);
+        $batch       = $this->findBatch($row);
+        $expiry      = $this->findExpiry($row);
+        $minStock    = $this->findMinStock($row);
+        $location    = $this->findLocation($row);
+        $quantity    = $this->findQuantity($row);
+
+        // 2. Tìm vật tư TRONG dự án đang đứng (không đụng dữ liệu dự án khác)
+        $product = $this->findProductForCurrentHouse($productCode);
 
         if (!$product) {
             // Tạo mới nếu chưa có
-            $type = 'material'; // Luôn cho vào danh mục vật tư
             $product = Product::create([
-                'code' => strtoupper((string)$productCode),
+                'code' => $productCode,
                 'name' => $productName ?: 'Sản phẩm ' . $productCode,
                 'unit' => $unit ?: 'Cái',
                 'status' => 'active',
-                'type' => $type,
+                'type' => 'material', // Luôn cho vào danh mục vật tư
             ]);
         }
 
@@ -161,13 +150,8 @@ class InventoryImport implements ToCollection
             if ($location !== null) $inventoryData['warehouse_location'] = $location;
 
             if (!empty($inventoryData)) {
-                // Lấy house_id hiện tại để tìm đúng inventory của dự án
-                $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
-
-                $inventory = Inventory::withoutGlobalScope('house')
-                    ->where('product_id', $product->id)
-                    ->when($houseId, fn($q) => $q->where('house_id', $houseId))
-                    ->first();
+                // Tồn kho của ĐÚNG dự án đang đứng
+                $inventory = $this->findInventoryForCurrentHouse($product->id);
 
                 if ($inventory) {
                     // GHI ĐÈ tồn kho = giá trị mới (không cộng thêm vào tồn cũ)
@@ -175,7 +159,6 @@ class InventoryImport implements ToCollection
                 } else {
                     $inventoryData['product_id'] = $product->id;
                     $inventoryData['quantity'] = $inventoryData['quantity'] ?? 0;
-                    if ($houseId) $inventoryData['house_id'] = $houseId;
                     Inventory::create($inventoryData);
                 }
             }

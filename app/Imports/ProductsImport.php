@@ -3,26 +3,15 @@
 namespace App\Imports;
 
 use App\Models\Product;
+use App\Traits\ExcelColumnMapper;
+use App\Traits\ResolvesHouseScopedRecords;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Illuminate\Support\Str;
 
 class ProductsImport implements ToCollection
 {
-    private function findValue($row, $keywords)
-    {
-        foreach ($row as $key => $value) {
-            if ($value === null || $value === '') continue;
-            // Dùng Str::slug để tự động bỏ dấu tiếng Việt, viết thường, và bỏ khoảng trắng (vd: "Mã SP" -> "masp")
-            $normalizedKey = Str::slug((string)$key, '');
-            foreach ($keywords as $kw) {
-                if (str_contains($normalizedKey, $kw)) {
-                    return $value;
-                }
-            }
-        }
-        return null;
-    }
+    use ExcelColumnMapper, ResolvesHouseScopedRecords;
 
     public function collection(Collection $rows)
     {
@@ -83,19 +72,21 @@ class ProductsImport implements ToCollection
 
     private function processRow(array $row)
     {
-        // 1. Tìm Mã sản phẩm (Bắt buộc)
-        $productCode = $this->findValue($row, ['masp', 'masanpham', 'code', 'mahang', 'mavt', 'mavattu', 'ma', 'id']);
+        // 1. Tìm Mã vật tư (Bắt buộc). Dòng thiếu mã thì bỏ qua, không đoán sang
+        // cột khác — đó là nguyên nhân sinh ra các vật tư rác có mã là con số.
+        $productCode = $this->findCode($row);
         if (!$productCode) return;
 
         $productCode = strtoupper(trim((string)$productCode));
+        if ($productCode === '') return;
 
-        // 2. Tìm hoặc tạo Sản phẩm
-        $product = Product::withoutGlobalScope('house')->where('code', $productCode)->first();
-        
         // Chỉ đọc: mã, tên, ĐVT, vị trí (không đụng tồn kho)
-        $productName = $this->findValue($row, ['tensp', 'tensanpham', 'name', 'tenhang', 'tenvattu', 'ten']);
-        $unit        = $this->findValue($row, ['dvt', 'donvitinh', 'unit']);
-        $location    = $this->findValue($row, ['vitri', 'noichua', 'kho', 'location']);
+        $productName = $this->findName($row);
+        $unit        = $this->findUnit($row);
+        $location    = $this->findLocation($row);
+
+        // 2. Tìm vật tư TRONG dự án đang đứng (không đụng dữ liệu dự án khác)
+        $product = $this->findProductForCurrentHouse($productCode);
 
         if (!$product) {
             // Tạo mới nếu chưa có — tồn kho = 0 (sẽ cập nhật qua phiếu nhập)
@@ -113,20 +104,29 @@ class ProductsImport implements ToCollection
                 ['product_id' => $product->id],
                 ['quantity' => 0, 'warehouse_location' => $location]
             );
-        } else {
-            // Cập nhật thông tin danh mục — KHÔNG thay đổi số lượng tồn kho
-            $productData = ['type' => 'material'];
-            if ($productName) $productData['name']     = $productName;
-            if ($unit)        $productData['unit']     = $unit;
-            if ($location)    $productData['location'] = $location;
 
-            $product->update($productData);
+            return;
+        }
 
-            // Chỉ cập nhật warehouse_location trong Inventory nếu record đã tồn tại
-            if ($location) {
-                \App\Models\Inventory::withoutGlobalScope('house')
-                    ->where('product_id', $product->id)
-                    ->update(['warehouse_location' => $location]);
+        // Cập nhật thông tin danh mục — KHÔNG thay đổi số lượng tồn kho
+        $productData = ['type' => 'material'];
+        if ($productName) $productData['name']     = $productName;
+        if ($unit)        $productData['unit']     = $unit;
+        if ($location)    $productData['location'] = $location;
+
+        $product->update($productData);
+
+        // Chỉ cập nhật warehouse_location của tồn kho THUỘC DỰ ÁN HIỆN TẠI
+        if ($location) {
+            $inventory = $this->findInventoryForCurrentHouse($product->id);
+            if ($inventory) {
+                $inventory->update(['warehouse_location' => $location]);
+            } else {
+                \App\Models\Inventory::create([
+                    'product_id'         => $product->id,
+                    'quantity'           => 0,
+                    'warehouse_location' => $location,
+                ]);
             }
         }
     }

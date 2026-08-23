@@ -50,10 +50,15 @@ class InventoryList extends Component
 
     public function toggleSelectAll($inventoryIds)
     {
-        if (count($this->selectedItems) === count($inventoryIds)) {
-            $this->selectedItems = [];
+        // Chỉ thao tác trên các dòng của trang hiện tại, giữ nguyên lựa chọn ở
+        // các trang khác — nhờ vậy có thể chọn dồn qua nhiều trang rồi in một lượt.
+        $pageIds  = array_map('intval', $inventoryIds);
+        $selected = array_map('intval', $this->selectedItems);
+
+        if (count(array_intersect($pageIds, $selected)) === count($pageIds)) {
+            $this->selectedItems = array_values(array_diff($selected, $pageIds));
         } else {
-            $this->selectedItems = $inventoryIds;
+            $this->selectedItems = array_values(array_unique(array_merge($selected, $pageIds)));
         }
     }
 

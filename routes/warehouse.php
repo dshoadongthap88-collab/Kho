@@ -64,6 +64,69 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         Route::get('/inventory', function () {
             return view('warehouse.inventory');
         })->name('inventory');
+
+        // Route in tồn kho — load toàn bộ data, không paginate
+        Route::get('/inventory/print', function (\Illuminate\Http\Request $request) {
+            $houseId = session('current_house') ?? (auth()->user()?->current_house_id);
+
+            $query = \App\Models\Product::query()
+                ->leftJoin('inventories', function($join) use ($houseId) {
+                    $join->on('products.id', '=', 'inventories.product_id');
+                    if ($houseId) {
+                        $join->where('inventories.house_id', $houseId);
+                    }
+                })
+                ->where('products.status', 'active')
+                ->select(
+                    'products.id',
+                    \Illuminate\Support\Facades\DB::raw('COALESCE(inventories.quantity, 0) as quantity'),
+                    \Illuminate\Support\Facades\DB::raw('COALESCE(inventories.reserved_quantity, 0) as reserved_quantity'),
+                    'inventories.warehouse_location',
+                    'products.name as product_name',
+                    'products.code as product_code',
+                    'products.unit',
+                    'products.brand',
+                    'products.min_stock',
+                    'products.batch_number',
+                    'products.expiry_date'
+                );
+
+            // Áp dụng filters từ query string
+            if ($request->search) {
+                $s = $request->search;
+                $query->where(function($q) use ($s) {
+                    $q->where('products.name', 'like', "%{$s}%")
+                      ->orWhere('products.code', 'like', "%{$s}%");
+                });
+            }
+            if ($request->brand) {
+                $query->where('products.brand', $request->brand);
+            }
+            if ($request->location) {
+                $query->where('inventories.warehouse_location', 'like', "%{$request->location}%");
+            }
+            if ($request->status === 'critical') {
+                $query->whereRaw('COALESCE(inventories.quantity,0) < products.min_stock');
+            } elseif ($request->status === 'warning') {
+                $query->whereRaw('COALESCE(inventories.quantity,0) >= products.min_stock')
+                      ->whereRaw('COALESCE(inventories.quantity,0) < (products.min_stock * 1.5)');
+            } elseif ($request->status === 'sufficient') {
+                $query->whereRaw('COALESCE(inventories.quantity,0) >= (products.min_stock * 1.5)');
+            }
+
+            // Nếu có selected IDs thì chỉ in các mã đó
+            if ($request->ids) {
+                $ids = array_filter(explode(',', $request->ids));
+                if (!empty($ids)) {
+                    $query->whereIn('products.id', $ids);
+                }
+            }
+
+            $inventories = $query->orderBy('products.name')->get();
+            $project = \App\Models\Project::find($houseId);
+
+            return view('livewire.warehouse.inventory-print', compact('inventories', 'project'));
+        })->name('inventory.print');
     });
 
     // 4. STOCK IN

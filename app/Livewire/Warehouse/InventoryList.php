@@ -228,13 +228,38 @@ class InventoryList extends Component
             'excelFile' => 'required|mimes:xlsx,xls,csv|max:10240',
         ]);
 
+        // File nhiều nghìn dòng dễ chạm giới hạn thời gian mặc định của PHP
+        @set_time_limit(600);
+
         try {
-            Excel::import(new \App\Imports\InventoryImport, $this->excelFile);
-            
+            $import = new \App\Imports\InventoryImport;
+            Excel::import($import, $this->excelFile);
+
             $this->reset(['excelFile', 'showImportModal']);
             $this->selectedItems = [];
-            session()->flash('success', 'Nhập dữ liệu tồn kho từ Excel thành công!');
-        } catch (\Exception $e) {
+
+            // Báo rõ từng con số để không còn cảnh "file 1500 dòng mà chỉ vào 750"
+            // mà không biết vì sao.
+            $message = sprintf(
+                'Đã đọc %d dòng: tạo mới %d vật tư, cập nhật %d vật tư.',
+                $import->rowsRead,
+                $import->created,
+                $import->updated
+            );
+
+            if ($import->duplicateRows > 0) {
+                $message .= sprintf(
+                    ' Có %d dòng trùng mã vật tư — dòng dưới ghi đè dòng trên (tồn kho là ghi đè, không cộng dồn).',
+                    $import->duplicateRows
+                );
+            }
+
+            if ($import->skippedNoCode > 0) {
+                $message .= sprintf(' Bỏ qua %d dòng thiếu mã vật tư.', $import->skippedNoCode);
+            }
+
+            session()->flash('success', $message);
+        } catch (\Throwable $e) {
             session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }

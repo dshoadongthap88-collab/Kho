@@ -557,16 +557,38 @@ class ProductCatalog extends Component
             'excelFile' => 'required|mimes:xlsx,xls,csv|max:10240',
         ]);
 
+        // File nhiều nghìn dòng dễ chạm giới hạn thời gian mặc định của PHP
+        @set_time_limit(600);
+
         try {
             if ($this->activeTab === 'materials') {
-                Excel::import(new ProductsImport, $this->excelFile);
+                $import = new ProductsImport;
+                Excel::import($import, $this->excelFile);
+
+                // Báo rõ từng con số thay vì chỉ "thành công", để biết ngay vì sao
+                // file N dòng lại ra ít vật tư hơn.
+                $message = sprintf(
+                    'Đã đọc %d dòng: tạo mới %d vật tư, cập nhật %d vật tư.',
+                    $import->rowsRead,
+                    $import->created,
+                    $import->updated
+                );
+
+                if ($import->duplicateRows > 0) {
+                    $message .= sprintf(' Có %d dòng trùng mã vật tư — dòng dưới ghi đè dòng trên.', $import->duplicateRows);
+                }
+
+                if ($import->skippedNoCode > 0) {
+                    $message .= sprintf(' Bỏ qua %d dòng thiếu mã vật tư.', $import->skippedNoCode);
+                }
             } else {
                 Excel::import(new \App\Imports\AssetsImport, $this->excelFile);
+                $message = 'Nhập dữ liệu từ Excel thành công!';
             }
-            
+
             $this->reset(['excelFile', 'showImportModal']);
-            session()->flash('message', 'Nhập dữ liệu từ Excel thành công!');
-        } catch (\Exception $e) {
+            session()->flash('message', $message);
+        } catch (\Throwable $e) {
             session()->flash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }

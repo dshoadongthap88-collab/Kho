@@ -113,12 +113,26 @@ class AuditMultiProject extends Command
         $this->newLine();
         $this->line('<fg=cyan>[2] BẢN GHI KHÔNG THUỘC DỰ ÁN NÀO (house_id = NULL)</>');
 
+        // Bảng tham chiếu: house_id = NULL nghĩa là "dùng chung mọi dự án",
+        // không phải mồ côi. Xem chú thích trong trait BelongsToHouse.
+        $dungChung = ['categories', 'suppliers'];
+
         $rows = [];
+        $chung = [];
+
         foreach ($tables as $table) {
             try {
                 $orphan = DB::table($table)->whereNull('house_id')->count();
-                if ($orphan > 0) {
-                    $rows[] = [$table, number_format($orphan), number_format(DB::table($table)->count())];
+                if ($orphan === 0) {
+                    continue;
+                }
+
+                $tong = DB::table($table)->count();
+
+                if (in_array($table, $dungChung, true)) {
+                    $chung[] = [$table, number_format($orphan), number_format($tong)];
+                } else {
+                    $rows[] = [$table, number_format($orphan), number_format($tong)];
                 }
             } catch (\Throwable $e) {
                 // bảng có thể có global scope hoặc soft delete, bỏ qua
@@ -127,11 +141,17 @@ class AuditMultiProject extends Command
 
         if (empty($rows)) {
             $this->line('    Không có bản ghi mồ côi.');
-            return;
+        } else {
+            $this->table(['Bảng', 'Mồ côi', 'Tổng'], $rows);
+            $this->line('    Các bản ghi này không hiện ở màn hình nào vì bộ lọc dự án loại chúng ra.');
+            $this->line('    Chạy: php artisan db:fix-orphans  để gán dự án suy ra từ quan hệ.');
         }
 
-        $this->table(['Bảng', 'Mồ côi', 'Tổng'], $rows);
-        $this->line('    Các bản ghi này không hiện ở màn hình nào vì bộ lọc dự án loại chúng ra.');
+        if (!empty($chung)) {
+            $this->newLine();
+            $this->line('    <fg=green>Dữ liệu tham chiếu dùng chung (bình thường, không phải lỗi):</>');
+            $this->table(['Bảng', 'Dùng chung', 'Tổng'], $chung);
+        }
     }
 
     /** 3. Chỗ code bỏ lọc dự án */

@@ -1,3 +1,30 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+    /* filter-grid: dùng trong toolbar của CRM views để filter chips tự wrap đẹp */
+    .filter-grid {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .filter-grid > * {
+        min-width: 0;
+    }
+
+    /* tabular-nums đảm bảo số tiền thẳng hàng */
+    .tabular-nums {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Ẩn scrollbar nhưng vẫn scroll được */
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+}

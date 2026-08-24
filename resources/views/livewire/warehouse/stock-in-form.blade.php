@@ -1133,9 +1133,25 @@
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-0.5">Ghi chú phiếu nhập</label>
                 <textarea wire:model="note" rows="1" class="w-full rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 shadow-inner transition-all py-1.5 px-3 text-[12px] font-bold text-slate-800 placeholder:font-normal" placeholder="Lý do nhập kho, số chứng từ kèm theo..."></textarea>
             </div>
-            <button wire:click="stageAndSave" wire:loading.attr="disabled" class="px-8 py-3 rounded-xl text-[13px] font-black text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-md shadow-indigo-100 hover:shadow-indigo-200 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed">
-                <span>💾</span> LƯU PHIẾU NHẬP
-            </button>
+            <div class="flex items-center gap-3">
+                {{-- File lớn: bảng chỉ hiện phần xem trước, dữ liệu đầy đủ nằm ở
+                     server. Nói rõ để người dùng không tưởng bị mất dòng. --}}
+                @if($stagedCount > count($items))
+                    <div class="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 max-w-xs">
+                        Đang giữ <span class="font-black">{{ number_format($stagedCount) }}</span> dòng.
+                        Bảng chỉ hiện {{ number_format(count($items)) }} dòng đầu cho nhẹ,
+                        khi lưu vẫn ghi đủ.
+                    </div>
+                @endif
+
+                <button wire:click="stageAndSave" wire:loading.attr="disabled" wire:target="stageAndSave"
+                        class="px-8 py-3 rounded-xl text-[13px] font-black text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-md shadow-indigo-100 hover:shadow-indigo-200 transition-all flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span wire:loading wire:target="stageAndSave"
+                          class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span wire:loading.remove wire:target="stageAndSave">💾 LƯU PHIẾU NHẬP</span>
+                    <span wire:loading wire:target="stageAndSave">ĐANG LƯU...</span>
+                </button>
+            </div>
         </div>
 
                 </div>

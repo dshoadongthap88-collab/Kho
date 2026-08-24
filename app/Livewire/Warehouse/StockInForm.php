@@ -64,6 +64,22 @@ class StockInForm extends Component
     public $activeImportTab = 'excel';
     public $excelFile = null;
 
+    /**
+     * Số dòng tối đa còn giữ trực tiếp trong $items (tức là trong snapshot mà
+     * trình duyệt phải gửi đi gửi lại mỗi lần bấm). Vượt ngưỡng này thì dữ liệu
+     * nằm hẳn ở session phía server, bảng chỉ hiện phần xem trước.
+     *
+     * 1545 dòng cho snapshot ~600KB — vượt mức Livewire xử lý gọn và làm PHP
+     * hết bộ nhớ lúc dựng phản hồi.
+     */
+    public const MAX_ROWS_IN_SNAPSHOT = 300;
+
+    /** Số dòng ghi mỗi lô khi lưu, để không ôm cả nghìn dòng cùng lúc */
+    public const SAVE_CHUNK_SIZE = 200;
+
+    /** Có bao nhiêu dòng đang nằm ở session (file lớn) */
+    public $stagedCount = 0;
+
     // Chỉnh sửa phiếu nhập
     public $showEditModal = false;
     public $editingStockInId = null;
@@ -75,6 +91,22 @@ class StockInForm extends Component
     protected $rules = [
         'items.*.quantity' => 'required|numeric|min:0.0001',
     ];
+
+    /**
+     * Chạy đầu MỌI request của component này, kể cả request AJAX của Livewire.
+     *
+     * Phiếu nhập nhiều dòng làm phản hồi phình rất to (1545 dòng ~ 600KB
+     * snapshot cộng phần HTML render lại). Với memory_limit 128M mặc định,
+     * PHP chết ngay lúc dựng phản hồi (Response.php) ở khoảng 700 dòng.
+     * Tiến trình chết giữa chừng trả về phản hồi cụt, Livewire đọc phải dữ
+     * liệu dở dang rồi báo CorruptComponentPayloadException — thông báo đó
+     * gây hiểu nhầm là dữ liệu bị sửa đổi, thực chất là hết bộ nhớ.
+     */
+    public function boot()
+    {
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(300);
+    }
 
     public function mount()
     {
@@ -205,6 +237,22 @@ class StockInForm extends Component
         }
     }
 
+    /**
+     * Chuẩn hoá số tiền, quan trọng nhất là khử SỐ KHÔNG ÂM (-0.0).
+     *
+     * Vật tư có tồn âm (vd -10) nhân với đơn giá 0 cho ra -0.0 trong PHP.
+     * json_encode ghi giá trị đó là "-0", nhưng khi Livewire nhận lại rồi mã
+     * hoá lần nữa để kiểm tra thì ra "0" — lệch đúng một ký tự và checksum
+     * không khớp, sinh ra CorruptComponentPayloadException. Thông báo lỗi nói
+     * là "dữ liệu bị sửa đổi" nên rất dễ đi lạc hướng.
+     */
+    private function normalizeAmount($value): float
+    {
+        $value = (float) $value;
+
+        return $value == 0.0 ? 0.0 : $value;
+    }
+
     public function calculateTotal($index)
     {
         $qty = floatval($this->items[$index]['quantity'] ?? 0);
@@ -212,7 +260,7 @@ class StockInForm extends Component
         $vat = floatval($this->items[$index]['vat_rate'] ?? 0);
 
         $subtotal = $qty * $price;
-        $this->items[$index]['total_amount'] = $subtotal + ($subtotal * $vat / 100);
+        $this->items[$index]['total_amount'] = $this->normalizeAmount($subtotal + ($subtotal * $vat / 100));
     }
 
     public function removeItem($index)
@@ -334,11 +382,49 @@ class StockInForm extends Component
      * Giải pháp bypass PHP max_input_vars (mặc định 1000) khi có nhiều dòng.
      * Livewire vẫn giữ $this->items đầy đủ trên server — chỉ cần lưu lại vào session.
      */
+    /**
+     * Đưa dữ liệu import lớn vào session, chỉ để lại phần xem trước trên bảng.
+     */
+    private function stageLargeImport(): void
+    {
+        $total = count($this->items);
+
+        if ($total <= self::MAX_ROWS_IN_SNAPSHOT) {
+            $this->stagedCount = 0;
+            session()->forget($this->stagedKey());
+            return;
+        }
+
+        session([$this->stagedKey() => $this->items]);
+        $this->stagedCount = $total;
+
+        // Chỉ giữ lại phần đầu để người dùng đối chiếu; phần còn lại vẫn được
+        // lưu đầy đủ vì lấy từ session lúc bấm Lưu.
+        $this->items = array_slice($this->items, 0, self::MAX_ROWS_IN_SNAPSHOT);
+    }
+
+    private function stagedKey(): string
+    {
+        return 'stock_in_staged_items_' . auth()->id();
+    }
+
+    /** Toàn bộ dòng sẽ được ghi: ưu tiên dữ liệu đầy đủ ở session */
+    private function rowsToSave(): array
+    {
+        $staged = session($this->stagedKey());
+
+        return !empty($staged) ? $staged : $this->items;
+    }
+
     public function stageAndSave()
     {
-        if (!empty($this->items)) {
-            session(['stock_in_staged_items_' . auth()->id() => $this->items]);
+        // Chỉ cất lại khi CHƯA có bản đầy đủ ở session. Nếu file lớn đã được
+        // stageLargeImport() cất từ trước thì $this->items lúc này chỉ là phần
+        // xem trước — ghi đè lên session sẽ làm mất hầu hết dòng.
+        if (empty(session($this->stagedKey())) && !empty($this->items)) {
+            session([$this->stagedKey() => $this->items]);
         }
+
         $this->save();
     }
 
@@ -483,7 +569,11 @@ class StockInForm extends Component
                 'created_by' => auth()->id(),
             ]);
 
-            foreach ($this->items as $item) {
+            // Ghi theo lô thay vì ôm cả nghìn dòng cùng lúc. Sau mỗi lô thì
+            // giải phóng bộ nhớ Eloquent đã giữ, nhờ vậy RAM đi ngang thay vì
+            // tăng đều cho tới lúc vượt memory_limit.
+            foreach (array_chunk($this->items, self::SAVE_CHUNK_SIZE) as $chunk) {
+            foreach ($chunk as $item) {
                 $productId = $item['product_id'];
 
                 // Tự động tạo sản phẩm mới nếu chưa tồn tại
@@ -612,6 +702,12 @@ class StockInForm extends Component
                 }
             }
 
+            // Hết một lô: bỏ các model Eloquent đã nạp trong lô này để RAM
+            // không tăng dần theo số dòng.
+            unset($chunk);
+            gc_collect_cycles();
+            }
+
             $savedRows = count($this->items);
             session()->flash('success', 'Nhập kho thành công! Các sản phẩm mới đã được tự động thêm vào Danh mục vật tư.');
             $this->dispatch('show-success-effect');
@@ -620,7 +716,8 @@ class StockInForm extends Component
                 icon: '📦',
                 type: 'success',
                 duration: 4000);
-        $this->reset(['items', 'marked_received']);
+            $this->reset(['items', 'marked_received']);
+            $this->stagedCount = 0;
             $this->addItem();
             });
         } catch (\Throwable $e) {
@@ -923,9 +1020,20 @@ class StockInForm extends Component
                         'unit' => $unitVal ?: ($product?->unit ?: ($product?->box_spec ?: ($product?->carton_spec ?: 'Cái'))),
                         'unit_price' => $priceVal,
                         'vat_rate' => 0,
-                        'total_amount' => is_numeric($qtyVal) ? ($qtyVal * $priceVal) : 0
+                        'total_amount' => $this->normalizeAmount(is_numeric($qtyVal) ? ($qtyVal * $priceVal) : 0)
                     ];
                 }
+
+                // Phiếu nhập kho không thể nhập số lượng 0 hoặc âm — validate
+                // chặn cả phiếu nếu còn sót. File xuất từ phần mềm kế toán có
+                // rất nhiều dòng tồn 0, nên lọc luôn ở đây và báo rõ số lượng
+                // bị bỏ, thay vì để người dùng gặp "Số lượng phải lớn hơn 0
+                // (and 232 more errors)" mà không biết dòng nào.
+                $before = count($this->items);
+                $this->items = array_values(array_filter($this->items, function ($item) {
+                    return is_numeric($item['quantity']) && (float) $item['quantity'] > 0;
+                }));
+                $skippedZero = $before - count($this->items);
 
                 if (empty($this->items)) {
                     $this->addItem();
@@ -934,15 +1042,27 @@ class StockInForm extends Component
                 $this->showImportModal = false;
                 $this->excelFile = null;
 
+                // File lớn: cất toàn bộ dòng vào session, chỉ giữ lại phần xem
+                // trước trong $items. Nhờ vậy snapshot gửi qua lại chỉ vài chục
+                // KB thay vì 600KB, và không còn hết bộ nhớ khi dựng phản hồi.
+                $this->stageLargeImport();
+
                 // Báo rõ số dòng đọc được. Chỉ nói "thành công" thì người dùng
                 // không biết file 1500 dòng có vào đủ hay không.
                 $loaded = count($this->items);
-                session()->flash('success', sprintf(
-                    'Đã đọc %d dòng từ tệp Excel. Những ô thiếu thông tin được báo màu cam để anh/chị bổ sung.',
-                    $loaded
-                ));
+                $msg = sprintf('Đã đọc %d dòng từ tệp Excel.', $loaded);
+                if ($skippedZero > 0) {
+                    $msg .= sprintf(
+                        ' Bỏ qua %d dòng có số lượng bằng 0 hoặc âm — phiếu nhập kho chỉ nhận số lượng lớn hơn 0.',
+                        $skippedZero
+                    );
+                }
+                $msg .= ' Những ô thiếu thông tin được báo màu cam để anh/chị bổ sung.';
+                session()->flash('success', $msg);
                 $this->dispatch('toast',
-                    message: sprintf('Đã nạp %d dòng từ tệp Excel vào phiếu nhập.', $loaded),
+                    message: $skippedZero > 0
+                        ? sprintf('Đã nạp %d dòng. Bỏ %d dòng số lượng 0 hoặc âm.', $loaded, $skippedZero)
+                        : sprintf('Đã nạp %d dòng từ tệp Excel vào phiếu nhập.', $loaded),
                     icon: '📥',
                     type: 'success');
             }
@@ -1000,7 +1120,7 @@ class StockInForm extends Component
                 'unit' => !empty($row['unit']) ? trim($row['unit']) : ($product?->unit ?: ($product?->box_spec ?: ($product?->carton_spec ?: 'Cái'))),
                 'unit_price' => $priceVal,
                 'vat_rate' => 0,
-                'total_amount' => is_numeric($qtyVal) ? ($qtyVal * $priceVal) : 0
+                'total_amount' => $this->normalizeAmount(is_numeric($qtyVal) ? ($qtyVal * $priceVal) : 0)
             ];
         }
 

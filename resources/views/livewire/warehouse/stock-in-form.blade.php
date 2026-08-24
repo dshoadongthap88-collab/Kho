@@ -1346,7 +1346,10 @@
                         @endif
 
                     <!-- Tab 2: Nhập từ tệp tin PDF -->
-                    <div x-show="activeImportTab === 'pdf'" class="p-2 space-y-4">
+                    {{-- activeImportTab la property cua Livewire, khong phai bien Alpine.
+                         Viet tran nhu cu thi Alpine nem "activeImportTab is not
+                         defined", lam dut mach JS cua ca khoi upload. --}}
+                    <div x-show="$wire.activeImportTab === 'pdf'" class="p-2 space-y-4">
                         <div class="p-3.5 bg-red-50 text-red-850 rounded-lg text-xs font-semibold leading-relaxed border border-red-100">
                             📋 <span class="font-extrabold text-red-950">Giải pháp xử lý PDF thông minh:</span> Hệ thống sẽ đọc dữ liệu text trực tiếp từ tệp tin PDF hóa đơn/phiếu giao hàng của nhà cung cấp và tự động bóc tách các trường: <i>Mã vật tư, Số lượng, Hạn dùng, Số lô, Vị trí, Đơn giá</i> để điền nhanh vào phiếu nhập!
                         </div>
@@ -1481,7 +1484,7 @@
                     </div>
 
                     <!-- Tab 3: Nhận diện từ Ảnh chụp AI OCR -->
-                    <div x-show="activeImportTab === 'ocr'" class="p-2 space-y-4" @paste="handleImagePaste($event)">
+                    <div x-show="$wire.activeImportTab === 'ocr'" class="p-2 space-y-4" @paste="handleImagePaste($event)">
                         <div class="p-3 bg-indigo-50 text-indigo-850 rounded-lg text-xs font-semibold leading-relaxed border border-indigo-100">
                             📷 <span class="font-extrabold text-indigo-950">Quét ảnh chụp thông minh:</span> Anh/chị chỉ cần chụp ảnh màn hình bảng Excel hoặc chụp phiếu xuất kho của nhà cung cấp, nhấn **Ctrl + V** để dán trực tiếp ảnh vào đây hoặc chọn ảnh chụp để AI bóc tách nhanh chóng!
                         </div>

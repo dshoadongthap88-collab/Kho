@@ -42,6 +42,9 @@ class SyncProductLocation extends Command
         $lech = [];
 
         $query->orderBy('id')->chunkById(500, function ($rows) use (&$lech) {
+            // An toan khi bo loc du an: tra theo products.id lay tu chinh cac
+            // dong ton kho da duoc loc theo house_id o truy van goc, khong phai
+            // tra theo ma vat tu. Moi id chi thuoc dung mot du an.
             $products = Product::withoutGlobalScopes()
                 ->whereIn('id', $rows->pluck('product_id')->all())
                 ->get(['id', 'code', 'name', 'location'])
@@ -94,6 +97,7 @@ class SyncProductLocation extends Command
         DB::transaction(function () use ($lech) {
             foreach (array_chunk($lech, 500) as $chunk) {
                 foreach ($chunk as $row) {
+                    // Cung ly do: ghi theo id da xac dinh o buoc doi chieu tren
                     Product::withoutGlobalScopes()
                         ->where('id', $row['product_id'])
                         ->update(['location' => $row['moi']]);

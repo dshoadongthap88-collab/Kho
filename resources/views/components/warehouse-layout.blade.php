@@ -289,6 +289,50 @@
         @media print {
             .print-only { display: inline !important; }
         }
+
+        /* ============================================================
+           Toast — thông báo nổi góc dưới phải
+           Dùng: showToast('Nội dung', '✅')  hoặc từ Livewire:
+                 $this->dispatch('toast', message: '...', icon: '✅')
+        ============================================================ */
+        #toast-container {
+            position: fixed;
+            bottom: 1.25rem;
+            right: 1.25rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            pointer-events: none;
+        }
+        .custom-toast {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.25rem;
+            border-radius: 1rem;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            max-width: 26rem;
+            pointer-events: auto;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
+            backdrop-filter: blur(10px);
+            animation: toastIn 0.3s ease-out forwards;
+        }
+        .custom-toast.toast-success { background: rgba(5, 122, 85, 0.96); }
+        .custom-toast.toast-error   { background: rgba(159, 18, 57, 0.96); }
+        .custom-toast.toast-info    { background: rgba(30, 41, 59, 0.96); }
+        .custom-toast .toast-icon   { font-size: 1rem; flex-shrink: 0; }
+        .custom-toast .toast-text   { text-transform: none; letter-spacing: 0; font-weight: 700; }
+        .custom-toast.hide { animation: toastOut 0.3s ease-in forwards; }
+        @keyframes toastIn  { from { transform: translateY(1rem); opacity: 0 } to { transform: none; opacity: 1 } }
+        @keyframes toastOut { from { opacity: 1 } to { opacity: 0; transform: translateY(0.5rem) } }
+        @media print { #toast-container { display: none !important; } }
     </style>
     <script>
         let originalTitle = document.title;
@@ -499,6 +543,49 @@
                     focusables[index + 1].focus();
                 }
             }
+        });
+    </script>
+    {{-- Toast dùng chung cho mọi màn. Gọi bằng showToast('...', '✅') ở JS,
+         hoặc từ component Livewire: $this->dispatch('toast', message: '...') --}}
+    <div id="toast-container" class="no-print"></div>
+    <script>
+        window.showToast = function (message, icon, type, duration) {
+            icon = icon || '✅';
+            type = type || 'success';
+            duration = duration || 3000;
+
+            var container = document.getElementById('toast-container');
+            if (!container) return;
+
+            var toast = document.createElement('div');
+            toast.className = 'custom-toast toast-' + type;
+
+            var i = document.createElement('span');
+            i.className = 'toast-icon';
+            i.textContent = icon;
+
+            // textContent chứ không phải innerHTML: nội dung có thể là tên vật tư
+            // do người dùng nhập, nhét thẳng vào HTML là mở đường cho XSS.
+            var t = document.createElement('span');
+            t.className = 'toast-text';
+            t.textContent = message;
+
+            toast.appendChild(i);
+            toast.appendChild(t);
+            container.appendChild(toast);
+
+            setTimeout(function () {
+                toast.classList.add('hide');
+                setTimeout(function () { toast.remove(); }, 300);
+            }, duration);
+        };
+
+        // Cho phép mọi component Livewire bắn toast mà không cần tự viết JS
+        document.addEventListener('livewire:init', function () {
+            Livewire.on('toast', function (e) {
+                var d = Array.isArray(e) ? (e[0] || {}) : (e || {});
+                showToast(d.message || '', d.icon, d.type, d.duration);
+            });
         });
     </script>
 </body>

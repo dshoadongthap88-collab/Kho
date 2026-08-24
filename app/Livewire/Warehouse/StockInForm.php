@@ -612,8 +612,14 @@ class StockInForm extends Component
                 }
             }
 
+            $savedRows = count($this->items);
             session()->flash('success', 'Nhập kho thành công! Các sản phẩm mới đã được tự động thêm vào Danh mục vật tư.');
             $this->dispatch('show-success-effect');
+            $this->dispatch('toast',
+                message: sprintf('Đã lưu phiếu nhập %s với %d dòng vật tư.', $code, $savedRows),
+                icon: '📦',
+                type: 'success',
+                duration: 4000);
         $this->reset(['items', 'marked_received']);
             $this->addItem();
             });
@@ -830,6 +836,9 @@ class StockInForm extends Component
                 // Không nhận ra cột nào => báo rõ thay vì im lặng nhập 0 dòng
                 if ($header === null) {
                     session()->flash('error', 'Không nhận ra dòng tiêu đề trong file. Vui lòng đảm bảo file có cột "Mã vật tư" và ít nhất một cột nữa (Tên vật tư, ĐVT, Số lượng...).');
+                    $this->dispatch('toast',
+                        message: 'Không nhận ra dòng tiêu đề trong tệp. Cần có cột Mã vật tư.',
+                        icon: '❌', type: 'error', duration: 6000);
                     return;
                 }
 
@@ -924,10 +933,26 @@ class StockInForm extends Component
 
                 $this->showImportModal = false;
                 $this->excelFile = null;
-                session()->flash('success', 'Đồng bộ Excel thành công! Những ô thiếu thông tin đã được báo màu cam để anh/chị bổ sung.');
+
+                // Báo rõ số dòng đọc được. Chỉ nói "thành công" thì người dùng
+                // không biết file 1500 dòng có vào đủ hay không.
+                $loaded = count($this->items);
+                session()->flash('success', sprintf(
+                    'Đã đọc %d dòng từ tệp Excel. Những ô thiếu thông tin được báo màu cam để anh/chị bổ sung.',
+                    $loaded
+                ));
+                $this->dispatch('toast',
+                    message: sprintf('Đã nạp %d dòng từ tệp Excel vào phiếu nhập.', $loaded),
+                    icon: '📥',
+                    type: 'success');
             }
         } catch (\Exception $e) {
             session()->flash('error', 'Lỗi nhập tệp Excel: ' . $e->getMessage());
+            $this->dispatch('toast',
+                message: 'Lỗi đọc tệp Excel: ' . $e->getMessage(),
+                icon: '❌',
+                type: 'error',
+                duration: 6000);
         }
     }
 

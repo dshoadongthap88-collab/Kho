@@ -1330,16 +1330,53 @@
                             @error('excelFile') <span class="text-red-500 text-xs font-bold block mt-1">{{ $message }}</span> @enderror
                         </div>
 
-                        <div wire:loading wire:target="excelFile" class="text-xs text-indigo-600 font-bold flex items-center gap-1.5">
-                            ⏳ Đang tải tệp tin lên hệ thống...
+                        {{-- Trạng thái tải tệp: đang tải / đã tải xong.
+                             x-on:livewire-upload-* là sự kiện Livewire bắn ra trong
+                             quá trình upload, nhờ vậy biết chắc file đã lên tới nơi
+                             thay vì đoán. --}}
+                        <div x-data="{ uploading: false, uploaded: false, progress: 0 }"
+                             x-on:livewire-upload-start="uploading = true; uploaded = false; progress = 0"
+                             x-on:livewire-upload-progress="progress = $event.detail.progress"
+                             x-on:livewire-upload-finish="uploading = false; uploaded = true; showToast('Đã tải tệp lên hệ thống. Bấm Xác nhận để đọc dữ liệu.', '📄', 'info')"
+                             x-on:livewire-upload-error="uploading = false; uploaded = false; showToast('Tải tệp thất bại. Vui lòng thử lại.', '❌', 'error')">
+
+                            <div x-show="uploading" x-cloak class="space-y-1.5">
+                                <div class="text-xs text-indigo-600 font-bold flex items-center gap-1.5">
+                                    <span class="w-3.5 h-3.5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+                                    Đang tải tệp tin lên hệ thống... <span x-text="progress + '%'"></span>
+                                </div>
+                                <div class="h-1.5 w-full bg-indigo-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-indigo-500 transition-all duration-200" :style="'width:' + progress + '%'"></div>
+                                </div>
+                            </div>
+
+                            <div x-show="uploaded" x-cloak
+                                 class="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                Đã tải tệp lên xong — bấm <span class="font-black">Xác nhận nhập Excel</span> để đọc dữ liệu.
+                            </div>
+                        </div>
+
+                        {{-- Đang đọc file: chặn bấm hai lần và cho thấy hệ thống đang chạy.
+                             File nhiều nghìn dòng mất vài giây nên không có phản hồi
+                             thì người dùng tưởng treo. --}}
+                        <div wire:loading wire:target="importExcelData"
+                             class="flex items-center gap-2 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                            <span class="w-3.5 h-3.5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></span>
+                            Đang đọc và bóc tách dữ liệu từ tệp, vui lòng đợi...
                         </div>
 
                         <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
                             <button type="button" @click="$wire.set('showImportModal', false)" class="rounded-lg border border-slate-200 px-4 py-2 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
                                 Hủy bỏ
                             </button>
-                            <button type="button" wire:click="importExcelData" class="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-black text-white transition">
-                                Xác nhận nhập Excel
+                            <button type="button" wire:click="importExcelData"
+                                    wire:loading.attr="disabled" wire:target="importExcelData,excelFile"
+                                    class="rounded-lg bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-black text-white transition flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                                <span wire:loading wire:target="importExcelData"
+                                      class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                <span wire:loading.remove wire:target="importExcelData">Xác nhận nhập Excel</span>
+                                <span wire:loading wire:target="importExcelData">Đang xử lý...</span>
                             </button>
                         </div>
                         </div>

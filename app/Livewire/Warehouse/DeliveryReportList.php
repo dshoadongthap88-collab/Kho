@@ -4,6 +4,7 @@ namespace App\Livewire\Warehouse;
 
 use App\Models\DeliveryReport;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use App\Exports\DeliveryExport;
@@ -14,9 +15,13 @@ class DeliveryReportList extends Component
     use WithPagination;
     use WithFileUploads;
 
+    #[Url(history: true)]
     public $search = '';
+    #[Url(history: true)]
     public $filterStatus = '';
+    #[Url(history: true)]
     public $dateFrom = '';
+    #[Url(history: true)]
     public $dateTo = '';
 
     // Modal state
@@ -27,8 +32,6 @@ class DeliveryReportList extends Component
     public $notes = '';
     public $selectedIds = [];
     public $printItems = []; // Danh sách các báo cáo giao hàng để in hàng loạt
-
-    protected $queryString = ['search', 'filterStatus', 'dateFrom', 'dateTo'];
 
     public function mount()
     {

@@ -4,6 +4,7 @@ namespace App\Livewire\Warehouse;
 
 use App\Models\Category;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -12,6 +13,7 @@ class CategoryManager extends Component
 {
     use WithPagination;
 
+    #[Url(history: true)]
     public $search = '';
     public $showModal = false;
     public $isEdit = false;
@@ -20,8 +22,6 @@ class CategoryManager extends Component
     public $name;
     public $description;
     public $status = 'active';
-
-    protected $queryString = ['search'];
 
     public function rules()
     {

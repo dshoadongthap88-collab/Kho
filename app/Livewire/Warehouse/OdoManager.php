@@ -5,6 +5,7 @@ namespace App\Livewire\Warehouse;
 use App\Models\AssetOdoReading;
 use App\Models\Product;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
@@ -18,9 +19,13 @@ class OdoManager extends Component
     protected $paginationTheme = 'bootstrap';
     protected $layout = 'components.warehouse-layout';
 
+    #[Url(history: true)]
     public $search = '';
+    #[Url(history: true)]
     public $filterStatus = ''; // all, maintenance_required, maintenance_done, normal
+    #[Url(history: true)]
     public $filterDateFrom = '';
+    #[Url(history: true)]
     public $filterDateTo = '';
 
     public $selectedAssetId = null;
@@ -37,8 +42,6 @@ class OdoManager extends Component
 
     public $excelFile;
     public $selectedIds = [];
-
-    protected $queryString = ['search', 'filterStatus', 'filterDateFrom', 'filterDateTo'];
 
     public function mount()
     {

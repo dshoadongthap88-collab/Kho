@@ -4,6 +4,7 @@ namespace App\Livewire\Warehouse;
 
 use App\Models\Supplier;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
 use Illuminate\Validation\Rule;
@@ -12,7 +13,9 @@ class ContactList extends Component
 {
     use WithPagination;
 
+    #[Url(history: true)]
     public $search = '';
+    #[Url(history: true)]
     public $filterType = ''; // all, customer, supplier, both
     public $showModal = false;
     public $isEdit = false;
@@ -30,8 +33,6 @@ class ContactList extends Component
     public $email;
     public $type = 'supplier';
     public $status = 'active';
-
-    protected $queryString = ['search', 'filterType'];
 
     public function rules()
     {

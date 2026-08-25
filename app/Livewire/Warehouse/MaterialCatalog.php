@@ -5,6 +5,7 @@ namespace App\Livewire\Warehouse;
 use App\Models\Product;
 use App\Models\Inventory;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
@@ -19,6 +20,7 @@ class MaterialCatalog extends Component
     use WithPagination;
     use WithFileUploads;
 
+    #[Url(history: true)]
     public $search = '';
     public $showModal = false;
     public $showImportModal = false;
@@ -46,8 +48,6 @@ class MaterialCatalog extends Component
     public $filterMode = 'all';
 
     public $excelFile;
-
-    protected $queryString = ['search'];
 
     public function rules()
     {

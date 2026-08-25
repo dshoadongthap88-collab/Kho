@@ -6,6 +6,7 @@ use App\Models\PurchaseOrder;
 use App\Models\Supplier;
 use App\Models\Product;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
@@ -14,7 +15,9 @@ class PurchaseOrderList extends Component
 {
     use WithPagination;
 
+    #[Url(history: true)]
     public $search = '';
+    #[Url(history: true)]
     public $filterStatus = '';
     public $showModal = false;
     public $isEdit = false;
@@ -46,8 +49,6 @@ class PurchaseOrderList extends Component
     public $officeItemName = '';
     public $officeItemQuantity = '';
     public $officeItemPrice = '';
-
-    protected $queryString = ['search', 'filterStatus'];
 
     public function mount()
     {

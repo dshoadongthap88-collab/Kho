@@ -3,6 +3,7 @@
 namespace App\Livewire\Warehouse\Asset;
 
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use App\Models\Asset;
 use App\Models\Product;
 use App\Models\MaintenanceBom;
@@ -27,6 +28,7 @@ class AssetBomManager extends Component
     // Checkbox selections
     public $selectedIds = [];
     public $selectAll = false;
+    #[Url(history: true)]
     public $search = '';
 
     // Excel import/export
@@ -52,8 +54,6 @@ class AssetBomManager extends Component
     // KHONG de danh sach vat tu trong property public: Livewire se nhet ca
     // 1050 ban ghi vao wire:snapshot (807KB) va gui di/ve moi lan bam.
     // Day la du lieu chi de hien thi -> dua xuong render() lam bien view.
-
-    protected $queryString = ['search'];
 
     public function updatedSearch()
     {

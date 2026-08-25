@@ -5,6 +5,7 @@ namespace App\Livewire\Warehouse;
 use App\Models\Product;
 use App\Models\Inventory;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
@@ -20,8 +21,10 @@ class ProductCatalog extends Component
     use WithPagination;
     use WithFileUploads;
 
+    #[Url(history: true)]
     public $activeTab = 'materials';
 
+    #[Url(history: true)]
     public $search = '';
     public $showModal = false;
     public $showImportModal = false;
@@ -52,6 +55,7 @@ class ProductCatalog extends Component
     public $manager;
     public $warranty_status = 'Còn bảo hành';
 
+    #[Url(history: true)]
     public $filterMode = 'all';
 
     public $excelFile;
@@ -60,8 +64,6 @@ class ProductCatalog extends Component
     public $printItems = []; // Thêm mảng chứa dữ liệu để in
     public $minStocks = [];
     public $maxStocks = []; 
-
-    protected $queryString = ['search', 'filterMode', 'activeTab'];
 
     public function rules()
     {

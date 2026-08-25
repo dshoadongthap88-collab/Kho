@@ -3,9 +3,11 @@
 namespace App\Livewire\Warehouse;
 
 use Livewire\Component;
+use Livewire\Attributes\Url;
 
 class AssetMaintenanceErp extends Component
 {
+    #[Url(history: true)]
     public $activeTab = 'dashboard'; 
     
     // Available tabs:
@@ -16,8 +18,6 @@ class AssetMaintenanceErp extends Component
     // 5. odo-manager (daily-odo-manager)
     // 6. shift-log (shift-log-form)
     // 7. ticket-completion (ticket-completion-form)
-
-    protected $queryString = ['activeTab'];
 
     public function switchTab($tab)
     {

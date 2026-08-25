@@ -5,6 +5,7 @@ namespace App\Livewire\Warehouse;
 use App\Models\Inventory;
 use App\Models\Product;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
@@ -15,11 +16,16 @@ class InventoryList extends Component
 {
     use WithPagination, WithFileUploads;
 
+    #[Url(history: true)]
     public $search = '';
+    #[Url(history: true)]
     public $filterStatus = ''; // all, sufficient, warning, critical
+    #[Url(history: true)]
     public $filterBrand = '';
+    #[Url(history: true)]
     public $filterLocation = '';
     public $selectedItems = []; // Array of inventory IDs
+    #[Url(history: true)]
     public $perPage = 25;   // so dong moi trang, nguoi dung tu chon
     // Vị trí gõ trực tiếp trên bảng: [inventory_id => vị trí]
     public $locations = [];
@@ -41,8 +47,6 @@ class InventoryList extends Component
     public $editingMinStock = 0;
     public $editingQuantity = 0;
     public $editingLocation = '';
-
-    protected $queryString = ['search', 'filterStatus', 'filterBrand', 'filterLocation', 'perPage'];
 
     public function updatingSearch()
     {

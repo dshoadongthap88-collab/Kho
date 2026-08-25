@@ -4,13 +4,16 @@ namespace App\Livewire\Warehouse;
 
 use App\Models\DeliveryReport;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use Livewire\WithPagination;
 
 class CustomerDebtList extends Component
 {
     use WithPagination;
 
+    #[Url(history: true)]
     public $search = '';
+    #[Url(history: true)]
     public $filterPayment = ''; 
     
     // Thu nợ Modal
@@ -24,12 +27,12 @@ class CustomerDebtList extends Component
     public $showStockOutModal = false;
     public $selectedStockOut = null;
     
+    #[Url(history: true)]
     public $dateFrom = '';
+    #[Url(history: true)]
     public $dateTo = '';
     public $selectedIds = [];
     public $printItems = []; // Danh sách các hóa đơn công nợ để in hàng loạt
-
-    protected $queryString = ['search', 'filterPayment', 'dateFrom', 'dateTo'];
 
     public function updatedSearch()
     {

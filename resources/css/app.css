@@ -5,12 +5,11 @@
 @layer utilities {
     /* ============================================================
        filter-bar / filter-grid / filter-field
-       Layout toolbar bo loc dung chung tren nhieu man hinh
     ============================================================ */
     .filter-bar {
         background: white;
-        border: 1.5px solid #e2e8f0;      /* slate-200 */
-        border-radius: 1rem;              /* 16px */
+        border: 1.5px solid #e2e8f0;
+        border-radius: 1rem;
         box-shadow: 0 1px 3px 0 rgb(0 0 0/.06);
         padding: 1rem;
         margin-bottom: 1rem;
@@ -37,7 +36,7 @@
         gap: 0.5rem;
         flex-wrap: wrap;
         justify-content: flex-end;
-        grid-column: 1 / -1;  /* chiem toan bo chieu ngang o cuoi grid */
+        grid-column: 1 / -1;
     }
 
     .filter-actions-note {
@@ -49,15 +48,15 @@
     }
 
     /* ============================================================
-       input-group / input-icon
-       Wrapper cho input co icon phia truoc
+       input-group: wrapper co icon — chi them padding-left
+       khi co class .has-icon tren input, khong anh huong input khac
     ============================================================ */
     .input-group {
         position: relative;
     }
 
-    .input-group input,
-    .input-group select {
+    /* Chi them padding khi input nam trong input-group va co class has-icon */
+    .input-group input.has-icon {
         padding-left: 2.2rem;
     }
 
@@ -68,39 +67,47 @@
         transform: translateY(-50%);
         color: #94a3b8;
         pointer-events: none;
-        width: 1rem;
-        height: 1rem;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .input-icon svg {
-        width: 0.9rem;
-        height: 0.9rem;
+        width: 0.875rem;
+        height: 0.875rem;
     }
 
     /* ============================================================
-       input-sm — input nho hon mac dinh, van lay day du styling
-       cua design system (border, radius, focus ring)
+       input-sm — size nho hon, KHONG override design system
+       width: 100% de lay tu parent container
     ============================================================ */
     .input-sm {
-        padding: 0.3rem 0.6rem !important;
-        font-size: 0.75rem !important;    /* 12px */
-        border-radius: 0.5rem !important; /* 8px */
-        width: 100% !important;           /* full width trong container */
+        padding-top: 0.3rem;
+        padding-bottom: 0.3rem;
+        padding-right: 0.6rem;
+        /* padding-left khong set o day — de .has-icon hoac mac dinh tu design system */
+        font-size: 0.75rem;
+        border-radius: 0.5rem;
+        width: 100%;
+    }
+
+    /* input-sm co icon: padding-left lon hon */
+    .input-group input.input-sm.has-icon {
+        padding-left: 2.2rem;
+    }
+
+    /* input-sm khong co icon: padding-left nho binh thuong */
+    .input-group input.input-sm:not(.has-icon) {
+        padding-left: 0.6rem;
     }
 
     /* ============================================================
-       tabular-nums — so tien thang hang
+       tabular-nums, hide-scrollbar, print-only
     ============================================================ */
     .tabular-nums {
         font-variant-numeric: tabular-nums;
     }
 
-    /* ============================================================
-       hide-scrollbar — an scrollbar nhung van scroll duoc
-    ============================================================ */
     .hide-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;
@@ -109,13 +116,11 @@
         display: none;
     }
 
-    /* ============================================================
-       print-only — chi hien khi in
-    ============================================================ */
     .print-only {
         display: none;
     }
+
     @media print {
-        .print-only { display: inline !important; }
+        .print-only { display: inline; }
     }
 }

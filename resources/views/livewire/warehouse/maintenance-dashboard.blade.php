@@ -39,35 +39,39 @@
     </div>
 
     @if (session()->has('message'))
-        <div class="mb-4 p-2 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
+        <div class="mb-4 p-2 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2.5 rounded-xl mb-3 text-sm font-medium">
             <span>✅</span> {{ session('message') }}
         </div>
     @endif
 
-    <div class="mb-4 flex items-center justify-between">
-        <h2 class="text-xl font-bold text-slate-800">Danh Sách Kế Hoạch Bảo Dưỡng (Cảnh Báo)</h2>
-        <div class="w-full md:w-1/3 relative">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm kiếm mã, tên thiết bị..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
-            <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-sm font-bold text-slate-800">Kế Hoạch Bảo Dưỡng Cảnh Báo</h2>
+        <div class="relative w-72">
+            <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 pointer-events-none">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </span>
+            <input type="text" wire:model.live.debounce.300ms="search"
+                   placeholder="Tìm mã, tên thiết bị..."
+                   class="w-full pl-8 pr-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition">
         </div>
     </div>
 
     <!-- Table -->
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-8">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã Kế Hoạch</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thiết bị</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Hạng Mục</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Odo / Giờ Hiện Tại</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Odo / Giờ Định Mức</th>
-                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Cảnh báo</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
+            <table class="min-w-full divide-y divide-slate-100">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
+                        <th class="px-3 py-3 text-left">Mã Kế Hoạch</th>
+                        <th class="px-3 py-3 text-left">Thiết bị</th>
+                        <th class="px-3 py-3 text-left">Hạng Mục</th>
+                        <th class="px-3 py-3 text-right">Odo / Giờ Hiện Tại</th>
+                        <th class="px-3 py-3 text-right">Odo / Giờ Định Mức</th>
+                        <th class="px-3 py-3 text-center">Cảnh báo</th>
+                        <th class="px-3 py-3 text-right">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="divide-y divide-slate-100">
                     @forelse ($plans as $plan)
                         @php
                             $currentVal = $plan->asset ? max($plan->asset->current_odo, $plan->asset->current_hours) : 0; // Đơn giản hoá hiển thị
@@ -97,8 +101,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                <p class="mb-2 text-3xl">🎉</p>
+                            <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                                
                                 <p>Không có kế hoạch bảo dưỡng nào đang chờ.</p>
                             </td>
                         </tr>
@@ -106,7 +110,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="px-6 py-4 border-t border-gray-200">
+        <div class="px-4 py-3 bg-slate-50 border-t border-slate-200">
             {{ $plans->links() }}
         </div>
     </div>

@@ -1,46 +1,46 @@
 <div class="px-4 pb-10">
     <!-- Header -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-2">
+    <div class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
-            <p class="text-sm text-gray-500">Quản lý các phiếu thực hiện bảo dưỡng sửa chữa</p>
+            <p class="text-sm text-slate-400 mt-0.5">Quản lý các phiếu thực hiện bảo dưỡng sửa chữa</p>
         </div>
-        <button wire:click="openModal" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow font-semibold transition flex items-center gap-2">
+        <button wire:click="openModal" class="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition">
             <span>+</span> Lập Phiếu Bảo Dưỡng
         </button>
     </div>
 
     @if (session()->has('message'))
-        <div class="mb-4 p-2 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
+        <div class="mb-4 p-2 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2.5 rounded-xl mb-3 text-sm font-medium">
             <span>✅</span> {{ session('message') }}
         </div>
     @endif
 
     <!-- Toolbar -->
-    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-2 items-center justify-between">
+    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 mb-5 flex flex-wrap gap-2 items-center justify-between">
         <div class="w-full md:w-1/3 relative">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm kiếm số phiếu, thiết bị..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
-            <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm kiếm số phiếu, thiết bị..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            
         </div>
     </div>
 
     <!-- Table -->
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Số Phiếu</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ngày bảo dưỡng</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tên thiết bị bảo dưỡng</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã tài sản bảo dưỡng</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mức bảo dưỡng</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tên tài xế</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
+            <table class="min-w-full divide-y divide-slate-100">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
+                        <th class="px-3 py-3 text-left">Số Phiếu</th>
+                        <th class="px-3 py-3 text-left">Ngày bảo dưỡng</th>
+                        <th class="px-3 py-3 text-left">Tên thiết bị</th>
+                        <th class="px-3 py-3 text-left">Mã tài sản</th>
+                        <th class="px-3 py-3 text-left">Mức bảo dưỡng</th>
+                        <th class="px-3 py-3 text-left">Tên tài xế</th>
+                        <th class="px-3 py-3 text-right">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="divide-y divide-slate-100">
                     @forelse ($tickets as $ticket)
-                        <tr class="hover:bg-slate-50 transition-colors">
+                        <tr class="hover:bg-slate-50/70 transition-colors">
                             <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-indigo-600">{{ $ticket->ticket_code }}</td>
                             <td class="px-2 py-1.5 whitespace-nowrap text-sm text-gray-600">{{ $ticket->maintenance_date ? $ticket->maintenance_date->format('d/m/Y') : '-' }}</td>
                             <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-gray-900">{{ $ticket->asset->name ?? 'N/A' }}</td>
@@ -54,8 +54,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                <p class="mb-2 text-3xl">📭</p>
+                            <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                                
                                 <p>Chưa có phiếu bảo dưỡng nào.</p>
                             </td>
                         </tr>
@@ -63,7 +63,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="px-6 py-4 border-t border-gray-200">
+        <div class="px-4 py-3 bg-slate-50 border-t border-slate-200">
             {{ $tickets->links() }}
         </div>
     </div>
@@ -73,7 +73,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="closeModal"></div>
+                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" wire:click="closeModal"></div>
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 

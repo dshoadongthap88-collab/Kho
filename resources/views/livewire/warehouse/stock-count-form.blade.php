@@ -16,26 +16,26 @@
     </div>
     @endif
 
-    <div class="flex flex-wrap gap-2 mb-6 no-print">
+    <div class="flex flex-wrap gap-2 mb-5 no-print bg-white rounded-2xl border border-slate-200 shadow-sm p-2">
         <button wire:click="$set('activeTab', 'stocktake')"
-            class="px-5 py-2 rounded-lg text-sm font-bold transition {{ $activeTab === 'stocktake' ? 'bg-indigo-700 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50' }}">
+            class="px-4 py-2 rounded-xl text-sm font-bold transition-all {{ $activeTab === 'stocktake' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100' }}">
             📋 Phiếu kiểm kê
         </button>
         <button wire:click="$set('activeTab', 'daily')"
-            class="px-5 py-2 rounded-lg text-sm font-bold transition {{ $activeTab === 'daily' ? 'bg-orange-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50' }}">
+            class="px-4 py-2 rounded-xl text-sm font-bold transition-all {{ $activeTab === 'daily' ? 'bg-orange-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100' }}">
             ☀️ Kiểm kê hàng ngày
         </button>
         <button wire:click="$set('activeTab', 'periodic')"
-            class="px-5 py-2 rounded-lg text-sm font-bold transition {{ $activeTab === 'periodic' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50' }}">
-            📊 Kiểm kê định kỳ & Toàn bộ (Excel)
+            class="px-4 py-2 rounded-xl text-sm font-bold transition-all {{ $activeTab === 'periodic' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100' }}">
+            📊 Định kỳ & Excel
         </button>
         <button wire:click="$set('activeTab', 'sync')"
-            class="px-5 py-2 rounded-lg text-sm font-bold transition {{ $activeTab === 'sync' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50' }}">
-            🔄 Đồng bộ tồn kho
+            class="px-4 py-2 rounded-xl text-sm font-bold transition-all {{ $activeTab === 'sync' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100' }}">
+            🔄 Đồng bộ
         </button>
         <button wire:click="$set('activeTab', 'chat_ai')"
-            class="px-5 py-2 rounded-lg text-sm font-bold transition {{ $activeTab === 'chat_ai' ? 'bg-purple-700 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50' }}">
-            💬 Chat AI Kiểm kê
+            class="px-4 py-2 rounded-xl text-sm font-bold transition-all {{ $activeTab === 'chat_ai' ? 'bg-violet-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100' }}">
+            💬 Chat AI
         </button>
     </div>
 
@@ -44,59 +44,63 @@
     <div>
         {{-- Nếu đang có phiếu kiểm kê đang mở --}}
         @if($currentCount)
-        <div class="bg-white rounded-xl shadow border print:border-none print:shadow-none print:mb-0 mb-6">
-            <div class="px-5 py-4 border-b print:border-none flex items-center justify-between">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm print:border-none print:shadow-none print:mb-0 mb-5">
+            <div class="px-5 py-4 border-b border-slate-200 print:border-none flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
                 <div>
                     <div class="hidden print:block mb-6">
                         <div style="font-size: 16px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; text-align: left; color: black;">CÔNG TY CỔ PHẦN ĐẦU TƯ VÀ HẠ TẦNG V-ALPHA</div>
                         <div style="font-size: 14px; margin-bottom: 20px; font-style: italic; text-align: left; color: black;">Dự án: {{ \App\Models\Project::find(session('current_house', 1))?->name ?? 'Nội bộ' }}</div>
                     </div>
-                    <h2 class="text-base font-black text-indigo-800 uppercase print:text-xl print:text-black">📋 PHIẾU KIỂM KÊ KHO</h2>
-                    <p class="text-sm font-bold text-gray-500 mt-1">Mã phiếu: {{ $currentCount->code }}</p>
-                    <p class="text-xs text-gray-400 mt-0.5 no-print">Nhập số lượng kiểm đếm thực tế vào cột "Thực tế". Hệ thống sẽ tính chênh lệch tự động.</p>
+                    <h2 class="text-sm font-black text-indigo-800 uppercase print:text-xl print:text-black">📋 PHIẾU KIỂM KÊ KHO</h2>
+                    <p class="text-xs font-bold text-slate-500 mt-1">Mã phiếu: {{ $currentCount->code }}</p>
+                    <p class="text-xs text-slate-400 mt-0.5 no-print">Nhập số lượng thực tế vào cột "Thực tế". Hệ thống tự tính chênh lệch.</p>
                     <p class="text-xs text-gray-400 hidden print:block mt-1">Ngày in: {{ now()->format('d/m/Y H:i') }}</p>
                 </div>
                 <div class="flex gap-2 no-print">
                     <button onclick="window.print()"
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-black transition cursor-pointer flex items-center gap-1">
-                        🖨️ In phiếu
+                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-700 hover:text-white border border-slate-200 rounded-xl transition cursor-pointer no-print">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        In phiếu
                     </button>
                     <button wire:click="confirmStockCount({{ $currentCount->id }})"
                         wire:confirm="Xác nhận hoàn tất kiểm kê? Hệ thống sẽ tự động điều chỉnh tồn kho theo số liệu thực tế."
                         wire:loading.attr="disabled"
-                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-black transition cursor-pointer flex items-center gap-1">
-                        <span wire:loading.remove wire:target="confirmStockCount">✅ Xác nhận</span>
-                        <span wire:loading wire:target="confirmStockCount" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition cursor-pointer disabled:opacity-60">
+                        <span wire:loading.remove wire:target="confirmStockCount">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        </span>
+                        <span wire:loading wire:target="confirmStockCount" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        Xác nhận
                     </button>
                     <button wire:click="cancelStockCount({{ $currentCount->id }})"
                         wire:confirm="Hủy phiếu kiểm kê này?"
-                        class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-xs font-bold transition cursor-pointer">
-                        ✖ Hủy phiếu
+                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer">
+                        Hủy phiếu
                     </button>
                 </div>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-100">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Vị trí</th>
-                            <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">TÊN VẬT TƯ / MÃ VẬT TƯ</th>
-                            <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Tồn hệ thống</th>
-                            <th class="px-2 py-2 text-center text-[10px] font-bold text-yellow-600 uppercase no-print">Thực tế (Nhập)</th>
-                            <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase hidden print:table-cell">Thực tế</th>
-                            <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Chênh lệch</th>
-                            <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase no-print">Ghi chú</th>
+                <table class="min-w-full divide-y divide-slate-100">
+                    <thead>
+                        <tr class="bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wider">
+                            <th class="px-3 py-2 text-left">Vị trí</th>
+                            <th class="px-3 py-2 text-left">Tên Vật Tư / Mã</th>
+                            <th class="px-3 py-2 text-center">Tồn hệ thống</th>
+                            <th class="px-3 py-2 text-center no-print">Thực tế (Nhập)</th>
+                            <th class="px-3 py-2 text-center hidden print:table-cell">Thực tế</th>
+                            <th class="px-3 py-2 text-center">Chênh lệch</th>
+                            <th class="px-3 py-2 text-left no-print">Ghi chú</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-50">
+                    <tbody class="divide-y divide-slate-100">
                         @foreach($currentCount->items as $item)
-                        <tr class="hover:bg-gray-50 {{ $item->difference != 0 && $item->actual_quantity !== null ? ($item->difference < 0 ? 'bg-red-50' : 'bg-green-50') : '' }}">
-                            <td class="px-4 py-2 text-xs font-bold text-indigo-700">{{ $item->product->location ?? '-' }}</td>
-                            <td class="px-4 py-2 text-sm font-medium text-gray-800">
-                                <div class="font-bold">{{ $item->product->name ?? '-' }}</div>
-                                <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ $item->product->code ?? '-' }}</div>
+                        <tr class="hover:bg-slate-50/60 transition-colors {{ $item->difference != 0 && $item->actual_quantity !== null ? ($item->difference < 0 ? 'bg-rose-50/40' : 'bg-emerald-50/40') : '' }}">
+                            <td class="px-4 py-2 text-xs font-bold text-indigo-600">{{ $item->product->location ?? '—' }}</td>
+                            <td class="px-4 py-2">
+                                <div class="text-sm font-semibold text-slate-800">{{ $item->product->name ?? '—' }}</div>
+                                <div class="text-[10px] text-slate-400 font-mono mt-0.5">{{ $item->product->code ?? '—' }}</div>
                             </td>
-                            <td class="px-4 py-2 text-center text-sm font-black text-gray-700">{{ number_format($item->system_quantity) }}</td>
+                            <td class="px-4 py-2 text-center text-sm font-bold text-slate-700 tabular-nums">{{ number_format($item->system_quantity) }}</td>
                             <td class="px-4 py-2 text-center no-print">
                                 <input type="number" 
                                     value="{{ $item->actual_quantity }}"
@@ -140,26 +144,32 @@
         </div>
         @else
         {{-- Form tạo phiếu kiểm kê mới --}}
-        <div class="bg-white rounded-xl border shadow-sm p-5 mb-6 no-print">
-            <h2 class="text-sm font-black text-gray-700 uppercase mb-3">➕ Tạo phiếu kiểm kê mới</h2>
-            <p class="text-xs text-gray-400 mb-3">Hệ thống sẽ tự động tải toàn bộ danh sách sản phẩm và số tồn kho hiện tại vào phiếu kiểm kê để bạn đối chiếu thực tế.</p>
-            <div class="flex gap-2 items-end">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-5 no-print">
+            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Tạo phiếu kiểm kê mới
+            </h2>
+            <p class="text-xs text-slate-400 mb-4">Hệ thống tự động tải toàn bộ vật tư và tồn kho hiện tại để đối chiếu thực tế.</p>
+            <div class="flex gap-3 items-end">
                 <div class="flex-1">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ghi chú phiếu kiểm kê</label>
-                    <input type="text" wire:model="countNote" placeholder="VD: Kiểm kê tháng 5/2026..." class="w-full rounded-lg border-gray-200 shadow-sm text-sm focus:ring-indigo-500">
+                    <label class="form-label mb-1">Ghi chú phiếu</label>
+                    <input type="text" wire:model="countNote" placeholder="VD: Kiểm kê tháng 5/2026...">
                 </div>
                 <button wire:click="createNewStockCount('full')" wire:loading.attr="disabled"
-                    class="px-6 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-sm font-black transition shadow cursor-pointer">
-                    <span wire:loading.remove wire:target="createNewStockCount">📋 Tạo phiếu kiểm kê Toàn bộ</span>
-                    <span wire:loading wire:target="createNewStockCount">Đang tải...</span>
+                    class="flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-sm transition disabled:opacity-60 cursor-pointer">
+                    <span wire:loading.remove wire:target="createNewStockCount">📋 Tạo phiếu toàn bộ</span>
+                    <span wire:loading wire:target="createNewStockCount" class="flex items-center gap-2">
+                        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        Đang tải...
+                    </span>
                 </button>
             </div>
         </div>
         @endif
 
         {{-- Lịch sử phiếu kiểm kê --}}
-        <div class="bg-white rounded-xl shadow border overflow-hidden no-print">
-            <div class="px-5 py-3 border-b flex flex-wrap justify-between items-center gap-2">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden no-print">
+            <div class="px-5 py-3 border-b border-slate-200 bg-slate-50/50 flex flex-wrap justify-between items-center gap-2">
                 <div class="flex items-center gap-3">
                     <h3 class="text-sm font-bold text-gray-700">Lịch sử phiếu kiểm kê</h3>
                     <div class="flex items-center gap-1 ml-4 no-print" wire:key="bulk-actions-toolbar-container">
@@ -200,45 +210,45 @@
                 </div>
                 <input type="text" wire:model.live="listSearch" placeholder="Tìm mã phiếu..." class="rounded-lg border-gray-200 shadow-sm text-xs focus:ring-indigo-500 w-48">
             </div>
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wider">
                         <th class="px-2 py-2 text-center w-10">
                             <input type="checkbox" 
                                 wire:key="select-all-checkbox"
                                 wire:click="toggleSelectAll([{{ implode(',', $stockCounts->pluck('id')->toArray()) }}])"
                                 {{ count($selectedStockCounts) >= count($stockCounts) && count($selectedStockCounts) > 0 ? 'checked' : '' }}
-                                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                class="rounded border-slate-600 bg-slate-700 text-indigo-400 focus:ring-indigo-500 cursor-pointer">
                         </th>
-                        <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Mã phiếu</th>
-                        <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase">Trạng thái</th>
-                        <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Ghi chú</th>
-                        <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Người tạo</th>
-                        <th class="px-2 py-2 text-left text-[10px] font-bold text-gray-400 uppercase">Ngày tạo</th>
-                        <th class="px-2 py-2 text-center text-[10px] font-bold text-gray-400 uppercase no-print">Thao tác</th>
+                        <th class="px-2 py-2 text-left">Mã phiếu</th>
+                        <th class="px-2 py-2 text-center">Trạng thái</th>
+                        <th class="px-2 py-2 text-left">Ghi chú</th>
+                        <th class="px-2 py-2 text-left">Người tạo</th>
+                        <th class="px-2 py-2 text-left">Ngày tạo</th>
+                        <th class="px-2 py-2 text-center no-print">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-slate-100">
                     @forelse($stockCounts as $sc)
                     @php
                         $statusMap = [
-                            'pending' => ['label' => '⏳ Đang kiểm', 'class' => 'bg-yellow-100 text-yellow-700'],
-                            'completed' => ['label' => '✅ Hoàn thành', 'class' => 'bg-green-100 text-green-700'],
-                            'cancelled' => ['label' => '✖ Đã hủy', 'class' => 'bg-red-100 text-red-700'],
+                            'pending'   => ['label' => 'Đang kiểm', 'class' => 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'],
+                            'completed' => ['label' => 'Hoàn thành', 'class' => 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'],
+                            'cancelled' => ['label' => 'Đã hủy',    'class' => 'bg-slate-100 text-slate-500 ring-1 ring-slate-200'],
                         ];
-                        $s = $statusMap[$sc->status] ?? ['label' => $sc->status, 'class' => 'bg-gray-100 text-gray-600'];
+                        $s = $statusMap[$sc->status] ?? ['label' => $sc->status, 'class' => 'bg-slate-100 text-slate-500'];
                     @endphp
-                    <tr wire:key="sc-row-{{ $sc->id }}" class="hover:bg-gray-50 transition-colors {{ in_array($sc->id, $selectedStockCounts) ? 'bg-indigo-50/50' : '' }}">
+                    <tr wire:key="sc-row-{{ $sc->id }}" class="hover:bg-slate-50/70 transition-colors {{ in_array($sc->id, $selectedStockCounts) ? 'bg-indigo-50/30' : '' }}">
                         <td class="px-2 py-1.5 text-center">
-                            <input type="checkbox" wire:model.live="selectedStockCounts" value="{{ $sc->id }}" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            <input type="checkbox" wire:model.live="selectedStockCounts" value="{{ $sc->id }}" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                         </td>
-                        <td class="px-2 py-1.5 text-sm font-bold text-indigo-700">{{ $sc->code }}</td>
+                        <td class="px-2 py-1.5 text-xs font-bold text-indigo-600 font-mono">{{ $sc->code }}</td>
                         <td class="px-2 py-1.5 text-center">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $s['class'] }}">{{ $s['label'] }}</span>
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold {{ $s['class'] }}">{{ $s['label'] }}</span>
                         </td>
-                        <td class="px-2 py-1.5 text-xs text-gray-500">{{ $sc->note }}</td>
-                        <td class="px-2 py-1.5 text-xs text-gray-600">👤 {{ $sc->creator->name ?? '-' }}</td>
-                        <td class="px-2 py-1.5 text-xs text-gray-400 font-mono">{{ $sc->created_at->format('d/m/Y H:i') }}</td>
+                        <td class="px-2 py-1.5 text-xs text-slate-500">{{ $sc->note }}</td>
+                        <td class="px-2 py-1.5 text-xs text-slate-600">{{ $sc->creator->name ?? '—' }}</td>
+                        <td class="px-2 py-1.5 text-xs text-slate-400 font-mono">{{ $sc->created_at->format('d/m/Y H:i') }}</td>
                         <td class="px-2 py-1.5 text-center no-print">
                             <div class="flex items-center justify-center gap-2">
                                 <button wire:click="editStockCount({{ $sc->id }})" 

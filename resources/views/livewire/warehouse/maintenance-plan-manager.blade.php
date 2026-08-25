@@ -1,25 +1,25 @@
 <div class="px-4">
     <!-- Header -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-2">
+    <div class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div>
-            <p class="text-sm text-gray-500">Quản lý các kế hoạch bảo dưỡng, bảo trì tài sản thiết bị</p>
+            <p class="text-sm text-slate-400 mt-0.5">Quản lý các kế hoạch bảo dưỡng, bảo trì tài sản thiết bị</p>
         </div>
-        <button wire:click="openModal" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow font-semibold transition flex items-center gap-2">
+        <button wire:click="openModal" class="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition">
             <span>+</span> Thêm Kế Hoạch Mới
         </button>
     </div>
 
     @if (session()->has('message'))
-        <div class="mb-4 p-2 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2">
+        <div class="mb-4 p-2 flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2.5 rounded-xl mb-3 text-sm font-medium">
             <span>✅</span> {{ session('message') }}
         </div>
     @endif
 
     <!-- Toolbar -->
-    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-wrap gap-2 items-center justify-between">
+    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 mb-5 flex flex-wrap gap-2 items-center justify-between">
         <div class="w-full md:w-1/3 relative">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm mã KH, tài sản, hạng mục..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
-            <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Tìm mã KH, tài sản, hạng mục..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            
         </div>
         
         <div class="flex gap-2">
@@ -31,24 +31,24 @@
     </div>
 
     <!-- Table -->
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã Kế Hoạch</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tài Sản</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Hạng Mục</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Dự Kiến</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Odo Hiện Tại</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Odo Bảo Dưỡng</th>
-                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng Thái</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
+            <table class="min-w-full divide-y divide-slate-100">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
+                        <th class="px-3 py-3 text-left">Mã Kế Hoạch</th>
+                        <th class="px-3 py-3 text-left">Tài Sản</th>
+                        <th class="px-3 py-3 text-left">Hạng Mục</th>
+                        <th class="px-3 py-3 text-left">Dự Kiến</th>
+                        <th class="px-3 py-3 text-right">Odo Hiện Tại</th>
+                        <th class="px-3 py-3 text-right">Odo Bảo Dưỡng</th>
+                        <th class="px-3 py-3 text-center">Trạng Thái</th>
+                        <th class="px-3 py-3 text-right">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="divide-y divide-slate-100">
                     @forelse ($plans as $plan)
-                        <tr class="hover:bg-slate-50 transition-colors">
+                        <tr class="hover:bg-slate-50/70 transition-colors">
                             <td class="px-2 py-1.5 whitespace-nowrap text-sm font-bold text-indigo-600">{{ $plan->plan_code }}</td>
                             <td class="px-2 py-1.5 text-sm text-gray-900 font-semibold">{{ $plan->asset->asset_code ?? '' }}<br><span class="text-xs font-normal text-gray-500">{{ $plan->asset->name ?? '' }}</span></td>
                             <td class="px-2 py-1.5 text-sm text-gray-700">{{ $plan->category }}</td>
@@ -85,8 +85,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
-                                <p class="mb-2 text-3xl">📭</p>
+                            <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                                
                                 <p>Chưa có kế hoạch bảo dưỡng nào.</p>
                             </td>
                         </tr>
@@ -94,7 +94,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="px-6 py-4 border-t border-gray-200">
+        <div class="px-4 py-3 bg-slate-50 border-t border-slate-200">
             {{ $plans->links() }}
         </div>
     </div>
@@ -103,10 +103,10 @@
     @if($isModalOpen)
         <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="closeModal"></div>
+                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" wire:click="closeModal"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-                <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full">
+                <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full">
                     <form wire:submit.prevent="save">
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
                             <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4" id="modal-title">
@@ -172,11 +172,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100">
+                        <div class="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100">
                             <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-bold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                                 Lưu kế hoạch
                             </button>
-                            <button type="button" wire:click="closeModal" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-bold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            <button type="button" wire:click="closeModal" class="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-200 shadow-sm px-4 py-2 bg-white text-sm font-semibold text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                 Hủy
                             </button>
                         </div>

@@ -3,23 +3,23 @@
 @tailwind utilities;
 
 @layer utilities {
-    /* filter-grid: dùng trong toolbar của CRM views để filter chips tự wrap đẹp */
+    /* filter-grid: layout tu dong cho toolbar filter chips */
     .filter-grid {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .filter-grid > * {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 250px));
+        gap: 0.625rem 0.75rem;
+        align-items: end;
+        flex: 1 1 auto;
         min-width: 0;
+        justify-content: space-between;
     }
 
-    /* tabular-nums đảm bảo số tiền thẳng hàng */
+    /* tabular-nums dam bao so tien thang hang */
     .tabular-nums {
         font-variant-numeric: tabular-nums;
     }
 
-    /* Ẩn scrollbar nhưng vẫn scroll được */
+    /* An scrollbar nhung van scroll duoc */
     .hide-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;

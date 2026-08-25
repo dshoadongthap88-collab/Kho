@@ -44,17 +44,17 @@
     </div>
 
     <!-- Table -->
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Mã tài sản</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thiết bị</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">ODO tích lũy</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">ODO hiện tại</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Số giờ làm việc</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nhân viên lái xe</th>
+            <table class="min-w-full divide-y divide-slate-100">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
+                        <th class="px-3 py-3 text-left">Mã tài sản</th>
+                        <th class="px-3 py-3 text-left">Thiết bị</th>
+                        <th class="px-3 py-3 text-right">ODO tích lũy</th>
+                        <th class="px-3 py-3 text-right">ODO hiện tại</th>
+                        <th class="px-3 py-3 text-right">Số giờ làm việc</th>
+                        <th class="px-3 py-3 text-left">Nhân viên lái xe</th>
                         <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ghi chú</th>
                         <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao tác</th>
                     </tr>

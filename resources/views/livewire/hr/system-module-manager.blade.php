@@ -30,14 +30,14 @@
             
             <div class="flex-1 overflow-auto">
                 <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50 text-gray-600 text-xs uppercase sticky top-0 shadow-sm z-10">
-                        <tr>
-                            <th class="px-2 py-2 font-semibold border-b">ID</th>
-                            <th class="px-2 py-2 font-semibold border-b">Nhóm</th>
-                            <th class="px-2 py-2 font-semibold border-b">Route / Mã</th>
-                            <th class="px-2 py-2 font-semibold border-b">Tên hiển thị</th>
-                            <th class="px-2 py-2 font-semibold border-b">Trạng thái</th>
-                            <th class="px-2 py-2 font-semibold border-b text-center">Thao tác</th>
+                    <thead>
+                        <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
+                            <th class="px-3 py-3 font-bold">ID</th>
+                            <th class="px-3 py-3 font-bold">Nhóm</th>
+                            <th class="px-3 py-3 font-bold">Route / Mã</th>
+                            <th class="px-3 py-3 font-bold">Tên hiển thị</th>
+                            <th class="px-3 py-3 font-bold">Trạng thái</th>
+                            <th class="px-3 py-3 font-bold text-center">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100">

@@ -27,15 +27,15 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Người Nhận</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tiêu Đề</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nội Dung</th>
-                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng Thái</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Thời Gian</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Thao Tác</th>
+                <thead>
+                    <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
+                        <th class="px-3 py-3 text-left">ID</th>
+                        <th class="px-3 py-3 text-left">Người Nhận</th>
+                        <th class="px-3 py-3 text-left">Tiêu Đề</th>
+                        <th class="px-3 py-3 text-left">Nội Dung</th>
+                        <th class="px-3 py-3 text-center">Trạng Thái</th>
+                        <th class="px-3 py-3 text-left">Thời Gian</th>
+                        <th class="px-3 py-3 text-right">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">

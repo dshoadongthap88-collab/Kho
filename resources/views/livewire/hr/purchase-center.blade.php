@@ -38,16 +38,16 @@
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">STT</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Mã VT</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tên Vật Tư</th>
-                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">ĐVT</th>
-                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Tổng Xuất</th>
-                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Số Đơn</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold text-gray-500 uppercase">Dự Án Xuất Nhiều Nhất</th>
-                        <th class="px-2 py-2 text-center text-xs font-bold text-gray-500 uppercase">Thao Tác</th>
+                <thead>
+                    <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
+                        <th class="px-3 py-3 text-left">STT</th>
+                        <th class="px-3 py-3 text-left">Mã VT</th>
+                        <th class="px-3 py-3 text-left">Tên Vật Tư</th>
+                        <th class="px-3 py-3 text-center">ĐVT</th>
+                        <th class="px-3 py-3 text-center">Tổng Xuất</th>
+                        <th class="px-3 py-3 text-center">Số Đơn</th>
+                        <th class="px-3 py-3 text-left">Dự Án Xuất Nhiều Nhất</th>
+                        <th class="px-3 py-3 text-center">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">

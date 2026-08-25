@@ -33,19 +33,19 @@
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-800 text-white">
-                    <tr>
-                        <th class="px-2 py-2 text-left text-xs font-bold uppercase tracking-wider">Mã Máy</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold uppercase tracking-wider">Cấp BD</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold uppercase tracking-wider">Chu Kỳ (Giờ)</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold uppercase tracking-wider">Giờ BD<br>Gần Nhất</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold uppercase tracking-wider">Giờ<br>Hiện Tại</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold uppercase tracking-wider">Giờ<br>Tới Hạn</th>
-                        <th class="px-2 py-2 text-right text-xs font-bold uppercase tracking-wider">Giờ<br>Còn Lại</th>
-                        <th class="px-2 py-2 text-center text-xs font-bold uppercase tracking-wider">Trạng Thái</th>
-                        <th class="px-2 py-2 text-left text-xs font-bold uppercase tracking-wider">Cảnh Báo</th>
-                        <th class="px-2 py-2 text-center text-xs font-bold uppercase tracking-wider">Mức Ưu Tiên</th>
-                        <th class="px-2 py-2 text-center text-xs font-bold uppercase tracking-wider">Thao Tác</th>
+                <thead>
+                    <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
+                        <th class="px-3 py-3 text-left">Mã Máy</th>
+                        <th class="px-3 py-3 text-left">Cấp BD</th>
+                        <th class="px-3 py-3 text-right">Chu Kỳ (Giờ)</th>
+                        <th class="px-3 py-3 text-right">Giờ BD Gần Nhất</th>
+                        <th class="px-3 py-3 text-right">Giờ Hiện Tại</th>
+                        <th class="px-3 py-3 text-right">Giờ Tới Hạn</th>
+                        <th class="px-3 py-3 text-right">Còn Lại</th>
+                        <th class="px-3 py-3 text-center">Trạng Thái</th>
+                        <th class="px-3 py-3 text-left">Cảnh Báo</th>
+                        <th class="px-3 py-3 text-center">Ưu Tiên</th>
+                        <th class="px-3 py-3 text-center">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">

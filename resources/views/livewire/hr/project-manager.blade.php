@@ -22,12 +22,12 @@
 
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="bg-slate-100 text-slate-600 text-sm">
-                    <th class="p-2 font-bold border-b border-slate-200">Mã</th>
-                    <th class="p-2 font-bold border-b border-slate-200">Tên Ngôi nhà / Dự án</th>
-                    <th class="p-2 font-bold border-b border-slate-200">Trạng thái</th>
-                    <th class="p-2 font-bold border-b border-slate-200">Mô tả</th>
-                    <th class="p-2 font-bold border-b border-slate-200 text-right">Thao tác</th>
+                <tr class="bg-slate-800 text-white text-xs font-bold uppercase tracking-wider">
+                    <th class="px-3 py-3 text-left">Mã</th>
+                    <th class="px-3 py-3 text-left">Tên Ngôi nhà / Dự án</th>
+                    <th class="px-3 py-3 text-left">Trạng thái</th>
+                    <th class="px-3 py-3 text-left">Mô tả</th>
+                    <th class="px-3 py-3 text-right">Thao tác</th>
                 </tr>
             </thead>
             <tbody>

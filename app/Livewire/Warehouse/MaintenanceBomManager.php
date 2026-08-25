@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class MaintenanceBomManager extends Component
 {
+    /** So vat tu toi da hien trong modal chon vat tu cua BOM */
+    public const MAX_PRODUCTS_IN_PICKER = 200;
+
     public $selectedAssetId = null;
     public $selectedBomId = null;
     public $searchAsset = '';
@@ -280,19 +283,40 @@ class MaintenanceBomManager extends Component
         // 4. Search Products for Picker Modal
         $products = collect();
         $allProductIdsOnPage = [];
+        $productTotal = 0;
         if ($this->showProductPickerModal) {
+            // Lay dung pham vi cua man Danh muc vat tu. Truoc day loc
+            // type != 'material' — nguoc hoan toan: dinh muc bao duong chinh la
+            // liet ke VAT TU can thay. Bo loc do gat mat 921/1050 vat tu cua
+            // Hoc Mon, va gat sach vat tu nhap tu Excel (import dat type =
+            // 'material').
             $products = Product::where(function($q) {
                     $q->where('name', 'like', '%' . $this->searchProduct . '%')
                       ->orWhere('code', 'like', '%' . $this->searchProduct . '%');
                 })
                 ->where(function($q) {
-                    $q->where('type', '!=', 'material')
+                    $q->whereIn('type', ['material', 'product_purchased', 'product_produced'])
                       ->orWhereNull('type');
                 })
+                ->where('status', 'active')
                 ->orderBy('name')
-                ->take(50)
-                ->get();
+                ->take(self::MAX_PRODUCTS_IN_PICKER)
+                ->get(['id', 'code', 'name', 'unit', 'box_spec', 'carton_spec']);
+
             $allProductIdsOnPage = $products->pluck('id')->toArray();
+
+            // Danh muc co the hang nghin dong; noi ro dang cat bot bao nhieu
+            // de nguoi dung biet phai go tim thay vi tuong thieu vat tu.
+            $productTotal = Product::where(function($q) {
+                    $q->where('name', 'like', '%' . $this->searchProduct . '%')
+                      ->orWhere('code', 'like', '%' . $this->searchProduct . '%');
+                })
+                ->where(function($q) {
+                    $q->whereIn('type', ['material', 'product_purchased', 'product_produced'])
+                      ->orWhereNull('type');
+                })
+                ->where('status', 'active')
+                ->count();
         }
 
         // 5. Other BOMs for copy
@@ -309,6 +333,7 @@ class MaintenanceBomManager extends Component
             'boms',
             'bomItems',
             'products',
+            'productTotal',
             'allProductIdsOnPage',
             'otherBoms'
         ));

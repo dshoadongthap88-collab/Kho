@@ -115,7 +115,7 @@
                                 <tr class="hover:bg-slate-50 transition-colors">
                                     <td class="px-3 py-2 text-xs font-mono text-indigo-600">{{ $item->product->code ?? 'N/A' }}</td>
                                     <td class="px-3 py-2 text-sm font-bold text-slate-800">{{ $item->product->name ?? 'N/A' }}</td>
-                                    <td class="px-3 py-2 text-xs text-center text-slate-600 uppercase">{{ $item->product->box_spec ?? 'Cái' }}</td>
+                                    <td class="px-3 py-2 text-xs text-center text-slate-600 uppercase">{{ $item->product->unit ?: ($item->product->box_spec ?: ($item->product->carton_spec ?: 'Cái')) }}</td>
                                     <td class="px-3 py-2">
                                         <input type="number" step="0.01" wire:model="bomItemQuantities.{{ $item->id }}" class="w-full border-gray-300 rounded text-right font-bold text-indigo-700 py-1 px-2 text-xs shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     </td>
@@ -204,7 +204,7 @@
                                             </td>
                                             <td class="px-3 py-2 text-xs font-mono text-indigo-600">{{ $prod->code }}</td>
                                             <td class="px-3 py-2 text-sm font-bold text-slate-800">{{ $prod->name }}</td>
-                                            <td class="px-3 py-2 text-xs text-center text-slate-600 uppercase">{{ $prod->box_spec ?? 'Cái' }}</td>
+                                            <td class="px-3 py-2 text-xs text-center text-slate-600 uppercase">{{ $prod->unit ?: ($prod->box_spec ?: ($prod->carton_spec ?: 'Cái')) }}</td>
                                         </tr>
                                     @empty
                                         <tr>
@@ -214,6 +214,20 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        {{-- Danh mục có thể hàng nghìn dòng. Nói rõ đang cắt bớt
+                             bao nhiêu để người dùng biết phải gõ tìm, thay vì
+                             tưởng hệ thống thiếu vật tư. --}}
+                        @if($productTotal > $products->count())
+                            <p class="mt-2 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                                Đang hiện {{ number_format($products->count()) }} / {{ number_format($productTotal) }} vật tư.
+                                Gõ tên hoặc mã ở ô tìm kiếm phía trên để thu hẹp danh sách.
+                            </p>
+                        @elseif($productTotal > 0)
+                            <p class="mt-2 text-[11px] font-semibold text-slate-500">
+                                {{ number_format($productTotal) }} vật tư trong danh mục.
+                            </p>
+                        @endif
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
                         <button type="button" wire:click="addSelectedProductsToBom" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-bold text-white hover:bg-green-700 sm:ml-3 sm:w-auto sm:text-sm">

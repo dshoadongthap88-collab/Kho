@@ -3,28 +3,119 @@
 @tailwind utilities;
 
 @layer utilities {
-    /* filter-grid: layout tu dong cho toolbar filter chips */
+    /* ============================================================
+       filter-bar / filter-grid / filter-field
+       Layout toolbar bo loc dung chung tren nhieu man hinh
+    ============================================================ */
+    .filter-bar {
+        background: white;
+        border: 1.5px solid #e2e8f0;      /* slate-200 */
+        border-radius: 1rem;              /* 16px */
+        box-shadow: 0 1px 3px 0 rgb(0 0 0/.06);
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
     .filter-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(10rem, 250px));
         gap: 0.625rem 0.75rem;
         align-items: end;
-        flex: 1 1 auto;
-        min-width: 0;
         justify-content: space-between;
     }
 
-    /* tabular-nums dam bao so tien thang hang */
+    .filter-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+    }
+
+    .filter-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        grid-column: 1 / -1;  /* chiem toan bo chieu ngang o cuoi grid */
+    }
+
+    .filter-actions-note {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    /* ============================================================
+       input-group / input-icon
+       Wrapper cho input co icon phia truoc
+    ============================================================ */
+    .input-group {
+        position: relative;
+    }
+
+    .input-group input,
+    .input-group select {
+        padding-left: 2.2rem;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 0.6rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        pointer-events: none;
+        width: 1rem;
+        height: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .input-icon svg {
+        width: 0.9rem;
+        height: 0.9rem;
+    }
+
+    /* ============================================================
+       input-sm — input nho hon mac dinh, van lay day du styling
+       cua design system (border, radius, focus ring)
+    ============================================================ */
+    .input-sm {
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.75rem !important;    /* 12px */
+        border-radius: 0.5rem !important; /* 8px */
+        width: 100% !important;           /* full width trong container */
+    }
+
+    /* ============================================================
+       tabular-nums — so tien thang hang
+    ============================================================ */
     .tabular-nums {
         font-variant-numeric: tabular-nums;
     }
 
-    /* An scrollbar nhung van scroll duoc */
+    /* ============================================================
+       hide-scrollbar — an scrollbar nhung van scroll duoc
+    ============================================================ */
     .hide-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
     .hide-scrollbar::-webkit-scrollbar {
         display: none;
+    }
+
+    /* ============================================================
+       print-only — chi hien khi in
+    ============================================================ */
+    .print-only {
+        display: none;
+    }
+    @media print {
+        .print-only { display: inline !important; }
     }
 }

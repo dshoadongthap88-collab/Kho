@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 class TenantController extends Controller
 {
-    public function selectHouse()
+    public function selectHouse(Request $request)
     {
         $user = Auth::user();
         $projects = \App\Models\Project::all();
@@ -20,7 +20,21 @@ class TenantController extends Controller
             ? $projects->pluck('id')->toArray()
             : (is_array($user->allowed_houses) ? $user->allowed_houses : []);
 
-        return view('tenant.select', compact('allowedHouses', 'projects'));
+        // Đổi dự án từ menu trên thanh tiêu đề: mở sẵn ô nhập PIN của đúng dự án
+        // được chọn, khỏi phải bấm lại lần nữa ở màn này.
+        //
+        // Vẫn phải nhập PIN như thường — chỉ bỏ bớt một cú bấm, không bỏ bước
+        // xác thực. Quyền vào dự án do verifyHouse() kiểm tra.
+        // allowed_houses lưu dạng JSON nên phần tử có thể là chuỗi ("1") hoặc
+        // số (1) tuỳ dữ liệu từng tài khoản — quy về số trước khi đối chiếu,
+        // nếu không nhân viên có quyền hợp lệ vẫn bị chặn.
+        $preselect = $request->integer('house') ?: null;
+
+        if ($preselect !== null && !in_array($preselect, array_map('intval', $allowedHouses), true)) {
+            $preselect = null;
+        }
+
+        return view('tenant.select', compact('allowedHouses', 'projects', 'preselect'));
     }
 
     public function verifyHouse(Request $request)

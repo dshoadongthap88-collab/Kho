@@ -419,11 +419,12 @@
             </div>
 
             <div class="flex items-center gap-2">
+                <x-project-switcher />
+
                 <!-- User Menu -->
                 @auth
                     <div class="relative group shrink-0">
                         <button class="flex items-center gap-2 px-2 py-1.5 rounded-md bg-sky-200 hover:bg-sky-300 transition duration-150 text-xs whitespace-nowrap shrink-0 font-bold text-sky-950">
-                            <span class="bg-sky-600 px-1.5 py-0.5 rounded text-[10px] text-white border border-sky-700">Dự án {{ session('current_house', 1) == 2 ? 'Hậu Nghĩa' : (session('current_house', 1) == 3 ? 'Cần Giờ' : (session('current_house', 1) == 4 ? 'Cần Giuộc' : 'Hóc Môn')) }}</span>
                             <span>👤</span>
                             <span>{{ Auth::user()->role === 'admin' ? 'Admin' : 'NV' }} - {{ Auth::user()->name }}</span>
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>

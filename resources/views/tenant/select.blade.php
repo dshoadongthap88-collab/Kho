@@ -223,6 +223,17 @@
                 closePinModal();
             }
         });
+
+        // Đổi dự án từ menu trên thanh tiêu đề: mở sẵn ô nhập PIN của dự án đó.
+        // Controller đã lọc, chỉ truyền sang dự án mà người dùng có quyền vào.
+        @if(!empty($preselect))
+            @php $duAn = $projects->firstWhere('id', $preselect); @endphp
+            @if($duAn)
+                window.addEventListener('DOMContentLoaded', function () {
+                    openPinModal({{ $duAn->id }}, @json($duAn->name));
+                });
+            @endif
+        @endif
     </script>
 </body>
 </html>

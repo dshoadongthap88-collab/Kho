@@ -122,6 +122,10 @@ class InventoryList extends Component
                 array_diff(array_map('intval', $this->selectedItems), [(int) $productId])
             );
 
+            // Bỏ luôn khỏi hai mảng ô sửa nhanh, nếu không giá trị cũ còn lại
+            // sẽ dựng lại dòng tồn kho vừa xóa khi người dùng bấm LƯU LẠI.
+            unset($this->locations[$productId], $this->quantities[$productId]);
+
             session()->flash('success', 'Đã xóa dữ liệu tồn kho của vật tư.');
         } catch (\Exception $e) {
             session()->flash('error', 'Có lỗi xảy ra khi xóa tồn kho.');
@@ -393,6 +397,23 @@ class InventoryList extends Component
                 ]);
             }
         }
+
+        // Nạp lại dữ liệu bảng sau khi sửa.
+        //
+        // Bắt buộc, không phải cho đẹp: hai mảng ô sửa nhanh trên bảng vẫn đang
+        // giữ giá trị CŨ của dòng vừa sửa. render() chỉ nạp giá trị mới cho
+        // khoá chưa có, nên giá trị cũ ở lại — bấm LƯU LẠI sau đó sẽ ghi đè
+        // ngược, xoá mất thứ vừa lưu trong modal. Đúng triệu chứng "sửa vị trí
+        // trong modal xong không thấy lưu lại".
+        //
+        // Bỏ khoá của dòng vừa sửa để render() lấy lại số mới từ CSDL.
+        unset(
+            $this->locations[$this->editingProductId],
+            $this->quantities[$this->editingProductId]
+        );
+
+        // Vị trí mới cần xuất hiện ngay ở ô gợi ý và ô lọc
+        Cache::forget('inventory_locations_' . (session('current_house') ?? 0));
 
         session()->flash('success', 'Đã cập nhật thông tin sản phẩm và tồn kho thành công.');
         $this->showEditModal = false;

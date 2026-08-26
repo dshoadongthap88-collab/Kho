@@ -78,26 +78,15 @@
 
             {{-- Hàng nút hành động, dồn phải; thao tác theo lựa chọn nằm bên trái --}}
             <div class="filter-actions">
-                {{-- Sửa / Xóa luôn hiển thị. Trước đây chúng chỉ hiện sau khi tích
-                     chọn dòng nên nhìn như bị mất chức năng. Chưa chọn thì nút mờ
-                     và có title nói rõ cần làm gì. --}}
+                {{-- Nút Sửa ở đây đã bỏ: cột Tồn kho và Vị trí sửa thẳng trên
+                     bảng, còn muốn sửa đầy đủ thì bấm bút chì ở cột Thao tác
+                     ngay trên dòng đó — khỏi phải tích chọn trước. --}}
                 <div class="filter-actions-note flex items-center gap-2">
                     @if(count($selectedItems) > 0)
                         <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
                             {{ count($selectedItems) }} đã chọn
                         </span>
                     @endif
-
-                    <button wire:click="openEditModal"
-                            @disabled(count($selectedItems) !== 1)
-                            title="{{ count($selectedItems) === 1 ? 'Sửa vật tư đã chọn' : 'Tích chọn đúng 1 dòng để sửa' }}"
-                            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition
-                                   {{ count($selectedItems) === 1
-                                      ? 'text-amber-600 bg-amber-50 hover:bg-amber-600 hover:text-white'
-                                      : 'text-slate-400 bg-slate-100 cursor-not-allowed' }}">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                        Sửa
-                    </button>
 
                     <button wire:click="deleteSelected"
                             wire:confirm="Xác nhận xóa dữ liệu tồn kho các vật tư đã chọn?"
@@ -112,7 +101,7 @@
                     </button>
                 </div>
 
-                {{-- Lưu cột Vị trí đã sửa trực tiếp trên bảng --}}
+                {{-- Lưu hai cột Tồn kho và Vị trí đã sửa trực tiếp trên bảng --}}
                 <button wire:click="saveLocations" wire:loading.attr="disabled" wire:target="saveLocations"
                         x-data="{ saved: false }"
                         @locations-saved.window="saved = true; setTimeout(() => saved = false, 2500)"
@@ -234,7 +223,17 @@
                                 {{ $inv->expiry_date ? \Carbon\Carbon::parse($inv->expiry_date)->format('d/m/y') : '—' }}
                             </td>
                             <td class="px-3 py-2 text-center text-xs text-slate-500">{{ $inv->unit }}</td>
-                            <td class="px-3 py-2 text-center text-sm {{ $qtyClass }}">{{ number_format($inv->quantity) }}</td>
+                            {{-- Sửa tồn kho ngay trên bảng, giống cột Vị trí.
+                                 Bấm LƯU LẠI để ghi một lượt cả hai cột. --}}
+                            <td class="px-2 py-2 text-center">
+                                <input type="number" step="any" inputmode="decimal"
+                                       wire:model="quantities.{{ $inv->id }}"
+                                       wire:keydown.enter="saveLocations"
+                                       class="input-sm text-center no-print px-1 {{ $qtyClass }}"
+                                       style="width:5.5rem"
+                                       placeholder="0">
+                                <span class="print-only">{{ number_format($inv->quantity) }}</span>
+                            </td>
                             {{-- Sửa vị trí ngay trên bảng, bấm LƯU LẠI để ghi một lượt.
                                  wire:model (không .live) nên gõ không gọi server mỗi phím. --}}
                             <td class="px-2 py-2 text-center">

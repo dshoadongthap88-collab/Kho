@@ -27,8 +27,10 @@ class InventoryList extends Component
     public $selectedItems = []; // Array of inventory IDs
     #[Url(history: true)]
     public $perPage = 25;   // so dong moi trang, nguoi dung tu chon
-    // Vị trí gõ trực tiếp trên bảng: [inventory_id => vị trí]
+    // Vị trí gõ trực tiếp trên bảng: [product_id => vị trí]
     public $locations = [];
+    // Tồn kho gõ trực tiếp trên bảng: [product_id => số lượng]
+    public $quantities = [];
     public $sortField = 'products.name';
     public $sortDirection = 'asc';
 
@@ -169,10 +171,17 @@ class InventoryList extends Component
      * ghi cả inventories.warehouse_location lẫn products.location. Nếu chỉ ghi
      * một bên thì mở Sửa hoặc In bên Danh mục sẽ thấy ô vị trí trống.
      */
+    /**
+     * Lưu hai cột sửa trực tiếp trên bảng: Vị trí và Tồn kho.
+     *
+     * Sửa tồn kho là đụng vào số liệu thật nên mỗi lần đổi đều ghi một dòng
+     * inventory_transactions kiểu 'adjustment', kèm số cũ → số mới và người
+     * sửa. Không có vết thì về sau không truy được vì sao tồn lệch.
+     */
     public function saveLocations()
     {
-        if (empty($this->locations)) {
-            session()->flash('success', 'Không có vị trí nào thay đổi.');
+        if (empty($this->locations) && empty($this->quantities)) {
+            session()->flash('success', 'Không có thay đổi nào.');
             $this->dispatch('locations-saved');
             return;
         }
@@ -184,39 +193,111 @@ class InventoryList extends Component
             }
         }
 
-        $updated = 0;
+        // Chặn số âm và chữ trước khi ghi, báo rõ dòng nào sai
+        foreach ($this->quantities as $productId => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
 
-        DB::transaction(function () use (&$updated) {
-            foreach ($this->locations as $productId => $value) {
-                $value = trim((string) $value);
-                $value = $value === '' ? null : $value;
+            if (!is_numeric($value)) {
+                session()->flash('error', 'Tồn kho phải là số. Kiểm tra lại ô vừa nhập.');
+                return;
+            }
 
-                // Vật tư chưa có dòng tồn kho vẫn gõ được vị trí — dòng tồn kho
-                // sẽ được tạo khi lưu. Nếu ô cũng để trống thì không tạo gì.
-                $inventory = $this->inventoryForProduct($productId, $value !== null);
+            if ((float) $value < 0) {
+                session()->flash('error', 'Tồn kho không được là số âm.');
+                return;
+            }
+        }
+
+        $updated   = 0;   // số vật tư đổi vị trí
+        $updatedSl = 0;   // số vật tư đổi tồn kho
+
+        DB::transaction(function () use (&$updated, &$updatedSl) {
+            // Gom mọi vật tư có thay đổi ở một trong hai cột
+            $productIds = array_unique(array_merge(
+                array_keys($this->locations),
+                array_keys($this->quantities)
+            ));
+
+            foreach ($productIds as $productId) {
+                $coViTri = array_key_exists($productId, $this->locations);
+                $coSl    = array_key_exists($productId, $this->quantities);
+
+                $viTri = $coViTri ? trim((string) $this->locations[$productId]) : null;
+                $viTri = ($viTri === '') ? null : $viTri;
+
+                $sl = null;
+                if ($coSl && $this->quantities[$productId] !== null && $this->quantities[$productId] !== '') {
+                    $sl = (float) $this->quantities[$productId];
+                }
+
+                // Vật tư chưa có dòng tồn kho vẫn gõ được — dòng sẽ được tạo khi
+                // lưu. Nếu cả hai ô đều trống thì không tạo gì.
+                $canTao   = ($viTri !== null) || ($sl !== null && $sl > 0);
+                $inventory = $this->inventoryForProduct($productId, $canTao);
+
                 if (!$inventory) {
                     continue;
                 }
 
-                if ($inventory->warehouse_location === $value) {
+                $thayDoi = [];
+
+                if ($coViTri && $inventory->warehouse_location !== $viTri) {
+                    $thayDoi['warehouse_location'] = $viTri;
+                    $updated++;
+                }
+
+                if ($sl !== null && (float) $inventory->quantity !== $sl) {
+                    $slCu = (float) $inventory->quantity;
+                    $thayDoi['quantity'] = $sl;
+                    $updatedSl++;
+
+                    // Ghi vết điều chỉnh: số cũ → số mới, ai sửa, lúc nào
+                    DB::table('inventory_transactions')->insert([
+                        'product_id'         => $productId,
+                        'type'               => 'adjustment',
+                        'quantity'           => $sl - $slCu,
+                        'transaction_date'   => now(),
+                        'warehouse_location' => $thayDoi['warehouse_location'] ?? $inventory->warehouse_location,
+                        'reference_type'     => 'manual_adjustment',
+                        'note'               => sprintf('Sửa nhanh tồn kho trên bảng: %s → %s',
+                            rtrim(rtrim(number_format($slCu, 2, '.', ''), '0'), '.'),
+                            rtrim(rtrim(number_format($sl, 2, '.', ''), '0'), '.')),
+                        'created_by'         => auth()->id(),
+                        'house_id'           => session('current_house') ?? (auth()->user()?->current_house_id),
+                        'created_at'         => now(),
+                        'updated_at'         => now(),
+                    ]);
+                }
+
+                if (empty($thayDoi)) {
                     continue;   // không đổi thì không chạm CSDL
                 }
 
-                $inventory->update(['warehouse_location' => $value]);
+                $inventory->update($thayDoi);
 
-                // Đồng bộ sang danh mục vật tư
-                Product::where('id', $productId)->update(['location' => $value]);
-
-                $updated++;
+                // Đồng bộ vị trí sang danh mục vật tư
+                if (array_key_exists('warehouse_location', $thayDoi)) {
+                    Product::where('id', $productId)->update(['location' => $viTri]);
+                }
             }
         });
 
         // Bỏ cache gợi ý vị trí để danh sách ở ô lọc có ngay giá trị mới
         Cache::forget('inventory_locations_' . (session('current_house') ?? 0));
 
-        session()->flash('success', $updated > 0
-            ? "Đã lưu vị trí cho {$updated} vật tư và đồng bộ sang Danh mục vật tư."
-            : 'Không có vị trí nào thay đổi.');
+        $phan = [];
+        if ($updated > 0) {
+            $phan[] = "vị trí cho {$updated} vật tư (đã đồng bộ sang Danh mục vật tư)";
+        }
+        if ($updatedSl > 0) {
+            $phan[] = "tồn kho cho {$updatedSl} vật tư";
+        }
+
+        session()->flash('success', $phan
+            ? 'Đã lưu ' . implode(' và ', $phan) . '.'
+            : 'Không có thay đổi nào.');
 
         $this->dispatch('locations-saved');
     }
@@ -495,15 +576,21 @@ class InventoryList extends Component
         // Giá trị người dùng đang gõ dở vẫn được giữ: ô nhập dùng wire:model
         // (không .live) nên chỉ gửi lên khi bấm LƯU LẠI, và khoá của dòng đang
         // hiển thị luôn nằm trong danh sách giữ lại bên dưới.
-        $moi = [];
+        $moi    = [];
+        $moiSl  = [];
 
         foreach ($inventories as $row) {
             $moi[$row->id] = array_key_exists($row->id, $this->locations)
                 ? $this->locations[$row->id]
                 : $row->warehouse_location;
+
+            $moiSl[$row->id] = array_key_exists($row->id, $this->quantities)
+                ? $this->quantities[$row->id]
+                : (float) $row->quantity;
         }
 
-        $this->locations = $moi;
+        $this->locations  = $moi;
+        $this->quantities = $moiSl;
 
         $houseKey = session('current_house') ?? 0;
 

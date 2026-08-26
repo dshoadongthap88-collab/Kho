@@ -25,11 +25,25 @@
             <div class="filter-field">
                 <label class="form-label" for="inv-search">Tìm kiếm</label>
                 <div class="input-group">
+                    {{-- Kính lúp đổi thành vòng quay trong lúc chờ máy chủ trả kết quả.
+                         Trước đây gõ xong không có phản hồi gì trong ~300ms nên
+                         nhìn như ô tìm kiếm không hoạt động. --}}
                     <span class="input-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <svg wire:loading.remove wire:target="search" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span wire:loading wire:target="search"
+                              class="inline-block w-3.5 h-3.5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
                     </span>
                     <input id="inv-search" wire:model.live.debounce.300ms="search" type="text"
                            class="input-sm has-icon" placeholder="Tên / Mã vật tư...">
+
+                    {{-- Nút xoá nhanh: bấm một phát về lại danh sách đầy đủ --}}
+                    @if($search !== '')
+                        <button type="button" wire:click="$set('search', '')"
+                                title="Xoá từ khoá"
+                                class="absolute inset-y-0 right-0 pr-2 flex items-center text-slate-400 hover:text-rose-500">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    @endif
                 </div>
             </div>
 
@@ -48,7 +62,7 @@
                 <input id="inv-location" wire:model.live.debounce.300ms="filterLocation" type="text"
                        list="locations_list" class="input-sm" placeholder="Tất cả vị trí">
                 <datalist id="locations_list">
-                    @foreach($locations as $loc)<option value="{{ $loc }}">@endforeach
+                    @foreach($locationOptions as $loc)<option value="{{ $loc }}">@endforeach
                 </datalist>
             </div>
 

@@ -170,6 +170,10 @@
         .input-group select {
             padding-left: 2.2rem;
         }
+        /* Chừa chỗ bên phải cho nút xoá từ khoá, tránh chữ chạy đè lên nút */
+        .input-group:has(> button) input {
+            padding-right: 1.9rem;
+        }
 
         /* Label đi kèm */
         label.form-label {

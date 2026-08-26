@@ -486,13 +486,24 @@ class InventoryList extends Component
 
         $inventories = $query->paginate($perPage);
 
-        // Nạp vị trí hiện có cho các dòng đang hiển thị. Chỉ nạp khi chưa có
-        // trong mảng, để không ghi đè lên giá trị người dùng đang gõ dở.
+        // Nạp vị trí cho các dòng đang hiển thị.
+        //
+        // Chỉ giữ đúng các dòng của trang hiện tại. Bản cũ cộng dồn mãi: mỗi lần
+        // gõ tìm kiếm lại thêm khoá mới mà không bỏ khoá cũ, nên mảng phình theo
+        // số dòng đã từng xem và đi kèm mọi lần gõ phím — càng gõ càng chậm.
+        //
+        // Giá trị người dùng đang gõ dở vẫn được giữ: ô nhập dùng wire:model
+        // (không .live) nên chỉ gửi lên khi bấm LƯU LẠI, và khoá của dòng đang
+        // hiển thị luôn nằm trong danh sách giữ lại bên dưới.
+        $moi = [];
+
         foreach ($inventories as $row) {
-            if (!array_key_exists($row->id, $this->locations)) {
-                $this->locations[$row->id] = $row->warehouse_location;
-            }
+            $moi[$row->id] = array_key_exists($row->id, $this->locations)
+                ? $this->locations[$row->id]
+                : $row->warehouse_location;
         }
+
+        $this->locations = $moi;
 
         $houseKey = session('current_house') ?? 0;
 
@@ -503,9 +514,14 @@ class InventoryList extends Component
                 "inventory_brands_{$houseKey}", 300,
                 fn() => Product::whereNotNull('brand')->distinct()->pluck('brand')
             ),
-            'locations' => \Illuminate\Support\Facades\Cache::remember(
+            // Tên phải KHÁC property $locations (mảng ô sửa vị trí trên bảng).
+            // Trùng tên thì biến view che mất property, làm datalist gợi ý vị trí
+            // nhận nhầm mảng [product_id => vị trí] và ô gợi ý rỗng.
+            'locationOptions' => \Illuminate\Support\Facades\Cache::remember(
                 "inventory_locations_{$houseKey}", 300,
-                fn() => \App\Models\Inventory::whereNotNull('warehouse_location')->distinct()->pluck('warehouse_location')
+                fn() => \App\Models\Inventory::whereNotNull('warehouse_location')
+                    ->where('warehouse_location', '!=', '')
+                    ->distinct()->pluck('warehouse_location')
             ),
         ]);
     }

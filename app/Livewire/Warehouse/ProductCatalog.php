@@ -411,32 +411,82 @@ class ProductCatalog extends Component
         }
     }
 
+    /**
+     * Xoá các dòng đang chọn.
+     *
+     * Bản cũ bọc CẢ vòng lặp trong một try duy nhất: dòng đầu tiên vướng khoá
+     * ngoại (đã có phiếu nhập/xuất) là ngoại lệ thoát ra ngoài, những dòng còn
+     * lại không được thử nữa. Chọn 1646 dòng mà dòng đầu đã vướng thì không xoá
+     * được dòng nào, chỉ hiện một thông báo chung chung.
+     *
+     * Bản này xoá từng dòng độc lập, tách riêng số xoá được và số bị vướng,
+     * và nêu tên vài mã đầu tiên để người dùng biết cần xử lý ở đâu.
+     */
     public function deleteSelected()
     {
-        if (empty($this->selectedIds)) return;
+        if (empty($this->selectedIds)) {
+            return;
+        }
 
-        try {
-            $count = 0;
-            foreach ($this->selectedIds as $id) {
-                if ($this->activeTab === 'materials') {
-                    $item = Product::find($id);
-                } else {
-                    $item = \App\Models\Asset::find($id);
+        // File lớn: 1600+ dòng, mỗi dòng một lệnh xoá
+        @set_time_limit(300);
+
+        $laVatTu = $this->activeTab === 'materials';
+        $type    = $laVatTu ? 'vật tư' : 'thiết bị';
+
+        $daXoa    = 0;
+        $vuong    = 0;
+        $khongCo  = 0;
+        $maVuong  = [];
+
+        foreach (array_chunk($this->selectedIds, 200) as $chunk) {
+            foreach ($chunk as $id) {
+                $item = $laVatTu ? Product::find($id) : \App\Models\Asset::find($id);
+
+                if (!$item) {
+                    $khongCo++;
+                    continue;
                 }
-                
-                if ($item) {
+
+                try {
                     $item->delete();
-                    $count++;
+                    $daXoa++;
+                } catch (\Throwable $e) {
+                    // Thường là 1451 — còn phiếu nhập/xuất, tồn kho, định mức BOM
+                    $vuong++;
+                    if (count($maVuong) < 5) {
+                        $maVuong[] = $laVatTu ? $item->code : $item->equipment_code;
+                    }
                 }
             }
-            
-            if ($count > 0) {
-                $type = $this->activeTab === 'materials' ? 'vật tư' : 'thiết bị';
-                session()->flash('message', "Đã xóa thành công {$count} {$type}.");
-            }
+        }
+
+        // Chỉ bỏ chọn những dòng đã xoá được, giữ lại dòng vướng để người dùng
+        // còn thấy mình đang vướng ở đâu
+        if ($vuong === 0) {
             $this->selectedIds = [];
-        } catch (\Exception $e) {
-            session()->flash('error', 'Một số mục không thể xóa do có dữ liệu liên quan.');
+        }
+
+        if ($daXoa > 0) {
+            session()->flash('message', "Đã xóa {$daXoa} {$type}.");
+        }
+
+        if ($vuong > 0) {
+            $lienQuan = $laVatTu
+                ? 'phiếu nhập/xuất, tồn kho hoặc định mức BOM'
+                : 'phiếu bảo dưỡng hoặc định mức BOM';
+
+            $chiTiet = $maVuong ? ' Ví dụ: ' . implode(', ', $maVuong) . '.' : '';
+
+            session()->flash(
+                'error',
+                "Không xoá được {$vuong} {$type} vì đang có dữ liệu liên quan ({$lienQuan})." .
+                $chiTiet . ' Cần xoá dữ liệu liên quan trước, hoặc chuyển sang ngừng kinh doanh.'
+            );
+        }
+
+        if ($daXoa === 0 && $vuong === 0 && $khongCo > 0) {
+            session()->flash('error', "Không tìm thấy {$khongCo} {$type} đã chọn — có thể đã bị xoá trước đó.");
         }
     }
 
@@ -595,8 +645,31 @@ class ProductCatalog extends Component
                     $message .= ' | Cột đã nhận diện: ' . implode(', ', $pairs);
                 }
             } else {
-                Excel::import(new \App\Imports\AssetsImport, $this->excelFile);
-                $message = 'Nhập dữ liệu từ Excel thành công!';
+                $import = new \App\Imports\AssetsImport;
+                Excel::import($import, $this->excelFile);
+
+                $message = sprintf(
+                    'Đã đọc %d dòng: tạo mới %d thiết bị, cập nhật %d thiết bị.',
+                    $import->rowsRead,
+                    $import->created,
+                    $import->updated
+                );
+
+                if ($import->duplicateRows > 0) {
+                    $message .= sprintf(' Có %d dòng trùng mã thiết bị — dòng dưới ghi đè dòng trên.', $import->duplicateRows);
+                }
+
+                if ($import->skippedNoCode > 0) {
+                    $message .= sprintf(' Bỏ qua %d dòng thiếu mã thiết bị.', $import->skippedNoCode);
+                }
+
+                if (!empty($import->detectedColumns)) {
+                    $pairs = [];
+                    foreach ($import->detectedColumns as $field => $columnName) {
+                        $pairs[] = $field . ' ← "' . $columnName . '"';
+                    }
+                    $message .= ' | Cột đã nhận diện: ' . implode(', ', $pairs);
+                }
             }
 
             $this->reset(['excelFile', 'showImportModal']);

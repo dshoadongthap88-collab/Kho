@@ -523,11 +523,30 @@
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showImportModal', false)"></div>
                 <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-2 sm:pb-4">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Nhập dữ liệu từ Excel</h3>
-                        
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">
+                            Nhập {{ $activeTab === 'materials' ? 'vật tư' : 'thiết bị' }} từ Excel
+                        </h3>
+
                         <div class="mb-4">
-                            <p class="text-sm text-gray-500 mb-2">Tải tệp Excel (.xlsx, .xls) hoặc CSV để nhập hàng loạt vật tư.</p>
-                            <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium underline">Tải tệp mẫu (.xlsx) tại đây</a>
+                            <p class="text-sm text-gray-500 mb-2">
+                                Tải tệp Excel (.xlsx, .xls) hoặc CSV để nhập hàng loạt
+                                {{ $activeTab === 'materials' ? 'vật tư' : 'thiết bị' }}.
+                            </p>
+
+                            {{-- Nêu rõ cột bắt buộc: hệ thống tự dò tên cột, nhưng phải có đủ 2 cột này --}}
+                            <div class="text-[12px] bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-600">
+                                @if($activeTab === 'materials')
+                                    <span class="font-bold text-slate-700">Cột bắt buộc:</span> Mã vật tư, Tên vật tư.<br>
+                                    <span class="font-bold text-slate-700">Cột tuỳ chọn:</span> ĐVT, Số lượng, Vị trí, Hãng sản xuất, Số lô, Hạn dùng.
+                                @else
+                                    <span class="font-bold text-slate-700">Cột bắt buộc:</span> Mã thiết bị, Tên thiết bị.<br>
+                                    <span class="font-bold text-slate-700">Cột tuỳ chọn:</span> Mã tài sản, Loại thiết bị, Người quản lý, Tình trạng, Bộ phận, Model, Biển số.
+                                @endif
+                                <div class="mt-1.5 text-slate-500">
+                                    Tiêu đề không cần ở dòng đầu và không cần viết đúng từng chữ —
+                                    hệ thống tự dò trong 15 dòng đầu.
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mt-4">

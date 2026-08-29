@@ -756,9 +756,12 @@ class StockOutForm extends Component
                         'total_amount' => $item['total_amount'],
                     ]);
 
+                    // Nếu thực xuất (quantity) để trống, dùng đề nghị (requested_quantity) để trừ tồn
+                    $quantityToExport = !empty($item['quantity']) ? floatval($item['quantity']) : floatval($item['requested_quantity'] ?: 0);
+                    
                     $service->export(
                         $item['product_id'],
-                        $item['quantity'],
+                        $quantityToExport,
                         'stock_out',
                         $stockOut->id,
                         $this->note,

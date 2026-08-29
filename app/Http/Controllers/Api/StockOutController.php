@@ -95,6 +95,7 @@ class StockOutController extends Controller
                 
                 $batchNumber = $itemData['batch_number'] ?? '';
                 $warehouseLocation = $itemData['warehouse_location'] ?? ($product->location ?? '');
+                $requestedQuantity = $itemData['requested_quantity'] ?? $quantity;
 
                 // 1. Lưu detail
                 StockOutItem::create([
@@ -103,15 +104,19 @@ class StockOutController extends Controller
                     'batch_number' => $batchNumber,
                     'warehouse_location' => $warehouseLocation,
                     'quantity' => $quantity,
+                    'requested_quantity' => $requestedQuantity,
                     'unit_price' => $product->price ?? 0,
                     'vat_rate' => 0,
                     'total_amount' => $quantity * ($product->price ?? 0),
                 ]);
 
-                // 2. Xuất kho qua InventoryService để đảm bảo an toàn & Transaction History
+                // 2. Nếu thực xuất (quantity) để trống, dùng đề nghị (requested_quantity) để trừ tồn
+                $quantityToExport = !empty($quantity) ? floatval($quantity) : floatval($requestedQuantity ?: 0);
+                
+                // 3. Xuất kho qua InventoryService để đảm bảo an toàn & Transaction History
                 $service->export(
                     $product->id,
-                    $quantity,
+                    $quantityToExport,
                     'stock_out',
                     $stockOut->id,
                     $note,

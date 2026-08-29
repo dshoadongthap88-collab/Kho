@@ -83,6 +83,7 @@ class InventoryService
 
     /**
      * Xuất kho sản phẩm
+     * Nếu tồn = 0 hoặc không đủ, chỉ trừ số lượng có sẵn (không throw exception)
      */
     public function export(int $productId, float $quantity, string $referenceType = null, int $referenceId = null, string $note = null, string $batchNumber = null, $expiryDate = null, string $location = null)
     {
@@ -93,16 +94,18 @@ class InventoryService
                 throw new \Exception("Không tìm thấy tồn kho của vật tư này trong chi nhánh hiện tại.");
             }
 
-            if ($inventory->quantity < $quantity) {
-                throw new \Exception("Không đủ hàng trong kho để xuất.");
-            }
+            // Tính số lượng thực tế có thể trừ (chỉ trừ nếu tồn > 0)
+            $actualQuantityToDeduct = max(0, min($quantity, $inventory->quantity));
 
-            $inventory->decrement('quantity', $quantity);
+            // Chỉ trừ kho nếu có số lượng có sẵn
+            if ($actualQuantityToDeduct > 0) {
+                $inventory->decrement('quantity', $actualQuantityToDeduct);
+            }
 
             return InventoryTransaction::create([
                 'product_id' => $productId,
                 'type' => 'export',
-                'quantity' => -$quantity,
+                'quantity' => -$actualQuantityToDeduct,
                 'batch_number' => $batchNumber,
                 'expiry_date' => $expiryDate,
                 'warehouse_location' => $location,

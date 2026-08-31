@@ -245,6 +245,53 @@
                 </table>
             @endforelse
         @endif
+
+        @if($reportType === 'all')
+            <div style="page-break-before: always;"></div>
+            <div class="header" style="text-align: center; margin-bottom: 20px; margin-top: 20px;">
+                <div class="title" style="font-size: 20px; font-weight: bold; text-transform: uppercase;">DANH SÁCH CHI TIẾT CHUYỂN KHO</div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px;">
+                <thead>
+                    <tr>
+                        <th style="width: 4%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">STT</th>
+                        <th style="width: 11%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Ngày chuyển</th>
+                        <th style="width: 12%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Số phiếu</th>
+                        <th style="width: 13%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Mã vật tư</th>
+                        <th style="width: 20%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Tên vật tư</th>
+                        <th style="width: 9%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Số lượng</th>
+                        <th style="width: 14%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Từ</th>
+                        <th style="width: 14%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Đến</th>
+                        <th style="width: 13%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse(($stockTransferItems ?? collect()) as $index => $item)
+                        @php
+                            $transfer = $item->stockTransfer;
+                            $fromName = $transfer?->fromWarehouse?->name ?? $transfer?->fromProject?->name ?? '-';
+                            $toName = $transfer?->toWarehouse?->name ?? $transfer?->toProject?->name ?? '-';
+                        @endphp
+                        <tr>
+                            <td class="text-center" style="border: 1px solid black; padding: 5px;">{{ $index + 1 }}</td>
+                            <td class="text-center" style="border: 1px solid black; padding: 5px;">{{ optional($transfer?->transfer_date)->format('d/m/Y') ?: '-' }}</td>
+                            <td class="text-center font-bold" style="border: 1px solid black; padding: 5px;">{{ $transfer->transfer_code ?? '-' }}</td>
+                            <td class="text-center" style="border: 1px solid black; padding: 5px;">{{ $item->product_code ?: ($item->product->code ?? '-') }}</td>
+                            <td style="border: 1px solid black; padding: 5px;">{{ $item->product_name ?: ($item->product->name ?? '-') }}</td>
+                            <td class="text-center font-bold" style="border: 1px solid black; padding: 5px;">{{ (float)$item->quantity }} {{ $item->unit ?: ($item->product->unit ?? '') }}</td>
+                            <td style="border: 1px solid black; padding: 5px;">{{ $fromName }}</td>
+                            <td style="border: 1px solid black; padding: 5px;">{{ $toName }}</td>
+                            <td style="border: 1px solid black; padding: 5px;">{{ $item->note ?? $transfer->note ?? '' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="text-center" style="padding: 20px; border: 1px solid black;">Không có dữ liệu chuyển kho</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        @endif
     @endif
 
     @if(false && isset($detailed) && $detailed && isset($transactions) && $transactions->count() > 0)

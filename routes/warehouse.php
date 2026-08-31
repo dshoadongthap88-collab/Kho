@@ -308,6 +308,7 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
             $transactions = null;
             $stockInItems = collect();
             $stockOutItems = collect();
+            $stockTransferItems = collect();
             $assetCodesCount = 0;
             $productCodesCount = 0;
             
@@ -352,9 +353,30 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
                         ->orderByDesc('id')
                         ->get();
                 }
+
+                if ($reportType === 'all') {
+                    $stockTransferItems = \App\Models\StockTransferItem::with([
+                            'product',
+                            'stockTransfer.creator',
+                            'stockTransfer.fromWarehouse',
+                            'stockTransfer.toWarehouse',
+                            'stockTransfer.fromProject',
+                            'stockTransfer.toProject',
+                        ])
+                        ->whereHas('stockTransfer', function($q) use ($start, $end) {
+                            $q->whereBetween('transfer_date', [$start, $end]);
+                        })
+                        ->orderByDesc(
+                            \App\Models\StockTransfer::select('transfer_date')
+                                ->whereColumn('stock_transfers.id', 'stock_transfer_items.stock_transfer_id')
+                                ->limit(1)
+                        )
+                        ->orderByDesc('id')
+                        ->get();
+                }
             }
 
-            return view('warehouse.reports.daily-report-print', compact('reportData', 'dateFrom', 'dateTo', 'detailed', 'transactions', 'stockInItems', 'stockOutItems', 'assetCodesCount', 'productCodesCount', 'reportType'));
+            return view('warehouse.reports.daily-report-print', compact('reportData', 'dateFrom', 'dateTo', 'detailed', 'transactions', 'stockInItems', 'stockOutItems', 'stockTransferItems', 'assetCodesCount', 'productCodesCount', 'reportType'));
         })->name('reports.daily.print');
     });
 

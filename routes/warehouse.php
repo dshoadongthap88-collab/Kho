@@ -306,6 +306,8 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
             
             $detailed = request('detailed') == '1';
             $transactions = null;
+            $stockInItems = collect();
+            $stockOutItems = collect();
             $assetCodesCount = 0;
             $productCodesCount = 0;
             
@@ -322,9 +324,37 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
                 $transactions = $transactionsQuery->orderBy('created_at', 'desc')->get();
                 $assetCodesCount = $transactions->filter(function($tx) { return $tx->reference && isset($tx->reference->asset_code) && !empty($tx->reference->asset_code); })->pluck('reference.asset_code')->unique()->count();
                 $productCodesCount = $transactions->filter(function($tx) { return $tx->product_id; })->pluck('product_id')->unique()->count();
+
+                if (in_array($reportType, ['all', 'import'], true)) {
+                    $stockInItems = \App\Models\StockInItem::with(['product', 'stockIn.creator'])
+                        ->whereHas('stockIn', function($q) use ($start, $end) {
+                            $q->whereBetween('stock_in_date', [$start, $end]);
+                        })
+                        ->orderByDesc(
+                            \App\Models\StockIn::select('stock_in_date')
+                                ->whereColumn('stock_ins.id', 'stock_in_items.stock_in_id')
+                                ->limit(1)
+                        )
+                        ->orderByDesc('id')
+                        ->get();
+                }
+
+                if (in_array($reportType, ['all', 'export'], true)) {
+                    $stockOutItems = \App\Models\StockOutItem::with(['product', 'stockOut.creator'])
+                        ->whereHas('stockOut', function($q) use ($start, $end) {
+                            $q->whereBetween('created_at', [$start, $end]);
+                        })
+                        ->orderByDesc(
+                            \App\Models\StockOut::select('created_at')
+                                ->whereColumn('stock_outs.id', 'stock_out_items.stock_out_id')
+                                ->limit(1)
+                        )
+                        ->orderByDesc('id')
+                        ->get();
+                }
             }
 
-            return view('warehouse.reports.daily-report-print', compact('reportData', 'dateFrom', 'dateTo', 'detailed', 'transactions', 'assetCodesCount', 'productCodesCount', 'reportType'));
+            return view('warehouse.reports.daily-report-print', compact('reportData', 'dateFrom', 'dateTo', 'detailed', 'transactions', 'stockInItems', 'stockOutItems', 'assetCodesCount', 'productCodesCount', 'reportType'));
         })->name('reports.daily.print');
     });
 

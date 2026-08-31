@@ -140,7 +140,114 @@
         </table>
     @endif
 
-    @if(isset($detailed) && $detailed && isset($transactions) && $transactions->count() > 0)
+    @if(isset($detailed) && $detailed)
+        <div style="page-break-before: always;"></div>
+
+        @if(in_array($reportType, ['all', 'import'], true))
+            <div class="header" style="text-align: center; margin-bottom: 20px; margin-top: 20px;">
+                <div class="title" style="font-size: 20px; font-weight: bold; text-transform: uppercase;">DANH SÁCH CHI TIẾT NHẬP KHO</div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px;">
+                <thead>
+                    <tr>
+                        <th style="width: 4%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">STT</th>
+                        <th style="width: 12%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Ngày nhập</th>
+                        <th style="width: 12%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Số phiếu</th>
+                        <th style="width: 18%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Nhà cung cấp</th>
+                        <th style="width: 13%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Mã vật tư</th>
+                        <th style="width: 21%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Tên vật tư</th>
+                        <th style="width: 9%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Số lượng</th>
+                        <th style="width: 11%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Vị trí</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse(($stockInItems ?? collect()) as $index => $item)
+                        <tr>
+                            <td class="text-center" style="border: 1px solid black; padding: 5px;">{{ $index + 1 }}</td>
+                            <td class="text-center" style="border: 1px solid black; padding: 5px;">{{ optional($item->stockIn?->stock_in_date)->format('d/m/Y') ?: '-' }}</td>
+                            <td class="text-center font-bold" style="border: 1px solid black; padding: 5px;">{{ $item->stockIn->code ?? '-' }}</td>
+                            <td style="border: 1px solid black; padding: 5px;">{{ $item->stockIn->supplier_name ?? '-' }}</td>
+                            <td class="text-center" style="border: 1px solid black; padding: 5px;">{{ $item->product->code ?? '-' }}</td>
+                            <td style="border: 1px solid black; padding: 5px;">{{ $item->product->name ?? '-' }}</td>
+                            <td class="text-center font-bold" style="border: 1px solid black; padding: 5px;">{{ (float)$item->quantity }} {{ $item->product->unit ?? '' }}</td>
+                            <td style="border: 1px solid black; padding: 5px;">{{ $item->warehouse_location ?? '-' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center" style="padding: 20px; border: 1px solid black;">Không có dữ liệu nhập kho</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        @endif
+
+        @if(in_array($reportType, ['all', 'export'], true))
+            @if($reportType === 'all')
+                <div style="page-break-before: always;"></div>
+            @endif
+            <div class="header" style="text-align: center; margin-bottom: 20px; margin-top: 20px;">
+                <div class="title" style="font-size: 20px; font-weight: bold; text-transform: uppercase;">DANH SÁCH CHI TIẾT XUẤT KHO</div>
+            </div>
+
+            @php
+                $groupedStockOutItems = ($stockOutItems ?? collect())->groupBy(function($item) {
+                    return $item->stockOut->document_number ?: ($item->stockOut->code ?? 'KHÁC');
+                });
+            @endphp
+
+            @forelse($groupedStockOutItems as $docNum => $items)
+                @php
+                    $stockOut = $items->first()->stockOut;
+                    $groupAssetCount = $items->pluck('stockOut.asset_code')->filter()->unique()->count();
+                    $groupProductCount = $items->pluck('product_id')->filter()->unique()->count();
+                @endphp
+
+                <div style="margin-top: 15px; border: 1px solid #ddd; padding: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; page-break-after: avoid;">
+                        <div style="width: 50%;">Số Phiếu ĐNSC/BD: <span style="font-weight: normal; font-size: 14px;">{{ $docNum !== 'KHÁC' ? $docNum : '..........................................' }}</span></div>
+                        <div style="width: 50%;">Nhân viên sửa chữa: <span style="font-weight: normal; font-size: 14px;">{{ $stockOut->repair_staff ?: '..........................................' }}</span></div>
+                    </div>
+                    <div style="font-size: 11px; font-style: italic; margin-bottom: 10px; color: #555; page-break-after: avoid;">
+                        Tổng mã tài sản: {{ $groupAssetCount }} | Tổng mã vật tư: {{ $groupProductCount }} | Số lượng dòng xuất: {{ $items->count() }}
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px;">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">STT</th>
+                                <th style="width: 15%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Mã tài sản</th>
+                                <th style="width: 15%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Mã vật tư</th>
+                                <th style="width: 15%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Số lượng</th>
+                                <th style="width: 25%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">BP sử dụng</th>
+                                <th style="width: 25%; border: 1px solid black; padding: 5px; background-color: #f3f4f6;">Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($items as $index => $item)
+                                <tr>
+                                    <td class="text-center" style="border: 1px solid black; padding: 5px;">{{ $index + 1 }}</td>
+                                    <td class="text-center font-bold" style="border: 1px solid black; padding: 5px;">{{ $item->stockOut->asset_code ?: '-' }}</td>
+                                    <td class="text-center" style="border: 1px solid black; padding: 5px;">{{ $item->product->code ?? '-' }}</td>
+                                    <td class="text-center font-bold" style="border: 1px solid black; padding: 5px;">{{ (float)$item->quantity }} {{ $item->product->unit ?? '' }}</td>
+                                    <td style="border: 1px solid black; padding: 5px;">{{ $item->stockOut->department ?: '-' }}</td>
+                                    <td style="border: 1px solid black; padding: 5px;">{{ $item->item_note ?? $item->stockOut->note ?? '' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @empty
+                <table>
+                    <tr>
+                        <td class="text-center" style="padding: 20px; border: 1px solid black;">Không có dữ liệu xuất kho</td>
+                    </tr>
+                </table>
+            @endforelse
+        @endif
+    @endif
+
+    @if(false && isset($detailed) && $detailed && isset($transactions) && $transactions->count() > 0)
         <div style="page-break-before: always;"></div>
         <div class="header" style="text-align: center; margin-bottom: 20px; margin-top: 20px;">
             <div class="title" style="font-size: 20px; font-weight: bold; text-transform: uppercase;">CHI TIẾT CÁC GIAO DỊCH TRONG NGÀY</div>

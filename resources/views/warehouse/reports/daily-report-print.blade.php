@@ -35,8 +35,19 @@
         </div>
     </div>
 
+    @php
+        $reportType = $reportType ?? 'all';
+        $showImportSummary = in_array($reportType, ['all', 'import'], true);
+        $showExportSummary = in_array($reportType, ['all', 'export'], true);
+        $reportTitle = match ($reportType) {
+            'import' => 'BÁO CÁO NGÀY - NHẬP KHO',
+            'export' => 'BÁO CÁO NGÀY - XUẤT KHO',
+            default => 'BÁO CÁO CHI TIẾT GIAO DỊCH',
+        };
+    @endphp
+
     <div class="header" style="text-align: center; margin-bottom: 30px;">
-        <div class="title" style="font-size: 24px; font-weight: bold; text-transform: uppercase; margin: 10px 0;">BÁO CÁO CHI TIẾT GIAO DỊCH</div>
+        <div class="title" style="font-size: 24px; font-weight: bold; text-transform: uppercase; margin: 10px 0;">{{ $reportTitle }}</div>
         <div class="subtitle">
             @if($dateFrom === $dateTo)
                 Ngày báo cáo: {{ \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') }}
@@ -47,75 +58,87 @@
         <div style="font-style: italic; margin-top: 5px;">Ngày in: {{ now()->format('d/m/Y H:i') }}</div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th colspan="2" class="text-center">TỔNG HỢP GIAO DỊCH VẬT TƯ</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td width="70%">Tổng số lượng mã vật tư đã NHẬP KHO:</td>
-                <td width="30%" class="text-center font-bold">{{ $reportData['stockInCount'] }}</td>
-            </tr>
-            <tr>
-                <td>Tổng số lượng mã vật tư đã XUẤT KHO:</td>
-                <td class="text-center font-bold">{{ $reportData['stockOutCount'] }}</td>
-            </tr>
-            <tr>
-                <td>Tổng số lượng mã vật tư đã CHUYỂN KHO:</td>
-                <td class="text-center font-bold">{{ $reportData['stockTransferCount'] }}</td>
-            </tr>
-            <tr>
-                <td>Tổng số lượng mã vật tư đã THU HỒI:</td>
-                <td class="text-center font-bold">{{ $reportData['stockRecoveryCount'] }}</td>
-            </tr>
-        </tbody>
-    </table>
+    @if($showImportSummary || $showExportSummary)
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2" class="text-center">TỔNG HỢP GIAO DỊCH VẬT TƯ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if($showImportSummary)
+                    <tr>
+                        <td width="70%">Tổng số lượng mã vật tư đã NHẬP KHO:</td>
+                        <td width="30%" class="text-center font-bold">{{ $reportData['stockInCount'] }}</td>
+                    </tr>
+                @endif
+                @if($showExportSummary)
+                    <tr>
+                        <td>Tổng số lượng mã vật tư đã XUẤT KHO:</td>
+                        <td class="text-center font-bold">{{ $reportData['stockOutCount'] }}</td>
+                    </tr>
+                @endif
+                @if($reportType === 'all')
+                    <tr>
+                        <td>Tổng số lượng mã vật tư đã CHUYỂN KHO:</td>
+                        <td class="text-center font-bold">{{ $reportData['stockTransferCount'] }}</td>
+                    </tr>
+                    <tr>
+                        <td>Tổng số lượng mã vật tư đã THU HỒI:</td>
+                        <td class="text-center font-bold">{{ $reportData['stockRecoveryCount'] }}</td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+    @endif
 
-    <table>
-        <thead>
-            <tr>
-                <th colspan="2" class="text-center">THỐNG KÊ ĐƠN XUẤT KHO</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td width="70%">Tổng số đơn xuất trong ngày:</td>
-                <td width="30%" class="text-center font-bold">{{ $reportData['totalStockOutOrders'] }}</td>
-            </tr>
-            <tr>
-                <td>Số mã Tài sản xuất cho dự án:</td>
-                <td class="text-center font-bold">{{ $reportData['assetExportCount'] }}</td>
-            </tr>
-            <tr>
-                <td>Số mã Vật tư xuất cho dự án:</td>
-                <td class="text-center font-bold">{{ $reportData['materialExportCount'] }}</td>
-            </tr>
-        </tbody>
-    </table>
+    @if($showExportSummary)
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2" class="text-center">THỐNG KÊ ĐƠN XUẤT KHO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td width="70%">Tổng số đơn xuất trong ngày:</td>
+                    <td width="30%" class="text-center font-bold">{{ $reportData['totalStockOutOrders'] }}</td>
+                </tr>
+                <tr>
+                    <td>Số mã Tài sản xuất cho dự án:</td>
+                    <td class="text-center font-bold">{{ $reportData['assetExportCount'] }}</td>
+                </tr>
+                <tr>
+                    <td>Số mã Vật tư xuất cho dự án:</td>
+                    <td class="text-center font-bold">{{ $reportData['materialExportCount'] }}</td>
+                </tr>
+            </tbody>
+        </table>
+    @endif
 
-    <table>
-        <thead>
-            <tr>
-                <th colspan="2" class="text-center">THỐNG KÊ NHẬP KHO</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td width="70%">Tổng số đơn nhập kho:</td>
-                <td width="30%" class="text-center font-bold">{{ $reportData['totalStockInOrders'] }}</td>
-            </tr>
-            <tr>
-                <td>Tổng số mã vật tư nhập kho:</td>
-                <td class="text-center font-bold">{{ $reportData['stockInCount'] }}</td>
-            </tr>
-            <tr>
-                <td>Tổng số nhà cung cấp đã giao:</td>
-                <td class="text-center font-bold">{{ $reportData['supplierDeliveryCount'] }}</td>
-            </tr>
-        </tbody>
-    </table>
+    @if($showImportSummary)
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2" class="text-center">THỐNG KÊ NHẬP KHO</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td width="70%">Tổng số đơn nhập kho:</td>
+                    <td width="30%" class="text-center font-bold">{{ $reportData['totalStockInOrders'] }}</td>
+                </tr>
+                <tr>
+                    <td>Tổng số mã vật tư nhập kho:</td>
+                    <td class="text-center font-bold">{{ $reportData['stockInCount'] }}</td>
+                </tr>
+                <tr>
+                    <td>Tổng số nhà cung cấp đã giao:</td>
+                    <td class="text-center font-bold">{{ $reportData['supplierDeliveryCount'] }}</td>
+                </tr>
+            </tbody>
+        </table>
+    @endif
 
     @if(isset($detailed) && $detailed && isset($transactions) && $transactions->count() > 0)
         <div style="page-break-before: always;"></div>

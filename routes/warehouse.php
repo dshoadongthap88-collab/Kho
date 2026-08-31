@@ -284,6 +284,8 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
         Route::get('/reports/daily/print', function() {
             $dateFrom = request('dateFrom', now()->startOfMonth()->format('Y-m-d'));
             $dateTo = request('dateTo', now()->format('Y-m-d'));
+            $reportType = request('type', 'all');
+            $reportType = in_array($reportType, ['all', 'import', 'export'], true) ? $reportType : 'all';
             $start = \Carbon\Carbon::parse($dateFrom)->startOfDay();
             $end = \Carbon\Carbon::parse($dateTo)->endOfDay();
             
@@ -308,13 +310,21 @@ Route::prefix('warehouse')->name('warehouse.')->group(function () {
             $productCodesCount = 0;
             
             if ($detailed) {
-                $transactions = \App\Models\InventoryTransaction::with(['product', 'creator', 'reference'])
-                    ->whereBetween('created_at', [$start, $end])->orderBy('created_at', 'desc')->get();
+                $transactionsQuery = \App\Models\InventoryTransaction::with(['product', 'creator', 'reference'])
+                    ->whereBetween('created_at', [$start, $end]);
+
+                if ($reportType === 'import') {
+                    $transactionsQuery->where('type', 'import');
+                } elseif ($reportType === 'export') {
+                    $transactionsQuery->where('type', 'export');
+                }
+
+                $transactions = $transactionsQuery->orderBy('created_at', 'desc')->get();
                 $assetCodesCount = $transactions->filter(function($tx) { return $tx->reference && isset($tx->reference->asset_code) && !empty($tx->reference->asset_code); })->pluck('reference.asset_code')->unique()->count();
                 $productCodesCount = $transactions->filter(function($tx) { return $tx->product_id; })->pluck('product_id')->unique()->count();
             }
 
-            return view('warehouse.reports.daily-report-print', compact('reportData', 'dateFrom', 'dateTo', 'detailed', 'transactions', 'assetCodesCount', 'productCodesCount'));
+            return view('warehouse.reports.daily-report-print', compact('reportData', 'dateFrom', 'dateTo', 'detailed', 'transactions', 'assetCodesCount', 'productCodesCount', 'reportType'));
         })->name('reports.daily.print');
     });
 

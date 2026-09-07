@@ -67,11 +67,12 @@ class ProductsImport implements ToCollection, WithColumnLimit, SkipsEmptyRows
                 $this->duplicateRows++;
             }
 
-            // Chỉ đọc: mã, tên, ĐVT, vị trí (không đụng tồn kho)
+            // Đọc đủ thông tin cần cập nhật: mã, tên, ĐVT, vị trí và tồn kho.
             $parsed[$code] = [
                 'name'     => $this->cell($row, $columns, 'name'),
                 'unit'     => $this->cell($row, $columns, 'unit'),
                 'location' => $this->cell($row, $columns, 'location'),
+                'quantity' => $this->normalizeQuantity($this->cell($row, $columns, 'quantity')),
             ];
         }
 
@@ -137,33 +138,35 @@ class ProductsImport implements ToCollection, WithColumnLimit, SkipsEmptyRows
                 $products += $this->preloadProductsByCode(array_keys($newProductRows));
             }
 
-            // 3b. Vị trí trong tồn kho — chỉ của DỰ ÁN HIỆN TẠI, không đụng số lượng
+            // 3b. Tồn kho + vị trí — cập nhật theo file Excel, không chỉ location.
             $newInventoryRows = [];
             foreach ($parsed as $code => $data) {
-                if (!$data['location']) {
-                    continue;
-                }
-
                 $product = $products[$code] ?? null;
                 if (!$product) {
                     continue;
                 }
 
                 $inventory = $inventories[$product->id] ?? null;
+                $hasQuantity = $data['quantity'] !== null;
+                $hasLocation = !empty($data['location']);
 
                 if ($inventory) {
-                    $inventory->warehouse_location = $data['location'];
+                    if ($hasQuantity) {
+                        $inventory->quantity = $data['quantity'];
+                    }
+                    if ($hasLocation) {
+                        $inventory->warehouse_location = $data['location'];
+                    }
                     if ($inventory->isDirty()) {
                         $inventory->save();
                     }
                     continue;
                 }
 
-                // Tạo record Inventory trống để vật tư hiển thị trong màn hình Tồn Kho
                 $newInventoryRows[] = [
                     'product_id'         => $product->id,
-                    'quantity'           => 0,
-                    'warehouse_location' => $data['location'],
+                    'quantity'           => $hasQuantity ? $data['quantity'] : 0,
+                    'warehouse_location' => $data['location'] ?? null,
                     'house_id'           => $houseId,
                     'created_at'         => $now,
                     'updated_at'         => $now,
@@ -181,7 +184,7 @@ class ProductsImport implements ToCollection, WithColumnLimit, SkipsEmptyRows
     {
         $labels = [
             'code' => 'Mã vật tư', 'name' => 'Tên vật tư',
-            'unit' => 'ĐVT', 'location' => 'Vị trí',
+            'unit' => 'ĐVT', 'quantity' => 'Tồn kho', 'location' => 'Vị trí',
         ];
 
         $described = [];

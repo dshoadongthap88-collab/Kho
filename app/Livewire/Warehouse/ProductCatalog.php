@@ -46,6 +46,7 @@ class ProductCatalog extends Component
     public $expiry_date;
     public $quantity;
     public $min_stock = 0;
+    public $max_stock = 0;
     public $type = 'product_purchased';
     
     // Form fields (Asset)
@@ -80,6 +81,7 @@ class ProductCatalog extends Component
                 'expiry_date' => 'nullable|date',
                 'quantity' => 'nullable|numeric|min:0',
                 'min_stock' => 'nullable|numeric|min:0',
+                'max_stock' => 'nullable|numeric|min:0',
                 'type' => 'required|in:product,product_produced,product_purchased',
                 'image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif,bmp|max:5120',
             ];
@@ -202,9 +204,11 @@ class ProductCatalog extends Component
     {
         $this->resetValidation();
         $this->confirmDuplicate = false;
-        $this->reset(['code', 'name', 'brand', 'description', 'status', 'location', 'quantity', 'productId', 'image', 'type', 'category_id', 'equipment_code', 'asset_code', 'machine_type', 'manager', 'warranty_status']);
+        $this->reset(['code', 'name', 'brand', 'description', 'status', 'location', 'quantity', 'min_stock', 'max_stock', 'productId', 'image', 'type', 'category_id', 'equipment_code', 'asset_code', 'machine_type', 'manager', 'warranty_status']);
         
         $this->warranty_status = 'Còn bảo hành';
+        $this->min_stock = 0;
+        $this->max_stock = 0;
         if ($this->activeTab === 'materials') {
             if ($id) {
                 $this->isEdit = true;
@@ -220,11 +224,13 @@ class ProductCatalog extends Component
                 $this->batch_number = $product->batch_number;
                 $this->expiry_date = $product->expiry_date?->format('Y-m-d');
                 $this->quantity = $product->inventory?->quantity ?? 0;
-                $this->min_stock = $product->min_stock;
+                $this->min_stock = $product->min_stock ?? 0;
+                $this->max_stock = $product->max_stock ?? 0;
                 $this->type = in_array($product->type, ['product_produced', 'product_purchased']) ? $product->type : 'product_purchased';
             } else {
                 $this->isEdit = false;
                 $this->min_stock = 0;
+                $this->max_stock = 0;
             }
         } else {
             // tab equipments
@@ -348,6 +354,7 @@ class ProductCatalog extends Component
                         'batch_number' => $this->batch_number ?: '',
                         'expiry_date' => $this->expiry_date ?: null,
                         'min_stock' => (float)($this->min_stock ?: 0),
+                        'max_stock' => (float)($this->max_stock ?: 0),
                         'type' => $this->type,
                     ]);
                     
@@ -377,6 +384,7 @@ class ProductCatalog extends Component
                         'batch_number' => $this->batch_number ?: '',
                         'expiry_date' => $this->expiry_date ?: null,
                         'min_stock' => (float)($this->min_stock ?: 0),
+                        'max_stock' => (float)($this->max_stock ?: 0),
                         'type' => $this->type,
                         'image' => $imagePath,
                     ]);

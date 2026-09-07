@@ -69,8 +69,17 @@ class ProductCatalog extends Component
     public function rules()
     {
         if ($this->activeTab === 'materials') {
+            $currentCode = $this->isEdit && $this->productId
+                ? Product::withoutGlobalScope('house')->whereKey($this->productId)->value('code')
+                : null;
+            $codeRule = $this->isEdit && $currentCode === $this->code
+                ? ['required']
+                : ['required', Rule::unique('products', 'code')
+                    ->ignore($this->productId)
+                    ->when(session('current_house'), fn ($rule) => $rule->where('house_id', session('current_house')))];
+
             return [
-                'code' => ['required', Rule::unique('products', 'code')->ignore($this->productId)],
+                'code' => $codeRule,
                 'name' => 'required|string|max:255',
                 'brand' => 'nullable|string|max:255',
                 'description' => 'nullable|string',
